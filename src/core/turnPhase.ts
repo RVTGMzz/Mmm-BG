@@ -44,45 +44,48 @@ export const TURN_PHASE_LABELS: Record<TurnPhase, string> = {
 };
 
 export class TurnPhaseMachine {
-  private currentPhase: TurnPhase = 'TURN_START';
-  private currentRevision = 0;
+  private readonly state: TurnPhaseSnapshot;
+
+  constructor(state?: TurnPhaseSnapshot) {
+    this.state = state ?? { phase: 'TURN_START', revision: 0 };
+  }
 
   get phase(): TurnPhase {
-    return this.currentPhase;
+    return this.state.phase;
   }
 
   get revision(): number {
-    return this.currentRevision;
+    return this.state.revision;
   }
 
   get snapshot(): TurnPhaseSnapshot {
     return {
-      phase: this.currentPhase,
-      revision: this.currentRevision,
+      phase: this.state.phase,
+      revision: this.state.revision,
     };
   }
 
   is(phase: TurnPhase): boolean {
-    return this.currentPhase === phase;
+    return this.state.phase === phase;
   }
 
   can(action: TurnAction): boolean {
-    return ACTION_PHASES[action].includes(this.currentPhase);
+    return ACTION_PHASES[action].includes(this.state.phase);
   }
 
   canTransition(next: TurnPhase): boolean {
-    return ALLOWED_TRANSITIONS[this.currentPhase].includes(next);
+    return ALLOWED_TRANSITIONS[this.state.phase].includes(next);
   }
 
   transition(next: TurnPhase): TurnPhaseSnapshot {
-    if (next === this.currentPhase) return this.snapshot;
+    if (next === this.state.phase) return this.snapshot;
 
     if (!this.canTransition(next)) {
-      throw new Error(`Invalid turn phase transition: ${this.currentPhase} → ${next}`);
+      throw new Error(`Invalid turn phase transition: ${this.state.phase} → ${next}`);
     }
 
-    this.currentPhase = next;
-    this.currentRevision += 1;
+    this.state.phase = next;
+    this.state.revision += 1;
     return this.snapshot;
   }
 }
