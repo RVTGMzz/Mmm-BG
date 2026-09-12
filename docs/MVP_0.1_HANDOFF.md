@@ -4,90 +4,81 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.2 — Dynamic Card Face Slots**
+**MVP 0.1.3 — Card Deck + Target Picker**
 
-Vertical slice hiện đã chứng minh 3 lớp đầu tiên của MeMeMe:
-
-1. Roll → Move → Trigger.
-2. Face runtime cho 4 người.
-3. Lá Bài ghép mặt Caster/Target theo data và resolve effect ngay.
+Mục tiêu milestone: chuyển từ 1 card prototype sang deck runtime dùng đúng 4 Lá Bài hiện có dữ liệu thật trong spreadsheet, thêm weighted draw, chọn mục tiêu và effect state.
 
 ## Đã triển khai
 
 ### Core board
 - Vite + TypeScript + Phaser.
-- Canvas landscape 1280×720, scale FIT.
-- City board data-driven 18 node.
-- 4 player, mỗi người bắt đầu 1000B$.
-- D6 + TurnManager.
-- Tween di chuyển từng node.
-- Qua READY nhận +100B$.
-- Money tile cộng/trừ B$.
-- Tin Tức đang là placeholder.
-- HUD turn / dice / money / position / event log.
+- Landscape 1280×720.
+- City test board data-driven 18 node.
+- 4 player + TurnManager + D6 + tween movement.
+- READY lap reward, money tiles, Tin Tức placeholder.
 
-### Face onboarding — MVP 0.1.1
-- Setup 4 người trước khi vào board.
+### Face runtime
+- Setup 4 người chơi.
 - Nhập tên riêng từng player.
 - 3 expression slots: `neutral`, `happy`, `angry`.
 - Neutral bắt buộc; expression thiếu fallback về neutral.
-- Ảnh được xử lý local bằng Canvas và center-crop thành sticker 256×256.
-- Face chỉ nằm trong memory của phiên chơi, không upload server ở MVP.
-- Token trên board dùng mặt thật.
-- Expression runtime thay đổi theo sự kiện rồi trở về neutral.
+- Ảnh center-crop 256×256 thành sticker ngay trong browser.
+- Ảnh chỉ giữ trong memory phiên chơi, chưa upload server.
+- Face token và expression runtime đã hoạt động.
 
-### Dynamic Card — MVP 0.1.2
-- Runtime model mới tại `src/core/cards.ts`.
-- Prototype data tại `src/content/core/card_prototype.json`.
-- Card đầu tiên dùng dữ liệu thật đã duyệt: `ACT_001 — Trượt Tay`.
-- Khi người chơi đáp xuống ô Lá Bài:
-  - chọn ngẫu nhiên 1 người chơi khác làm target;
-  - áp dụng effect ngay: lấy tối đa 10B$ từ target;
-  - caster dùng mặt `happy`, target dùng mặt `angry`;
-  - overlay card tự ghép đúng 2 mặt + 2 tên;
-  - face slot có `role`, `expression`, `x`, `y`, `size`, `rotation` trong data;
-  - overlay tự biến mất và **không khóa lượt kế tiếp**.
-- Renderer nằm tại `src/ui/CardOverlay.ts`.
+### Dynamic Card + Deck 0.1.3
+Runtime deck nằm tại `src/content/core/cards_mvp.json` và chỉ chứa 4 card có tên/logic thật trong source spreadsheet:
 
-## Chạy local
+- `ACT_001 — Trượt Tay` — N — weight 600.
+- `ACT_006 — Khóa Mõm` — R — weight 300.
+- `ACT_010 — Triệu Hồi Hắc Ín` — SR — weight 90.
+- `ACT_012 — Chuyển Sinh Đổi Vận` — SSR — weight 10.
 
-```bash
-npm install
-npm run dev
-```
+Tổng weight hiện là 1000 vì MVP chỉ có đúng 1 card hoàn thiện ở mỗi rarity. `drawWeightedCard()` dùng trực tiếp các weight này. Không tự fill các Card_ID còn trống.
 
-Kiểm tra build:
+### Target Picker
+- Card `single_other` mở Target Picker.
+- Hiện 3 người chơi còn lại với face neutral, tên, B$ và trạng thái khóa.
+- Người chơi phải chọn target trước khi gameplay state resolve.
+- Đây là input gameplay nên được phép tạm chặn turn; card/reaction presentation sau khi resolve vẫn không block turn.
 
-```bash
-npm run build
-```
+### Effect runtime
+- `Trượt Tay`: lấy tối đa 10B$ từ target.
+- `Khóa Mõm`: target không thể dùng Lá Bài trong lượt kế tiếp; status tự hết sau lượt đó.
+- `Triệu Hồi Hắc Ín`: trừ 30% B$ hiện có của tất cả người chơi khác.
+- `Chuyển Sinh Đổi Vận`: swap toàn bộ B$ giữa caster và target.
 
-CI GitHub Actions cũng chạy `npm run build` cho branch/PR.
+**Lưu ý về `Triệu Hồi Hắc Ín`:** source ghi “30% tổng tài sản”. MVP hiện mới tracking B$, chưa có property/job/pet asset layer, nên runtime 0.1.3 tạm áp 30% lên B$. Đây là implementation PoC, không phải thay đổi text/luật source.
 
-## Data hiện tại
+### Dynamic Card presentation
+- Card face slots vẫn hoàn toàn data-driven.
+- Caster/Target face và tên điền runtime.
+- Card all-target dùng caster face + presentation `VS TẤT CẢ`.
+- Resolution summary được hiển thị trên overlay.
+- Overlay tự đóng và không khóa lượt kế tiếp.
 
-Board:
+### Player status
+`PlayerState` đã có `cardBlockTurns` để chứng minh status effect tồn tại qua turn.
+HUD hiện icon `🔒` khi player đang bị Khóa Mõm.
 
-`src/content/city/board_city_mvp.json`
+## File chính
 
-Card authoring snapshot:
-
-`data/cards/mvp_cards.json`
-
-Runtime enriched prototype:
-
-`src/content/core/card_prototype.json`
-
-Việc tách authoring data và runtime presentation metadata là chủ ý. `faceSlots` là metadata dành cho renderer, không tự sửa ngược vào spreadsheet gốc khi chưa chốt schema production.
+- `src/core/cards.ts` — weighted draw, target rules, card effect resolver.
+- `src/core/types.ts` — PlayerState + card status.
+- `src/content/core/cards_mvp.json` — 4 card runtime đã duyệt.
+- `src/ui/TargetPicker.ts` — chọn mục tiêu.
+- `src/ui/CardOverlay.ts` — dynamic card presentation.
+- `src/scenes/BoardScene.ts` — nối deck/target/effect vào turn flow.
+- `src/core/session.ts` / `src/systems/faces.ts` — face runtime.
 
 ## Chưa triển khai
 
-- deck Lá Bài thật / weighted draw N-R-SR-SSR;
-- chọn target bằng UI;
-- các effect khác ngoài `steal_money`;
+- inventory/giữ Lá Bài để dùng sau;
+- rarity-first pool tách riêng khi mỗi rarity có nhiều card;
 - Tin Tức runtime;
 - Reaction / Personality / SFX;
 - camera capture;
+- face detection / background removal;
 - ngã rẽ chẵn-lẻ;
 - Job / Pet / Minigame;
 - multiplayer online;
@@ -95,22 +86,19 @@ Việc tách authoring data và runtime presentation metadata là chủ ý. `fac
 
 ## Milestone kế tiếp đề xuất
 
-**MVP 0.1.3 — Card Deck + Target Picker**
+**MVP 0.1.4 — Tin Tức + Reaction Sequencer**
 
-Mục tiêu:
-- đưa 4 lá đã có dữ liệu thật vào runtime (`ACT_001`, `ACT_006`, `ACT_010`, `ACT_012`);
-- weighted draw theo rarity/drop weight;
-- card cần target sẽ mở target picker nhanh;
-- implement các effect state đầu tiên;
-- giữ nguyên nguyên tắc effect resolve tách khỏi presentation.
+Ưu tiên:
+1. đưa một số Tin Tức mẫu vào data runtime;
+2. trigger Tin Tức từ tile;
+3. thêm reaction sequencer auto `System → caster/affected → spectator`;
+4. reaction có delay/overlap nhưng không block turn;
+5. bắt đầu dùng personality tags tối thiểu để chứng minh câu phản ứng thay đổi theo người chơi.
 
-Sau đó mới nối **Tin Tức + Auto Reaction** để hoàn thiện vertical slice.
-
-## Nguyên tắc bất biến
-
-Không mở rộng chiều sâu gameplay cho tới khi 4 thứ chạy mượt:
+## Nguyên tắc MVP
 
 1. Roll → Move → Trigger. ✅
-2. Face runtime. ✅ bản PoC đã có.
-3. Card/News data-driven. 🟡 Card đã có prototype, News chưa.
-4. Auto-reaction không block turn. ⏳
+2. Face runtime. ✅ PoC đầu đã chạy.
+3. Lá Bài data-driven + weighted draw + effect state. ✅
+4. Tin Tức data-driven.
+5. Auto-reaction không block turn.

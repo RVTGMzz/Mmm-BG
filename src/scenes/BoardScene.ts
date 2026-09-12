@@ -1,12 +1,18 @@
 import Phaser from 'phaser';
-import cardJson from '../content/core/card_prototype.json';
+import cardsJson from '../content/core/cards_mvp.json';
 import boardJson from '../content/city/board_city_mvp.json';
-import { applyCardEffect, pickRandomOtherPlayer, type CardDefinition } from '../core/cards';
+import {
+  applyCardEffect,
+  drawWeightedCard,
+  getValidTargets,
+  type CardDefinition,
+} from '../core/cards';
 import { rollD6 } from '../core/dice';
 import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
 import type { BoardDefinition, BoardNode, PlayerState, TileType } from '../core/types';
 import { showDynamicCard } from '../ui/CardOverlay';
+import { showTargetPicker } from '../ui/TargetPicker';
 
 type VisualPlayer = PlayerState & {
   token: Phaser.GameObjects.Container;
@@ -14,7 +20,7 @@ type VisualPlayer = PlayerState & {
 };
 
 const BOARD = boardJson as BoardDefinition;
-const PROTOTYPE_CARD = cardJson as CardDefinition;
+const CARDS = cardsJson as CardDefinition[];
 
 const TILE_COLORS: Record<TileType, number> = {
   ready: 0xef4545,
@@ -63,7 +69,7 @@ export class BoardScene extends Phaser.Scene {
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1.2: Dynamic Card Face Slots đã hoạt động 🃏');
+    this.writeLog('MVP 0.1.3: weighted deck + Target Picker đã hoạt động 🃏');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -82,14 +88,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.2', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.3', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Face runtime + Lá Bài ghép Caster/Target theo data', {
+    this.add.text(178, 77, '4 Lá Bài thật • weighted draw • target picker • effect state', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -178,6 +184,7 @@ export class BoardScene extends Phaser.Scene {
         name: profile?.name || `Player ${i + 1}`,
         tileIndex: 0,
         money: 1000,
+        cardBlockTurns: 0,
         token,
         face,
       });
@@ -261,7 +268,8 @@ export class BoardScene extends Phaser.Scene {
     this.writeLog(`${player.name} đổ được ${result}.`);
 
     await this.movePlayer(player, result);
-    this.resolveTile(player);
+    await this.resolveTile(player);
+    this.finishTurn(player);
 
     this.turn.next();
     this.rolling = false;
@@ -296,7 +304,7 @@ export class BoardScene extends Phaser.Scene {
     }
   }
 
-  private resolveTile(player: VisualPlayer): void {
+  private async resolveTile(player: VisualPlayer): Promise<void> {
     const node = BOARD.nodes[player.tileIndex];
 
     switch (node.type) {
@@ -309,11 +317,11 @@ export class BoardScene extends Phaser.Scene {
       }
       case 'news':
         this.setPlayerExpression(player, 'angry', 900);
-        this.writeLog(`${player.name} chạm TIN TỨC. Deck thật sẽ nối sau Dynamic Card.`);
+        this.writeLog(`${player.name} chạm TIN TỨC. Runtime Tin Tức sẽ là milestone sau deck Lá Bài.`);
         this.flashCenter('📰 TIN TỨC!', '#6aa84f');
         break;
       case 'card':
-        this.resolvePrototypeCard(player);
+        await this.resolveCardTile(player);
         break;
       case 'ready':
         this.writeLog(`${player.name} dừng tại READY.`);
@@ -324,18 +332,53 @@ export class BoardScene extends Phaser.Scene {
     }
   }
 
-  private resolvePrototypeCard(caster: VisualPlayer): void {
-    const target = pickRandomOtherPlayer(this.players, caster.id);
-    if (!target) {
-      this.writeLog(`${caster.name} rút ${PROTOTYPE_CARD.title}, nhưng không có mục tiêu hợp lệ.`);
+  private async resolveCardTile(caster: VisualPlayer): Promise<void> {
+    if (caster.cardBlockTurns > 0) {
+      this.setPlayerExpression(caster, 'angry', 1100);
+      this.flashCenter('🔒 BỊ KHÓA LÁ BÀI!', '#c34a44');
+      this.writeLog(`${caster.name} đang bị Khóa Mõm nên không thể dùng Lá Bài ở lượt này.`);
       return;
     }
 
-    const resolution = applyCardEffect(PROTOTYPE_CARD, caster, target);
-    this.setPlayerExpression(caster, 'happy', 1350);
-    this.setPlayerExpression(target, 'angry', 1350);
-    showDynamicCard(this, PROTOTYPE_CARD, caster, target);
-    this.writeLog(`🃏 ${PROTOTYPE_CARD.title}: ${resolution.summary}`);
+    const card = drawWeightedCard(CARDS);
+    if (!card) {
+      this.writeLog('Deck Lá Bài không có lá hợp lệ.');
+      return;
+    }
+
+    let target: VisualPlayer | undefined;
+    if (card.targetMode === 'single_other') {
+      const candidates = getValidTargets(this.players, caster.id);
+      target = await showTargetPicker(this, caster, candidates);
+      if (!target) {
+        this.writeLog(`${caster.name} rút ${card.title}, nhưng không có mục tiêu hợp lệ.`);
+        return;
+      }
+    }
+
+    const resolution = applyCardEffect(card, caster, this.players, target);
+    this.setPlayerExpression(caster, 'happy', 1500);
+
+    if (target) {
+      this.setPlayerExpression(target, 'angry', 1500);
+    } else {
+      for (const opponent of this.players) {
+        if (opponent.id !== caster.id) this.setPlayerExpression(opponent, 'angry', 1500);
+      }
+    }
+
+    showDynamicCard(this, card, caster, target, resolution.summary);
+    this.writeLog(`🃏 ${card.rarity} ${card.title}: ${resolution.summary}`);
+    this.refreshHud();
+  }
+
+  private finishTurn(player: VisualPlayer): void {
+    if (player.cardBlockTurns <= 0) return;
+
+    player.cardBlockTurns -= 1;
+    if (player.cardBlockTurns === 0) {
+      this.writeLog(`🔓 ${player.name} đã hết hiệu lực Khóa Mõm.`);
+    }
   }
 
   private setPlayerExpression(
@@ -392,7 +435,8 @@ export class BoardScene extends Phaser.Scene {
       this.players
         .map((player, index) => {
           const marker = index === this.turn.currentIndex ? '▶' : ' ';
-          return `${marker} ${this.shortName(player.name)}  ${player.money}B$  • ô ${player.tileIndex}`;
+          const lock = player.cardBlockTurns > 0 ? `  🔒${player.cardBlockTurns}` : '';
+          return `${marker} ${this.shortName(player.name)}  ${player.money}B$${lock}  • ô ${player.tileIndex}`;
         })
         .join('\n'),
     );

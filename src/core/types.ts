@@ -19,4 +19,5 @@ export interface PlayerState {
   name: string;
   tileIndex: number;
   money: number;
+  cardBlockTurns: number;
 }

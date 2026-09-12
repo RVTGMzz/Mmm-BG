@@ -1,0 +1,57 @@
+[
+  {
+    "id": "ACT_001",
+    "title": "Trượt Tay",
+    "rarity": "N",
+    "dropWeight": 600,
+    "impact": "⭐",
+    "description": "Lấy 10 vàng từ 1 người chơi ngẫu nhiên.",
+    "targetMode": "single_other",
+    "effect": { "type": "steal_money", "amount": 10 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 116, "rotation": -4 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 116, "rotation": 4 }
+    ]
+  },
+  {
+    "id": "ACT_006",
+    "title": "Khóa Mõm",
+    "rarity": "R",
+    "dropWeight": 300,
+    "impact": "⭐⭐",
+    "description": "Cấm Target sử dụng Lá Bài trong 1 lượt.",
+    "targetMode": "single_other",
+    "effect": { "type": "block_cards", "turns": 1 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 116, "rotation": -5 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 116, "rotation": 5 }
+    ]
+  },
+  {
+    "id": "ACT_010",
+    "title": "Triệu Hồi Hắc Ín",
+    "rarity": "SR",
+    "dropWeight": 90,
+    "impact": "⭐⭐⭐",
+    "description": "Trừ 30% tổng tài sản của tất cả người chơi khác.",
+    "targetMode": "all_others",
+    "effect": { "type": "percent_loss_all_others", "percent": 0.3 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -185, "y": 20, "size": 122, "rotation": -6 }
+    ]
+  },
+  {
+    "id": "ACT_012",
+    "title": "Chuyển Sinh Đổi Vận",
+    "rarity": "SSR",
+    "dropWeight": 10,
+    "impact": "⭐⭐⭐⭐⭐",
+    "description": "Hoán đổi toàn bộ số vàng của bản thân với Target.",
+    "targetMode": "single_other",
+    "effect": { "type": "swap_money" },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 120, "rotation": -7 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 120, "rotation": 7 }
+    ]
+  }
+]
