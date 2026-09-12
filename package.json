@@ -10,6 +10,7 @@
     "test:replay": "tsx tests/replay-determinism.ts",
     "test:lockstep": "tsx tests/lockstep-peer.ts",
     "test:host-client": "tsx tests/host-client-queue.ts",
+    "test:authority": "tsx tests/authority-protocol.ts",
     "preview": "vite preview"
   },
   "dependencies": {
