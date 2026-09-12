@@ -35,3 +35,6 @@ jobs:
 
       - name: Lockstep peer simulator
         run: npm run test:lockstep
+
+      - name: Host client queue and snapshot resync
+        run: npm run test:host-client
