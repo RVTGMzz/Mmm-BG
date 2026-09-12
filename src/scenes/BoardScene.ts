@@ -16,11 +16,14 @@ import {
   type CardDefinition,
   type CardResolution,
 } from '../core/cards';
+import { computeMatchChecksum } from '../core/checksum';
 import { rollD6 } from '../core/dice';
 import {
   advanceMatchTurn,
+  appendMatchCommand,
   appendMatchEvent,
   createInitialMatchState,
+  deserializeMatchState,
   serializeMatchState,
   type MatchState,
 } from '../core/matchState';
@@ -30,6 +33,7 @@ import {
   type NewsDefinition,
 } from '../core/news';
 import type { ReactionContext, ReactionEventDefinition } from '../core/reactions';
+import { replayMatchCommands } from '../core/replay';
 import { createRandomSource } from '../core/rng';
 import {
   MVP_BRANCH_DECISION_MODE,
@@ -65,6 +69,7 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const REACTIONS = reactionsJson as ReactionEventDefinition[];
+const SNAPSHOT_STORAGE_KEY = 'mememe.mvp.0.1.9.snapshot';
 
 const TILE_COLORS: Record<TileType, number> = {
   ready: 0xef4545,
@@ -145,7 +150,7 @@ export class BoardScene extends Phaser.Scene {
     this.openPreRollWindow();
 
     const snapshotBytes = serializeMatchState(this.match).length;
-    this.writeLog(`MVP 0.1.8: match state JSON + seeded RNG đã hoạt động 🎯 (${snapshotBytes} chars)`);
+    this.writeLog(`MVP 0.1.9: snapshot restore + command replay đã hoạt động 🧬 (${snapshotBytes} chars)`);
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -153,6 +158,15 @@ export class BoardScene extends Phaser.Scene {
     });
     this.input.keyboard?.on('keydown-C', () => {
       void this.handleUseCard();
+    });
+    this.input.keyboard?.on('keydown-S', () => {
+      this.saveSnapshot();
+    });
+    this.input.keyboard?.on('keydown-L', () => {
+      this.loadSnapshot();
+    });
+    this.input.keyboard?.on('keydown-V', () => {
+      this.verifyReplay();
     });
   }
 
@@ -176,14 +190,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.8', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.9', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Serializable Match State • seeded RNG • event log • Phaser chỉ render', {
+    this.add.text(178, 77, 'Snapshot Restore • Action Replay • deterministic checksum • seeded runtime', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -291,7 +305,7 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.add.rectangle(640, 365, 410, 310, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
+    this.add.rectangle(640, 365, 430, 310, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
 
     this.turnText = this.add
       .text(640, 255, '', {
@@ -357,16 +371,16 @@ export class BoardScene extends Phaser.Scene {
     });
 
     this.add
-      .text(640, 489, 'SPACE: roll • C: mở tay bài • ?seed=123 để replay RNG', {
+      .text(640, 489, 'SPACE roll • C cards • S save • L load • V verify replay', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '11px',
         color: '#756d62',
       })
       .setOrigin(0.5);
 
-    this.scoreText = this.add.text(968, 28, '', {
+    this.scoreText = this.add.text(955, 28, '', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '13px',
+      fontSize: '12px',
       color: '#252525',
       backgroundColor: '#fffaf0',
       padding: { x: 13, y: 10 },
@@ -379,7 +393,7 @@ export class BoardScene extends Phaser.Scene {
       color: '#554f47',
       backgroundColor: '#fffaf0',
       padding: { x: 12, y: 8 },
-      fixedWidth: 790,
+      fixedWidth: 860,
     });
   }
 
@@ -409,6 +423,7 @@ export class BoardScene extends Phaser.Scene {
     const player = this.currentPlayer();
     if (!player) return;
 
+    appendMatchCommand(this.match, 'roll', player.id);
     this.setPlayerExpression(player, 'neutral');
     this.transitionPhase('ROLLING');
 
@@ -483,6 +498,12 @@ export class BoardScene extends Phaser.Scene {
         }
       }
 
+      appendMatchCommand(
+        this.match,
+        'play_card',
+        caster.id,
+        { cardId: card.id, targetId: target?.id ?? -1 },
+      );
       const resolution = applyCardEffect(card, caster, this.players, target);
       caster.handCardIds.splice(handIndex, 1);
       caster.cardsPlayedThisTurn += 1;
@@ -562,6 +583,7 @@ export class BoardScene extends Phaser.Scene {
       if (MVP_BRANCH_DECISION_MODE === 'odd_even') {
         const selected = pickParityEdge(outgoing, roll) ?? outgoing[0];
         const parity = roll % 2 === 0 ? 'CHẴN' : 'LẺ';
+        appendMatchCommand(this.match, 'choose_branch', player.id, { to: selected.to });
         this.flashCenter(`🛣️ ${parity} → ${selected.label ?? `NODE ${selected.to}`}`, '#795796');
         this.writeLog(`${player.name} gặp ngã rẽ: roll ${parity}, đi ${selected.label ?? selected.to}.`);
         appendMatchEvent(
@@ -578,6 +600,7 @@ export class BoardScene extends Phaser.Scene {
         destination: getBoardNode(BOARD, edge.to),
       }));
       const selected = await showBranchPicker(this, player, options, roll);
+      appendMatchCommand(this.match, 'choose_branch', player.id, { to: selected.to });
       this.writeLog(`${player.name} chọn ${selected.label ?? `đường tới node ${selected.to}`}.`);
       appendMatchEvent(
         this.match,
@@ -774,6 +797,105 @@ export class BoardScene extends Phaser.Scene {
     player.cardsPlayedThisTurn = 0;
   }
 
+  private saveSnapshot(): void {
+    if (!this.phase.is('PRE_ROLL_ACTION')) {
+      this.flashCenter('💾 CHỈ SAVE Ở CỬA SỔ PRE-ROLL', '#795796');
+      return;
+    }
+
+    const serialized = serializeMatchState(this.match);
+    localStorage.setItem(SNAPSHOT_STORAGE_KEY, serialized);
+    const checksum = computeMatchChecksum(this.match);
+    appendMatchEvent(this.match, 'snapshot_saved', { checksum });
+    this.writeLog(`💾 Snapshot saved • checksum ${checksum} • ${serialized.length} chars.`);
+    this.refreshHud();
+  }
+
+  private loadSnapshot(): void {
+    if (!this.phase.is('PRE_ROLL_ACTION')) {
+      this.flashCenter('📦 CHỈ LOAD Ở CỬA SỔ PRE-ROLL', '#795796');
+      return;
+    }
+
+    const serialized = localStorage.getItem(SNAPSHOT_STORAGE_KEY);
+    if (!serialized) {
+      this.writeLog('📦 Chưa có snapshot local để restore.');
+      return;
+    }
+
+    try {
+      const restored = deserializeMatchState(serialized);
+      if (restored.boardId !== BOARD.id) {
+        throw new Error(`Snapshot board ${restored.boardId} không khớp ${BOARD.id}.`);
+      }
+      if (restored.players.length !== this.visuals.size) {
+        throw new Error(`Snapshot có ${restored.players.length} player, scene có ${this.visuals.size}.`);
+      }
+      if (restored.turn.phase !== 'PRE_ROLL_ACTION') {
+        throw new Error(`Snapshot phase ${restored.turn.phase} chưa phải safe restore point.`);
+      }
+
+      this.match = restored;
+      this.players = restored.players;
+      this.phase = new TurnPhaseMachine(restored.turn);
+      this.random = createRandomSource(restored.rng);
+      this.syncVisualsToState();
+      appendMatchEvent(this.match, 'snapshot_restored', {
+        checksum: computeMatchChecksum(this.match),
+      });
+      this.writeLog(`📦 Snapshot restored • checksum ${computeMatchChecksum(this.match)}.`);
+      this.refreshHud();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.writeLog(`⚠️ Restore failed: ${message}`);
+    }
+  }
+
+  private verifyReplay(): void {
+    if (!this.phase.is('PRE_ROLL_ACTION')) {
+      this.flashCenter('🧬 VERIFY Ở CỬA SỔ PRE-ROLL', '#795796');
+      return;
+    }
+
+    const replay = replayMatchCommands(this.match, BOARD, CARDS, NEWS);
+    const liveChecksum = computeMatchChecksum(this.match);
+    const replayChecksum = computeMatchChecksum(replay.state);
+    const complete = replay.consumedCommands === this.match.commandLog.length;
+    const pass = replay.errors.length === 0 && complete && liveChecksum === replayChecksum;
+
+    appendMatchEvent(this.match, 'replay_verify', {
+      pass,
+      liveChecksum,
+      replayChecksum,
+      consumed: replay.consumedCommands,
+      commands: this.match.commandLog.length,
+    });
+
+    if (pass) {
+      this.flashCenter(`🧬 REPLAY MATCH ${liveChecksum}`, '#3d8b5f');
+      this.writeLog(`🧬 PASS • ${replay.consumedCommands} commands → checksum ${liveChecksum}.`);
+    } else {
+      this.flashCenter('🧬 REPLAY MISMATCH', '#c34a44');
+      this.writeLog(
+        `🧬 FAIL • live ${liveChecksum} / replay ${replayChecksum} • ${replay.errors[0] ?? 'command count mismatch'}`,
+      );
+    }
+    this.refreshHud();
+  }
+
+  private syncVisualsToState(): void {
+    for (const player of this.players) {
+      const visual = this.visuals.get(player.id);
+      if (!visual) continue;
+      const node = getBoardNode(BOARD, player.nodeId);
+      const offset = TOKEN_OFFSETS[player.id];
+      visual.token.setPosition(node.x + offset.x, node.y + offset.y);
+      this.setPlayerExpression(player, 'neutral');
+    }
+
+    this.diceText.setText(this.match.turn.lastRoll === null ? '🎲  ?' : `🎲  ${this.match.turn.lastRoll}`);
+  }
+
   private setPlayerExpression(
     player: PlayerState,
     expression: FaceExpression,
@@ -830,9 +952,10 @@ export class BoardScene extends Phaser.Scene {
     if (!current) return;
 
     const phaseLabel = TURN_PHASE_LABELS[this.phase.phase];
+    const checksum = computeMatchChecksum(this.match);
     this.turnText.setText(`Lượt ${this.match.turn.turnNumber}: ${current.name}`);
     this.phaseText.setText(
-      `${phaseLabel} • rev ${this.phase.revision} • seed ${this.match.seed} • rng ${this.match.rng.calls} • ev ${this.match.eventLog.length}`,
+      `${phaseLabel} • rev ${this.phase.revision} • rng ${this.match.rng.calls} • cmd ${this.match.commandLog.length} • ${checksum}`,
     );
 
     this.scoreText.setText(
