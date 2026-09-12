@@ -4,9 +4,9 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.12 — Host/Client Command Queue + Snapshot Resync PoC**
+**MVP 0.1.13 — Client Intent → Host Authority Protocol + Local Transport Adapter**
 
-Mục tiêu milestone: đưa deterministic lockstep 0.1.11 lên một lớp transport in-memory gần networking hơn, trong đó host giữ authoritative command stream, client nhận command có latency/duplicate/out-of-order, ACK theo sequence, reject packet stale/conflicting và có thể recover bằng authoritative snapshot khi state lệch.
+Mục tiêu milestone: client không còn cần tự tạo authoritative `MatchCommand`. Client chỉ gửi ý định gameplay (`roll`, `choose_branch`, `play_card`), host kiểm tra state hiện tại rồi mới đóng dấu command envelope + deterministic outcome. Đồng thời thêm local transport abstraction để tiến tới test 2 tab/browser thật mà chưa cần backend.
 
 ## Nền tảng đã có
 
@@ -24,163 +24,181 @@ Mục tiêu milestone: đưa deterministic lockstep 0.1.11 lên một lớp tran
 - Command envelope: turn/player/actor/phase/revision/preChecksum.
 - Replay checkpoints + failedCommandSeq.
 - 2-peer lockstep simulator + field-level desync diagnostics.
+- Host/client queue với latency/duplicate/out-of-order + snapshot resync.
 
-## Host/Client transport core 0.1.12
+## Client Intent → Host Authority 0.1.13
 
-File mới: `src/core/hostClient.ts`.
+File mới: `src/core/authority.ts`.
 
-### Host command packet
-Mỗi packet mô phỏng transport có:
-- `packetId`;
-- `deliverAt` để mô phỏng latency/reorder;
-- authoritative `MatchCommand` đã có deterministic envelope.
+### ClientIntent
+Client gửi payload tối thiểu:
+- `intentId`;
+- `clientId`;
+- `actorId`;
+- `type`: `roll | choose_branch | play_card`;
+- `observedCommandSeq`;
+- data riêng của intent.
 
-### Client queue state
-Client giữ riêng:
-- `ackSeq`: command sequence cao nhất đã nhận liên tục;
-- `appliedSeq`: sequence cao nhất đã replay an toàn vào gameplay state;
-- `pending`: packet đến sớm/out-of-order đang buffer;
-- `accepted`: command authority đã ACK;
-- counters cho duplicate/out-of-order/stale reject/resync;
-- `resyncRequested` + error log.
+Client **không được tự quyết định**:
+- command sequence;
+- turn number/player index;
+- phase/revision;
+- pre-command checksum;
+- random target outcome.
 
-`ACK` và `appliedSeq` cố ý tách nhau. Ví dụ roll packet có thể đã nhận liên tục nhưng gameplay chưa apply được nếu branch command phụ thuộc chưa tới. Khi branch packet tới, accepted prefix được replay lại và apply atomically ở safe deterministic boundary.
+### Host validation
+`submitClientIntent()` reject trước khi tạo command nếu:
+- client đang nhìn command sequence cũ/stale;
+- actor không phải current player;
+- intent không hợp lệ ở phase hiện tại;
+- branch target không hợp lệ;
+- card không có trong hand;
+- card đang bị lock;
+- target manual không hợp lệ.
 
-### Duplicate + out-of-order
-`receiveHostCommand()`:
-1. packet đến sớm được buffer theo `seq`;
-2. khi gap được lấp, client drain liên tục từ `ackSeq + 1`;
-3. duplicate giống hệt command đã biết bị ignore, không mutate gameplay;
-4. duplicate/stale cùng seq nhưng payload/envelope khác bị reject và bật `resyncRequested`;
-5. accepted prefix được deterministic replay bằng đúng board/Card/News runtime data.
+Intent trùng `intentId` trả `duplicate` và không tạo command mới.
 
-### Snapshot resync
-`createAuthoritativeSnapshot()` replay authority stream đến một command boundary an toàn rồi đóng gói:
-- `throughSeq`;
-- gameplay checksum;
-- serialized MatchState.
+### Host stamping
+Khi intent hợp lệ, host:
+1. capture deterministic envelope từ authoritative state;
+2. cấp command `seq`;
+3. tự ghi turn/player/phase/revision/preChecksum;
+4. replay candidate command stream để xác nhận command hợp lệ;
+5. commit authority state nếu deterministic replay chấp nhận.
 
-`applyAuthoritativeSnapshot()`:
-- deserialize snapshot;
-- verify checksum;
-- verify command boundary;
-- replace client gameplay state;
-- rebuild accepted command map;
-- drop buffered packet đã nằm trong snapshot;
-- set `ackSeq = appliedSeq = throughSeq`;
-- clear resync request.
+Roll có thể được accept ở boundary trước branch. Nếu deterministic execution dừng ở `BRANCH_CHOICE` do còn thiếu branch intent, host giữ partial authority state đó để nhận `choose_branch` kế tiếp.
 
-Snapshot resync hiện là full gameplay snapshot, chưa phải delta snapshot.
+### Random outcome thuộc host
+Với `ACT_001 — Trượt Tay`, client chỉ gửi `cardId`.
 
-## Network simulation fixture 0.1.12
+Host clone RNG state và tự resolve `random_other` target. `targetId` resolved được ghi vào authoritative command. Client không thể tự chọn người bị Trượt Tay rồi giả thành random.
 
-File mới: `tests/host-client-queue.ts`.
+Manual target card vẫn nhận `targetId` từ intent nhưng host validate target trước khi stamp command.
 
-Fixture dùng cùng authoritative stream nền:
-- seed `123456789`;
-- 24 gameplay commands;
-- 20 roll;
-- 4 branch choices;
-- golden final checksum `0e7e9947`.
+## Local Transport Adapter 0.1.13
 
-Test cố tình tạo transport xấu:
-- command #4 tới trước #3;
-- #9 tới trước #8;
-- #15 tới trước #14;
-- #21 tới trước #20;
-- duplicate packet ở cả hai nửa trận;
-- roll/branch dependency phải chờ command sau trước khi gameplay prefix có thể apply.
+File mới: `src/core/localTransport.ts`.
 
-Sau command #11, fixture cố tình làm lệch client `money +77`, rồi gửi một stale/conflicting bản của command #6. Client phải:
-- phát hiện state không còn khớp authoritative snapshot #11 khi thực hiện checksum comparison;
-- reject stale/conflicting command #6;
-- bật resync request;
-- nhận authoritative snapshot #11;
-- recover đúng checksum;
-- tiếp tục nhận command #12–24;
-- kết thúc cùng checksum với host.
+Có interface chung:
+- `send(payload, to?)`;
+- `subscribe(handler)`;
+- `close()`;
+- `endpointId`.
 
-CI output đã xác nhận:
+Hai adapter hiện có:
 
-`[host-client-ci] PASS ack=24 applied=24 checksum=0e7e9947 outOfOrder=4 duplicates=2 staleRejected=1 resyncs=1`
+### InMemoryTransportHub
+Dùng cho CI/headless regression. Nhiều endpoint trao đổi intent/receipt mà không cần browser/network.
 
-`[host-client-ci] probes: latency/out-of-order PASS • duplicate PASS • stale reject PASS • snapshot resync PASS`
+### BroadcastChannelTransport
+Dùng browser-local `BroadcastChannel` để milestone sau có thể chạy host/client ở **2 tab hoặc 2 browser context cùng origin**.
+
+Adapter này chưa phải internet networking và chưa có auth/reconnect.
+
+## Authority protocol fixture
+
+File mới: `tests/authority-protocol.ts`.
+
+Fixture xác nhận:
+- 24 client intents tạo lại đúng authoritative stream nền;
+- final checksum vẫn `0e7e9947`;
+- duplicate intent không tăng command seq;
+- wrong actor bị reject;
+- stale `observedCommandSeq` bị reject;
+- `play_card` intent chạy qua host authority;
+- random target do host resolve;
+- local in-memory client → host → receipt roundtrip hoạt động.
+
+Verified output:
+
+`[authority-ci] PASS commands=24 checksum=0e7e9947 duplicate=PASS wrongActor=PASS stale=PASS cardIntent=PASS`
+
+`[authority-ci] local transport roundtrip PASS • host stamps authority envelope/outcomes`
 
 ## CI gate hiện tại
 
-`.github/workflows/ci.yml` chạy 4 tầng:
+`.github/workflows/ci.yml` chạy 5 tầng:
 1. `npm run build` — TypeScript + Vite production build;
 2. `npm run test:replay` — deterministic replay golden fixture;
 3. `npm run test:lockstep` — 2-peer command envelope/lockstep fixture;
-4. `npm run test:host-client` — transport queue + snapshot resync fixture.
+4. `npm run test:host-client` — latency/reorder/duplicate/snapshot resync fixture;
+5. `npm run test:authority` — client-intent → host-authority + local transport fixture.
 
-Verified outputs:
-- replay: `PASS ... checksum=0e7e9947 rngCalls=29`;
-- lockstep: `PASS commands=24 checkpoints=24 checksum=0e7e9947 randomTarget=P2`;
-- host/client: `PASS ack=24 applied=24 checksum=0e7e9947 outOfOrder=4 duplicates=2 staleRejected=1 resyncs=1`.
+Current golden gameplay checksum vẫn: `0e7e9947`.
 
 ## File chính
 
 - `src/core/matchState.ts` — MatchState schema v3 + command envelope.
 - `src/core/commandValidation.ts` — deterministic command guard.
 - `src/core/replay.ts` — deterministic replay + checkpoints.
-- `src/core/lockstep.ts` — 2-peer lockstep simulator + envelope stamping.
-- `src/core/hostClient.ts` — host command queue, ACK/buffer, stale reject, snapshot resync.
+- `src/core/lockstep.ts` — 2-peer lockstep simulator.
+- `src/core/hostClient.ts` — noisy authoritative command delivery + snapshot resync.
+- `src/core/authority.ts` — ClientIntent validation + host command stamping/outcome authority.
+- `src/core/localTransport.ts` — in-memory + browser BroadcastChannel adapters.
 - `src/core/checksum.ts` — gameplay checksum.
 - `src/core/desync.ts` — field-level diff.
 - `tests/replay-determinism.ts` — replay regression fixture.
 - `tests/lockstep-peer.ts` — lockstep validation fixture.
 - `tests/host-client-queue.ts` — latency/reorder/duplicate/resync fixture.
-- `.github/workflows/ci.yml` — 4-layer CI gate.
+- `tests/authority-protocol.ts` — intent/authority/local-transport fixture.
+- `.github/workflows/ci.yml` — 5-layer CI gate.
 
 ## Browser QA hiện tại
 
-Ở `PRE_ROLL_ACTION`:
+Single-device BoardScene vẫn chơi được theo vertical slice hiện có.
+
+Hotkeys ở `PRE_ROLL_ACTION`:
 - `S` — save MatchState JSON;
 - `L` — restore snapshot;
 - `V` — deterministic replay verify;
 - `P` — 2-peer lockstep verify.
 
-0.1.12 chưa thêm network UI/browser transport. Host/client queue hiện là core + headless CI PoC.
+0.1.13 đã có `BroadcastChannelTransport`, nhưng **chưa wire BoardScene thành host tab/client tab thật**. Đó là milestone kế tiếp.
 
 ## Known limitations
 
-- Chưa có socket/WebSocket/BroadcastChannel transport thật.
-- Chưa có client-intent → host-authority protocol; fixture đang phát authoritative commands từ host xuống client.
-- Chưa có retry timeout/packet loss policy.
-- ACK hiện là highest contiguous received seq, không phải delivery receipt protocol final.
-- Client apply accepted prefix bằng deterministic replay lại từ đầu; chưa có incremental atomic command executor tối ưu cho runtime network thật.
-- Roll + branch vẫn là 2 command phụ thuộc; client có thể ACK roll nhưng phải chờ branch mới apply safe prefix.
-- Snapshot resync là full snapshot, chưa có delta/compression/version negotiation.
-- Chưa có session auth, reconnect, host migration hay anti-cheat model.
-- Hand limit/card-per-turn, win condition, board topology, Job/Pet/Minigame vẫn chưa phải luật final.
+- Chưa có UI chọn Host/Join Room.
+- Chưa có 2-tab BoardScene synchronization thật.
+- Chưa có WebSocket/backend/internet transport.
+- Chưa có retry timeout/packet-loss policy final.
+- Client apply accepted prefix vẫn dựa deterministic replay, chưa có incremental atomic executor tối ưu.
+- Full snapshot resync, chưa có delta/compression/version negotiation.
+- Chưa có reconnect/host migration/session auth/anti-cheat production model.
+- Chưa khóa luật hand limit/card-per-turn/win condition/board topology final.
 - Tin Tức/reaction vẫn là demo engine content, chưa phải content final/approved.
+- Chưa có đủ content/art/audio/UX để gọi là public demo polished.
 
 ## Validation
 
-GitHub Actions cho code 0.1.12 đã xác nhận:
+GitHub Actions cho code 0.1.13 đã xác nhận:
 - TypeScript + Vite build: **PASS**;
 - deterministic replay: **PASS**;
 - lockstep simulator: **PASS**;
-- host/client transport fixture: **PASS**;
-- out-of-order buffering: **PASS**;
-- duplicate ignore: **PASS**;
-- stale/conflicting command reject: **PASS**;
-- snapshot resync recovery: **PASS**;
-- final host/client checksum: **`0e7e9947`**.
+- host/client noisy transport + snapshot resync: **PASS**;
+- client intent → host authority: **PASS**;
+- duplicate intent handling: **PASS**;
+- wrong actor reject: **PASS**;
+- stale client view reject: **PASS**;
+- play-card host authority: **PASS**;
+- local transport roundtrip: **PASS**;
+- golden checksum: **`0e7e9947`**.
 
 ## Milestone kế tiếp đề xuất
 
-**MVP 0.1.13 — Client Intent → Host Authority Protocol + Local Transport Adapter**
+**MVP 0.1.14 — Two-Tab Browser Session PoC**
 
 Mục tiêu:
-1. tách `ClientIntent` khỏi authoritative `MatchCommand`;
-2. client chỉ gửi ý định như roll/use-card/branch choice, không tự stamp authority checksum;
-3. host validate current turn/actor/phase rồi mới tạo authoritative command envelope;
-4. host broadcast command + ACK/result về client;
-5. dựng adapter local bằng `BroadcastChannel` hoặc transport interface để 2 tab/browser context trao đổi thật mà chưa cần backend;
-6. reuse snapshot resync 0.1.12 khi peer lệch/reconnect;
-7. giữ CI in-memory làm regression gate.
+1. thêm Host/Join local session mode;
+2. wire `BroadcastChannelTransport` vào browser runtime;
+3. host tab giữ authority state;
+4. client tab chỉ phát `ClientIntent`;
+5. host broadcast authoritative command/receipt/snapshot;
+6. hai tab hiển thị cùng board/player state;
+7. test roll + branch + card giữa hai tab cùng origin;
+8. thêm reconnect/resync đơn giản khi client tab reload;
+9. vẫn chưa cần backend thật.
+
+Sau 0.1.14, ưu tiên 0.1.15 cho **Demo Match Shell + win condition tạm + start/end flow** và 0.1.16 cho **demo packaging/polish** nếu mục tiêu là đưa bản thử cho người ngoài chơi.
 
 ## Nguyên tắc MVP
 
@@ -197,3 +215,4 @@ Mục tiêu:
 11. Replay CI + desync diagnostics. ✅ PoC.
 12. Lockstep envelope + 2-peer simulator. ✅ PoC.
 13. Host/client queue + noisy transport + snapshot resync. ✅ PoC.
+14. ClientIntent → HostAuthority + local transport abstraction. ✅ PoC.
