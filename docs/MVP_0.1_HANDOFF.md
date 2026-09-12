@@ -4,59 +4,50 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.1 — Face Onboarding**
+**MVP 0.1.2 — Dynamic Card Face Slots**
 
-Mục tiêu hiện tại là chứng minh USP quan trọng nhất của MeMeMe: người chơi đưa mặt thật vào game và khuôn mặt đó xuất hiện trực tiếp trên token/runtime presentation.
+Vertical slice hiện đã chứng minh 3 lớp đầu tiên của MeMeMe:
+
+1. Roll → Move → Trigger.
+2. Face runtime cho 4 người.
+3. Lá Bài ghép mặt Caster/Target theo data và resolve effect ngay.
 
 ## Đã triển khai
 
 ### Core board
-- Vite + TypeScript + Phaser scaffold.
-- Canvas landscape 1280×720, scale FIT cho desktop/mobile.
-- City test board data-driven gồm 18 node.
-- 4 player + turn manager.
-- Xúc xắc D6.
-- Di chuyển từng node có tween.
-- Đi qua READY nhận +100B$ để kiểm thử lap trigger.
-- Ô tiền cộng/trừ B$.
-- Ô `Tin Tức` và `Lá Bài` có trigger placeholder.
-- HUD turn / dice / tiền / vị trí / event log.
-- Click hoặc SPACE để roll.
+- Vite + TypeScript + Phaser.
+- Canvas landscape 1280×720, scale FIT.
+- City board data-driven 18 node.
+- 4 player, mỗi người bắt đầu 1000B$.
+- D6 + TurnManager.
+- Tween di chuyển từng node.
+- Qua READY nhận +100B$.
+- Money tile cộng/trừ B$.
+- Tin Tức đang là placeholder.
+- HUD turn / dice / money / position / event log.
 
-### Face onboarding 0.1.1
-- Có scene setup riêng trước khi vào bàn cờ.
-- 4 người chơi nhập tên độc lập.
-- Mỗi người có 3 slot biểu cảm:
-  - 😐 `neutral`
-  - 😆 `happy`
-  - 😡 `angry`
-- Ảnh `neutral` bắt buộc để vào game.
-- `happy` / `angry` có thể thiếu; runtime fallback về `neutral` để test nhanh.
-- Ảnh được đọc và xử lý hoàn toàn trong browser ở MVP, chưa upload server.
-- Ảnh được center-crop thành PNG sticker 256×256.
-- Sticker treatment: viền đen + viền kem/trắng, phù hợp hướng visual MeMeMe.
-- Runtime session giữ tên + face assets của 4 player.
-- Board preload face texture từ data URL khi chuyển scene.
-- Token trên board dùng mặt thật thay cho chấm màu.
-- Biểu cảm runtime đã được test ở mức logic:
-  - nhận tiền / card → happy
-  - mất tiền / news → angry
-  - sau một khoảng ngắn quay về neutral
-- Badge màu P1/P2/P3/P4 vẫn giữ để dễ phân biệt khi token đứng chồng.
+### Face onboarding — MVP 0.1.1
+- Setup 4 người trước khi vào board.
+- Nhập tên riêng từng player.
+- 3 expression slots: `neutral`, `happy`, `angry`.
+- Neutral bắt buộc; expression thiếu fallback về neutral.
+- Ảnh được xử lý local bằng Canvas và center-crop thành sticker 256×256.
+- Face chỉ nằm trong memory của phiên chơi, không upload server ở MVP.
+- Token trên board dùng mặt thật.
+- Expression runtime thay đổi theo sự kiện rồi trở về neutral.
 
-## File chính
-
-- `src/core/session.ts` — runtime PlayerProfile + FaceAsset.
-- `src/systems/faces.ts` — xử lý ảnh thành sticker.
-- `src/scenes/SetupScene.ts` — UI nhập tên + chọn biểu cảm.
-- `src/scenes/BoardScene.ts` — render face token và đổi expression runtime.
-- `src/content/city/board_city_mvp.json` — board test data-driven.
-
-## Privacy hiện tại
-
-MVP **không gửi ảnh mặt lên server**. File được người chơi chọn, xử lý bằng Canvas trong browser và giữ dưới dạng data URL trong bộ nhớ phiên hiện tại.
-
-Đây là lựa chọn cố ý cho PoC, vừa đơn giản vừa tránh thiết kế backend/consent quá sớm.
+### Dynamic Card — MVP 0.1.2
+- Runtime model mới tại `src/core/cards.ts`.
+- Prototype data tại `src/content/core/card_prototype.json`.
+- Card đầu tiên dùng dữ liệu thật đã duyệt: `ACT_001 — Trượt Tay`.
+- Khi người chơi đáp xuống ô Lá Bài:
+  - chọn ngẫu nhiên 1 người chơi khác làm target;
+  - áp dụng effect ngay: lấy tối đa 10B$ từ target;
+  - caster dùng mặt `happy`, target dùng mặt `angry`;
+  - overlay card tự ghép đúng 2 mặt + 2 tên;
+  - face slot có `role`, `expression`, `x`, `y`, `size`, `rotation` trong data;
+  - overlay tự biến mất và **không khóa lượt kế tiếp**.
+- Renderer nằm tại `src/ui/CardOverlay.ts`.
 
 ## Chạy local
 
@@ -71,35 +62,55 @@ Kiểm tra build:
 npm run build
 ```
 
+CI GitHub Actions cũng chạy `npm run build` cho branch/PR.
+
+## Data hiện tại
+
+Board:
+
+`src/content/city/board_city_mvp.json`
+
+Card authoring snapshot:
+
+`data/cards/mvp_cards.json`
+
+Runtime enriched prototype:
+
+`src/content/core/card_prototype.json`
+
+Việc tách authoring data và runtime presentation metadata là chủ ý. `faceSlots` là metadata dành cho renderer, không tự sửa ngược vào spreadsheet gốc khi chưa chốt schema production.
+
 ## Chưa triển khai
 
-- camera capture trực tiếp;
-- face detection / auto background removal;
-- chỉnh crop bằng tay;
-- dynamic face slots trên artwork Lá Bài;
-- deck Lá Bài thật từ `data/cards`;
-- deck Tin Tức thật;
+- deck Lá Bài thật / weighted draw N-R-SR-SSR;
+- chọn target bằng UI;
+- các effect khác ngoài `steal_money`;
+- Tin Tức runtime;
 - Reaction / Personality / SFX;
+- camera capture;
 - ngã rẽ chẵn-lẻ;
 - Job / Pet / Minigame;
 - multiplayer online;
 - town-building.
 
-## Milestone kế tiếp
+## Milestone kế tiếp đề xuất
 
-**MVP 0.1.2 — Dynamic Card Face Slots**
+**MVP 0.1.3 — Card Deck + Target Picker**
 
 Mục tiêu:
+- đưa 4 lá đã có dữ liệu thật vào runtime (`ACT_001`, `ACT_006`, `ACT_010`, `ACT_012`);
+- weighted draw theo rarity/drop weight;
+- card cần target sẽ mở target picker nhanh;
+- implement các effect state đầu tiên;
+- giữ nguyên nguyên tắc effect resolve tách khỏi presentation.
 
-`Player A dùng card lên Player B → mở card overlay → lấy đúng mặt/cảm xúc của A + B → ghép runtime vào 2 face slots → hiện tên A/B → đóng overlay → turn flow tiếp tục.`
+Sau đó mới nối **Tin Tức + Auto Reaction** để hoàn thiện vertical slice.
 
-PoC đầu tiên chỉ cần 1 lá bài mẫu có 2 face slots. Khi pipeline này chạy ổn mới nối toàn bộ card data.
-
-## Nguyên tắc
+## Nguyên tắc bất biến
 
 Không mở rộng chiều sâu gameplay cho tới khi 4 thứ chạy mượt:
 
 1. Roll → Move → Trigger. ✅
-2. Face runtime. 🟡 đã có bản đầu, cần test thực tế.
-3. Card/News data-driven.
-4. Auto-reaction không block turn.
+2. Face runtime. ✅ bản PoC đã có.
+3. Card/News data-driven. 🟡 Card đã có prototype, News chưa.
+4. Auto-reaction không block turn. ⏳
