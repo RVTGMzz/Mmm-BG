@@ -34,7 +34,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • MVP 0.1.14', {
+    this.add.text(190, 47, 'FACE SETUP • DEMO MVP 0.1.15', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -43,7 +43,7 @@ export class SetupScene extends Phaser.Scene {
 
     const mode = browserSession.current.mode === 'host'
       ? `HOST LOCAL • ROOM ${browserSession.current.roomCode}`
-      : '4 người chơi → tên → biểu cảm → biến thành sticker trên bàn cờ';
+      : '4 người chơi → tên → biểu cảm → vào demo match 3 vòng';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -61,7 +61,7 @@ export class SetupScene extends Phaser.Scene {
           <p class="setup-hint"><strong>Ảnh 😐 là bắt buộc.</strong> 😆 và 😡 có thể thêm ngay; nếu để trống MVP sẽ dùng mặt 😐 làm fallback.</p>
           <p class="setup-privacy">🔒 Ảnh chỉ được xử lý trong trình duyệt và giữ trong bộ nhớ của phiên chơi này. MVP chưa upload ảnh lên server.</p>
         </div>
-        <button id="start-game" class="start-game-button" type="button">VÀO BÀN CỜ 🎲</button>
+        <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
       <p id="setup-status" class="setup-status">Thêm ít nhất một ảnh mặt thường cho cả 4 người.</p>
     `;
@@ -172,7 +172,7 @@ export class SetupScene extends Phaser.Scene {
       return;
     }
 
-    this.scene.start(browserSession.current.mode === 'host' ? 'NetworkBoardScene' : 'BoardScene');
+    this.scene.start('DemoBoardScene');
   }
 
   private refreshStatus(): void {
@@ -183,7 +183,7 @@ export class SetupScene extends Phaser.Scene {
     );
 
     if (neutralCount === 4) {
-      this.setStatus(`Sẵn sàng! Đã có ${expressionCount}/12 biểu cảm. Có thể vào bàn cờ.`, false);
+      this.setStatus(`Sẵn sàng! Đã có ${expressionCount}/12 biểu cảm. Có thể vào demo match.`, false);
       return;
     }
 
