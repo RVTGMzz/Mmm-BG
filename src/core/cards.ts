@@ -3,7 +3,7 @@ import type { PlayerState } from './types';
 
 export type CardRarity = 'N' | 'R' | 'SR' | 'SSR';
 export type CardFaceRole = 'caster' | 'target';
-export type CardTargetMode = 'single_other' | 'all_others';
+export type CardTargetMode = 'single_other' | 'random_other' | 'all_others';
 
 export interface CardFaceSlot {
   role: CardFaceRole;
@@ -76,6 +76,17 @@ export function drawWeightedCard(
 
 export function getValidTargets<T extends PlayerState>(players: T[], casterId: number): T[] {
   return players.filter((player) => player.id !== casterId);
+}
+
+export function pickRandomOtherTarget<T extends PlayerState>(
+  players: T[],
+  casterId: number,
+  random: () => number = Math.random,
+): T | undefined {
+  const candidates = getValidTargets(players, casterId);
+  if (candidates.length === 0) return undefined;
+  const index = Math.min(candidates.length - 1, Math.floor(random() * candidates.length));
+  return candidates[index];
 }
 
 function requiredTarget(target: PlayerState | undefined, card: CardDefinition): PlayerState {
