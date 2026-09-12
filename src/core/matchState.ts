@@ -18,6 +18,14 @@ export interface MatchEvent {
   data: Record<string, MatchEventValue>;
 }
 
+export interface MatchCommandEnvelope {
+  turnNumber: number;
+  playerIndex: number;
+  phase: TurnPhase;
+  revision: number;
+  preChecksum: string;
+}
+
 export interface MatchCommand {
   seq: number;
   type: MatchCommandType;
@@ -118,22 +126,33 @@ export function appendMatchEvent(
   return event;
 }
 
+export function captureMatchCommandEnvelope(match: MatchState): MatchCommandEnvelope {
+  return {
+    turnNumber: match.turn.turnNumber,
+    playerIndex: match.turn.currentPlayerIndex,
+    phase: match.turn.phase,
+    revision: match.turn.revision,
+    preChecksum: computeMatchChecksum(match),
+  };
+}
+
 export function appendMatchCommand(
   match: MatchState,
   type: MatchCommandType,
   actorId: number,
   data: Record<string, MatchEventValue> = {},
+  envelope: MatchCommandEnvelope = captureMatchCommandEnvelope(match),
 ): MatchCommand {
   const command: MatchCommand = {
     seq: match.nextCommandSeq,
     type,
-    turnNumber: match.turn.turnNumber,
-    playerIndex: match.turn.currentPlayerIndex,
+    turnNumber: envelope.turnNumber,
+    playerIndex: envelope.playerIndex,
     actorId,
     data,
-    phase: match.turn.phase,
-    revision: match.turn.revision,
-    preChecksum: computeMatchChecksum(match),
+    phase: envelope.phase,
+    revision: envelope.revision,
+    preChecksum: envelope.preChecksum,
   };
 
   match.nextCommandSeq += 1;
@@ -159,7 +178,7 @@ export function serializeMatchState(match: MatchState): string {
 
 function legacyPhaseForCommand(type: MatchCommandType): TurnPhase {
   if (type === 'choose_branch') return 'BRANCH_CHOICE';
-  if (type === 'play_card') return 'CARD_ACTION';
+  if (type === 'play_card') return 'PRE_ROLL_ACTION';
   return 'PRE_ROLL_ACTION';
 }
 
