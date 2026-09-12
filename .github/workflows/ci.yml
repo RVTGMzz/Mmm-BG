@@ -41,3 +41,6 @@ jobs:
 
       - name: Client intent host authority protocol
         run: npm run test:authority
+
+      - name: Two-tab local browser session core
+        run: npm run test:two-tab
