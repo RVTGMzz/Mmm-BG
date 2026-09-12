@@ -30,6 +30,11 @@ import {
 } from '../core/rules';
 import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
+import {
+  TURN_PHASE_LABELS,
+  TurnPhaseMachine,
+  type TurnPhase,
+} from '../core/turnPhase';
 import type {
   BoardDefinition,
   BoardEdge,
@@ -72,14 +77,15 @@ const TOKEN_OFFSETS = [
 
 export class BoardScene extends Phaser.Scene {
   private readonly turn = new TurnManager(4);
+  private readonly phase = new TurnPhaseMachine();
   private readonly players: VisualPlayer[] = [];
-  private rolling = false;
-  private actionBusy = false;
   private diceText!: Phaser.GameObjects.Text;
   private turnText!: Phaser.GameObjects.Text;
+  private phaseText!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private logText!: Phaser.GameObjects.Text;
   private rollButton!: Phaser.GameObjects.Rectangle;
+  private rollButtonText!: Phaser.GameObjects.Text;
   private handButton!: Phaser.GameObjects.Rectangle;
   private handButtonText!: Phaser.GameObjects.Text;
   private logs: string[] = [];
@@ -109,7 +115,8 @@ export class BoardScene extends Phaser.Scene {
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1.6: board graph + ngã rẽ data-driven đã hoạt động 🛣️');
+    this.openPreRollWindow();
+    this.writeLog('MVP 0.1.7: turn phase state machine + safe action windows đã hoạt động ⏱️');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -131,14 +138,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.6', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.7', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Board graph • 1 ngã rẽ thật • card/news/reaction giữ nguyên runtime', {
+    this.add.text(178, 77, 'Turn phase state machine • safe action windows • graph/card/news runtime giữ nguyên', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -254,10 +261,10 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.add.rectangle(640, 365, 390, 300, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
+    this.add.rectangle(640, 365, 390, 310, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
 
     this.turnText = this.add
-      .text(640, 267, '', {
+      .text(640, 255, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '23px',
         fontStyle: 'bold',
@@ -265,8 +272,19 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    this.phaseText = this.add
+      .text(640, 286, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '11px',
+        fontStyle: 'bold',
+        color: '#795796',
+        backgroundColor: '#f1e6f8',
+        padding: { x: 8, y: 4 },
+      })
+      .setOrigin(0.5);
+
     this.diceText = this.add
-      .text(640, 316, '🎲  ?', {
+      .text(640, 328, '🎲  ?', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '34px',
         color: '#202020',
@@ -274,12 +292,12 @@ export class BoardScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.rollButton = this.add
-      .rectangle(640, 375, 220, 52, 0xef4545, 1)
+      .rectangle(640, 382, 220, 50, 0xef4545, 1)
       .setStrokeStyle(4, 0x242424, 1)
       .setInteractive({ useHandCursor: true });
 
-    this.add
-      .text(640, 375, 'ĐỔ XÚC XẮC', {
+    this.rollButtonText = this.add
+      .text(640, 382, 'ĐỔ XÚC XẮC', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '18px',
         fontStyle: 'bold',
@@ -288,12 +306,12 @@ export class BoardScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.handButton = this.add
-      .rectangle(640, 440, 220, 52, 0xb997d6, 1)
+      .rectangle(640, 444, 220, 50, 0xb997d6, 1)
       .setStrokeStyle(4, 0x242424, 1)
       .setInteractive({ useHandCursor: true });
 
     this.handButtonText = this.add
-      .text(640, 440, 'LÁ BÀI 0/3', {
+      .text(640, 444, 'LÁ BÀI 0/3', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '17px',
         fontStyle: 'bold',
@@ -309,7 +327,7 @@ export class BoardScene extends Phaser.Scene {
     });
 
     this.add
-      .text(640, 487, 'SPACE: roll • C: mở tay bài', {
+      .text(640, 489, 'SPACE: roll • C: mở tay bài', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '12px',
         color: '#756d62',
@@ -335,31 +353,42 @@ export class BoardScene extends Phaser.Scene {
     });
   }
 
-  private async handleRoll(): Promise<void> {
-    if (this.rolling || this.actionBusy) return;
+  private openPreRollWindow(): void {
+    this.transitionPhase('PRE_ROLL_ACTION');
+  }
 
-    this.rolling = true;
-    this.rollButton.setFillStyle(0xb8ada1, 1);
+  private transitionPhase(next: TurnPhase): void {
+    this.phase.transition(next);
+    this.refreshHud();
+  }
+
+  private async handleRoll(): Promise<void> {
+    if (!this.phase.can('roll')) return;
 
     const player = this.players[this.turn.currentIndex];
     this.setPlayerExpression(player, 'neutral');
+    this.transitionPhase('ROLLING');
 
     const result = rollD6();
     this.diceText.setText(`🎲  ${result}`);
     this.writeLog(`${player.name} đổ được ${result}.`);
 
+    this.transitionPhase('MOVING');
     await this.movePlayer(player, result);
-    this.resolveTile(player);
-    this.finishTurn(player);
 
+    this.transitionPhase('RESOLVING_TILE');
+    this.resolveTile(player);
+
+    this.transitionPhase('TURN_END');
+    this.finishTurn(player);
     this.turn.next();
-    this.rolling = false;
-    this.rollButton.setFillStyle(0xef4545, 1);
-    this.refreshHud();
+
+    this.transitionPhase('TURN_START');
+    this.openPreRollWindow();
   }
 
   private async handleUseCard(): Promise<void> {
-    if (this.rolling || this.actionBusy) return;
+    if (!this.phase.can('use_card')) return;
 
     const caster = this.players[this.turn.currentIndex];
     if (caster.cardBlockTurns > 0) {
@@ -381,9 +410,7 @@ export class BoardScene extends Phaser.Scene {
       return;
     }
 
-    this.actionBusy = true;
-    this.rollButton.setFillStyle(0xb8ada1, 1);
-    this.handButton.setFillStyle(0xb8ada1, 1);
+    this.transitionPhase('CARD_ACTION');
 
     try {
       const selection = await showCardHandPicker(this, caster, caster.handCardIds, CARDS);
@@ -406,9 +433,9 @@ export class BoardScene extends Phaser.Scene {
       caster.cardsPlayedThisTurn += 1;
       this.presentCardResolution(caster, card, resolution, target);
     } finally {
-      this.actionBusy = false;
-      this.rollButton.setFillStyle(0xef4545, 1);
-      this.refreshHud();
+      if (this.phase.is('CARD_ACTION')) {
+        this.transitionPhase('PRE_ROLL_ACTION');
+      }
     }
   }
 
@@ -452,21 +479,29 @@ export class BoardScene extends Phaser.Scene {
   ): Promise<BoardEdge> {
     if (outgoing.length === 1) return outgoing[0];
 
-    if (MVP_BRANCH_DECISION_MODE === 'odd_even') {
-      const selected = pickParityEdge(outgoing, roll) ?? outgoing[0];
-      const parity = roll % 2 === 0 ? 'CHẴN' : 'LẺ';
-      this.flashCenter(`🛣️ ${parity} → ${selected.label ?? `NODE ${selected.to}`}`, '#795796');
-      this.writeLog(`${player.name} gặp ngã rẽ: roll ${parity}, đi ${selected.label ?? selected.to}.`);
-      return selected;
-    }
+    this.transitionPhase('BRANCH_CHOICE');
 
-    const options = outgoing.map((edge) => ({
-      edge,
-      destination: getBoardNode(BOARD, edge.to),
-    }));
-    const selected = await showBranchPicker(this, player, options, roll);
-    this.writeLog(`${player.name} chọn ${selected.label ?? `đường tới node ${selected.to}`}.`);
-    return selected;
+    try {
+      if (MVP_BRANCH_DECISION_MODE === 'odd_even') {
+        const selected = pickParityEdge(outgoing, roll) ?? outgoing[0];
+        const parity = roll % 2 === 0 ? 'CHẴN' : 'LẺ';
+        this.flashCenter(`🛣️ ${parity} → ${selected.label ?? `NODE ${selected.to}`}`, '#795796');
+        this.writeLog(`${player.name} gặp ngã rẽ: roll ${parity}, đi ${selected.label ?? selected.to}.`);
+        return selected;
+      }
+
+      const options = outgoing.map((edge) => ({
+        edge,
+        destination: getBoardNode(BOARD, edge.to),
+      }));
+      const selected = await showBranchPicker(this, player, options, roll);
+      this.writeLog(`${player.name} chọn ${selected.label ?? `đường tới node ${selected.to}`}.`);
+      return selected;
+    } finally {
+      if (this.phase.is('BRANCH_CHOICE')) {
+        this.transitionPhase('MOVING');
+      }
+    }
   }
 
   private resolveTile(player: VisualPlayer): void {
@@ -670,8 +705,12 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private refreshHud(): void {
+    if (!this.turnText || this.players.length === 0) return;
+
     const current = this.players[this.turn.currentIndex];
+    const phaseLabel = TURN_PHASE_LABELS[this.phase.phase];
     this.turnText.setText(`Lượt: ${current.name}`);
+    this.phaseText.setText(`${phaseLabel} • rev ${this.phase.revision}`);
 
     this.scoreText.setText(
       this.players
@@ -685,13 +724,21 @@ export class BoardScene extends Phaser.Scene {
         .join('\n'),
     );
 
-    this.handButtonText.setText(`LÁ BÀI ${current.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`);
+    const canRoll = this.phase.can('roll');
+    this.rollButton.setFillStyle(canRoll ? 0xef4545 : 0xb8ada1, 1);
+    this.rollButtonText.setText(canRoll ? 'ĐỔ XÚC XẮC' : phaseLabel);
+    this.rollButtonText.setFontSize(canRoll ? 18 : 12);
 
     const cardLocked = current.cardBlockTurns > 0;
     const cardLimitReached = current.cardsPlayedThisTurn >= MVP_MAX_CARD_PLAYS_PER_TURN;
     const hasCards = current.handCardIds.length > 0;
+    const canUseCard = this.phase.can('use_card');
 
-    if (cardLocked) {
+    this.handButtonText.setText(`LÁ BÀI ${current.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`);
+
+    if (!canUseCard) {
+      this.handButton.setFillStyle(0xb8ada1, 1);
+    } else if (cardLocked) {
       this.handButton.setFillStyle(0xb8ada1, 1);
       this.handButtonText.setText(`🔒 LÁ BÀI ${current.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`);
     } else if (cardLimitReached) {
