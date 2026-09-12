@@ -1,4 +1,7 @@
 export type FaceExpression = 'neutral' | 'happy' | 'angry';
+export type PersonalityTag = 'mean' | 'whiny' | 'gossip' | 'chill';
+
+const DEFAULT_PERSONALITIES: PersonalityTag[] = ['mean', 'whiny', 'gossip', 'chill'];
 
 export interface FaceAsset {
   dataUrl: string;
@@ -9,6 +12,7 @@ export interface FaceAsset {
 export interface PlayerProfile {
   id: number;
   name: string;
+  personality: PersonalityTag;
   faces: Partial<Record<FaceExpression, FaceAsset>>;
 }
 
@@ -23,6 +27,7 @@ class GameSession {
     this.players = Array.from({ length: 4 }, (_, id) => ({
       id,
       name: `Player ${id + 1}`,
+      personality: DEFAULT_PERSONALITIES[id % DEFAULT_PERSONALITIES.length],
       faces: {},
     }));
   }
@@ -31,6 +36,16 @@ class GameSession {
     const player = this.players[playerId];
     if (!player) return;
     player.name = name.trim() || `Player ${playerId + 1}`;
+  }
+
+  setPersonality(playerId: number, personality: PersonalityTag): void {
+    const player = this.players[playerId];
+    if (!player) return;
+    player.personality = personality;
+  }
+
+  getPersonality(playerId: number): PersonalityTag {
+    return this.players[playerId]?.personality ?? 'chill';
   }
 
   setFace(playerId: number, expression: FaceExpression, asset: FaceAsset): void {

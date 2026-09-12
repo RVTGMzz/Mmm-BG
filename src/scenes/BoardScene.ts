@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import cardsJson from '../content/core/cards_mvp.json';
+import newsJson from '../content/core/news_mvp_demo.json';
+import reactionsJson from '../content/core/reactions_mvp_demo.json';
 import boardJson from '../content/city/board_city_mvp.json';
 import {
   applyCardEffect,
@@ -8,10 +10,18 @@ import {
   type CardDefinition,
 } from '../core/cards';
 import { rollD6 } from '../core/dice';
+import {
+  applyNewsEffect,
+  drawWeightedNews,
+  type NewsDefinition,
+} from '../core/news';
+import type { ReactionContext, ReactionEventDefinition } from '../core/reactions';
 import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
 import type { BoardDefinition, BoardNode, PlayerState, TileType } from '../core/types';
 import { showDynamicCard } from '../ui/CardOverlay';
+import { showDynamicNews } from '../ui/NewsOverlay';
+import { playReactionSequence } from '../ui/ReactionSequencer';
 import { showTargetPicker } from '../ui/TargetPicker';
 
 type VisualPlayer = PlayerState & {
@@ -21,6 +31,8 @@ type VisualPlayer = PlayerState & {
 
 const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
+const NEWS = newsJson as NewsDefinition[];
+const REACTIONS = reactionsJson as ReactionEventDefinition[];
 
 const TILE_COLORS: Record<TileType, number> = {
   ready: 0xef4545,
@@ -69,7 +81,7 @@ export class BoardScene extends Phaser.Scene {
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1.3: weighted deck + Target Picker đã hoạt động 🃏');
+    this.writeLog('MVP 0.1.4: Tin Tức + Reaction Sequencer đã hoạt động 📰💬');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -88,14 +100,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.3', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.4', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, '4 Lá Bài thật • weighted draw • target picker • effect state', {
+    this.add.text(178, 77, 'Lá Bài + Tin Tức data-driven • auto reaction không block turn', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -316,9 +328,7 @@ export class BoardScene extends Phaser.Scene {
         break;
       }
       case 'news':
-        this.setPlayerExpression(player, 'angry', 900);
-        this.writeLog(`${player.name} chạm TIN TỨC. Runtime Tin Tức sẽ là milestone sau deck Lá Bài.`);
-        this.flashCenter('📰 TIN TỨC!', '#6aa84f');
+        this.resolveNewsTile(player);
         break;
       case 'card':
         await this.resolveCardTile(player);
@@ -330,6 +340,39 @@ export class BoardScene extends Phaser.Scene {
         this.writeLog(`${player.name} đáp xuống ô thường.`);
         break;
     }
+  }
+
+  private resolveNewsTile(subject: VisualPlayer): void {
+    const news = drawWeightedNews(NEWS);
+    if (!news) {
+      this.writeLog('Deck Tin Tức demo không có entry hợp lệ.');
+      return;
+    }
+
+    const resolution = applyNewsEffect(news, subject, this.players);
+    for (const player of this.players) {
+      const delta = resolution.deltas[player.id] ?? 0;
+      if (delta > 0) this.setPlayerExpression(player, 'happy', 1500);
+      if (delta < 0) this.setPlayerExpression(player, 'angry', 1500);
+    }
+
+    const subjectDelta = resolution.deltas[subject.id] ?? 0;
+    const subjectExpression: FaceExpression = subjectDelta > 0 ? 'happy' : subjectDelta < 0 ? 'angry' : 'neutral';
+    showDynamicNews(this, news, subject, resolution.summary, subjectExpression);
+
+    const spectator = this.pickSpectator([subject.id]);
+    this.runReaction(news.reactionEventId, {
+      subject,
+      spectator,
+      variables: {
+        subject: subject.name,
+        news: news.title,
+        amount: resolution.amount ?? 0,
+      },
+    });
+
+    this.writeLog(`📰 ${news.rarity} ${news.title}: ${resolution.summary}`);
+    this.refreshHud();
   }
 
   private async resolveCardTile(caster: VisualPlayer): Promise<void> {
@@ -368,8 +411,47 @@ export class BoardScene extends Phaser.Scene {
     }
 
     showDynamicCard(this, card, caster, target, resolution.summary);
+
+    const primaryTarget =
+      target ??
+      this.players.find(
+        (player) => player.id !== caster.id && resolution.affectedPlayerIds.includes(player.id),
+      );
+    const spectator = this.pickSpectator([
+      caster.id,
+      ...(primaryTarget ? [primaryTarget.id] : []),
+    ]);
+
+    this.runReaction('CARD_ATTACK_DEMO', {
+      caster,
+      target: primaryTarget,
+      spectator,
+      variables: {
+        caster: caster.name,
+        target: primaryTarget?.name ?? 'cả bàn',
+        card: card.title,
+        amount: resolution.amount ?? 0,
+      },
+    });
+
     this.writeLog(`🃏 ${card.rarity} ${card.title}: ${resolution.summary}`);
     this.refreshHud();
+  }
+
+  private runReaction(eventId: string | undefined, context: ReactionContext): void {
+    if (!eventId) return;
+    const event = REACTIONS.find((entry) => entry.id === eventId);
+    if (!event) {
+      this.writeLog(`Reaction event ${eventId} chưa có data.`);
+      return;
+    }
+    playReactionSequence(this, event, context);
+  }
+
+  private pickSpectator(excludedIds: number[]): VisualPlayer | undefined {
+    const candidates = this.players.filter((player) => !excludedIds.includes(player.id));
+    if (candidates.length === 0) return undefined;
+    return candidates[Math.floor(Math.random() * candidates.length)];
   }
 
   private finishTurn(player: VisualPlayer): void {
@@ -436,7 +518,8 @@ export class BoardScene extends Phaser.Scene {
         .map((player, index) => {
           const marker = index === this.turn.currentIndex ? '▶' : ' ';
           const lock = player.cardBlockTurns > 0 ? `  🔒${player.cardBlockTurns}` : '';
-          return `${marker} ${this.shortName(player.name)}  ${player.money}B$${lock}  • ô ${player.tileIndex}`;
+          const personality = gameSession.getPersonality(player.id);
+          return `${marker} ${this.shortName(player.name)}  ${player.money}B$${lock}  • ${personality} • ô ${player.tileIndex}`;
         })
         .join('\n'),
     );

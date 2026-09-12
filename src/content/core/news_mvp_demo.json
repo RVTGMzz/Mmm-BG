@@ -1,0 +1,35 @@
+[
+  {
+    "id": "NEWS_DEMO_001",
+    "title": "Hoàn Tiền Bất Ngờ",
+    "rarity": "N",
+    "dropWeight": 600,
+    "impact": "⭐",
+    "description": "Một khoản hoàn tiền trời cho rơi đúng vào ví của bạn.",
+    "targetMode": "self",
+    "effect": { "type": "money_delta_self", "amount": 60 },
+    "reactionEventId": "NEWS_POSITIVE_DEMO"
+  },
+  {
+    "id": "NEWS_DEMO_002",
+    "title": "Ví Bay Màu",
+    "rarity": "R",
+    "dropWeight": 300,
+    "impact": "⭐⭐",
+    "description": "Một khoản phí không ai nhớ đã đăng ký bỗng dưng trừ tiền.",
+    "targetMode": "self",
+    "effect": { "type": "money_delta_self", "amount": -80 },
+    "reactionEventId": "NEWS_NEGATIVE_DEMO"
+  },
+  {
+    "id": "NEWS_DEMO_003",
+    "title": "Hóa Đơn Cả Nhóm",
+    "rarity": "SR",
+    "dropWeight": 100,
+    "impact": "⭐⭐⭐",
+    "description": "Cả nhóm bị réo tên trong một chiếc hóa đơn không ai muốn nhận.",
+    "targetMode": "all_players",
+    "effect": { "type": "money_delta_all", "amount": -40 },
+    "reactionEventId": "NEWS_GROUP_DEMO"
+  }
+]

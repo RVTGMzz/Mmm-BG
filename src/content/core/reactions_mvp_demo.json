@@ -1,0 +1,157 @@
+[
+  {
+    "id": "CARD_ATTACK_DEMO",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "caster",
+        "expression": "happy",
+        "durationMs": 1700,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "{target} ơi, xin nhẹ tí nha 😌", "sfxId": "sfx_laugh_short" },
+          { "personalityTag": "whiny", "text": "Tui cũng đâu muốn làm vậy đâu… mà game bắt 😭", "sfxId": "sfx_whine_short" },
+          { "personalityTag": "gossip", "text": "Tin nóng: {target} vừa dính đòn nha 👀", "sfxId": "sfx_gasp_short" },
+          { "personalityTag": "chill", "text": "Rồi, xử lý gọn một phát.", "sfxId": "sfx_pop_short" }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 700,
+        "speakerRole": "target",
+        "expression": "angry",
+        "durationMs": 1750,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ủa? Gan dữ ta. Nhớ đó.", "sfxId": "sfx_grumble_short" },
+          { "personalityTag": "whiny", "text": "Ủa alo, sao lại là tui nữa?!", "sfxId": "sfx_whine_short" },
+          { "personalityTag": "gossip", "text": "Được, vụ này lát tui kể hết.", "sfxId": "sfx_gasp_short" },
+          { "personalityTag": "chill", "text": "Rồi, ghi sổ.", "sfxId": "sfx_sigh_short" }
+        ]
+      },
+      {
+        "sequence": 3,
+        "delayMs": 1400,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1450,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Đánh tiếp đi, đang vui 😏", "sfxId": "sfx_laugh_short" },
+          { "personalityTag": "whiny", "text": "May quá chưa tới lượt tui…", "sfxId": "sfx_relief_short" },
+          { "personalityTag": "gossip", "text": "Có biến, có biến 👀", "sfxId": "sfx_gasp_short" },
+          { "personalityTag": "chill", "text": "Ừm, ván này bắt đầu nóng rồi.", "sfxId": "sfx_pop_short" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "NEWS_POSITIVE_DEMO",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "subject",
+        "expression": "happy",
+        "durationMs": 1650,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "+{amount}B$ thôi mà, đừng nhìn dữ vậy 😌" },
+          { "personalityTag": "whiny", "text": "Cuối cùng game cũng thương tui một lần!" },
+          { "personalityTag": "gossip", "text": "Khoan để tui chụp lại khoảnh khắc này." },
+          { "personalityTag": "chill", "text": "Có thêm {amount}B$. Ổn áp." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 700,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1450,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Hên thôi nha {subject}." },
+          { "personalityTag": "whiny", "text": "Ủa sao người ta có còn tui không có?!" },
+          { "personalityTag": "gossip", "text": "Tin nóng: {subject} vừa giàu lên." },
+          { "personalityTag": "chill", "text": "Có lộc thì giữ đi." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "NEWS_NEGATIVE_DEMO",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "subject",
+        "expression": "angry",
+        "durationMs": 1700,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ai trừ {amount}B$ của tui thì bước ra đây." },
+          { "personalityTag": "whiny", "text": "Biết ngay mà! Sao xui hoài vậy trời?!" },
+          { "personalityTag": "gossip", "text": "Vụ mất {amount}B$ này có mùi nha." },
+          { "personalityTag": "chill", "text": "Mất {amount}B$. Thôi, đi tiếp." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 700,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1500,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Đau ví chưa {subject}? 😏" },
+          { "personalityTag": "whiny", "text": "Nhìn thôi tui cũng thấy đau giùm." },
+          { "personalityTag": "gossip", "text": "Để tui cập nhật bản tin tài chính của {subject}." },
+          { "personalityTag": "chill", "text": "Còn tiền là còn gỡ." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "NEWS_GROUP_DEMO",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "subject",
+        "expression": "angry",
+        "durationMs": 1700,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ủa sao hóa đơn này kéo cả làng xuống vậy?" },
+          { "personalityTag": "whiny", "text": "Tui có làm gì đâu mà cũng phải trả?!" },
+          { "personalityTag": "gossip", "text": "Tin chấn động: cả bàn cùng bay tiền." },
+          { "personalityTag": "chill", "text": "Cả nhóm cùng mất thì coi như công bằng." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 700,
+        "speakerRole": "spectator",
+        "expression": "angry",
+        "durationMs": 1550,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ai ký cái hóa đơn này vậy?!" },
+          { "personalityTag": "whiny", "text": "Khônggg, tiền của tui 😭" },
+          { "personalityTag": "gossip", "text": "Đoàn kết trong đau khổ nha cả nhà." },
+          { "personalityTag": "chill", "text": "Rồi, cả bàn cùng nghèo một chút." }
+        ]
+      }
+    ]
+  }
+]
