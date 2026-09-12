@@ -178,7 +178,6 @@ export function serializeMatchState(match: MatchState): string {
 
 function legacyPhaseForCommand(type: MatchCommandType): TurnPhase {
   if (type === 'choose_branch') return 'BRANCH_CHOICE';
-  if (type === 'play_card') return 'PRE_ROLL_ACTION';
   return 'PRE_ROLL_ACTION';
 }
 
@@ -200,7 +199,7 @@ export function deserializeMatchState(serialized: string): MatchState {
   }
 
   if (parsed.schemaVersion === 2) {
-    const legacy = parsed as Omit<MatchState, 'schemaVersion'> & { schemaVersion: 2 };
+    const legacy = parsed as unknown as Omit<MatchState, 'schemaVersion'> & { schemaVersion: 2 };
     const commandLog = migrateLegacyCommands(legacy.commandLog);
     return {
       ...legacy,
@@ -211,7 +210,7 @@ export function deserializeMatchState(serialized: string): MatchState {
   }
 
   if (parsed.schemaVersion === 1) {
-    const legacy = parsed as Partial<MatchState> & {
+    const legacy = parsed as unknown as {
       boardId: string;
       seed: number;
       rng: SerializableRngState;
