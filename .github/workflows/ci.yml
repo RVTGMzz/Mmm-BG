@@ -38,3 +38,6 @@ jobs:
 
       - name: Host client queue and snapshot resync
         run: npm run test:host-client
+
+      - name: Client intent host authority protocol
+        run: npm run test:authority
