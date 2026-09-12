@@ -1,0 +1,4 @@
+Reaction_Event_ID,Variant_ID,Sequence,Delay_ms,Speaker_Role,Personality_Tag,Emotion,Text_Key,SFX_ID,Duration_ms,Can_Overlap,Blocking
+CARD_ATTACK_DEMO,V01,1,0,caster,mean,positive,reaction.card_attack.caster.v01,sfx_laugh_short,1800,true,false
+CARD_ATTACK_DEMO,V01,2,700,target,whiny,negative,reaction.card_attack.target.v01,sfx_whine_short,1800,true,false
+CARD_ATTACK_DEMO,V01,3,1400,spectator,gossip,positive,reaction.card_attack.spectator.v01,sfx_gasp_short,1400,true,false
