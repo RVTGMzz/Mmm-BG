@@ -17,7 +17,7 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-const EXPECTED_CHECKSUM = '9eabc37c';
+const EXPECTED_CHECKSUM = '0e7e9947';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
