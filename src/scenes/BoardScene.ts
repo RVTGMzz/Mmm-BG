@@ -13,15 +13,19 @@ import {
   applyCardEffect,
   drawWeightedCard,
   getValidTargets,
+  pickRandomOtherTarget,
   type CardDefinition,
   type CardResolution,
 } from '../core/cards';
 import { computeMatchChecksum } from '../core/checksum';
+import { summarizeMatchStateDiffs } from '../core/desync';
 import { rollD6 } from '../core/dice';
+import { simulateLockstepPeers } from '../core/lockstep';
 import {
   advanceMatchTurn,
   appendMatchCommand,
   appendMatchEvent,
+  captureMatchCommandEnvelope,
   createInitialMatchState,
   deserializeMatchState,
   serializeMatchState,
@@ -150,7 +154,7 @@ export class BoardScene extends Phaser.Scene {
     this.openPreRollWindow();
 
     const snapshotBytes = serializeMatchState(this.match).length;
-    this.writeLog(`MVP 0.1.9: snapshot restore + command replay đã hoạt động 🧬 (${snapshotBytes} chars)`);
+    this.writeLog(`MVP 0.1.11: lockstep envelopes + random target đã hoạt động 🔐 (${snapshotBytes} chars)`);
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -167,6 +171,9 @@ export class BoardScene extends Phaser.Scene {
     });
     this.input.keyboard?.on('keydown-V', () => {
       this.verifyReplay();
+    });
+    this.input.keyboard?.on('keydown-P', () => {
+      this.verifyPeers();
     });
   }
 
@@ -190,14 +197,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.9', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.11', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Snapshot Restore • Action Replay • deterministic checksum • seeded runtime', {
+    this.add.text(178, 77, 'Lockstep envelopes • peer verify • deterministic random target • seeded runtime', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -371,7 +378,7 @@ export class BoardScene extends Phaser.Scene {
     });
 
     this.add
-      .text(640, 489, 'SPACE roll • C cards • S save • L load • V verify replay', {
+      .text(640, 489, 'SPACE roll • C cards • S save • L load • V replay • P peers', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '11px',
         color: '#756d62',
@@ -476,6 +483,7 @@ export class BoardScene extends Phaser.Scene {
       return;
     }
 
+    const commandEnvelope = captureMatchCommandEnvelope(this.match);
     this.transitionPhase('CARD_ACTION');
 
     try {
@@ -498,12 +506,21 @@ export class BoardScene extends Phaser.Scene {
         }
       }
 
-      appendMatchCommand(
+      const command = appendMatchCommand(
         this.match,
         'play_card',
         caster.id,
         { cardId: card.id, targetId: target?.id ?? -1 },
+        commandEnvelope,
       );
+
+      if (card.targetMode === 'random_other') {
+        target = pickRandomOtherTarget(this.players, caster.id, this.random);
+        if (!target) throw new Error(`Card ${card.id} không có random target hợp lệ.`);
+        command.data.targetId = target.id;
+        this.writeLog(`🎯 ${card.title} ngẫu nhiên chọn ${target.name}.`);
+      }
+
       const resolution = applyCardEffect(card, caster, this.players, target);
       caster.handCardIds.splice(handIndex, 1);
       caster.cardsPlayedThisTurn += 1;
@@ -869,6 +886,7 @@ export class BoardScene extends Phaser.Scene {
       replayChecksum,
       consumed: replay.consumedCommands,
       commands: this.match.commandLog.length,
+      failedCommandSeq: replay.failedCommandSeq ?? -1,
     });
 
     if (pass) {
@@ -877,7 +895,37 @@ export class BoardScene extends Phaser.Scene {
     } else {
       this.flashCenter('🧬 REPLAY MISMATCH', '#c34a44');
       this.writeLog(
-        `🧬 FAIL • live ${liveChecksum} / replay ${replayChecksum} • ${replay.errors[0] ?? 'command count mismatch'}`,
+        `🧬 FAIL${replay.failedCommandSeq ? ` @cmd #${replay.failedCommandSeq}` : ''} • live ${liveChecksum} / replay ${replayChecksum} • ${replay.errors[0] ?? 'command count mismatch'}`,
+      );
+    }
+    this.refreshHud();
+  }
+
+  private verifyPeers(): void {
+    if (!this.phase.is('PRE_ROLL_ACTION')) {
+      this.flashCenter('🔐 PEER VERIFY Ở CỬA SỔ PRE-ROLL', '#795796');
+      return;
+    }
+
+    const result = simulateLockstepPeers(this.match, BOARD, CARDS, NEWS);
+    appendMatchEvent(this.match, 'lockstep_verify', {
+      pass: result.pass,
+      peerAChecksum: result.peerAChecksum,
+      peerBChecksum: result.peerBChecksum,
+      firstDesyncCommandSeq: result.firstDesyncCommandSeq ?? -1,
+      diffCount: result.diffs.length,
+    });
+
+    if (result.pass) {
+      this.flashCenter(`🔐 PEERS SYNC ${result.peerAChecksum}`, '#3d8b5f');
+      this.writeLog(`🔐 PASS • 2 peer độc lập • ${result.peerA.checkpoints.length} command checkpoints.`);
+    } else {
+      const details = result.diffs.length > 0
+        ? summarizeMatchStateDiffs(result.peerA.state, result.peerB.state, 2).join(' | ')
+        : result.peerA.errors[0] ?? result.peerB.errors[0] ?? 'checkpoint mismatch';
+      this.flashCenter('🔐 PEER DESYNC', '#c34a44');
+      this.writeLog(
+        `🔐 FAIL${result.firstDesyncCommandSeq ? ` @cmd #${result.firstDesyncCommandSeq}` : ''} • ${details}`,
       );
     }
     this.refreshHud();
