@@ -18,18 +18,25 @@ import {
 } from '../core/cards';
 import { rollD6 } from '../core/dice';
 import {
+  advanceMatchTurn,
+  appendMatchEvent,
+  createInitialMatchState,
+  serializeMatchState,
+  type MatchState,
+} from '../core/matchState';
+import {
   applyNewsEffect,
   drawWeightedNews,
   type NewsDefinition,
 } from '../core/news';
 import type { ReactionContext, ReactionEventDefinition } from '../core/reactions';
+import { createRandomSource } from '../core/rng';
 import {
   MVP_BRANCH_DECISION_MODE,
   MVP_CARD_HAND_LIMIT,
   MVP_MAX_CARD_PLAYS_PER_TURN,
 } from '../core/rules';
 import { gameSession, type FaceExpression } from '../core/session';
-import { TurnManager } from '../core/turn';
 import {
   TURN_PHASE_LABELS,
   TurnPhaseMachine,
@@ -49,7 +56,7 @@ import { showDynamicNews } from '../ui/NewsOverlay';
 import { playReactionSequence } from '../ui/ReactionSequencer';
 import { showTargetPicker } from '../ui/TargetPicker';
 
-type VisualPlayer = PlayerState & {
+type PlayerVisual = {
   token: Phaser.GameObjects.Container;
   face?: Phaser.GameObjects.Image;
 };
@@ -76,9 +83,11 @@ const TOKEN_OFFSETS = [
 ];
 
 export class BoardScene extends Phaser.Scene {
-  private readonly turn = new TurnManager(4);
-  private readonly phase = new TurnPhaseMachine();
-  private readonly players: VisualPlayer[] = [];
+  private match!: MatchState;
+  private phase!: TurnPhaseMachine;
+  private random!: () => number;
+  private players: PlayerState[] = [];
+  private readonly visuals = new Map<number, PlayerVisual>();
   private diceText!: Phaser.GameObjects.Text;
   private turnText!: Phaser.GameObjects.Text;
   private phaseText!: Phaser.GameObjects.Text;
@@ -110,13 +119,33 @@ export class BoardScene extends Phaser.Scene {
       throw new Error(`Invalid board graph:\n${graphErrors.join('\n')}`);
     }
 
+    this.match = createInitialMatchState({
+      boardId: BOARD.id,
+      startNodeId: BOARD.startNodeId,
+      playerNames: gameSession.players.map((profile, index) => profile.name || `Player ${index + 1}`),
+      seed: this.resolveSeed(),
+    });
+    this.players = this.match.players;
+    this.phase = new TurnPhaseMachine(this.match.turn);
+    this.random = createRandomSource(this.match.rng);
+    this.visuals.clear();
+    this.logs = [];
+
+    appendMatchEvent(this.match, 'match_start', {
+      boardId: BOARD.id,
+      seed: this.match.seed,
+      playerCount: this.players.length,
+    });
+
     this.cameras.main.setBackgroundColor('#f4ead7');
     this.drawHeader();
     this.drawBoard();
     this.createPlayers();
     this.createHud();
     this.openPreRollWindow();
-    this.writeLog('MVP 0.1.7: turn phase state machine + safe action windows đã hoạt động ⏱️');
+
+    const snapshotBytes = serializeMatchState(this.match).length;
+    this.writeLog(`MVP 0.1.8: match state JSON + seeded RNG đã hoạt động 🎯 (${snapshotBytes} chars)`);
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -125,6 +154,15 @@ export class BoardScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-C', () => {
       void this.handleUseCard();
     });
+  }
+
+  private resolveSeed(): number {
+    const raw = new URLSearchParams(window.location.search).get('seed');
+    if (raw !== null) {
+      const parsed = Number(raw);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return Date.now();
   }
 
   private drawHeader(): void {
@@ -138,14 +176,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.7', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.8', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Turn phase state machine • safe action windows • graph/card/news runtime giữ nguyên', {
+    this.add.text(178, 77, 'Serializable Match State • seeded RNG • event log • Phaser chỉ render', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -213,9 +251,9 @@ export class BoardScene extends Phaser.Scene {
   private createPlayers(): void {
     const start = getBoardNode(BOARD, BOARD.startNodeId);
 
-    for (let i = 0; i < 4; i += 1) {
-      const profile = gameSession.players[i];
-      const neutralAsset = gameSession.getFace(i, 'neutral');
+    for (const player of this.players) {
+      const profile = gameSession.players[player.id];
+      const neutralAsset = gameSession.getFace(player.id, 'neutral');
       const tokenContents: Phaser.GameObjects.GameObject[] = [];
       let face: Phaser.GameObjects.Image | undefined;
 
@@ -224,13 +262,15 @@ export class BoardScene extends Phaser.Scene {
         tokenContents.push(face);
       } else {
         tokenContents.push(
-          this.add.circle(0, 0, 24, PLAYER_COLORS[i], 1).setStrokeStyle(4, 0xffffff, 1),
+          this.add.circle(0, 0, 24, PLAYER_COLORS[player.id], 1).setStrokeStyle(4, 0xffffff, 1),
         );
       }
 
-      const badge = this.add.circle(21, 21, 11, PLAYER_COLORS[i], 1).setStrokeStyle(2, 0x202020, 1);
+      const badge = this.add
+        .circle(21, 21, 11, PLAYER_COLORS[player.id], 1)
+        .setStrokeStyle(2, 0x202020, 1);
       const badgeText = this.add
-        .text(21, 21, String(i + 1), {
+        .text(21, 21, String(player.id + 1), {
           fontFamily: 'Arial, sans-serif',
           fontSize: '11px',
           fontStyle: 'bold',
@@ -239,29 +279,19 @@ export class BoardScene extends Phaser.Scene {
         .setOrigin(0.5);
       tokenContents.push(badge, badgeText);
 
-      const token = this.add.container(
-        start.x + TOKEN_OFFSETS[i].x,
-        start.y + TOKEN_OFFSETS[i].y,
-        tokenContents,
-      );
-      token.setDepth(20 + i);
+      if (profile && player.name !== profile.name && profile.name.trim()) {
+        player.name = profile.name;
+      }
 
-      this.players.push({
-        id: i,
-        name: profile?.name || `Player ${i + 1}`,
-        nodeId: BOARD.startNodeId,
-        money: 1000,
-        cardBlockTurns: 0,
-        handCardIds: [],
-        cardsPlayedThisTurn: 0,
-        token,
-        face,
-      });
+      const offset = TOKEN_OFFSETS[player.id];
+      const token = this.add.container(start.x + offset.x, start.y + offset.y, tokenContents);
+      token.setDepth(20 + player.id);
+      this.visuals.set(player.id, { token, face });
     }
   }
 
   private createHud(): void {
-    this.add.rectangle(640, 365, 390, 310, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
+    this.add.rectangle(640, 365, 410, 310, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
 
     this.turnText = this.add
       .text(640, 255, '', {
@@ -275,7 +305,7 @@ export class BoardScene extends Phaser.Scene {
     this.phaseText = this.add
       .text(640, 286, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '11px',
+        fontSize: '10px',
         fontStyle: 'bold',
         color: '#795796',
         backgroundColor: '#f1e6f8',
@@ -327,16 +357,16 @@ export class BoardScene extends Phaser.Scene {
     });
 
     this.add
-      .text(640, 489, 'SPACE: roll • C: mở tay bài', {
+      .text(640, 489, 'SPACE: roll • C: mở tay bài • ?seed=123 để replay RNG', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '12px',
+        fontSize: '11px',
         color: '#756d62',
       })
       .setOrigin(0.5);
 
-    this.scoreText = this.add.text(988, 28, '', {
+    this.scoreText = this.add.text(968, 28, '', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '14px',
+      fontSize: '13px',
       color: '#252525',
       backgroundColor: '#fffaf0',
       padding: { x: 13, y: 10 },
@@ -358,18 +388,33 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private transitionPhase(next: TurnPhase): void {
+    const from = this.phase.phase;
     this.phase.transition(next);
+    appendMatchEvent(
+      this.match,
+      'phase_transition',
+      { from, to: next },
+      this.currentPlayer()?.id,
+    );
     this.refreshHud();
+  }
+
+  private currentPlayer(): PlayerState | undefined {
+    return this.players[this.match.turn.currentPlayerIndex];
   }
 
   private async handleRoll(): Promise<void> {
     if (!this.phase.can('roll')) return;
 
-    const player = this.players[this.turn.currentIndex];
+    const player = this.currentPlayer();
+    if (!player) return;
+
     this.setPlayerExpression(player, 'neutral');
     this.transitionPhase('ROLLING');
 
-    const result = rollD6();
+    const result = rollD6(this.random);
+    this.match.turn.lastRoll = result;
+    appendMatchEvent(this.match, 'roll', { result }, player.id);
     this.diceText.setText(`🎲  ${result}`);
     this.writeLog(`${player.name} đổ được ${result}.`);
 
@@ -381,7 +426,8 @@ export class BoardScene extends Phaser.Scene {
 
     this.transitionPhase('TURN_END');
     this.finishTurn(player);
-    this.turn.next();
+    appendMatchEvent(this.match, 'turn_end', { playerId: player.id }, player.id);
+    advanceMatchTurn(this.match);
 
     this.transitionPhase('TURN_START');
     this.openPreRollWindow();
@@ -390,23 +436,28 @@ export class BoardScene extends Phaser.Scene {
   private async handleUseCard(): Promise<void> {
     if (!this.phase.can('use_card')) return;
 
-    const caster = this.players[this.turn.currentIndex];
+    const caster = this.currentPlayer();
+    if (!caster) return;
+
     if (caster.cardBlockTurns > 0) {
       this.setPlayerExpression(caster, 'angry', 1100);
       this.flashCenter('🔒 BỊ KHÓA LÁ BÀI!', '#c34a44');
       this.writeLog(`${caster.name} đang bị Khóa Mõm nên không thể dùng Lá Bài ở lượt này.`);
+      appendMatchEvent(this.match, 'card_use_blocked', { reason: 'card_lock' }, caster.id);
       return;
     }
 
     if (caster.cardsPlayedThisTurn >= MVP_MAX_CARD_PLAYS_PER_TURN) {
       this.flashCenter('🃏 ĐÃ DÙNG LÁ BÀI LƯỢT NÀY', '#8f68af');
       this.writeLog(`${caster.name} đã chạm giới hạn dùng Lá Bài của MVP trong lượt này.`);
+      appendMatchEvent(this.match, 'card_use_blocked', { reason: 'turn_limit' }, caster.id);
       return;
     }
 
     if (caster.handCardIds.length === 0) {
       this.flashCenter('🃏 CHƯA CÓ LÁ BÀI', '#8f68af');
       this.writeLog(`${caster.name} chưa có Lá Bài trong tay.`);
+      appendMatchEvent(this.match, 'card_use_blocked', { reason: 'empty_hand' }, caster.id);
       return;
     }
 
@@ -414,16 +465,20 @@ export class BoardScene extends Phaser.Scene {
 
     try {
       const selection = await showCardHandPicker(this, caster, caster.handCardIds, CARDS);
-      if (!selection) return;
+      if (!selection) {
+        appendMatchEvent(this.match, 'card_picker_cancel', {}, caster.id);
+        return;
+      }
 
       const { card, handIndex } = selection;
-      let target: VisualPlayer | undefined;
+      let target: PlayerState | undefined;
 
       if (card.targetMode === 'single_other') {
         const candidates = getValidTargets(this.players, caster.id);
         target = await showTargetPicker(this, caster, candidates);
         if (!target) {
           this.writeLog(`${caster.name} giữ lại ${card.title} vì chưa chọn mục tiêu.`);
+          appendMatchEvent(this.match, 'card_target_cancel', { cardId: card.id }, caster.id);
           return;
         }
       }
@@ -431,6 +486,16 @@ export class BoardScene extends Phaser.Scene {
       const resolution = applyCardEffect(card, caster, this.players, target);
       caster.handCardIds.splice(handIndex, 1);
       caster.cardsPlayedThisTurn += 1;
+      appendMatchEvent(
+        this.match,
+        'card_play',
+        {
+          cardId: card.id,
+          targetId: target?.id ?? -1,
+          amount: resolution.amount ?? 0,
+        },
+        caster.id,
+      );
       this.presentCardResolution(caster, card, resolution, target);
     } finally {
       if (this.phase.is('CARD_ACTION')) {
@@ -439,21 +504,33 @@ export class BoardScene extends Phaser.Scene {
     }
   }
 
-  private async movePlayer(player: VisualPlayer, steps: number): Promise<void> {
+  private async movePlayer(player: PlayerState, steps: number): Promise<void> {
+    const visual = this.visuals.get(player.id);
+    if (!visual) throw new Error(`Missing visual for player ${player.id}.`);
+
     for (let step = 0; step < steps; step += 1) {
       const outgoing = getOutgoingEdges(BOARD, player.nodeId);
       if (outgoing.length === 0) {
         this.writeLog(`⚠️ Node ${player.nodeId} không có đường đi tiếp.`);
+        appendMatchEvent(this.match, 'movement_stopped', { nodeId: player.nodeId }, player.id);
         return;
       }
 
+      const fromNodeId = player.nodeId;
       const edge = await this.chooseEdge(player, outgoing, steps);
       player.nodeId = edge.to;
+      appendMatchEvent(
+        this.match,
+        'move_edge',
+        { from: fromNodeId, to: edge.to, step: step + 1, totalSteps: steps },
+        player.id,
+      );
 
       if (edge.to === BOARD.startNodeId) {
         player.money += 100;
         this.setPlayerExpression(player, 'happy', 900);
         this.writeLog(`${player.name} hoàn thành 1 vòng: +100B$.`);
+        appendMatchEvent(this.match, 'lap_reward', { amount: 100 }, player.id);
       }
 
       const node = getBoardNode(BOARD, edge.to);
@@ -461,7 +538,7 @@ export class BoardScene extends Phaser.Scene {
 
       await new Promise<void>((resolve) => {
         this.tweens.add({
-          targets: player.token,
+          targets: visual.token,
           x: node.x + offset.x,
           y: node.y + offset.y,
           duration: 180,
@@ -473,7 +550,7 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private async chooseEdge(
-    player: VisualPlayer,
+    player: PlayerState,
     outgoing: BoardEdge[],
     roll: number,
   ): Promise<BoardEdge> {
@@ -487,6 +564,12 @@ export class BoardScene extends Phaser.Scene {
         const parity = roll % 2 === 0 ? 'CHẴN' : 'LẺ';
         this.flashCenter(`🛣️ ${parity} → ${selected.label ?? `NODE ${selected.to}`}`, '#795796');
         this.writeLog(`${player.name} gặp ngã rẽ: roll ${parity}, đi ${selected.label ?? selected.to}.`);
+        appendMatchEvent(
+          this.match,
+          'branch_choice',
+          { mode: 'odd_even', to: selected.to, label: selected.label ?? '' },
+          player.id,
+        );
         return selected;
       }
 
@@ -496,6 +579,12 @@ export class BoardScene extends Phaser.Scene {
       }));
       const selected = await showBranchPicker(this, player, options, roll);
       this.writeLog(`${player.name} chọn ${selected.label ?? `đường tới node ${selected.to}`}.`);
+      appendMatchEvent(
+        this.match,
+        'branch_choice',
+        { mode: 'manual', to: selected.to, label: selected.label ?? '' },
+        player.id,
+      );
       return selected;
     } finally {
       if (this.phase.is('BRANCH_CHOICE')) {
@@ -504,8 +593,14 @@ export class BoardScene extends Phaser.Scene {
     }
   }
 
-  private resolveTile(player: VisualPlayer): void {
+  private resolveTile(player: PlayerState): void {
     const node = getBoardNode(BOARD, player.nodeId);
+    appendMatchEvent(
+      this.match,
+      'tile_resolve',
+      { nodeId: node.id, tileType: node.type },
+      player.id,
+    );
 
     switch (node.type) {
       case 'money': {
@@ -513,6 +608,7 @@ export class BoardScene extends Phaser.Scene {
         player.money += amount;
         this.setPlayerExpression(player, amount >= 0 ? 'happy' : 'angry', 1100);
         this.writeLog(`${player.name} ${amount >= 0 ? 'nhận' : 'mất'} ${Math.abs(amount)}B$.`);
+        appendMatchEvent(this.match, 'money_delta', { amount, balance: player.money }, player.id);
         break;
       }
       case 'news':
@@ -530,35 +626,55 @@ export class BoardScene extends Phaser.Scene {
     }
   }
 
-  private drawCardToHand(player: VisualPlayer): void {
+  private drawCardToHand(player: PlayerState): void {
     if (player.handCardIds.length >= MVP_CARD_HAND_LIMIT) {
       this.setPlayerExpression(player, 'angry', 900);
       this.flashCenter('🃏 TAY BÀI ĐÃ ĐẦY!', '#8f68af');
       this.writeLog(`${player.name} chạm ô Lá Bài nhưng tay đã đủ ${MVP_CARD_HAND_LIMIT} lá.`);
+      appendMatchEvent(this.match, 'card_draw_blocked', { reason: 'hand_full' }, player.id);
       return;
     }
 
-    const card = drawWeightedCard(CARDS);
+    const card = drawWeightedCard(CARDS, this.random);
     if (!card) {
       this.writeLog('Deck Lá Bài không có lá hợp lệ.');
+      appendMatchEvent(this.match, 'card_draw_blocked', { reason: 'empty_deck' }, player.id);
       return;
     }
 
     player.handCardIds.push(card.id);
+    appendMatchEvent(
+      this.match,
+      'card_draw',
+      { cardId: card.id, rarity: card.rarity, handSize: player.handCardIds.length },
+      player.id,
+    );
     this.setPlayerExpression(player, 'happy', 1000);
     this.flashCenter(`🃏 ${card.rarity} • ${card.title}`, '#8f68af');
     this.writeLog(`${player.name} rút ${card.title} vào tay (${player.handCardIds.length}/${MVP_CARD_HAND_LIMIT}).`);
     this.refreshHud();
   }
 
-  private resolveNewsTile(subject: VisualPlayer): void {
-    const news = drawWeightedNews(NEWS);
+  private resolveNewsTile(subject: PlayerState): void {
+    const news = drawWeightedNews(NEWS, this.random);
     if (!news) {
       this.writeLog('Deck Tin Tức demo không có entry hợp lệ.');
+      appendMatchEvent(this.match, 'news_draw_blocked', { reason: 'empty_deck' }, subject.id);
       return;
     }
 
     const resolution = applyNewsEffect(news, subject, this.players);
+    appendMatchEvent(
+      this.match,
+      'news_resolve',
+      {
+        newsId: news.id,
+        rarity: news.rarity,
+        amount: resolution.amount ?? 0,
+      },
+      subject.id,
+    );
+
     for (const player of this.players) {
       const delta = resolution.deltas[player.id] ?? 0;
       if (delta > 0) this.setPlayerExpression(player, 'happy', 1500);
@@ -585,10 +701,10 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private presentCardResolution(
-    caster: VisualPlayer,
+    caster: PlayerState,
     card: CardDefinition,
     resolution: CardResolution,
-    target?: VisualPlayer,
+    target?: PlayerState,
   ): void {
     this.setPlayerExpression(caster, 'happy', 1500);
 
@@ -640,17 +756,18 @@ export class BoardScene extends Phaser.Scene {
     playReactionSequence(this, event, context);
   }
 
-  private pickSpectator(excludedIds: number[]): VisualPlayer | undefined {
+  private pickSpectator(excludedIds: number[]): PlayerState | undefined {
     const candidates = this.players.filter((player) => !excludedIds.includes(player.id));
     if (candidates.length === 0) return undefined;
-    return candidates[Math.floor(Math.random() * candidates.length)];
+    return candidates[Math.floor(this.random() * candidates.length)];
   }
 
-  private finishTurn(player: VisualPlayer): void {
+  private finishTurn(player: PlayerState): void {
     if (player.cardBlockTurns > 0) {
       player.cardBlockTurns -= 1;
       if (player.cardBlockTurns === 0) {
         this.writeLog(`🔓 ${player.name} đã hết hiệu lực Khóa Mõm.`);
+        appendMatchEvent(this.match, 'card_lock_expired', {}, player.id);
       }
     }
 
@@ -658,23 +775,25 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private setPlayerExpression(
-    player: VisualPlayer,
+    player: PlayerState,
     expression: FaceExpression,
     holdMs = 0,
   ): void {
-    if (!player.face) return;
+    const visual = this.visuals.get(player.id);
+    if (!visual?.face) return;
 
     const asset = gameSession.getFace(player.id, expression);
     if (asset && this.textures.exists(asset.textureKey)) {
-      player.face.setTexture(asset.textureKey);
+      visual.face.setTexture(asset.textureKey);
     }
 
     if (holdMs <= 0 || expression === 'neutral') return;
 
     this.time.delayedCall(holdMs, () => {
       const neutral = gameSession.getFace(player.id, 'neutral');
-      if (neutral && player.face && this.textures.exists(neutral.textureKey)) {
-        player.face.setTexture(neutral.textureKey);
+      const currentVisual = this.visuals.get(player.id);
+      if (neutral && currentVisual?.face && this.textures.exists(neutral.textureKey)) {
+        currentVisual.face.setTexture(neutral.textureKey);
       }
     });
   }
@@ -707,15 +826,19 @@ export class BoardScene extends Phaser.Scene {
   private refreshHud(): void {
     if (!this.turnText || this.players.length === 0) return;
 
-    const current = this.players[this.turn.currentIndex];
+    const current = this.currentPlayer();
+    if (!current) return;
+
     const phaseLabel = TURN_PHASE_LABELS[this.phase.phase];
-    this.turnText.setText(`Lượt: ${current.name}`);
-    this.phaseText.setText(`${phaseLabel} • rev ${this.phase.revision}`);
+    this.turnText.setText(`Lượt ${this.match.turn.turnNumber}: ${current.name}`);
+    this.phaseText.setText(
+      `${phaseLabel} • rev ${this.phase.revision} • seed ${this.match.seed} • rng ${this.match.rng.calls} • ev ${this.match.eventLog.length}`,
+    );
 
     this.scoreText.setText(
       this.players
         .map((player, index) => {
-          const marker = index === this.turn.currentIndex ? '▶' : ' ';
+          const marker = index === this.match.turn.currentPlayerIndex ? '▶' : ' ';
           const lock = player.cardBlockTurns > 0 ? ` 🔒${player.cardBlockTurns}` : '';
           const personality = gameSession.getPersonality(player.id);
           const hand = `🃏${player.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`;
