@@ -11,7 +11,7 @@
 - **Tên lõi:** MeMeMe
 - **Cách viết phụ:** Me³, 3M
 - **Ý nghĩa:** `Me` + `Meme` + tinh thần “Me! Me! Me!” của party game
-- **Logo:** đã chốt, xem `assets/brand/logo.png`
+- **Logo:** đã chốt; thông số nhận diện hiện lưu tại `assets/brand/LOGO_REFERENCE.md`
 - **Franchise model:** một core game dùng lại cho nhiều map/chủ đề
   - City / đời sống đô thị: map cơ bản đầu tiên
   - Magic: map mở rộng tương lai
@@ -49,6 +49,7 @@
 - `docs/DATA_WORKFLOW.md` — workflow Excel/CSV/JSON cho Lá Bài, Tin Tức và Reaction.
 - `docs/LEGACY_RULES_REFERENCE.md` — luật Bitches In Town cũ, chỉ để tham chiếu, **không mặc định là luật final của MeMeMe**.
 - `docs/DECISIONS_AND_OPEN_QUESTIONS.md` — những gì đã chốt và những gì cần test/chốt.
+- `assets/brand/LOGO_REFERENCE.md` — hướng nhận diện của logo đã chốt.
 - `data/cards/mvp_cards.csv` / `.json` — snapshot dữ liệu thật đang có trong file Excel.
 - `data/templates/` — template cho Reaction và Tin Tức.
 - `source/La-Bai-MemeMe.xlsx` — file spreadsheet gốc hiện tại.
