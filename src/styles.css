@@ -142,7 +142,8 @@ canvas {
 }
 
 .face-label {
-  width: 100%;n  overflow: hidden;
+  width: 100%;
+  overflow: hidden;
   padding: 0 4px;
   box-sizing: border-box;
   text-align: center;
