@@ -1,0 +1,2 @@
+News_ID,News_Name,Deck_Scope,Rarity,Drop_Weight,Impact_Level,Target_Mode,Effect_ID,Effect_Params,Duration_Turns,Global_State_ID,Art_ID,Reaction_Event_ID,Enabled,Notes
+NEWS_DEMO_001,,CORE,N,0,⭐,self,,{},0,,,,false,Template only; fill after schema is approved.
