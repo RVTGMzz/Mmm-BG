@@ -142,8 +142,7 @@ canvas {
 }
 
 .face-label {
-  width: 100%;
-  overflow: hidden;
+  width: 100%;n  overflow: hidden;
   padding: 0 4px;
   box-sizing: border-box;
   text-align: center;
@@ -225,5 +224,118 @@ canvas {
 }
 
 .setup-status.error {
+  color: #c62828;
+}
+
+.mememe-lobby {
+  width: 1010px;
+  box-sizing: border-box;
+  pointer-events: auto;
+  color: #202020;
+}
+
+.lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.lobby-card {
+  display: flex;
+  min-height: 320px;
+  box-sizing: border-box;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px;
+  border: 4px solid #202020;
+  border-radius: 24px;
+  background: #fffaf0;
+  box-shadow: 0 6px 0 rgba(32, 32, 32, 0.16);
+}
+
+.lobby-card.solo-card {
+  border-top: 10px solid #ef4545;
+}
+
+.lobby-card.host-card {
+  border-top: 10px solid #795796;
+}
+
+.lobby-card.join-card {
+  border-top: 10px solid #5b8def;
+}
+
+.lobby-icon {
+  font-size: 38px;
+  line-height: 1;
+}
+
+.lobby-card h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.05;
+}
+
+.lobby-card p {
+  min-height: 58px;
+  margin: 0;
+  color: #665f56;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.lobby-card label {
+  display: grid;
+  gap: 5px;
+  color: #5f574d;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.lobby-card input,
+.lobby-card select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 3px solid #202020;
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: white;
+  color: #202020;
+  font: 900 15px/1 Inter, system-ui, sans-serif;
+  outline: none;
+}
+
+.lobby-card button {
+  margin-top: auto;
+  border: 4px solid #202020;
+  border-radius: 15px;
+  padding: 13px 12px;
+  background: #ffd34d;
+  color: #202020;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #202020;
+  font: 900 14px/1 Inter, system-ui, sans-serif;
+}
+
+.lobby-card button:hover {
+  transform: translateY(-1px);
+}
+
+.lobby-card button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #202020;
+}
+
+.lobby-status {
+  min-height: 20px;
+  margin: 18px 4px 0;
+  color: #5f574d;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.lobby-status.error {
   color: #c62828;
 }
