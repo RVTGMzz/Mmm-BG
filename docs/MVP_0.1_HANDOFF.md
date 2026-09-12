@@ -4,9 +4,9 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.8 — Serializable Match State + Seeded RNG**
+**MVP 0.1.9 — Snapshot Restore + Action Replay PoC**
 
-Mục tiêu milestone: gom gameplay source-of-truth vào data thuần có thể JSON serialize, tách Phaser object ra khỏi state, và thay randomness trực tiếp bằng RNG có seed để chuẩn bị cho save/replay/multiplayer sync.
+Mục tiêu milestone: biến nền deterministic của 0.1.8 thành một proof có thể test trực tiếp: save/load `MatchState`, tách command input khỏi event presentation, replay từ seed và so checksum gameplay cuối.
 
 ## Đã triển khai
 
@@ -23,7 +23,7 @@ Mục tiêu milestone: gom gameplay source-of-truth vào data thuần có thể 
 - Setup 4 người, tên riêng + 3 expression: `neutral`, `happy`, `angry`.
 - Face xử lý local trong browser, chưa upload server.
 - Reaction personality vẫn là assignment PoC theo ghế để test engine, chưa phải taxonomy/UX final.
-- Face texture/Phaser object **không nằm trong MatchState**.
+- Face texture/Phaser object không nằm trong MatchState.
 
 ### Lá Bài source-backed
 Runtime deck vẫn chỉ dùng đúng 4 Lá Bài hiện có dữ liệu thật trong spreadsheet:
@@ -36,7 +36,7 @@ Runtime deck vẫn chỉ dùng đúng 4 Lá Bài hiện có dữ liệu thật t
 Không tự điền Card_ID còn trống.
 
 ### Card Inventory + Use Timing
-Giữ nguyên:
+Flow giữ nguyên:
 
 `Đáp ô Lá Bài → weighted draw → card vào hand → trong cửa sổ pre-roll mở tay bài → chọn card → chọn target nếu cần → resolve effect → card bị tiêu hao → overlay/reaction chạy non-blocking.`
 
@@ -44,130 +44,152 @@ PoC rule constants vẫn là:
 - hand limit: `3` card;
 - tối đa `1` card/lượt.
 
-Đây **không phải luật final**.
+Đây không phải luật final.
 
 ### Branching Board Graph
 Giữ nguyên:
-
 - board dùng `nodes + edges`;
 - player lưu `nodeId`;
-- graph được validate trước khi scene chạy;
-- ngã rẽ node 4:
-  - `PHỐ CHÍNH`: 4 → 5 → 6 → 7
-  - `HẺM TẮT`: 4 → 18 → 19 → 7
-- mode mặc định `manual` bật `BranchPicker`;
-- mode `odd_even` chỉ là config test legacy, chưa phải luật final.
+- graph validate trước khi scene chạy;
+- node 4 có `PHỐ CHÍNH` và `HẺM TẮT`;
+- mode mặc định `manual`;
+- `odd_even` chỉ là config test legacy, chưa phải luật final.
 
 ### Turn Phase State Machine
-Giữ nguyên 0.1.7:
+Giữ nguyên:
 
 `TURN_START → PRE_ROLL_ACTION → ROLLING → MOVING → RESOLVING_TILE → TURN_END → TURN_START`
 
-Phase tương tác chen vào:
+Phase chen vào:
 - `PRE_ROLL_ACTION ↔ CARD_ACTION`
 - `MOVING ↔ BRANCH_CHOICE`
 
-`TurnPhaseMachine` giờ có thể bind trực tiếp vào `MatchState.turn`, vì vậy `phase + revision` cũng thuộc snapshot data thay vì nằm riêng trong Phaser scene.
+`TurnPhaseMachine` bind trực tiếp vào `MatchState.turn`.
 
-### Serializable MatchState 0.1.8
-File mới: `src/core/matchState.ts`.
+### MatchState schema v2
+`src/core/matchState.ts` đã nâng schema lên `2`.
 
-`MatchState` hiện chứa data thuần:
-- `schemaVersion`;
-- `boardId`;
-- `seed`;
-- RNG state + số lần RNG đã được gọi;
-- `turn.currentPlayerIndex`;
-- `turn.turnNumber`;
-- `turn.lastRoll`;
-- `turn.phase` + `turn.revision`;
-- toàn bộ `PlayerState[]` gồm node, B$, khóa card, hand và card-per-turn counter;
-- event log tuần tự;
-- next event sequence.
+Ngoài state 0.1.8, MatchState hiện thêm:
+- `startingMoney`;
+- `commandLog`;
+- `nextCommandSeq`.
 
-`serializeMatchState()` dùng JSON trực tiếp. `deserializeMatchState()` đã có schema version guard cơ bản.
+Có migration cơ bản từ schema v1 sang v2. Snapshot v1 được load với command stream rỗng thay vì crash ngay.
 
-Phaser token, image, tween và texture không nằm trong MatchState. `BoardScene` giữ chúng trong map `playerId → PlayerVisual` chỉ để render.
+### Command stream 0.1.9
+Command input được tách khỏi event log presentation.
 
-### Seeded RNG 0.1.8
-File mới: `src/core/rng.ts`.
+Hiện có 3 command gameplay:
+- `roll`;
+- `choose_branch` với node đích;
+- `play_card` với `cardId` + `targetId`.
 
-RNG dùng xorshift32 với state có thể serialize:
-- `seed`;
-- `state`;
-- `calls`.
-
-Các nguồn random gameplay đã đi qua cùng RNG stream:
-- D6;
-- weighted Card draw;
-- weighted News draw;
-- spectator selection cho reaction.
-
-Có thể ép seed qua query string để test reproducibility:
-
-`?seed=123`
-
-Nếu không truyền seed, MVP tạo seed ban đầu từ thời gian hiện tại rồi normalize vào uint32 và lưu ngay trong MatchState.
-
-Điều kiện deterministic hiện tại là: **cùng seed + cùng thứ tự action/route/target lựa chọn → cùng random stream và cùng random outcomes**. Manual choice vẫn là input của người chơi, không tự replay ở milestone này.
-
-### Event Log 0.1.8
-Match log hiện ghi tối thiểu:
-- match start;
-- phase transition;
-- dice roll;
-- movement từng edge;
-- branch choice;
-- tile resolve;
-- money delta/lap reward;
-- card draw / card play / cancel / blocked;
-- news resolve;
-- card lock expiry;
-- turn end.
-
-Mỗi event mang:
-- sequence number;
+Mỗi command giữ:
+- sequence;
 - turn number;
 - current player index;
-- phase;
-- phase revision;
-- RNG call count;
-- actor id nếu có;
+- actor id;
 - payload data thuần.
 
-HUD QA hiện thêm `seed`, `rng calls` và số event để dễ đối chiếu khi test hai phiên cùng seed.
+Cancel picker, animation, text overlay, reaction line và UI event không được ghi vào command stream vì chúng không đổi gameplay state.
+
+### Replay engine 0.1.9
+File mới: `src/core/replay.ts`.
+
+Replay tạo match mới từ:
+- board id;
+- seed;
+- starting money;
+- player names;
+- command stream.
+
+Replay tự chạy lại:
+- D6 bằng seeded RNG;
+- movement từng edge;
+- manual branch decision từ command;
+- READY lap reward;
+- money tile;
+- weighted Card draw;
+- weighted News draw + effect;
+- card play + target;
+- card lock expiry;
+- turn/phase transitions.
+
+Vì 0.1.8 dùng chung RNG stream cho spectator reaction, replay cũng tiêu thụ đúng spectator RNG call để giữ stream tương thích với live runtime hiện tại.
+
+Nếu command sai actor, card không nằm trong tay, target không hợp lệ, branch không reachable hoặc command bị orphan, replay trả lỗi thay vì âm thầm đoán.
+
+### Deterministic checksum
+File mới: `src/core/checksum.ts`.
+
+Dùng FNV-1a 32-bit trên gameplay-critical canonical payload gồm:
+- schema/board/seed/starting money;
+- RNG seed/state/call count;
+- turn/current player/last roll/phase/revision;
+- toàn bộ PlayerState.
+
+Event log và command log bị loại khỏi checksum vì chúng là lịch sử/diagnostic, không phải state gameplay hiện tại.
+
+### Snapshot Save / Restore PoC
+BoardScene có hotkey QA:
+- `S`: save snapshot JSON vào localStorage;
+- `L`: restore snapshot;
+- `V`: replay command stream từ seed rồi so checksum với live state.
+
+Save/load chỉ được phép ở `PRE_ROLL_ACTION`, tránh restore vào giữa tween/picker đang mở.
+
+Khi restore:
+- JSON được deserialize + schema migrate;
+- board id/player count/phase được kiểm tra;
+- MatchState, phase machine và seeded RNG source được bind lại;
+- token Phaser được snap về node tương ứng;
+- dice/HUD refresh từ state restored.
+
+LocalStorage ở milestone này chỉ là QA persistence PoC, chưa phải save-slot UX final.
+
+### Replay verification trong browser
+Nhấn `V` ở safe pre-roll window:
+
+`live MatchState → command replay từ seed → replay MatchState → checksum live vs checksum replay`
+
+PASS yêu cầu đồng thời:
+- replay không có error;
+- consume đủ toàn bộ command;
+- checksum gameplay cuối giống nhau.
+
+HUD hiện:
+- phase + revision;
+- RNG call count;
+- số command;
+- checksum hiện tại.
 
 ### Tin Tức + Reaction
 Giữ nguyên:
 - `news_mvp_demo.json` chỉ là demo runtime, chưa phải content Tin Tức được duyệt;
 - reaction text chỉ là writing PoC;
-- reaction sequence dùng delay/overlap và không block turn;
+- reaction sequence non-blocking;
 - SFX hiện mới là `sfxId`, chưa có audio playback.
 
 ## File chính
 
-- `src/core/matchState.ts` — serializable gameplay source-of-truth + event log + JSON helpers.
+- `src/core/matchState.ts` — schema v2, snapshot JSON, command/event log.
+- `src/core/replay.ts` — deterministic action replay driver.
+- `src/core/checksum.ts` — gameplay state checksum.
 - `src/core/rng.ts` — seeded xorshift32 state + random source.
-- `src/core/turnPhase.ts` — phase machine bind được vào snapshot state.
-- `src/core/board.ts` — graph lookup/validation/parity helper.
-- `src/core/types.ts` — board graph + PlayerState data.
-- `src/core/cards.ts` / `src/core/news.ts` / `src/core/dice.ts` — nhận random callback nên dùng được seeded stream.
-- `src/core/rules.ts` — PoC branch/card constants.
-- `src/ui/BranchPicker.ts` — manual route choice.
-- `src/ui/CardHandPicker.ts` — chọn Lá Bài đang giữ.
-- `src/ui/TargetPicker.ts` — chọn target khi play card.
-- `src/scenes/BoardScene.ts` — render/orchestration trên MatchState, không còn giữ Phaser object trong gameplay state.
-
-`src/core/turn.ts` còn trong repo như helper cũ nhưng BoardScene 0.1.8 không còn dùng nó làm source-of-truth.
+- `src/core/turnPhase.ts` — phase machine bind vào snapshot state.
+- `src/core/board.ts` — graph lookup/validation.
+- `src/core/cards.ts` / `src/core/news.ts` / `src/core/dice.ts` — deterministic logic khi truyền seeded random callback.
+- `src/scenes/BoardScene.ts` — command capture, save/load snapshot, replay verify + Phaser presentation sync.
 
 ## Chưa triển khai
 
-- load một snapshot JSON trở lại scene đang chạy;
-- replay driver tự phát lại action log;
-- state hash/checksum để so 2 peer;
-- save slot/persistence thật;
-- networking/multiplayer sync;
-- deterministic automation test trong CI ngoài typecheck/build;
+- deterministic replay fixture chạy tự động trong CI;
+- replay inspector UI / scrub từng command;
+- checksum/desync report chi tiết theo field;
+- nhiều save slot + naming/delete UX;
+- import/export snapshot file;
+- networking/multiplayer sync thật;
+- rollback/prediction;
 - luật hand limit/card-per-turn final;
 - discard/replace UX khi tay đầy;
 - rarity-first pool khi mỗi rarity có nhiều card;
@@ -183,21 +205,21 @@ Giữ nguyên:
 
 ## Validation
 
-GitHub Actions typecheck + Vite build: **PASS** cho code 0.1.8 trước khi cập nhật handoff này.
+GitHub Actions typecheck + Vite build: PASS cho code runtime 0.1.9 trước khi cập nhật handoff này.
 
-Chưa tuyên bố browser replay proof hoàn chỉnh vì milestone hiện chưa có replay driver/load snapshot tự động. Seed/query + event log đã tạo nền để test bước đó ở milestone kế tiếp.
+Milestone này chứng minh được đường kỹ thuật cho snapshot restore + deterministic replay trong runtime. Chưa coi đây là save system/replay product UX hoàn chỉnh.
 
 ## Milestone kế tiếp đề xuất
 
-**MVP 0.1.9 — Snapshot Restore + Action Replay PoC**
+**MVP 0.1.10 — Deterministic Replay CI + Desync Diagnostics**
 
 Mục tiêu:
-1. load `MatchState` JSON và dựng lại board/player presentation;
-2. tạo action command schema tách khỏi presentation event log;
-3. replay một chuỗi roll/route/target decision từ seed;
-4. thêm state checksum/hash đơn giản để so kết quả cuối;
-5. chứng minh 2 run cùng snapshot/action stream đi tới cùng state;
-6. vẫn chưa cần networking thật.
+1. thêm fixture command stream cố định chạy không cần Phaser/browser;
+2. assert checksum cuối trong CI;
+3. chạy cùng fixture 2 lần để bắt nondeterminism;
+4. thêm state-diff helper chỉ ra field nào lệch khi checksum mismatch;
+5. tạo replay diagnostic report ngắn gồm command index, RNG calls, turn/phase và player diff;
+6. giữ networking thật sang phase sau.
 
 ## Nguyên tắc MVP
 
@@ -210,3 +232,4 @@ Mục tiêu:
 7. Board graph + branch choice. ✅ PoC.
 8. Turn phase state machine + safe action windows. ✅ PoC.
 9. Serializable MatchState + seeded RNG + event log. ✅ PoC.
+10. Snapshot restore + command replay + checksum. ✅ PoC.
