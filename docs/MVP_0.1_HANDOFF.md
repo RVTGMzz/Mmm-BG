@@ -92,7 +92,7 @@ Test cố tình tạo transport xấu:
 - roll/branch dependency phải chờ command sau trước khi gameplay prefix có thể apply.
 
 Sau command #11, fixture cố tình làm lệch client `money +77`, rồi gửi một stale/conflicting bản của command #6. Client phải:
-- phát hiện checksum/state không còn khớp snapshot #11;
+- phát hiện state không còn khớp authoritative snapshot #11 khi thực hiện checksum comparison;
 - reject stale/conflicting command #6;
 - bật resync request;
 - nhận authoritative snapshot #11;
