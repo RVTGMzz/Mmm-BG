@@ -44,3 +44,6 @@ jobs:
 
       - name: Two-tab local browser session core
         run: npm run test:two-tab
+
+      - name: Demo match shell and rematch
+        run: npm run test:demo-shell
