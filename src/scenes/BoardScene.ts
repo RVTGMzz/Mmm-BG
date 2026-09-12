@@ -1,11 +1,13 @@
 import Phaser from 'phaser';
 import boardJson from '../content/city/board_city_mvp.json';
 import { rollD6 } from '../core/dice';
+import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
 import type { BoardDefinition, BoardNode, PlayerState, TileType } from '../core/types';
 
 type VisualPlayer = PlayerState & {
   token: Phaser.GameObjects.Container;
+  face?: Phaser.GameObjects.Image;
 };
 
 const BOARD = boardJson as BoardDefinition;
@@ -20,10 +22,10 @@ const TILE_COLORS: Record<TileType, number> = {
 
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
 const TOKEN_OFFSETS = [
-  { x: -16, y: -16 },
-  { x: 16, y: -16 },
-  { x: -16, y: 16 },
-  { x: 16, y: 16 },
+  { x: -18, y: -18 },
+  { x: 18, y: -18 },
+  { x: -18, y: 18 },
+  { x: 18, y: 18 },
 ];
 
 export class BoardScene extends Phaser.Scene {
@@ -41,13 +43,23 @@ export class BoardScene extends Phaser.Scene {
     super('BoardScene');
   }
 
+  preload(): void {
+    for (const profile of gameSession.players) {
+      for (const asset of Object.values(profile.faces)) {
+        if (asset && !this.textures.exists(asset.textureKey)) {
+          this.load.image(asset.textureKey, asset.dataUrl);
+        }
+      }
+    }
+  }
+
   create(): void {
     this.cameras.main.setBackgroundColor('#f4ead7');
     this.drawHeader();
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1: Roll → Move → Trigger → Next Turn');
+    this.writeLog('MVP 0.1.1: khuôn mặt thật đã vào bàn cờ 🎭');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -66,14 +78,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.1', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Bộ xương playable đầu tiên của MeMeMe', {
+    this.add.text(178, 77, 'Face runtime: 😐 → 😆 / 😡 theo sự kiện', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -125,27 +137,45 @@ export class BoardScene extends Phaser.Scene {
     const start = BOARD.nodes[0];
 
     for (let i = 0; i < 4; i += 1) {
-      const body = this.add.circle(0, 0, 22, PLAYER_COLORS[i], 1).setStrokeStyle(4, 0xffffff, 1);
-      const number = this.add
-        .text(0, 0, String(i + 1), {
+      const profile = gameSession.players[i];
+      const neutralAsset = gameSession.getFace(i, 'neutral');
+      const tokenContents: Phaser.GameObjects.GameObject[] = [];
+      let face: Phaser.GameObjects.Image | undefined;
+
+      if (neutralAsset && this.textures.exists(neutralAsset.textureKey)) {
+        face = this.add.image(0, 0, neutralAsset.textureKey).setDisplaySize(54, 54);
+        tokenContents.push(face);
+      } else {
+        tokenContents.push(
+          this.add.circle(0, 0, 24, PLAYER_COLORS[i], 1).setStrokeStyle(4, 0xffffff, 1),
+        );
+      }
+
+      const badge = this.add.circle(21, 21, 11, PLAYER_COLORS[i], 1).setStrokeStyle(2, 0x202020, 1);
+      const badgeText = this.add
+        .text(21, 21, String(i + 1), {
           fontFamily: 'Arial, sans-serif',
-          fontSize: '18px',
+          fontSize: '11px',
           fontStyle: 'bold',
           color: '#ffffff',
         })
         .setOrigin(0.5);
+      tokenContents.push(badge, badgeText);
+
       const token = this.add.container(
         start.x + TOKEN_OFFSETS[i].x,
         start.y + TOKEN_OFFSETS[i].y,
-        [body, number],
+        tokenContents,
       );
+      token.setDepth(20 + i);
 
       this.players.push({
         id: i,
-        name: `Player ${i + 1}`,
+        name: profile?.name || `Player ${i + 1}`,
         tileIndex: 0,
         money: 1000,
         token,
+        face,
       });
     }
   }
@@ -194,12 +224,12 @@ export class BoardScene extends Phaser.Scene {
       color: '#756d62',
     });
 
-    this.scoreText = this.add.text(1010, 28, '', {
+    this.scoreText = this.add.text(1000, 28, '', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '16px',
+      fontSize: '15px',
       color: '#252525',
       backgroundColor: '#fffaf0',
-      padding: { x: 16, y: 12 },
+      padding: { x: 14, y: 11 },
       lineSpacing: 7,
     });
 
@@ -220,6 +250,8 @@ export class BoardScene extends Phaser.Scene {
     this.rollButton.setFillStyle(0xb8ada1, 1);
 
     const player = this.players[this.turn.currentIndex];
+    this.setPlayerExpression(player, 'neutral');
+
     const result = rollD6();
     this.diceText.setText(`🎲  ${result}`);
     this.writeLog(`${player.name} đổ được ${result}.`);
@@ -240,6 +272,7 @@ export class BoardScene extends Phaser.Scene {
 
       if (nextIndex === 0) {
         player.money += 100;
+        this.setPlayerExpression(player, 'happy', 900);
         this.writeLog(`${player.name} hoàn thành 1 vòng: +100B$.`);
       }
 
@@ -266,15 +299,18 @@ export class BoardScene extends Phaser.Scene {
       case 'money': {
         const amount = node.value ?? 0;
         player.money += amount;
+        this.setPlayerExpression(player, amount >= 0 ? 'happy' : 'angry', 1100);
         this.writeLog(`${player.name} ${amount >= 0 ? 'nhận' : 'mất'} ${Math.abs(amount)}B$.`);
         break;
       }
       case 'news':
+        this.setPlayerExpression(player, 'angry', 900);
         this.writeLog(`${player.name} chạm TIN TỨC. Deck thật sẽ được nối ở milestone kế tiếp.`);
         this.flashCenter('📰 TIN TỨC!', '#6aa84f');
         break;
       case 'card':
-        this.writeLog(`${player.name} chạm LÁ BÀI. Inventory/deck sẽ được nối ở milestone kế tiếp.`);
+        this.setPlayerExpression(player, 'happy', 900);
+        this.writeLog(`${player.name} chạm LÁ BÀI. Dynamic Card sẽ là milestone kế tiếp.`);
         this.flashCenter('🃏 LÁ BÀI!', '#8f68af');
         break;
       case 'ready':
@@ -284,6 +320,28 @@ export class BoardScene extends Phaser.Scene {
         this.writeLog(`${player.name} đáp xuống ô thường.`);
         break;
     }
+  }
+
+  private setPlayerExpression(
+    player: VisualPlayer,
+    expression: FaceExpression,
+    holdMs = 0,
+  ): void {
+    if (!player.face) return;
+
+    const asset = gameSession.getFace(player.id, expression);
+    if (asset && this.textures.exists(asset.textureKey)) {
+      player.face.setTexture(asset.textureKey);
+    }
+
+    if (holdMs <= 0 || expression === 'neutral') return;
+
+    this.time.delayedCall(holdMs, () => {
+      const neutral = gameSession.getFace(player.id, 'neutral');
+      if (neutral && player.face && this.textures.exists(neutral.textureKey)) {
+        player.face.setTexture(neutral.textureKey);
+      }
+    });
   }
 
   private flashCenter(message: string, color: string): void {
@@ -316,9 +374,16 @@ export class BoardScene extends Phaser.Scene {
 
     this.scoreText.setText(
       this.players
-        .map((player, index) => `${index === this.turn.currentIndex ? '▶' : ' '} P${index + 1}  ${player.money}B$  • ô ${player.tileIndex}`)
+        .map((player, index) => {
+          const marker = index === this.turn.currentIndex ? '▶' : ' ';
+          return `${marker} ${this.shortName(player.name)}  ${player.money}B$  • ô ${player.tileIndex}`;
+        })
         .join('\n'),
     );
+  }
+
+  private shortName(name: string): string {
+    return name.length <= 12 ? name : `${name.slice(0, 11)}…`;
   }
 
   private writeLog(message: string): void {
