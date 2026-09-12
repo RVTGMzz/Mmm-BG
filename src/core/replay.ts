@@ -1,5 +1,10 @@
 import { getBoardNode, getOutgoingEdges } from './board';
-import { applyCardEffect, drawWeightedCard, type CardDefinition } from './cards';
+import {
+  applyCardEffect,
+  drawWeightedCard,
+  pickRandomOtherTarget,
+  type CardDefinition,
+} from './cards';
 import { rollD6 } from './dice';
 import {
   advanceMatchTurn,
@@ -161,6 +166,16 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
     const targetId = Number(command.data.targetId);
     target = ctx.state.players.find((player) => player.id === targetId && player.id !== caster.id);
     if (!target) throw new Error(`Replay cannot resolve target ${String(command.data.targetId)}.`);
+  } else if (card.targetMode === 'random_other') {
+    target = pickRandomOtherTarget(ctx.state.players, caster.id, ctx.random);
+    if (!target) throw new Error(`Replay cannot draw a random target for ${card.id}.`);
+
+    const recordedTargetId = Number(command.data.targetId);
+    if (target.id !== recordedTargetId) {
+      throw new Error(
+        `Random target mismatch for ${card.id}: stream produced P${target.id}, command recorded P${recordedTargetId}.`,
+      );
+    }
   }
 
   transition(ctx, 'CARD_ACTION');
