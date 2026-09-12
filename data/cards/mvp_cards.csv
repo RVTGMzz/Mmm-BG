@@ -1,0 +1,13 @@
+Card_ID,Card_Name,Rarity,Drop_Weight,Impact_Level,Game_Logic
+ACT_001,Trượt Tay,N,600,⭐,Lấy 10 vàng từ 1 người chơi ngẫu nhiên.
+ACT_002,,N,600,⭐,
+ACT_003,,N,600,⭐,
+ACT_004,,N,600,⭐,
+ACT_005,,N,600,⭐,
+ACT_006,Khóa Mõm,R,300,⭐⭐,Cấm Target sử dụng Lá Bài trong 1 lượt.
+ACT_007,,R,300,⭐⭐,
+ACT_008,,R,300,⭐⭐,
+ACT_009,,R,300,⭐⭐,
+ACT_010,Triệu Hồi Hắc Ín,SR,90,⭐⭐⭐,Trừ 30% tổng tài sản của tất cả người chơi khác.
+ACT_011,,SR,90,⭐⭐⭐,
+ACT_012,Chuyển Sinh Đổi Vận,SSR,10,⭐⭐⭐⭐⭐,Hoán đổi toàn bộ số vàng của bản thân với Target.
