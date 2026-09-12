@@ -36,7 +36,11 @@ export function validateMatchCommandEnvelope(
   if (command.phase && command.phase !== state.turn.phase) {
     errors.push(`phase ${command.phase} != ${state.turn.phase}`);
   }
-  if (command.revision >= 0 && command.revision !== state.turn.revision) {
+  if (
+    typeof command.revision === 'number' &&
+    command.revision >= 0 &&
+    command.revision !== state.turn.revision
+  ) {
     errors.push(`revision ${command.revision} != ${state.turn.revision}`);
   }
   if (command.preChecksum && command.preChecksum !== actualChecksum) {
