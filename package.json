@@ -11,6 +11,7 @@
     "test:lockstep": "tsx tests/lockstep-peer.ts",
     "test:host-client": "tsx tests/host-client-queue.ts",
     "test:authority": "tsx tests/authority-protocol.ts",
+    "test:two-tab": "tsx tests/two-tab-session.ts",
     "preview": "vite preview"
   },
   "dependencies": {
