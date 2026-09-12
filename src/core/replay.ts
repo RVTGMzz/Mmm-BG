@@ -5,6 +5,10 @@ import {
   pickRandomOtherTarget,
   type CardDefinition,
 } from './cards';
+import {
+  formatCommandValidationError,
+  validateMatchCommandEnvelope,
+} from './commandValidation';
 import { rollD6 } from './dice';
 import {
   advanceMatchTurn,
@@ -18,10 +22,22 @@ import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
 import { TurnPhaseMachine } from './turnPhase';
 import type { BoardDefinition, BoardEdge, PlayerState } from './types';
 
+export interface ReplayCommandCheckpoint {
+  seq: number;
+  type: MatchCommand['type'];
+  turnNumber: number;
+  playerIndex: number;
+  phase: MatchState['turn']['phase'];
+  revision: number;
+  checksum: string;
+}
+
 export interface ReplayResult {
   state: MatchState;
   consumedCommands: number;
   errors: string[];
+  checkpoints: ReplayCommandCheckpoint[];
+  failedCommandSeq?: number;
 }
 
 interface ReplayContext {
@@ -32,6 +48,8 @@ interface ReplayContext {
   cards: CardDefinition[];
   news: NewsDefinition[];
   commands: MatchCommand[];
+  checkpoints: ReplayCommandCheckpoint[];
+  failedCommandSeq?: number;
 }
 
 function currentPlayer(ctx: ReplayContext): PlayerState {
@@ -42,6 +60,29 @@ function currentPlayer(ctx: ReplayContext): PlayerState {
 
 function transition(ctx: ReplayContext, next: Parameters<TurnPhaseMachine['transition']>[0]): void {
   ctx.phase.transition(next);
+}
+
+function failCommand(ctx: ReplayContext, command: MatchCommand, message: string): never {
+  ctx.failedCommandSeq = command.seq;
+  throw new Error(`Command #${command.seq} ${command.type}: ${message}`);
+}
+
+function validateCommand(ctx: ReplayContext, command: MatchCommand): void {
+  const validation = validateMatchCommandEnvelope(ctx.state, command);
+  if (!validation.ok) {
+    ctx.failedCommandSeq = command.seq;
+    throw new Error(formatCommandValidationError(command, validation));
+  }
+
+  ctx.checkpoints.push({
+    seq: command.seq,
+    type: command.type,
+    turnNumber: ctx.state.turn.turnNumber,
+    playerIndex: ctx.state.turn.currentPlayerIndex,
+    phase: ctx.state.turn.phase,
+    revision: ctx.state.turn.revision,
+    checksum: validation.actualChecksum,
+  });
 }
 
 function consumeSpectatorRandom(ctx: ReplayContext, excludedIds: number[]): void {
@@ -83,14 +124,18 @@ function finishReplayTurn(ctx: ReplayContext, player: PlayerState): void {
   player.cardsPlayedThisTurn = 0;
 }
 
-function findBranchEdge(outgoing: BoardEdge[], command: MatchCommand): BoardEdge {
+function findBranchEdge(
+  ctx: ReplayContext,
+  outgoing: BoardEdge[],
+  command: MatchCommand,
+): BoardEdge {
   if (command.type !== 'choose_branch') {
-    throw new Error(`Expected choose_branch command, got ${command.type}.`);
+    failCommand(ctx, command, `expected choose_branch, got ${command.type}.`);
   }
 
   const to = Number(command.data.to);
   const edge = outgoing.find((candidate) => candidate.to === to);
-  if (!edge) throw new Error(`Replay branch target ${String(command.data.to)} is not reachable.`);
+  if (!edge) failCommand(ctx, command, `branch target ${String(command.data.to)} is not reachable.`);
   return edge;
 }
 
@@ -98,11 +143,9 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
   const command = ctx.commands[commandIndex];
   const player = currentPlayer(ctx);
 
-  if (command.type !== 'roll') throw new Error(`Expected roll command, got ${command.type}.`);
-  if (command.actorId !== player.id) {
-    throw new Error(`Roll actor mismatch: command P${command.actorId}, current P${player.id}.`);
-  }
-  if (!ctx.phase.can('roll')) throw new Error(`Roll is invalid during ${ctx.phase.phase}.`);
+  if (command.type !== 'roll') failCommand(ctx, command, `expected roll, got ${command.type}.`);
+  validateCommand(ctx, command);
+  if (!ctx.phase.can('roll')) failCommand(ctx, command, `roll is invalid during ${ctx.phase.phase}.`);
 
   transition(ctx, 'ROLLING');
   const result = rollD6(ctx.random);
@@ -118,11 +161,11 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
     if (outgoing.length > 1) {
       transition(ctx, 'BRANCH_CHOICE');
       const branchCommand = ctx.commands[commandIndex + consumedExtra + 1];
-      if (!branchCommand) throw new Error(`Replay is missing branch choice after node ${player.nodeId}.`);
-      if (branchCommand.actorId !== player.id) {
-        throw new Error(`Branch actor mismatch: command P${branchCommand.actorId}, current P${player.id}.`);
+      if (!branchCommand) {
+        failCommand(ctx, command, `missing branch choice after node ${player.nodeId}.`);
       }
-      edge = findBranchEdge(outgoing, branchCommand);
+      validateCommand(ctx, branchCommand);
+      edge = findBranchEdge(ctx, outgoing, branchCommand);
       consumedExtra += 1;
       transition(ctx, 'MOVING');
     }
@@ -144,41 +187,45 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
 
 function replayCard(ctx: ReplayContext, command: MatchCommand): void {
   const caster = currentPlayer(ctx);
-  if (command.type !== 'play_card') throw new Error(`Expected play_card command, got ${command.type}.`);
-  if (command.actorId !== caster.id) {
-    throw new Error(`Card actor mismatch: command P${command.actorId}, current P${caster.id}.`);
+  if (command.type !== 'play_card') failCommand(ctx, command, `expected play_card, got ${command.type}.`);
+
+  validateCommand(ctx, command);
+  if (!ctx.phase.can('use_card')) {
+    failCommand(ctx, command, `card use is invalid during ${ctx.phase.phase}.`);
   }
-  if (!ctx.phase.can('use_card')) throw new Error(`Card use is invalid during ${ctx.phase.phase}.`);
-  if (caster.cardBlockTurns > 0) throw new Error(`${caster.name} is card-locked during replay.`);
+  if (caster.cardBlockTurns > 0) failCommand(ctx, command, `${caster.name} is card-locked.`);
   if (caster.cardsPlayedThisTurn >= MVP_MAX_CARD_PLAYS_PER_TURN) {
-    throw new Error(`${caster.name} exceeded the MVP card-per-turn limit during replay.`);
+    failCommand(ctx, command, `${caster.name} exceeded the MVP card-per-turn limit.`);
   }
 
   const cardId = String(command.data.cardId ?? '');
   const handIndex = caster.handCardIds.indexOf(cardId);
-  if (handIndex < 0) throw new Error(`${caster.name} does not hold ${cardId} during replay.`);
+  if (handIndex < 0) failCommand(ctx, command, `${caster.name} does not hold ${cardId}.`);
 
   const card = ctx.cards.find((entry) => entry.id === cardId);
-  if (!card) throw new Error(`Replay cannot find card ${cardId}.`);
+  if (!card) failCommand(ctx, command, `cannot find card ${cardId}.`);
+
+  transition(ctx, 'CARD_ACTION');
 
   let target: PlayerState | undefined;
   if (card.targetMode === 'single_other') {
     const targetId = Number(command.data.targetId);
     target = ctx.state.players.find((player) => player.id === targetId && player.id !== caster.id);
-    if (!target) throw new Error(`Replay cannot resolve target ${String(command.data.targetId)}.`);
+    if (!target) failCommand(ctx, command, `cannot resolve target ${String(command.data.targetId)}.`);
   } else if (card.targetMode === 'random_other') {
     target = pickRandomOtherTarget(ctx.state.players, caster.id, ctx.random);
-    if (!target) throw new Error(`Replay cannot draw a random target for ${card.id}.`);
+    if (!target) failCommand(ctx, command, 'random_other has no valid target.');
 
     const recordedTargetId = Number(command.data.targetId);
-    if (target.id !== recordedTargetId) {
-      throw new Error(
-        `Random target mismatch for ${card.id}: stream produced P${target.id}, command recorded P${recordedTargetId}.`,
+    if (Number.isFinite(recordedTargetId) && recordedTargetId >= 0 && recordedTargetId !== target.id) {
+      failCommand(
+        ctx,
+        command,
+        `random target mismatch: command P${recordedTargetId}, deterministic P${target.id}.`,
       );
     }
   }
 
-  transition(ctx, 'CARD_ACTION');
   const resolution = applyCardEffect(card, caster, ctx.state.players, target);
   caster.handCardIds.splice(handIndex, 1);
   caster.cardsPlayedThisTurn += 1;
@@ -194,7 +241,8 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
 
 /**
  * Rebuilds gameplay state from match seed + player names + explicit player commands.
- * Presentation event logs are not replayed. The returned state contains the same command stream.
+ * Presentation event logs are not replayed. Every new command envelope is validated
+ * before its command mutates gameplay state.
  */
 export function replayMatchCommands(
   source: MatchState,
@@ -218,12 +266,13 @@ export function replayMatchCommands(
     cards,
     news,
     commands: source.commandLog,
+    checkpoints: [],
   };
   const errors: string[] = [];
 
   if (source.boardId !== board.id) {
     errors.push(`Board mismatch: snapshot ${source.boardId}, runtime ${board.id}.`);
-    return { state, consumedCommands: 0, errors };
+    return { state, consumedCommands: 0, errors, checkpoints: [] };
   }
 
   transition(ctx, 'PRE_ROLL_ACTION');
@@ -244,8 +293,9 @@ export function replayMatchCommands(
         continue;
       }
 
-      throw new Error(`Orphan choose_branch command at sequence ${command.seq}.`);
+      failCommand(ctx, command, `orphan choose_branch at sequence ${command.seq}.`);
     } catch (error) {
+      if (ctx.failedCommandSeq === undefined) ctx.failedCommandSeq = command.seq;
       errors.push(error instanceof Error ? error.message : String(error));
       break;
     }
@@ -261,5 +311,7 @@ export function replayMatchCommands(
     state,
     consumedCommands: index,
     errors,
+    checkpoints: ctx.checkpoints,
+    failedCommandSeq: ctx.failedCommandSeq,
   };
 }
