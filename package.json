@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test:replay": "tsx tests/replay-determinism.ts",
     "test:lockstep": "tsx tests/lockstep-peer.ts",
+    "test:host-client": "tsx tests/host-client-queue.ts",
     "preview": "vite preview"
   },
   "dependencies": {
