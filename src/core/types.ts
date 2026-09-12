@@ -20,4 +20,6 @@ export interface PlayerState {
   tileIndex: number;
   money: number;
   cardBlockTurns: number;
+  handCardIds: string[];
+  cardsPlayedThisTurn: number;
 }

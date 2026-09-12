@@ -8,6 +8,7 @@ import {
   drawWeightedCard,
   getValidTargets,
   type CardDefinition,
+  type CardResolution,
 } from '../core/cards';
 import { rollD6 } from '../core/dice';
 import {
@@ -16,9 +17,11 @@ import {
   type NewsDefinition,
 } from '../core/news';
 import type { ReactionContext, ReactionEventDefinition } from '../core/reactions';
+import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from '../core/rules';
 import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
 import type { BoardDefinition, BoardNode, PlayerState, TileType } from '../core/types';
+import { showCardHandPicker } from '../ui/CardHandPicker';
 import { showDynamicCard } from '../ui/CardOverlay';
 import { showDynamicNews } from '../ui/NewsOverlay';
 import { playReactionSequence } from '../ui/ReactionSequencer';
@@ -54,11 +57,14 @@ export class BoardScene extends Phaser.Scene {
   private readonly turn = new TurnManager(4);
   private readonly players: VisualPlayer[] = [];
   private rolling = false;
+  private actionBusy = false;
   private diceText!: Phaser.GameObjects.Text;
   private turnText!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private logText!: Phaser.GameObjects.Text;
   private rollButton!: Phaser.GameObjects.Rectangle;
+  private handButton!: Phaser.GameObjects.Rectangle;
+  private handButtonText!: Phaser.GameObjects.Text;
   private logs: string[] = [];
 
   constructor() {
@@ -81,11 +87,14 @@ export class BoardScene extends Phaser.Scene {
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1.4: Tin Tức + Reaction Sequencer đã hoạt động 📰💬');
+    this.writeLog('MVP 0.1.5: Lá Bài giờ được rút vào tay và tự chọn lúc dùng 🃏');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
       void this.handleRoll();
+    });
+    this.input.keyboard?.on('keydown-C', () => {
+      void this.handleUseCard();
     });
   }
 
@@ -100,14 +109,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.4', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.5', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Lá Bài + Tin Tức data-driven • auto reaction không block turn', {
+    this.add.text(178, 77, 'Card hand • chủ động dùng Lá Bài • Tin Tức + reaction non-blocking', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -197,6 +206,8 @@ export class BoardScene extends Phaser.Scene {
         tileIndex: 0,
         money: 1000,
         cardBlockTurns: 0,
+        handCardIds: [],
+        cardsPlayedThisTurn: 0,
         token,
         face,
       });
@@ -204,55 +215,74 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private createHud(): void {
-    this.add.rectangle(640, 350, 360, 220, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
+    this.add.rectangle(640, 365, 390, 300, 0xfffbf3, 0.96).setStrokeStyle(4, 0x242424, 1);
 
     this.turnText = this.add
-      .text(640, 286, '', {
+      .text(640, 267, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '24px',
+        fontSize: '23px',
         fontStyle: 'bold',
         color: '#202020',
       })
       .setOrigin(0.5);
 
     this.diceText = this.add
-      .text(640, 332, '🎲  ?', {
+      .text(640, 316, '🎲  ?', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '35px',
+        fontSize: '34px',
         color: '#202020',
       })
       .setOrigin(0.5);
 
     this.rollButton = this.add
-      .rectangle(640, 397, 210, 58, 0xef4545, 1)
+      .rectangle(640, 375, 220, 52, 0xef4545, 1)
       .setStrokeStyle(4, 0x242424, 1)
       .setInteractive({ useHandCursor: true });
 
     this.add
-      .text(640, 397, 'ĐỔ XÚC XẮC', {
+      .text(640, 375, 'ĐỔ XÚC XẮC', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '20px',
+        fontSize: '18px',
         fontStyle: 'bold',
         color: '#ffffff',
+      })
+      .setOrigin(0.5);
+
+    this.handButton = this.add
+      .rectangle(640, 440, 220, 52, 0xb997d6, 1)
+      .setStrokeStyle(4, 0x242424, 1)
+      .setInteractive({ useHandCursor: true });
+
+    this.handButtonText = this.add
+      .text(640, 440, 'LÁ BÀI 0/3', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '17px',
+        fontStyle: 'bold',
+        color: '#202020',
       })
       .setOrigin(0.5);
 
     this.rollButton.on('pointerdown', () => {
       void this.handleRoll();
     });
-
-    this.add.text(452, 467, 'Click nút hoặc nhấn SPACE', {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '13px',
-      color: '#756d62',
+    this.handButton.on('pointerdown', () => {
+      void this.handleUseCard();
     });
 
-    this.scoreText = this.add.text(1000, 28, '', {
+    this.add
+      .text(640, 487, 'SPACE: roll • C: mở tay bài', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '12px',
+        color: '#756d62',
+      })
+      .setOrigin(0.5);
+
+    this.scoreText = this.add.text(988, 28, '', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
+      fontSize: '14px',
       color: '#252525',
       backgroundColor: '#fffaf0',
-      padding: { x: 14, y: 11 },
+      padding: { x: 13, y: 10 },
       lineSpacing: 7,
     });
 
@@ -267,7 +297,7 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private async handleRoll(): Promise<void> {
-    if (this.rolling) return;
+    if (this.rolling || this.actionBusy) return;
 
     this.rolling = true;
     this.rollButton.setFillStyle(0xb8ada1, 1);
@@ -287,6 +317,60 @@ export class BoardScene extends Phaser.Scene {
     this.rolling = false;
     this.rollButton.setFillStyle(0xef4545, 1);
     this.refreshHud();
+  }
+
+  private async handleUseCard(): Promise<void> {
+    if (this.rolling || this.actionBusy) return;
+
+    const caster = this.players[this.turn.currentIndex];
+    if (caster.cardBlockTurns > 0) {
+      this.setPlayerExpression(caster, 'angry', 1100);
+      this.flashCenter('🔒 BỊ KHÓA LÁ BÀI!', '#c34a44');
+      this.writeLog(`${caster.name} đang bị Khóa Mõm nên không thể dùng Lá Bài ở lượt này.`);
+      return;
+    }
+
+    if (caster.cardsPlayedThisTurn >= MVP_MAX_CARD_PLAYS_PER_TURN) {
+      this.flashCenter('🃏 ĐÃ DÙNG LÁ BÀI LƯỢT NÀY', '#8f68af');
+      this.writeLog(`${caster.name} đã chạm giới hạn dùng Lá Bài của MVP trong lượt này.`);
+      return;
+    }
+
+    if (caster.handCardIds.length === 0) {
+      this.flashCenter('🃏 CHƯA CÓ LÁ BÀI', '#8f68af');
+      this.writeLog(`${caster.name} chưa có Lá Bài trong tay.`);
+      return;
+    }
+
+    this.actionBusy = true;
+    this.rollButton.setFillStyle(0xb8ada1, 1);
+    this.handButton.setFillStyle(0xb8ada1, 1);
+
+    try {
+      const selection = await showCardHandPicker(this, caster, caster.handCardIds, CARDS);
+      if (!selection) return;
+
+      const { card, handIndex } = selection;
+      let target: VisualPlayer | undefined;
+
+      if (card.targetMode === 'single_other') {
+        const candidates = getValidTargets(this.players, caster.id);
+        target = await showTargetPicker(this, caster, candidates);
+        if (!target) {
+          this.writeLog(`${caster.name} giữ lại ${card.title} vì chưa chọn mục tiêu.`);
+          return;
+        }
+      }
+
+      const resolution = applyCardEffect(card, caster, this.players, target);
+      caster.handCardIds.splice(handIndex, 1);
+      caster.cardsPlayedThisTurn += 1;
+      this.presentCardResolution(caster, card, resolution, target);
+    } finally {
+      this.actionBusy = false;
+      this.rollButton.setFillStyle(0xef4545, 1);
+      this.refreshHud();
+    }
   }
 
   private async movePlayer(player: VisualPlayer, steps: number): Promise<void> {
@@ -331,7 +415,7 @@ export class BoardScene extends Phaser.Scene {
         this.resolveNewsTile(player);
         break;
       case 'card':
-        await this.resolveCardTile(player);
+        this.drawCardToHand(player);
         break;
       case 'ready':
         this.writeLog(`${player.name} dừng tại READY.`);
@@ -340,6 +424,27 @@ export class BoardScene extends Phaser.Scene {
         this.writeLog(`${player.name} đáp xuống ô thường.`);
         break;
     }
+  }
+
+  private drawCardToHand(player: VisualPlayer): void {
+    if (player.handCardIds.length >= MVP_CARD_HAND_LIMIT) {
+      this.setPlayerExpression(player, 'angry', 900);
+      this.flashCenter('🃏 TAY BÀI ĐÃ ĐẦY!', '#8f68af');
+      this.writeLog(`${player.name} chạm ô Lá Bài nhưng tay đã đủ ${MVP_CARD_HAND_LIMIT} lá.`);
+      return;
+    }
+
+    const card = drawWeightedCard(CARDS);
+    if (!card) {
+      this.writeLog('Deck Lá Bài không có lá hợp lệ.');
+      return;
+    }
+
+    player.handCardIds.push(card.id);
+    this.setPlayerExpression(player, 'happy', 1000);
+    this.flashCenter(`🃏 ${card.rarity} • ${card.title}`, '#8f68af');
+    this.writeLog(`${player.name} rút ${card.title} vào tay (${player.handCardIds.length}/${MVP_CARD_HAND_LIMIT}).`);
+    this.refreshHud();
   }
 
   private resolveNewsTile(subject: VisualPlayer): void {
@@ -375,38 +480,21 @@ export class BoardScene extends Phaser.Scene {
     this.refreshHud();
   }
 
-  private async resolveCardTile(caster: VisualPlayer): Promise<void> {
-    if (caster.cardBlockTurns > 0) {
-      this.setPlayerExpression(caster, 'angry', 1100);
-      this.flashCenter('🔒 BỊ KHÓA LÁ BÀI!', '#c34a44');
-      this.writeLog(`${caster.name} đang bị Khóa Mõm nên không thể dùng Lá Bài ở lượt này.`);
-      return;
-    }
-
-    const card = drawWeightedCard(CARDS);
-    if (!card) {
-      this.writeLog('Deck Lá Bài không có lá hợp lệ.');
-      return;
-    }
-
-    let target: VisualPlayer | undefined;
-    if (card.targetMode === 'single_other') {
-      const candidates = getValidTargets(this.players, caster.id);
-      target = await showTargetPicker(this, caster, candidates);
-      if (!target) {
-        this.writeLog(`${caster.name} rút ${card.title}, nhưng không có mục tiêu hợp lệ.`);
-        return;
-      }
-    }
-
-    const resolution = applyCardEffect(card, caster, this.players, target);
+  private presentCardResolution(
+    caster: VisualPlayer,
+    card: CardDefinition,
+    resolution: CardResolution,
+    target?: VisualPlayer,
+  ): void {
     this.setPlayerExpression(caster, 'happy', 1500);
 
     if (target) {
       this.setPlayerExpression(target, 'angry', 1500);
     } else {
       for (const opponent of this.players) {
-        if (opponent.id !== caster.id) this.setPlayerExpression(opponent, 'angry', 1500);
+        if (opponent.id !== caster.id && resolution.affectedPlayerIds.includes(opponent.id)) {
+          this.setPlayerExpression(opponent, 'angry', 1500);
+        }
       }
     }
 
@@ -455,12 +543,14 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private finishTurn(player: VisualPlayer): void {
-    if (player.cardBlockTurns <= 0) return;
-
-    player.cardBlockTurns -= 1;
-    if (player.cardBlockTurns === 0) {
-      this.writeLog(`🔓 ${player.name} đã hết hiệu lực Khóa Mõm.`);
+    if (player.cardBlockTurns > 0) {
+      player.cardBlockTurns -= 1;
+      if (player.cardBlockTurns === 0) {
+        this.writeLog(`🔓 ${player.name} đã hết hiệu lực Khóa Mõm.`);
+      }
     }
+
+    player.cardsPlayedThisTurn = 0;
   }
 
   private setPlayerExpression(
@@ -487,21 +577,22 @@ export class BoardScene extends Phaser.Scene {
 
   private flashCenter(message: string, color: string): void {
     const text = this.add
-      .text(640, 530, message, {
+      .text(640, 545, message, {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '30px',
+        fontSize: '28px',
         fontStyle: 'bold',
         color,
         backgroundColor: '#fffaf0',
         padding: { x: 18, y: 10 },
       })
       .setOrigin(0.5)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setDepth(250);
 
     this.tweens.add({
       targets: text,
       alpha: 1,
-      y: 510,
+      y: 525,
       duration: 160,
       yoyo: true,
       hold: 650,
@@ -517,12 +608,31 @@ export class BoardScene extends Phaser.Scene {
       this.players
         .map((player, index) => {
           const marker = index === this.turn.currentIndex ? '▶' : ' ';
-          const lock = player.cardBlockTurns > 0 ? `  🔒${player.cardBlockTurns}` : '';
+          const lock = player.cardBlockTurns > 0 ? ` 🔒${player.cardBlockTurns}` : '';
           const personality = gameSession.getPersonality(player.id);
-          return `${marker} ${this.shortName(player.name)}  ${player.money}B$${lock}  • ${personality} • ô ${player.tileIndex}`;
+          const hand = `🃏${player.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`;
+          return `${marker} ${this.shortName(player.name)} ${player.money}B$ ${hand}${lock} • ${personality} • ô ${player.tileIndex}`;
         })
         .join('\n'),
     );
+
+    this.handButtonText.setText(`LÁ BÀI ${current.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`);
+
+    const cardLocked = current.cardBlockTurns > 0;
+    const cardLimitReached = current.cardsPlayedThisTurn >= MVP_MAX_CARD_PLAYS_PER_TURN;
+    const hasCards = current.handCardIds.length > 0;
+
+    if (cardLocked) {
+      this.handButton.setFillStyle(0xb8ada1, 1);
+      this.handButtonText.setText(`🔒 LÁ BÀI ${current.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`);
+    } else if (cardLimitReached) {
+      this.handButton.setFillStyle(0xd8d2c7, 1);
+      this.handButtonText.setText('✓ ĐÃ DÙNG LÁ BÀI');
+    } else if (!hasCards) {
+      this.handButton.setFillStyle(0xd8d2c7, 1);
+    } else {
+      this.handButton.setFillStyle(0xb997d6, 1);
+    }
   }
 
   private shortName(name: string): string {
