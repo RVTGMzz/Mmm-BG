@@ -1,9 +1,12 @@
 import Phaser from 'phaser';
+import cardJson from '../content/core/card_prototype.json';
 import boardJson from '../content/city/board_city_mvp.json';
+import { applyCardEffect, pickRandomOtherPlayer, type CardDefinition } from '../core/cards';
 import { rollD6 } from '../core/dice';
 import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
 import type { BoardDefinition, BoardNode, PlayerState, TileType } from '../core/types';
+import { showDynamicCard } from '../ui/CardOverlay';
 
 type VisualPlayer = PlayerState & {
   token: Phaser.GameObjects.Container;
@@ -11,6 +14,7 @@ type VisualPlayer = PlayerState & {
 };
 
 const BOARD = boardJson as BoardDefinition;
+const PROTOTYPE_CARD = cardJson as CardDefinition;
 
 const TILE_COLORS: Record<TileType, number> = {
   ready: 0xef4545,
@@ -59,7 +63,7 @@ export class BoardScene extends Phaser.Scene {
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1.1: khuôn mặt thật đã vào bàn cờ 🎭');
+    this.writeLog('MVP 0.1.2: Dynamic Card Face Slots đã hoạt động 🃏');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -78,14 +82,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.1', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.2', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Face runtime: 😐 → 😆 / 😡 theo sự kiện', {
+    this.add.text(178, 77, 'Face runtime + Lá Bài ghép Caster/Target theo data', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -305,13 +309,11 @@ export class BoardScene extends Phaser.Scene {
       }
       case 'news':
         this.setPlayerExpression(player, 'angry', 900);
-        this.writeLog(`${player.name} chạm TIN TỨC. Deck thật sẽ được nối ở milestone kế tiếp.`);
+        this.writeLog(`${player.name} chạm TIN TỨC. Deck thật sẽ nối sau Dynamic Card.`);
         this.flashCenter('📰 TIN TỨC!', '#6aa84f');
         break;
       case 'card':
-        this.setPlayerExpression(player, 'happy', 900);
-        this.writeLog(`${player.name} chạm LÁ BÀI. Dynamic Card sẽ là milestone kế tiếp.`);
-        this.flashCenter('🃏 LÁ BÀI!', '#8f68af');
+        this.resolvePrototypeCard(player);
         break;
       case 'ready':
         this.writeLog(`${player.name} dừng tại READY.`);
@@ -320,6 +322,20 @@ export class BoardScene extends Phaser.Scene {
         this.writeLog(`${player.name} đáp xuống ô thường.`);
         break;
     }
+  }
+
+  private resolvePrototypeCard(caster: VisualPlayer): void {
+    const target = pickRandomOtherPlayer(this.players, caster.id);
+    if (!target) {
+      this.writeLog(`${caster.name} rút ${PROTOTYPE_CARD.title}, nhưng không có mục tiêu hợp lệ.`);
+      return;
+    }
+
+    const resolution = applyCardEffect(PROTOTYPE_CARD, caster, target);
+    this.setPlayerExpression(caster, 'happy', 1350);
+    this.setPlayerExpression(target, 'angry', 1350);
+    showDynamicCard(this, PROTOTYPE_CARD, caster, target);
+    this.writeLog(`🃏 ${PROTOTYPE_CARD.title}: ${resolution.summary}`);
   }
 
   private setPlayerExpression(
