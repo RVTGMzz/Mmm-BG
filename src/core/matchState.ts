@@ -1,3 +1,4 @@
+import { computeMatchChecksum } from './checksum';
 import { createRngState, type SerializableRngState } from './rng';
 import type { TurnPhase, TurnPhaseSnapshot } from './turnPhase';
 import type { PlayerState } from './types';
@@ -24,6 +25,12 @@ export interface MatchCommand {
   playerIndex: number;
   actorId: number;
   data: Record<string, MatchEventValue>;
+  /** Exact safe-point phase before this command is accepted. */
+  phase?: TurnPhase;
+  /** Turn phase revision before this command is accepted. Legacy snapshots may omit it. */
+  revision?: number;
+  /** Gameplay-state checksum immediately before command acceptance. */
+  preChecksum?: string;
 }
 
 export interface MatchTurnState extends TurnPhaseSnapshot {
@@ -33,7 +40,7 @@ export interface MatchTurnState extends TurnPhaseSnapshot {
 }
 
 export interface MatchState {
-  schemaVersion: 2;
+  schemaVersion: 3;
   boardId: string;
   seed: number;
   startingMoney: number;
@@ -68,7 +75,7 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
   }));
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     boardId: options.boardId,
     seed: rng.seed,
     startingMoney,
@@ -124,6 +131,9 @@ export function appendMatchCommand(
     playerIndex: match.turn.currentPlayerIndex,
     actorId,
     data,
+    phase: match.turn.phase,
+    revision: match.turn.revision,
+    preChecksum: computeMatchChecksum(match),
   };
 
   match.nextCommandSeq += 1;
@@ -147,11 +157,38 @@ export function serializeMatchState(match: MatchState): string {
   return JSON.stringify(match);
 }
 
+function legacyPhaseForCommand(type: MatchCommandType): TurnPhase {
+  if (type === 'choose_branch') return 'BRANCH_CHOICE';
+  if (type === 'play_card') return 'CARD_ACTION';
+  return 'PRE_ROLL_ACTION';
+}
+
+function migrateLegacyCommands(commands: MatchCommand[] | undefined): MatchCommand[] {
+  return (commands ?? []).map((command) => ({
+    ...command,
+    data: { ...command.data },
+    phase: command.phase ?? legacyPhaseForCommand(command.type),
+    revision: command.revision ?? -1,
+    preChecksum: command.preChecksum ?? '',
+  }));
+}
+
 export function deserializeMatchState(serialized: string): MatchState {
   const parsed = JSON.parse(serialized) as Partial<MatchState> & { schemaVersion?: number };
 
-  if (parsed.schemaVersion === 2) {
+  if (parsed.schemaVersion === 3) {
     return parsed as MatchState;
+  }
+
+  if (parsed.schemaVersion === 2) {
+    const legacy = parsed as Omit<MatchState, 'schemaVersion'> & { schemaVersion: 2 };
+    const commandLog = migrateLegacyCommands(legacy.commandLog);
+    return {
+      ...legacy,
+      schemaVersion: 3,
+      commandLog,
+      nextCommandSeq: legacy.nextCommandSeq ?? commandLog.length + 1,
+    };
   }
 
   if (parsed.schemaVersion === 1) {
@@ -166,7 +203,7 @@ export function deserializeMatchState(serialized: string): MatchState {
     };
 
     return {
-      schemaVersion: 2,
+      schemaVersion: 3,
       boardId: legacy.boardId,
       seed: legacy.seed,
       startingMoney: 1000,
