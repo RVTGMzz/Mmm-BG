@@ -1,0 +1,29 @@
+{
+  "id": "ACT_001",
+  "title": "Trượt Tay",
+  "rarity": "N",
+  "impact": "⭐",
+  "description": "Lấy 10B$ từ 1 người chơi ngẫu nhiên.",
+  "effect": {
+    "type": "steal_money",
+    "amount": 10
+  },
+  "faceSlots": [
+    {
+      "role": "caster",
+      "expression": "happy",
+      "x": -132,
+      "y": 22,
+      "size": 126,
+      "rotation": -5
+    },
+    {
+      "role": "target",
+      "expression": "angry",
+      "x": 132,
+      "y": 22,
+      "size": 126,
+      "rotation": 5
+    }
+  ]
+}
