@@ -1,0 +1,98 @@
+[
+  {
+    "Card_ID": "ACT_001",
+    "Card_Name": "Trượt Tay",
+    "Rarity": "N",
+    "Drop_Weight": 600,
+    "Impact_Level": "⭐",
+    "Game_Logic": "Lấy 10 vàng từ 1 người chơi ngẫu nhiên."
+  },
+  {
+    "Card_ID": "ACT_002",
+    "Card_Name": null,
+    "Rarity": "N",
+    "Drop_Weight": 600,
+    "Impact_Level": "⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_003",
+    "Card_Name": null,
+    "Rarity": "N",
+    "Drop_Weight": 600,
+    "Impact_Level": "⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_004",
+    "Card_Name": null,
+    "Rarity": "N",
+    "Drop_Weight": 600,
+    "Impact_Level": "⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_005",
+    "Card_Name": null,
+    "Rarity": "N",
+    "Drop_Weight": 600,
+    "Impact_Level": "⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_006",
+    "Card_Name": "Khóa Mõm",
+    "Rarity": "R",
+    "Drop_Weight": 300,
+    "Impact_Level": "⭐⭐",
+    "Game_Logic": "Cấm Target sử dụng Lá Bài trong 1 lượt."
+  },
+  {
+    "Card_ID": "ACT_007",
+    "Card_Name": null,
+    "Rarity": "R",
+    "Drop_Weight": 300,
+    "Impact_Level": "⭐⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_008",
+    "Card_Name": null,
+    "Rarity": "R",
+    "Drop_Weight": 300,
+    "Impact_Level": "⭐⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_009",
+    "Card_Name": null,
+    "Rarity": "R",
+    "Drop_Weight": 300,
+    "Impact_Level": "⭐⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_010",
+    "Card_Name": "Triệu Hồi Hắc Ín",
+    "Rarity": "SR",
+    "Drop_Weight": 90,
+    "Impact_Level": "⭐⭐⭐",
+    "Game_Logic": "Trừ 30% tổng tài sản của tất cả người chơi khác."
+  },
+  {
+    "Card_ID": "ACT_011",
+    "Card_Name": null,
+    "Rarity": "SR",
+    "Drop_Weight": 90,
+    "Impact_Level": "⭐⭐⭐",
+    "Game_Logic": null
+  },
+  {
+    "Card_ID": "ACT_012",
+    "Card_Name": "Chuyển Sinh Đổi Vận",
+    "Rarity": "SSR",
+    "Drop_Weight": 10,
+    "Impact_Level": "⭐⭐⭐⭐⭐",
+    "Game_Logic": "Hoán đổi toàn bộ số vàng của bản thân với Target."
+  }
+]
