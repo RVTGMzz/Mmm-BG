@@ -29,3 +29,6 @@ jobs:
 
       - name: Typecheck and build
         run: npm run build
+
+      - name: Deterministic replay fixture
+        run: npm run test:replay
