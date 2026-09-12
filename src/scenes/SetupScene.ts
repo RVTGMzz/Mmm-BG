@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { browserSession } from '../core/browserSession';
 import { gameSession, type FaceExpression } from '../core/session';
 import { buildFaceSticker, faceTextureKey } from '../systems/faces';
 
@@ -33,14 +34,17 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • MVP 0.1.1', {
+    this.add.text(190, 47, 'FACE SETUP • MVP 0.1.14', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(190, 79, '4 người chơi → tên → biểu cảm → biến thành sticker trên bàn cờ', {
+    const mode = browserSession.current.mode === 'host'
+      ? `HOST LOCAL • ROOM ${browserSession.current.roomCode}`
+      : '4 người chơi → tên → biểu cảm → biến thành sticker trên bàn cờ';
+    this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#6d655b',
@@ -168,7 +172,7 @@ export class SetupScene extends Phaser.Scene {
       return;
     }
 
-    this.scene.start('BoardScene');
+    this.scene.start(browserSession.current.mode === 'host' ? 'NetworkBoardScene' : 'BoardScene');
   }
 
   private refreshStatus(): void {
