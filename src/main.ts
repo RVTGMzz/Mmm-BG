@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import './styles.css';
+import { SetupScene } from './scenes/SetupScene';
 import { BoardScene } from './scenes/BoardScene';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -8,7 +9,10 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [BoardScene],
+  scene: [SetupScene, BoardScene],
+  dom: {
+    createContainer: true,
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
