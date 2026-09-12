@@ -24,14 +24,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'LOCAL SESSION • MVP 0.1.14', {
+    this.add.text(228, 73, 'DEMO SESSION • MVP 0.1.15', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Solo như cũ, hoặc mở 2 tab cùng trình duyệt để test host/client thật bằng BroadcastChannel.', {
+    this.add.text(228, 109, 'Demo 3 vòng: chơi hotseat trên một máy hoặc mở 2 tab cùng trình duyệt để chia ghế.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -45,14 +45,14 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card solo-card">
           <div class="lobby-icon">🎲</div>
           <h2>SOLO / HOTSEAT</h2>
-          <p>Giữ nguyên flow hiện tại: setup 4 người rồi chơi trên một máy.</p>
-          <button id="lobby-solo" type="button">CHƠI SOLO</button>
+          <p>Setup đủ 4 người, bấm bắt đầu rồi chơi demo 3 vòng trên một máy.</p>
+          <button id="lobby-solo" type="button">CHƠI DEMO SOLO</button>
         </section>
 
         <section class="lobby-card host-card">
           <div class="lobby-icon">📡</div>
           <h2>HOST 2 TAB</h2>
-          <p>Tab này làm host. Sau setup, giữ phòng mở và nhập room code ở tab client.</p>
+          <p>Tab này làm host, setup 4 người và quyết định lúc bắt đầu/rematch.</p>
           <label>ROOM CODE
             <input id="host-room" maxlength="8" value="${initialRoom}" />
           </label>
@@ -62,7 +62,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card join-card">
           <div class="lobby-icon">🛰️</div>
           <h2>JOIN 2 TAB</h2>
-          <p>Tab client bỏ qua face setup. Host vẫn điều khiển các ghế chưa có người join.</p>
+          <p>Client bỏ qua face setup, chọn P2/P3/P4 rồi chờ host bấm bắt đầu.</p>
           <label>ROOM CODE
             <input id="join-room" maxlength="8" placeholder="VD: ME12AB" />
           </label>
@@ -73,10 +73,10 @@ export class LocalLobbyScene extends Phaser.Scene {
               <option value="3">P4</option>
             </select>
           </label>
-          <button id="lobby-join" type="button">JOIN PHÒNG</button>
+          <button id="lobby-join" type="button">JOIN DEMO</button>
         </section>
       </div>
-      <p id="lobby-status" class="lobby-status">PoC local only: hai tab phải cùng origin/trình duyệt. Chưa phải online internet.</p>
+      <p id="lobby-status" class="lobby-status">Luật demo tạm: 3 vòng, B$ cao nhất thắng. Hai tab vẫn chỉ chạy local cùng origin, chưa phải online internet.</p>
     `;
 
     const dom = this.add.dom(640, 408, root).setOrigin(0.5);
@@ -98,7 +98,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       const input = node.querySelector<HTMLInputElement>('#host-room');
       const room = normalizeRoomCode(input?.value ?? '') || generateRoomCode();
       browserSession.configureHost(room);
-      setStatus(`Host phòng ${room}. Sau khi vào bàn cờ, mở tab khác và JOIN room này.`);
+      setStatus(`Host phòng ${room}. Client có thể mở tab khác và JOIN room này.`);
       this.scene.start('SetupScene');
     });
 
@@ -115,7 +115,7 @@ export class LocalLobbyScene extends Phaser.Scene {
 
       try {
         browserSession.configureClient(room, seatId);
-        this.scene.start('BoardScene');
+        this.scene.start('DemoBoardScene');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : String(error), true);
       }
