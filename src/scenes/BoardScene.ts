@@ -4,6 +4,12 @@ import newsJson from '../content/core/news_mvp_demo.json';
 import reactionsJson from '../content/core/reactions_mvp_demo.json';
 import boardJson from '../content/city/board_city_mvp.json';
 import {
+  getBoardNode,
+  getOutgoingEdges,
+  pickParityEdge,
+  validateBoardDefinition,
+} from '../core/board';
+import {
   applyCardEffect,
   drawWeightedCard,
   getValidTargets,
@@ -17,10 +23,21 @@ import {
   type NewsDefinition,
 } from '../core/news';
 import type { ReactionContext, ReactionEventDefinition } from '../core/reactions';
-import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from '../core/rules';
+import {
+  MVP_BRANCH_DECISION_MODE,
+  MVP_CARD_HAND_LIMIT,
+  MVP_MAX_CARD_PLAYS_PER_TURN,
+} from '../core/rules';
 import { gameSession, type FaceExpression } from '../core/session';
 import { TurnManager } from '../core/turn';
-import type { BoardDefinition, BoardNode, PlayerState, TileType } from '../core/types';
+import type {
+  BoardDefinition,
+  BoardEdge,
+  BoardNode,
+  PlayerState,
+  TileType,
+} from '../core/types';
+import { showBranchPicker } from '../ui/BranchPicker';
 import { showCardHandPicker } from '../ui/CardHandPicker';
 import { showDynamicCard } from '../ui/CardOverlay';
 import { showDynamicNews } from '../ui/NewsOverlay';
@@ -82,12 +99,17 @@ export class BoardScene extends Phaser.Scene {
   }
 
   create(): void {
+    const graphErrors = validateBoardDefinition(BOARD);
+    if (graphErrors.length > 0) {
+      throw new Error(`Invalid board graph:\n${graphErrors.join('\n')}`);
+    }
+
     this.cameras.main.setBackgroundColor('#f4ead7');
     this.drawHeader();
     this.drawBoard();
     this.createPlayers();
     this.createHud();
-    this.writeLog('MVP 0.1.5: Lá Bài giờ được rút vào tay và tự chọn lúc dùng 🃏');
+    this.writeLog('MVP 0.1.6: board graph + ngã rẽ data-driven đã hoạt động 🛣️');
     this.refreshHud();
 
     this.input.keyboard?.on('keydown-SPACE', () => {
@@ -109,14 +131,14 @@ export class BoardScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(178, 47, 'CITY • MVP 0.1.5', {
+    this.add.text(178, 47, 'CITY • MVP 0.1.6', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(178, 77, 'Card hand • chủ động dùng Lá Bài • Tin Tức + reaction non-blocking', {
+    this.add.text(178, 77, 'Board graph • 1 ngã rẽ thật • card/news/reaction giữ nguyên runtime', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -124,15 +146,32 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private drawBoard(): void {
-    const path = this.add.graphics();
-    path.lineStyle(8, 0xd8c5a5, 0.75);
+    for (const edge of BOARD.edges) {
+      const from = getBoardNode(BOARD, edge.from);
+      const to = getBoardNode(BOARD, edge.to);
+      const path = this.add.graphics();
+      const isBranch = edge.route === 'branch';
+      path.lineStyle(isBranch ? 7 : 8, isBranch ? 0x9f7fba : 0xd8c5a5, isBranch ? 0.82 : 0.75);
+      path.lineBetween(from.x, from.y, to.x, to.y);
 
-    BOARD.nodes.forEach((node, index) => {
-      const next = BOARD.nodes[(index + 1) % BOARD.nodes.length];
-      path.lineBetween(node.x, node.y, next.x, next.y);
-    });
+      if (edge.label) {
+        const midX = (from.x + to.x) / 2;
+        const midY = (from.y + to.y) / 2;
+        this.add
+          .text(midX, midY - 23, edge.label, {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '11px',
+            fontStyle: 'bold',
+            color: isBranch ? '#795796' : '#8a672f',
+            backgroundColor: '#fffaf0',
+            padding: { x: 5, y: 3 },
+          })
+          .setOrigin(0.5)
+          .setDepth(3);
+      }
+    }
 
-    BOARD.nodes.forEach((node) => {
+    for (const node of BOARD.nodes) {
       this.add.circle(node.x, node.y, 34, TILE_COLORS[node.type], 1).setStrokeStyle(5, 0x242424, 1);
       this.add
         .text(node.x, node.y, this.tileLabel(node), {
@@ -143,12 +182,12 @@ export class BoardScene extends Phaser.Scene {
           align: 'center',
         })
         .setOrigin(0.5);
-    });
+    }
 
     this.add
-      .text(640, 350, 'CITY PLAYTEST\n18 NODES', {
+      .text(640, 350, 'CITY GRAPH\n20 NODES • 1 BRANCH', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '34px',
+        fontSize: '31px',
         fontStyle: 'bold',
         color: '#c8b99f',
         align: 'center',
@@ -165,7 +204,7 @@ export class BoardScene extends Phaser.Scene {
   }
 
   private createPlayers(): void {
-    const start = BOARD.nodes[0];
+    const start = getBoardNode(BOARD, BOARD.startNodeId);
 
     for (let i = 0; i < 4; i += 1) {
       const profile = gameSession.players[i];
@@ -203,7 +242,7 @@ export class BoardScene extends Phaser.Scene {
       this.players.push({
         id: i,
         name: profile?.name || `Player ${i + 1}`,
-        tileIndex: 0,
+        nodeId: BOARD.startNodeId,
         money: 1000,
         cardBlockTurns: 0,
         handCardIds: [],
@@ -310,7 +349,7 @@ export class BoardScene extends Phaser.Scene {
     this.writeLog(`${player.name} đổ được ${result}.`);
 
     await this.movePlayer(player, result);
-    await this.resolveTile(player);
+    this.resolveTile(player);
     this.finishTurn(player);
 
     this.turn.next();
@@ -375,16 +414,22 @@ export class BoardScene extends Phaser.Scene {
 
   private async movePlayer(player: VisualPlayer, steps: number): Promise<void> {
     for (let step = 0; step < steps; step += 1) {
-      const nextIndex = (player.tileIndex + 1) % BOARD.nodes.length;
-      player.tileIndex = nextIndex;
+      const outgoing = getOutgoingEdges(BOARD, player.nodeId);
+      if (outgoing.length === 0) {
+        this.writeLog(`⚠️ Node ${player.nodeId} không có đường đi tiếp.`);
+        return;
+      }
 
-      if (nextIndex === 0) {
+      const edge = await this.chooseEdge(player, outgoing, steps);
+      player.nodeId = edge.to;
+
+      if (edge.to === BOARD.startNodeId) {
         player.money += 100;
         this.setPlayerExpression(player, 'happy', 900);
         this.writeLog(`${player.name} hoàn thành 1 vòng: +100B$.`);
       }
 
-      const node = BOARD.nodes[nextIndex];
+      const node = getBoardNode(BOARD, edge.to);
       const offset = TOKEN_OFFSETS[player.id];
 
       await new Promise<void>((resolve) => {
@@ -400,8 +445,32 @@ export class BoardScene extends Phaser.Scene {
     }
   }
 
-  private async resolveTile(player: VisualPlayer): Promise<void> {
-    const node = BOARD.nodes[player.tileIndex];
+  private async chooseEdge(
+    player: VisualPlayer,
+    outgoing: BoardEdge[],
+    roll: number,
+  ): Promise<BoardEdge> {
+    if (outgoing.length === 1) return outgoing[0];
+
+    if (MVP_BRANCH_DECISION_MODE === 'odd_even') {
+      const selected = pickParityEdge(outgoing, roll) ?? outgoing[0];
+      const parity = roll % 2 === 0 ? 'CHẴN' : 'LẺ';
+      this.flashCenter(`🛣️ ${parity} → ${selected.label ?? `NODE ${selected.to}`}`, '#795796');
+      this.writeLog(`${player.name} gặp ngã rẽ: roll ${parity}, đi ${selected.label ?? selected.to}.`);
+      return selected;
+    }
+
+    const options = outgoing.map((edge) => ({
+      edge,
+      destination: getBoardNode(BOARD, edge.to),
+    }));
+    const selected = await showBranchPicker(this, player, options, roll);
+    this.writeLog(`${player.name} chọn ${selected.label ?? `đường tới node ${selected.to}`}.`);
+    return selected;
+  }
+
+  private resolveTile(player: VisualPlayer): void {
+    const node = getBoardNode(BOARD, player.nodeId);
 
     switch (node.type) {
       case 'money': {
@@ -611,7 +680,7 @@ export class BoardScene extends Phaser.Scene {
           const lock = player.cardBlockTurns > 0 ? ` 🔒${player.cardBlockTurns}` : '';
           const personality = gameSession.getPersonality(player.id);
           const hand = `🃏${player.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`;
-          return `${marker} ${this.shortName(player.name)} ${player.money}B$ ${hand}${lock} • ${personality} • ô ${player.tileIndex}`;
+          return `${marker} ${this.shortName(player.name)} ${player.money}B$ ${hand}${lock} • ${personality} • node ${player.nodeId}`;
         })
         .join('\n'),
     );
