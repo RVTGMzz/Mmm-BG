@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test:replay": "tsx tests/replay-determinism.ts",
+    "test:lockstep": "tsx tests/lockstep-peer.ts",
     "preview": "vite preview"
   },
   "dependencies": {
