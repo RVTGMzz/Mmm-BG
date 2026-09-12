@@ -100,6 +100,7 @@ assert(
 );
 
 const endedChecksum = computeMatchChecksum(authority.state);
+const endedWinnerIds = [...shellHost.shell.winnerIds];
 const fresh = createEmptyHostAuthority(
   {
     boardId: BOARD.id,
@@ -130,9 +131,9 @@ assert(client.state?.turn.turnNumber === 1, 'Client match state did not reset to
 assert(client.state?.players.every((player) => player.money === fresh.state.startingMoney), 'Client rematch money did not reset.');
 
 console.log(
-  `[demo-shell-ci] PASS rounds=3 turns=12 endedChecksum=${endedChecksum} winners=${shellHost.shell.winnerIds.map((id) => `P${id + 1}`).join('+')} rematchChecksum=${rematchChecksum}`,
+  `[demo-shell-ci] PASS rounds=3 turns=12 endedChecksum=${endedChecksum} winners=${endedWinnerIds.map((id) => `P${id + 1}`).join('+')} rematchChecksum=${rematchChecksum}`,
 );
-console.log('[demo-shell-ci] probes: waiting sync PASS • start gate state PASS • match end PASS • winner sync PASS • rematch reset PASS');
+console.log('[demo-shell-ci] probes: waiting sync PASS • start sync PASS • match end PASS • winner sync PASS • rematch reset PASS');
 
 shellHost.close();
 shellClient.close();
