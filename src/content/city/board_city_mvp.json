@@ -1,0 +1,24 @@
+{
+  "id": "city-mvp-01",
+  "name": "MeMeMe City MVP",
+  "nodes": [
+    { "id": 0, "x": 180, "y": 160, "type": "ready" },
+    { "id": 1, "x": 340, "y": 130, "type": "normal" },
+    { "id": 2, "x": 500, "y": 130, "type": "money", "value": 50 },
+    { "id": 3, "x": 660, "y": 130, "type": "card" },
+    { "id": 4, "x": 820, "y": 130, "type": "normal" },
+    { "id": 5, "x": 980, "y": 160, "type": "news" },
+    { "id": 6, "x": 1090, "y": 240, "type": "normal" },
+    { "id": 7, "x": 1120, "y": 350, "type": "money", "value": -30 },
+    { "id": 8, "x": 1090, "y": 460, "type": "card" },
+    { "id": 9, "x": 980, "y": 540, "type": "normal" },
+    { "id": 10, "x": 820, "y": 580, "type": "news" },
+    { "id": 11, "x": 660, "y": 580, "type": "money", "value": 100 },
+    { "id": 12, "x": 500, "y": 580, "type": "normal" },
+    { "id": 13, "x": 340, "y": 580, "type": "card" },
+    { "id": 14, "x": 180, "y": 540, "type": "normal" },
+    { "id": 15, "x": 70, "y": 460, "type": "news" },
+    { "id": 16, "x": 40, "y": 350, "type": "money", "value": 20 },
+    { "id": 17, "x": 70, "y": 240, "type": "normal" }
+  ]
+}
