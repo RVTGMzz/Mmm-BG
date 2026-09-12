@@ -1,6 +1,7 @@
 {
-  "id": "city-mvp-01",
-  "name": "MeMeMe City MVP",
+  "id": "city-mvp-graph-01",
+  "name": "MeMeMe City MVP Graph",
+  "startNodeId": 0,
   "nodes": [
     { "id": 0, "x": 180, "y": 160, "type": "ready" },
     { "id": 1, "x": 340, "y": 130, "type": "normal" },
@@ -19,6 +20,34 @@
     { "id": 14, "x": 180, "y": 540, "type": "normal" },
     { "id": 15, "x": 70, "y": 460, "type": "news" },
     { "id": 16, "x": 40, "y": 350, "type": "money", "value": 20 },
-    { "id": 17, "x": 70, "y": 240, "type": "normal" }
+    { "id": 17, "x": 70, "y": 240, "type": "normal" },
+    { "id": 18, "x": 890, "y": 235, "type": "normal" },
+    { "id": 19, "x": 1010, "y": 300, "type": "normal" }
+  ],
+  "edges": [
+    { "from": 0, "to": 1, "route": "main" },
+    { "from": 1, "to": 2, "route": "main" },
+    { "from": 2, "to": 3, "route": "main" },
+    { "from": 3, "to": 4, "route": "main" },
+
+    { "from": 4, "to": 5, "label": "PHỐ CHÍNH", "route": "main", "parity": "odd" },
+    { "from": 5, "to": 6, "route": "main" },
+    { "from": 6, "to": 7, "route": "main" },
+
+    { "from": 4, "to": 18, "label": "HẺM TẮT", "route": "branch", "parity": "even" },
+    { "from": 18, "to": 19, "route": "branch" },
+    { "from": 19, "to": 7, "route": "branch" },
+
+    { "from": 7, "to": 8, "route": "main" },
+    { "from": 8, "to": 9, "route": "main" },
+    { "from": 9, "to": 10, "route": "main" },
+    { "from": 10, "to": 11, "route": "main" },
+    { "from": 11, "to": 12, "route": "main" },
+    { "from": 12, "to": 13, "route": "main" },
+    { "from": 13, "to": 14, "route": "main" },
+    { "from": 14, "to": 15, "route": "main" },
+    { "from": 15, "to": 16, "route": "main" },
+    { "from": 16, "to": 17, "route": "main" },
+    { "from": 17, "to": 0, "route": "main" }
   ]
 }
