@@ -32,3 +32,6 @@ jobs:
 
       - name: Deterministic replay fixture
         run: npm run test:replay
+
+      - name: Lockstep peer simulator
+        run: npm run test:lockstep
