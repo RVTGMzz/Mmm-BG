@@ -95,10 +95,10 @@ function commandList(peer: HostClientPeer): MatchCommand[] {
     .map(cloneCommand);
 }
 
-function createReplaySource(peer: HostClientPeer): MatchState {
+function createReplaySource(peer: HostClientPeer, runtime: HostClientRuntime): MatchState {
   const source = createInitialMatchState({
     boardId: peer.state.boardId,
-    startNodeId: peer.state.players[0]?.nodeId ?? 0,
+    startNodeId: runtime.board.startNodeId,
     playerNames: peer.state.players.map((player) => player.name),
     seed: peer.state.seed,
     startingMoney: peer.state.startingMoney,
@@ -119,7 +119,7 @@ function tryApplyAcceptedCommands(
 ): HostCommandReceiptStatus {
   if (peer.ackSeq === peer.appliedSeq) return 'applied';
 
-  const source = createReplaySource(peer);
+  const source = createReplaySource(peer, runtime);
   const replay = replayMatchCommands(source, runtime.board, runtime.cards, runtime.news);
 
   if (replay.errors.length > 0) {
