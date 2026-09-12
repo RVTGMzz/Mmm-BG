@@ -4,171 +4,154 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.14 — Two-Tab Browser Session PoC**
+**MVP 0.1.15 — Demo Match Shell + Temporary Win Condition**
 
-Mục tiêu milestone: đưa `BroadcastChannelTransport` và `ClientIntent → HostAuthority` vào browser runtime thật để hai tab cùng origin có thể vào cùng local room, cùng nhìn một authoritative board state và thay phiên gửi gameplay intent mà chưa cần backend/WebSocket.
+Mục tiêu milestone: biến vertical slice kỹ thuật thành một trận demo có đầu, giữa và cuối rõ ràng để chuẩn bị external playtest. Luật thắng ở milestone này **chỉ là luật demo tạm**, cố ý dễ thay và không được xem là game design final.
 
-## Nền tảng giữ nguyên
+## Luật demo tạm 0.1.15
 
-- Vite + TypeScript + Phaser, landscape 1280×720.
-- City graph data-driven 20 node + 1 branch thật.
-- 4 player, D6, movement, money tile, READY reward PoC.
-- Face Setup + 3 expression slots, xử lý local browser.
-- 4 Lá Bài source-backed từ spreadsheet, không tự điền Card_ID trống.
-- `ACT_001 — Trượt Tay` dùng `random_other` đúng source và seeded RNG.
-- Tin Tức + Reaction Sequencer demo data-driven/non-blocking.
-- Card Inventory + Use Timing PoC.
-- Turn Phase State Machine + safe action windows.
-- MatchState schema v3, seeded RNG, command log/event log.
-- Snapshot serialize/restore + deterministic replay + FNV-1a checksum.
-- Command envelope: turn/player/actor/phase/revision/preChecksum.
-- Replay/lockstep/desync diagnostics.
-- Host/client noisy command queue + snapshot resync.
-- ClientIntent → HostAuthority + local transport abstraction.
+- 4 người chơi.
+- 3 vòng = 12 lượt tổng.
+- Sau lượt thứ 12, trận kết thúc.
+- Người có nhiều B$ nhất thắng.
+- Nếu nhiều người bằng B$ cao nhất thì đồng hạng.
+- Không thêm tiebreaker tự chế.
 
-## Local Lobby 0.1.14
+Code nằm trong `src/core/demoMatch.ts`:
+- `DemoMatchShellState` với `waiting | active | ended`;
+- `turnLimit` tính từ player count × round count;
+- `shouldEndDemoMatch()`;
+- `demoMatchResult()`;
+- `demoMatchTurnProgress()`.
 
-Scene mới: `src/scenes/LocalLobbyScene.ts`.
+Luật này không thay đổi deterministic MatchState schema v3 và không làm đổi golden replay checksum cũ.
 
-Khi mở game, người dùng có 3 lựa chọn:
-1. **SOLO / HOTSEAT** — đi vào Face Setup rồi dùng `BoardScene` cũ;
-2. **HOST 2 TAB** — tạo/nhập room code, Face Setup 4 người, sau đó vào `NetworkBoardScene`;
-3. **JOIN 2 TAB** — nhập room code + chọn ghế P2/P3/P4 rồi vào thẳng `NetworkBoardScene`.
+## Demo shell sync
 
-Host hiển thị room code ngay trong network HUD để tab khác có thể join.
+File mới: `src/core/demoShellSession.ts`.
 
-`src/core/browserSession.ts` giữ config runtime:
-- mode `solo | host | client`;
-- room code;
-- client id;
-- local seat id;
-- BroadcastChannel name theo room.
+Shell state được host sở hữu và đồng bộ riêng qua local transport:
+- client gửi `shell_hello`;
+- host trả/broadcast `shell_state`;
+- host chuyển `waiting → active` khi bấm bắt đầu;
+- host tính winner và chuyển `active → ended` sau vòng cuối;
+- rematch reset shell rồi vào active lại.
 
-## Two-tab session core
+Shell protocol cố ý tách khỏi `MatchCommand` để không phá deterministic gameplay contract 0.1.8–0.1.14. Gameplay command authority vẫn do `TwoTabHostSession + HostAuthority` giữ.
 
-File mới: `src/core/twoTabSession.ts`.
+## DemoBoardScene
 
-### Protocol message
-Browser-local protocol hiện có:
-- `join_request`;
-- `join_accept` / `join_reject`;
-- `intent`;
-- `intent_receipt`;
-- authoritative `state`;
-- authoritative `snapshot`;
-- `resync_request`.
+Scene mới: `src/scenes/DemoBoardScene.ts`.
 
-### Host session
-`TwoTabHostSession`:
-- giữ `HostAuthority`;
-- bind client endpoint với seat P2/P3/P4;
-- host tự điều khiển các seat chưa có client claim;
-- reject intent nếu endpoint/clientId/actor không khớp seat claim;
-- submit local host intent qua cùng authority contract;
-- broadcast authoritative state sau command accepted;
-- broadcast snapshot ở safe `PRE_ROLL_ACTION` boundary;
-- trả receipt accepted/duplicate/rejected.
+Đây là scene chính cho demo 0.1.15 ở cả hotseat và two-tab:
+- màn chờ trước trận;
+- host/hotseat có nút **BẮT ĐẦU DEMO**;
+- client thấy **CHỜ HOST BẮT ĐẦU**;
+- HUD hiện vòng hiện tại và tiến độ lượt;
+- Roll / Card / Branch chỉ mở khi shell đang `active`;
+- hết 3 vòng sẽ khóa gameplay và hiện Match End overlay;
+- winner summary + bảng xếp hạng B$;
+- host/hotseat có **CHƠI LẠI**;
+- rematch tạo seed mới, reset money/board/hand/command seq về đầu trận;
+- client nhận authoritative state mới rồi tiếp tục cùng host;
+- tất cả có nút **VỀ LOBBY**.
 
-### Client session
-`TwoTabClientSession`:
-- gửi join request tới endpoint `host`;
-- chỉ điều khiển đúng seat đã chọn;
-- gửi `ClientIntent` với `observedCommandSeq` mới nhất;
-- nhận host receipt;
-- verify checksum của state/snapshot trước khi apply;
-- tự gửi `resync_request` nếu nhận state lỗi checksum hoặc stale-view receipt.
+`BoardScene` và `NetworkBoardScene` cũ vẫn giữ lại như technical reference/regression path, nhưng flow demo mới đi qua `DemoBoardScene`.
 
-## Browser NetworkBoardScene
+## Lobby + Setup flow
 
-Scene mới: `src/scenes/NetworkBoardScene.ts`.
+`LocalLobbyScene` hiện có:
+1. **SOLO / HOTSEAT** — Face Setup 4 người → DemoBoardScene;
+2. **HOST 2 TAB** — room code → Face Setup → DemoBoardScene;
+3. **JOIN 2 TAB** — room code + P2/P3/P4 → vào thẳng DemoBoardScene.
 
-PoC này cố ý tách khỏi `BoardScene` solo để không làm yếu vertical slice cũ.
+Host có thể cho client join trước khi bấm bắt đầu.
 
-Network board hiện:
-- render cùng City graph 20 node;
-- host/client cùng nhận authoritative PlayerState;
-- token snap về đúng node sau state update;
-- HUD hiển thị HOST/CLIENT, room, checksum, turn, phase;
-- host giữ authority;
-- client không mutate gameplay trực tiếp;
-- Roll gửi intent;
-- Card picker/Target picker chạy local presentation rồi gửi `play_card` intent;
-- khi authority dừng ở `BRANCH_CHOICE`, đúng tab sở hữu actor sẽ mở BranchPicker và gửi `choose_branch` intent;
-- host điều khiển các ghế chưa được client claim nên PoC hai tab vẫn có thể đi qua đủ vòng 4 người.
+0.1.15 cũng thêm retry đơn giản ở client:
+- nếu join packet gửi trước khi host endpoint tồn tại, client re-send join request khoảng mỗi 1.5s;
+- shell state cũng được request lại cho tới khi nhận được.
 
-Network scene hiện ưu tiên correctness/sync. Movement của remote state đang snap node thay vì tween toàn bộ authoritative path; visual polish dành cho demo polish milestone.
+## Multiplayer behavior giữ nguyên
 
-## Face behavior trong two-tab PoC
+- Host giữ `HostAuthority`.
+- Client chỉ gửi `ClientIntent`.
+- Host điều khiển ghế chưa bị client claim.
+- Client chỉ điều khiển đúng seat của mình.
+- Roll/Branch/Card đều qua authority protocol.
+- State/snapshot checksum vẫn được verify.
+- `ACT_001 — Trượt Tay` vẫn dùng host-resolved seeded `random_other` đúng source.
 
-Host vẫn dùng Face Setup đầy đủ và thấy sticker của phiên host.
+Rematch không tạo authority contract mới; host reset `authority.source/state/receipts`, broadcast state command boundary #0 và shell active mới. Seat claim hiện tại được giữ trong cùng browser session.
 
-Client join bỏ qua Face Setup và hiện fallback token màu nếu tab client chưa có texture ảnh. 0.1.14 chưa broadcast face data URL giữa tab để tránh trộn privacy/asset-sync vào networking core. Đây là limitation có chủ đích.
+## Face behavior
 
-## Two-tab regression fixture
+- Host/hotseat vẫn dùng Face Setup đủ 4 người.
+- Client join chưa nhận face texture từ host nên dùng fallback token màu.
+- Ảnh vẫn local browser, chưa upload server.
 
-File mới: `tests/two-tab-session.ts`.
+## CI gate 0.1.15
 
-CI dùng `InMemoryTransportHub` nhưng chạy đúng `TwoTabHostSession/TwoTabClientSession` protocol:
-- client join room và claim P2;
-- host chơi lượt P1;
-- client nhận authoritative state rồi gửi roll cho P2;
-- branch intent được xử lý nếu roll dừng ở branch;
-- host/client phải về cùng authoritative checksum;
-- client giả actor khác seat bị reject và không được tăng host command seq;
-- safe snapshots phải được client nhận.
-
-## CI gate 0.1.14
-
-`.github/workflows/ci.yml` chạy 6 tầng:
+`.github/workflows/ci.yml` chạy 7 tầng:
 1. `npm run build`;
 2. `npm run test:replay`;
 3. `npm run test:lockstep`;
 4. `npm run test:host-client`;
 5. `npm run test:authority`;
-6. `npm run test:two-tab`.
+6. `npm run test:two-tab`;
+7. `npm run test:demo-shell`.
 
-Golden deterministic fixture nền vẫn dùng checksum `0e7e9947`.
+Fixture mới: `tests/demo-match-shell.ts`.
 
-## File chính mới/thay đổi
+Nó kiểm tra:
+- shell waiting sync;
+- host start sync sang client;
+- 3 vòng / 12 lượt thật;
+- match end;
+- winner list đồng bộ;
+- rematch reset turn/command boundary/money;
+- client nhận state rematch.
 
-- `src/core/browserSession.ts` — local mode/room/seat config.
-- `src/core/twoTabSession.ts` — join/intent/receipt/state/snapshot/resync protocol.
-- `src/scenes/LocalLobbyScene.ts` — SOLO/HOST/JOIN local UI.
-- `src/scenes/NetworkBoardScene.ts` — browser two-tab board runtime.
-- `src/scenes/SetupScene.ts` — host route sang network board.
-- `src/main.ts` — scene order bắt đầu bằng lobby.
-- `src/styles.css` — lobby UI.
-- `tests/two-tab-session.ts` — two-tab protocol regression.
-- `package.json` / `.github/workflows/ci.yml` — test gate mới.
+Golden deterministic fixture nền vẫn giữ checksum `0e7e9947`.
+
+## File mới/thay đổi chính
+
+- `src/core/demoMatch.ts` — temporary demo rule + winner/progress helpers.
+- `src/core/demoShellSession.ts` — host/client shell state sync.
+- `src/scenes/DemoBoardScene.ts` — unified demo runtime.
+- `src/scenes/LocalLobbyScene.ts` — demo wording + JOIN route fix.
+- `src/scenes/SetupScene.ts` — route solo/host vào DemoBoardScene.
+- `src/main.ts` — register DemoBoardScene.
+- `tests/demo-match-shell.ts` — demo lifecycle regression.
+- `package.json` / `.github/workflows/ci.yml` — seventh CI gate.
 
 ## Known limitations
 
-- BroadcastChannel chỉ chạy cùng origin/trình duyệt profile, chưa phải internet multiplayer.
-- Client nên join sau khi host đã hoàn tất Face Setup và vào NetworkBoardScene; PoC chưa có join retry timer robust nếu join packet bị gửi trước khi host endpoint tồn tại.
-- Reload client tạo clientId mới nên seat reclaim/reconnect final chưa hoàn thiện.
+- **3 vòng + B$ cao nhất thắng chỉ là luật demo tạm**, chưa phải win condition final.
+- Demo shell gate hiện ở browser/session layer riêng, chưa được encode thành `MatchCommand`/MatchState schema. UI hợp lệ sẽ không gửi gameplay intent trước Start/sau End, nhưng production network protocol vẫn cần formalize lifecycle authority hơn nữa.
+- BroadcastChannel vẫn chỉ same-origin/local browser, chưa internet multiplayer.
+- Reload client tạo clientId mới; seat reclaim/reconnect production chưa xong.
 - Host migration/session auth/anti-cheat production chưa có.
-- NetworkBoardScene chưa broadcast face texture/data URL sang client.
-- Network movement hiện snap state, chưa tween authoritative command path.
-- Network scene chưa tái phát đầy đủ dynamic Card/News/Reaction presentation ở remote tab.
-- Full snapshot resync, chưa có delta/compression/version negotiation.
-- Chưa có backend/WebSocket packet loss/retry policy thật.
-- Chưa khóa hand limit/card-per-turn/win condition/board topology final.
-- Tin Tức/reaction vẫn là demo engine content, chưa phải content final/approved.
+- Remote movement hiện snap authoritative state, chưa tween path đẹp.
+- Client chưa nhận face textures và chưa tái phát đầy đủ Card/News/Reaction presentation.
+- Full snapshot resync chưa có delta/compression/version negotiation.
+- Content vẫn rất mỏng: chỉ 4 Card source-backed và Tin Tức/reaction demo engine content.
+- Hand limit/card-per-turn, board topology và các hệ Job/Pet/Minigame chưa phải luật final.
 
-## Milestone kế tiếp đề xuất
+## Milestone kế tiếp
 
-**MVP 0.1.15 — Demo Match Shell + Temporary Win Condition**
+**MVP 0.1.16 — First External Playtest Build / Packaging + Polish**
 
-Mục tiêu:
-1. thêm Match Start/Ready flow rõ ràng;
-2. chọn một win condition tạm, dễ thay và ghi rõ chưa final;
-3. Match End screen + winner summary;
-4. restart/rematch;
-5. network host là authority cho start/end match;
-6. dọn một lớp debug UI để người ngoài hiểu cách chơi;
-7. giữ 0.1.16 cho demo packaging/polish/content pass.
+Ưu tiên:
+1. dọn debug text/HUD cho người ngoài dễ hiểu;
+2. thêm màn hướng dẫn cực ngắn trước trận;
+3. tween remote movement thay vì snap nếu không tạo regression;
+4. đồng bộ face avatar host → client hoặc có fallback trình bày đẹp hơn mà vẫn tôn trọng privacy;
+5. pass UI cho Card/News/Reaction trong DemoBoardScene;
+6. tạo build/package dễ mở cho tester;
+7. checklist test hotseat + two-tab;
+8. giữ rõ nhãn **PLAYTEST / RULES NOT FINAL**.
 
-Sau 0.1.15, 0.1.16 nên là mốc **first external playtest build** nếu không phát sinh blocker lớn.
+Nếu 0.1.16 không gặp blocker lớn, đây là mốc phù hợp để gửi build đầu tiên cho mem Discord/bạn bè chơi thử.
 
 ## Nguyên tắc MVP
 
@@ -187,3 +170,4 @@ Sau 0.1.15, 0.1.16 nên là mốc **first external playtest build** nếu không
 13. Host/client queue + noisy transport + snapshot resync. ✅ PoC.
 14. ClientIntent → HostAuthority + local transport abstraction. ✅ PoC.
 15. Two-tab local browser room + authoritative board sync. ✅ PoC.
+16. Demo match start/end/winner/rematch shell. ✅ PoC.
