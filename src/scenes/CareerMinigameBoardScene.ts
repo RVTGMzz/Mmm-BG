@@ -6,6 +6,8 @@ import type { JobDefinition } from '../core/jobs';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import { showJobChoicePicker } from '../ui/JobChoicePicker';
+import { startMiniGameOverlay } from '../ui/MiniGameOverlay';
+import type { PresentationEventModel } from '../ui/presentationModel';
 import { DirectDiceBoardScene } from './DirectDiceBoardScene';
 
 const JOBS = jobsJson as JobDefinition[];
@@ -17,12 +19,20 @@ type CareerInternals = {
   submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
 };
 
+type PresentationRuntime = {
+  active?: Phaser.GameObjects.Container;
+  currentModel?: PresentationEventModel;
+  showLanding(model: PresentationEventModel): void;
+  finishCurrent(animate?: boolean): void;
+};
+
 export class CareerMinigameBoardScene extends DirectDiceBoardScene {
   private jobPickerOpen = false;
   private lastJobOfferSignature = '';
 
   create(): void {
     super.create();
+    this.installPlayableMiniGame();
     this.updateBuildLabels031();
     this.events.once('shutdown', () => {
       this.jobPickerOpen = false;
@@ -33,6 +43,30 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
   update(): void {
     super.update();
     void this.maybePromptJobChoice();
+  }
+
+  private installPlayableMiniGame(): void {
+    const presentation = (this as unknown as { presentation?: PresentationRuntime }).presentation;
+    if (!presentation) return;
+    const originalShowLanding = presentation.showLanding.bind(presentation);
+
+    presentation.showLanding = (model: PresentationEventModel) => {
+      if (model.tileType !== 'minigame') {
+        originalShowLanding(model);
+        return;
+      }
+
+      const internals = this as unknown as CareerInternals;
+      const affected = new Set(model.affectedPlayerIds);
+      const participants = internals.match.players.filter((player) => affected.size === 0 || affected.has(player.id));
+      const run = startMiniGameOverlay(this, participants.length > 0 ? participants : internals.match.players, model.eventSeq);
+      presentation.active = run.root;
+      run.done
+        .catch(() => undefined)
+        .finally(() => {
+          if (presentation.currentModel === model) presentation.finishCurrent(false);
+        });
+    };
   }
 
   private async maybePromptJobChoice(): Promise<void> {
@@ -72,9 +106,9 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     for (const object of this.children.list) {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
       if (object.text.includes('CITY • MVP 0.1.30 DIRECT TURN DICE')) {
-        object.setText('CITY • MVP 0.1.31 JOB HUB + MINIGAME RULES');
+        object.setText('CITY • MVP 0.1.31 JOB HUB + MINI GAMES');
       } else if (object.text.includes('PLAYTEST 0.1.30 • DIRECT DICE')) {
-        object.setText('PLAYTEST 0.1.31 • CAREER + MINIGAME');
+        object.setText('PLAYTEST 0.1.31 • CAREER + MINI GAMES');
       }
     }
   }
