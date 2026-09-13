@@ -1,13 +1,15 @@
 import boardJson from '../src/content/city/board_city_mvp.json' with { type: 'json' };
 import cardsJson from '../src/content/core/cards_mvp.json' with { type: 'json' };
 import newsJson from '../src/content/core/news_mvp_demo.json' with { type: 'json' };
+import {
+  createEmptyHostAuthority,
+  hostAuthorityCommandSeq,
+  submitClientIntent,
+  type ClientIntentType,
+} from '../src/core/authority';
 import { computeMatchChecksum } from '../src/core/checksum';
 import { diffMatchStates, summarizeMatchStateDiffs } from '../src/core/desync';
-import {
-  cloneMatchState,
-  createInitialMatchState,
-  type MatchCommand,
-} from '../src/core/matchState';
+import { cloneMatchState, createInitialMatchState, type MatchCommand } from '../src/core/matchState';
 import { replayMatchCommands } from '../src/core/replay';
 import type { CardDefinition } from '../src/core/cards';
 import type { NewsDefinition } from '../src/core/news';
@@ -17,8 +19,6 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-// 0.1.25 rescales fixed-value economy effects around the 200B$ starting wallet.
-// This intentionally changes gameplay state/checksum while replay equality still guards determinism.
 const EXPECTED_CHECKSUM = '46bb4e20';
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -34,7 +34,7 @@ const defaultProbe = createInitialMatchState({
 assert(defaultProbe.startingMoney === 200, `Default starting money drifted: ${defaultProbe.startingMoney}B$.`);
 assert(defaultProbe.players.every((player) => player.money === 200), 'New players must all start with 200B$.');
 
-const COMMANDS: MatchCommand[] = [
+const TEMPLATE_COMMANDS: MatchCommand[] = [
   { seq: 1, type: 'roll', turnNumber: 1, playerIndex: 0, actorId: 0, data: {} },
   { seq: 2, type: 'roll', turnNumber: 2, playerIndex: 1, actorId: 1, data: {} },
   { seq: 3, type: 'roll', turnNumber: 3, playerIndex: 2, actorId: 2, data: {} },
@@ -62,25 +62,54 @@ const COMMANDS: MatchCommand[] = [
 ];
 
 function createFixtureSource() {
-  const source = createInitialMatchState({
-    boardId: BOARD.id,
-    startNodeId: BOARD.startNodeId,
-    playerNames: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
-    seed: FIXTURE_SEED,
-  });
-  source.commandLog = COMMANDS.map((command) => ({ ...command, data: { ...command.data } }));
-  source.nextCommandSeq = source.commandLog.length + 1;
-  return source;
+  const authority = createEmptyHostAuthority(
+    {
+      boardId: BOARD.id,
+      startNodeId: BOARD.startNodeId,
+      playerNames: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+      seed: FIXTURE_SEED,
+    },
+    { board: BOARD, cards: CARDS, news: NEWS },
+  );
+  let intentCounter = 0;
+
+  const submit = (type: ClientIntentType, data: Record<string, string | number | boolean | null>) => {
+    const actor = authority.state.players[authority.state.turn.currentPlayerIndex];
+    assert(actor, 'Fixture authority lost current player.');
+    const receipt = submitClientIntent(authority, {
+      intentId: `golden-${++intentCounter}`,
+      clientId: 'golden-fixture',
+      actorId: actor.id,
+      type,
+      observedCommandSeq: hostAuthorityCommandSeq(authority),
+      data,
+    });
+    assert(receipt.status === 'accepted', `Fixture intent ${type} rejected: ${receipt.reason ?? 'unknown'}`);
+  };
+
+  const resolvePendingJob = () => {
+    if (authority.state.turn.phase !== 'JOB_CHOICE') return;
+    const jobId = authority.state.pendingJobOfferIds?.[0];
+    assert(jobId, 'JOB_CHOICE missing offer ID.');
+    submit('choose_job', { jobId });
+  };
+
+  for (const template of TEMPLATE_COMMANDS) {
+    resolvePendingJob();
+    if (template.type === 'roll') submit('roll', {});
+    else if (template.type === 'choose_branch') submit('choose_branch', { to: Number(template.data.to) });
+    resolvePendingJob();
+  }
+  resolvePendingJob();
+
+  return cloneMatchState(authority.source);
 }
 
 function replayFixture() {
   const source = createFixtureSource();
   const replay = replayMatchCommands(source, BOARD, CARDS, NEWS);
   assert(replay.errors.length === 0, `Replay error: ${replay.errors.join(' | ')}`);
-  assert(
-    replay.consumedCommands === source.commandLog.length,
-    `Replay consumed ${replay.consumedCommands}/${source.commandLog.length} commands.`,
-  );
+  assert(replay.consumedCommands === source.commandLog.length, `Replay consumed ${replay.consumedCommands}/${source.commandLog.length} commands.`);
   return replay.state;
 }
 
@@ -105,7 +134,5 @@ assert(diagnosticPaths.has('players.1.money'), 'Desync diagnostics missed P2 mon
 assert(diagnosticPaths.has('players.1.nodeId'), 'Desync diagnostics missed P2 node drift.');
 assert(diagnosticPaths.has('rng.calls'), 'Desync diagnostics missed RNG call drift.');
 
-console.log(
-  `[replay-ci] PASS seed=${FIXTURE_SEED} commands=${COMMANDS.length} checksum=${firstChecksum} rngCalls=${first.rng.calls}`,
-);
+console.log(`[replay-ci] PASS seed=${FIXTURE_SEED} commands=${first.commandLog.length} checksum=${firstChecksum} rngCalls=${first.rng.calls}`);
 console.log(`[replay-ci] desync sample: ${summarizeMatchStateDiffs(first, syntheticPeer, 4).join(' | ')}`);
