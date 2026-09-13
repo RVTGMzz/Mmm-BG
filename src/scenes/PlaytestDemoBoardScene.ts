@@ -7,6 +7,7 @@ import { browserSession } from '../core/browserSession';
 import type { CardDefinition } from '../core/cards';
 import { computeMatchChecksum } from '../core/checksum';
 import { serializeMatchState, type MatchEventValue, type MatchState } from '../core/matchState';
+import { MVP_CARD_HAND_LIMIT } from '../core/rules';
 import { chooseTestBotIntent } from '../core/testBot';
 import type { TwoTabHostSession } from '../core/twoTabSession';
 import type { TurnPhaseMachine } from '../core/turnPhase';
@@ -24,15 +25,21 @@ type PlayerPresentationSnapshot = {
   handCardIds: string[];
 };
 
+type PlayerVisualRuntime = {
+  token: Phaser.GameObjects.Container;
+};
+
 interface DemoBoardInternals {
   match: MatchState;
   phase: TurnPhaseMachine;
   shell: { status: 'waiting' | 'active' | 'ended' };
   hostSession?: TwoTabHostSession;
   logs: string[];
+  visuals: Map<number, PlayerVisualRuntime>;
   currentPlayer(): PlayerState | undefined;
   submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
   canControlCurrentPlayer(): boolean;
+  syncVisualsToState(): void;
   applyNetworkState(
     state: MatchState,
     commandSeq: number,
@@ -56,6 +63,36 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       const current = internals.currentPlayer();
       if (current && browserSession.isCpuSeat(current.id)) return false;
       return originalCanControl();
+    };
+
+    // DemoBoardScene snaps authoritative positions. Preserve the authoritative
+    // destination, but tween the presentation token from its previous screen position.
+    const originalSyncVisuals = internals.syncVisualsToState.bind(this);
+    internals.syncVisualsToState = () => {
+      const beforePositions = new Map<number, { x: number; y: number }>();
+      for (const [playerId, visual] of internals.visuals) {
+        beforePositions.set(playerId, { x: visual.token.x, y: visual.token.y });
+      }
+
+      originalSyncVisuals();
+
+      for (const [playerId, visual] of internals.visuals) {
+        const before = beforePositions.get(playerId);
+        if (!before) continue;
+        const targetX = visual.token.x;
+        const targetY = visual.token.y;
+        if (Math.abs(targetX - before.x) < 0.5 && Math.abs(targetY - before.y) < 0.5) continue;
+
+        this.tweens.killTweensOf(visual.token);
+        visual.token.setPosition(before.x, before.y);
+        this.tweens.add({
+          targets: visual.token,
+          x: targetX,
+          y: targetY,
+          duration: 280,
+          ease: 'Sine.easeOut',
+        });
+      }
     };
 
     const originalApplyNetworkState = internals.applyNetworkState.bind(this);
@@ -180,7 +217,7 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       const addedCards = this.multisetDifference(player.handCardIds, previous.handCardIds);
       const removedCards = this.multisetDifference(previous.handCardIds, player.handCardIds);
       for (const cardId of addedCards) {
-        lines.push(`🃏 ${player.name}: + ${this.cardTitle(cardId)} • tay ${player.handCardIds.length}/${5}`);
+        lines.push(`🃏 ${player.name}: + ${this.cardTitle(cardId)} • tay ${player.handCardIds.length}/${MVP_CARD_HAND_LIMIT}`);
       }
       for (const cardId of removedCards) {
         lines.push(`🃏 ${player.name}: − ${this.cardTitle(cardId)} • còn ${player.handCardIds.length} lá`);
