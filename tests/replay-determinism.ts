@@ -17,14 +17,22 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-// 0.1.24 intentionally changes gameplay content: the R/SR Card distribution now includes
-// deterministic comeback/leader mechanics and News can normalize a player's B$ to the table average.
-// The new checksum is therefore promoted deliberately while replay equality still guards determinism.
-const EXPECTED_CHECKSUM = '2338670a';
+// 0.1.24 balance follow-up: new matches now start at 200B$ instead of 1000B$.
+// This intentionally changes gameplay state/checksum while replay equality still guards determinism.
+const EXPECTED_CHECKSUM = '5ed7922e';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
+
+const defaultProbe = createInitialMatchState({
+  boardId: BOARD.id,
+  startNodeId: BOARD.startNodeId,
+  playerNames: ['P1', 'P2', 'P3', 'P4'],
+  seed: 200,
+});
+assert(defaultProbe.startingMoney === 200, `Default starting money drifted: ${defaultProbe.startingMoney}B$.`);
+assert(defaultProbe.players.every((player) => player.money === 200), 'New players must all start with 200B$.');
 
 const COMMANDS: MatchCommand[] = [
   { seq: 1, type: 'roll', turnNumber: 1, playerIndex: 0, actorId: 0, data: {} },
