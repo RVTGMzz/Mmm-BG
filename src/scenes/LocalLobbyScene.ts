@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.19', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.20', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Board-first HUD • step movement • dice animation • smart notification timing.', {
+    this.add.text(228, 109, 'Turn halo • compact status • pip dice • distance-aware movement.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎯 0.1.19: dice chỉ hiện lúc roll, quân cờ đi từng ô, notification chính ở giữa và reaction chat xen kẽ hai bên. CPU notice tối đa 6s; event toàn bàn tối đa 10s.
+        🎯 0.1.20: người đang tới lượt có halo, bảng trạng thái gọn hơn, xúc xắc dùng pip thật và tốc độ bước đi thay đổi theo khoảng cách node.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Board Flow + CPU test + 2-tab local sẵn sàng. Ảnh mặt vẫn là tùy chọn.'
+        ? '✅ Turn Feel + CPU test + 2-tab local sẵn sàng. Ảnh mặt vẫn là tùy chọn.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
