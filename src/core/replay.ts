@@ -86,9 +86,15 @@ function validateCommand(ctx: ReplayContext, command: MatchCommand): void {
   });
 }
 
-function consumeSpectatorRandom(ctx: ReplayContext, excludedIds: number[]): void {
+function consumeSpectatorRandom(ctx: ReplayContext, excludedIds: number[]): number | undefined {
   const candidates = ctx.state.players.filter((player) => !excludedIds.includes(player.id));
-  if (candidates.length > 0) ctx.random();
+  if (candidates.length === 0) return undefined;
+
+  // This consumes the exact same single RNG call as the previous presentation hook,
+  // but now records which spectator that call selected so every synced client can
+  // render the same reaction without consuming or guessing additional randomness.
+  const index = Math.min(candidates.length - 1, Math.floor(ctx.random() * candidates.length));
+  return candidates[index]?.id;
 }
 
 function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
@@ -133,6 +139,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
             title: card.title,
             rarity: card.rarity,
             impact: card.impact,
+            description: card.description,
           },
           player.id,
         );
@@ -144,6 +151,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
       const news = drawWeightedNews(ctx.news, ctx.random);
       if (!news) return;
       const resolution = applyNewsEffect(news, player, ctx.state.players);
+      const spectatorId = consumeSpectatorRandom(ctx, [player.id]);
       appendMatchEvent(
         ctx.state,
         'news',
@@ -153,12 +161,14 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
           title: news.title,
           rarity: news.rarity,
           impact: news.impact,
+          description: news.description,
           summary: resolution.summary,
+          amount: resolution.amount ?? 0,
           reactionEventId: news.reactionEventId ?? null,
+          spectatorId: spectatorId ?? -1,
         },
         player.id,
       );
-      consumeSpectatorRandom(ctx, [player.id]);
       return;
     }
 
@@ -292,6 +302,12 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
     ctx.state.players.find(
       (player) => player.id !== caster.id && resolution.affectedPlayerIds.includes(player.id),
     );
+  const spectatorId = consumeSpectatorRandom(
+    ctx,
+    [caster.id, ...(primaryTarget ? [primaryTarget.id] : [])],
+  );
+  const reactionEventId =
+    primaryTarget && card.targetMode !== 'all_others' ? 'CARD_ATTACK_DEMO' : null;
 
   appendMatchEvent(
     ctx.state,
@@ -301,13 +317,16 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
       title: card.title,
       rarity: card.rarity,
       impact: card.impact,
+      description: card.description,
       summary: resolution.summary,
+      amount: resolution.amount ?? 0,
       targetId: primaryTarget?.id ?? -1,
+      spectatorId: spectatorId ?? -1,
+      reactionEventId,
     },
     caster.id,
   );
 
-  consumeSpectatorRandom(ctx, [caster.id, ...(primaryTarget ? [primaryTarget.id] : [])]);
   transition(ctx, 'PRE_ROLL_ACTION');
 }
 
