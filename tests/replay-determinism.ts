@@ -7,9 +7,10 @@ import {
   submitClientIntent,
   type ClientIntentType,
 } from '../src/core/authority';
+import { getOutgoingEdges, pickParityEdge } from '../src/core/board';
 import { computeMatchChecksum } from '../src/core/checksum';
 import { diffMatchStates, summarizeMatchStateDiffs } from '../src/core/desync';
-import { cloneMatchState, createInitialMatchState, type MatchCommand } from '../src/core/matchState';
+import { cloneMatchState, createInitialMatchState } from '../src/core/matchState';
 import { replayMatchCommands } from '../src/core/replay';
 import type { CardDefinition } from '../src/core/cards';
 import type { NewsDefinition } from '../src/core/news';
@@ -19,6 +20,7 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
+const FIXTURE_TURNS = 20;
 const EXPECTED_CHECKSUM = '46bb4e20';
 
 function assert(condition: unknown, message: string): asserts condition {
@@ -33,33 +35,6 @@ const defaultProbe = createInitialMatchState({
 });
 assert(defaultProbe.startingMoney === 200, `Default starting money drifted: ${defaultProbe.startingMoney}B$.`);
 assert(defaultProbe.players.every((player) => player.money === 200), 'New players must all start with 200B$.');
-
-const TEMPLATE_COMMANDS: MatchCommand[] = [
-  { seq: 1, type: 'roll', turnNumber: 1, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 2, type: 'roll', turnNumber: 2, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 3, type: 'roll', turnNumber: 3, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 4, type: 'roll', turnNumber: 4, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 5, type: 'choose_branch', turnNumber: 4, playerIndex: 3, actorId: 3, data: { to: 5 } },
-  { seq: 6, type: 'roll', turnNumber: 5, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 7, type: 'choose_branch', turnNumber: 5, playerIndex: 0, actorId: 0, data: { to: 5 } },
-  { seq: 8, type: 'roll', turnNumber: 6, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 9, type: 'choose_branch', turnNumber: 6, playerIndex: 1, actorId: 1, data: { to: 5 } },
-  { seq: 10, type: 'roll', turnNumber: 7, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 11, type: 'choose_branch', turnNumber: 7, playerIndex: 2, actorId: 2, data: { to: 5 } },
-  { seq: 12, type: 'roll', turnNumber: 8, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 13, type: 'roll', turnNumber: 9, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 14, type: 'roll', turnNumber: 10, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 15, type: 'roll', turnNumber: 11, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 16, type: 'roll', turnNumber: 12, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 17, type: 'roll', turnNumber: 13, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 18, type: 'roll', turnNumber: 14, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 19, type: 'roll', turnNumber: 15, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 20, type: 'roll', turnNumber: 16, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 21, type: 'roll', turnNumber: 17, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 22, type: 'roll', turnNumber: 18, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 23, type: 'roll', turnNumber: 19, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 24, type: 'roll', turnNumber: 20, playerIndex: 3, actorId: 3, data: {} },
-];
 
 function createFixtureSource() {
   const authority = createEmptyHostAuthority(
@@ -87,20 +62,32 @@ function createFixtureSource() {
     assert(receipt.status === 'accepted', `Fixture intent ${type} rejected: ${receipt.reason ?? 'unknown'}`);
   };
 
-  const resolvePendingJob = () => {
-    if (authority.state.turn.phase !== 'JOB_CHOICE') return;
-    const jobId = authority.state.pendingJobOfferIds?.[0];
-    assert(jobId, 'JOB_CHOICE missing offer ID.');
-    submit('choose_job', { jobId });
-  };
+  while (authority.state.turn.turnNumber <= FIXTURE_TURNS) {
+    const actor = authority.state.players[authority.state.turn.currentPlayerIndex];
+    assert(actor, 'Missing current player during fixture generation.');
 
-  for (const template of TEMPLATE_COMMANDS) {
-    resolvePendingJob();
-    if (template.type === 'roll') submit('roll', {});
-    else if (template.type === 'choose_branch') submit('choose_branch', { to: Number(template.data.to) });
-    resolvePendingJob();
+    if (authority.state.turn.phase === 'PRE_ROLL_ACTION') {
+      submit('roll', {});
+      continue;
+    }
+
+    if (authority.state.turn.phase === 'BRANCH_CHOICE') {
+      const outgoing = getOutgoingEdges(BOARD, actor.nodeId);
+      const edge = pickParityEdge(outgoing, authority.state.turn.lastRoll ?? 0);
+      assert(edge, `No parity edge from node ${actor.nodeId}.`);
+      submit('choose_branch', { to: edge.to });
+      continue;
+    }
+
+    if (authority.state.turn.phase === 'JOB_CHOICE') {
+      const jobId = authority.state.pendingJobOfferIds?.[0];
+      assert(jobId, 'JOB_CHOICE missing offer ID.');
+      submit('choose_job', { jobId });
+      continue;
+    }
+
+    throw new Error(`Golden fixture stalled at ${authority.state.turn.phase} on turn ${authority.state.turn.turnNumber}.`);
   }
-  resolvePendingJob();
 
   return cloneMatchState(authority.source);
 }
