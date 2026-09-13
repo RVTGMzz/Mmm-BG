@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { bgmController } from '../audio/bgmController';
 import {
   browserSession,
   generateRoomCode,
@@ -18,6 +19,7 @@ export class LocalLobbyScene extends Phaser.Scene {
   }
 
   create(): void {
+    bgmController.playMenu();
     this.cameras.main.setBackgroundColor('#f4ead7');
     this.add.rectangle(640, 360, 1120, 610, 0xfffbf3, 1).setStrokeStyle(5, 0x202020, 1);
 
@@ -31,7 +33,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.16.2', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.17', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
