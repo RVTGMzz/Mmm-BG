@@ -24,7 +24,11 @@ assert.deepEqual(match.players.map((player) => player.money), [200, 200, 200, 20
 const moneyTiles = board.nodes
   .filter((node) => node.type === 'money')
   .map((node) => node.value ?? 0);
-assert.deepEqual(moneyTiles, [25, -20, 50, 15], 'Money tiles must use the 0.1.25 200B$ scale.');
+assert.deepEqual(
+  [...moneyTiles].sort((a, b) => a - b),
+  [-20, 15, 25, 50],
+  'Money tiles must preserve the 0.1.25 200B$ scale even if function tiles move.',
+);
 
 const selfNewsAmounts = news
   .filter((entry) => entry.effect.type === 'money_delta_self')
