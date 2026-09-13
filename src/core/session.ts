@@ -18,6 +18,7 @@ export interface PlayerProfile {
 
 class GameSession {
   players: PlayerProfile[] = [];
+  playOrder: number[] = [0, 1, 2, 3];
 
   constructor() {
     this.reset();
@@ -30,6 +31,17 @@ class GameSession {
       personality: DEFAULT_PERSONALITIES[id % DEFAULT_PERSONALITIES.length],
       faces: {},
     }));
+    this.playOrder = [0, 1, 2, 3];
+  }
+
+  setPlayOrder(order: readonly number[]): void {
+    const ids = this.players.map((player) => player.id);
+    const normalized = order.map((value) => Math.floor(value));
+    const unique = new Set(normalized);
+    if (normalized.length !== ids.length || unique.size !== ids.length || !ids.every((id) => unique.has(id))) {
+      throw new Error(`Invalid play order: ${order.join(',')}`);
+    }
+    this.playOrder = [...normalized];
   }
 
   setPlayerName(playerId: number, name: string): void {
