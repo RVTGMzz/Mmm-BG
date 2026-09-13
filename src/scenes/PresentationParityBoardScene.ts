@@ -5,7 +5,10 @@ import type { ClientIntentType } from '../core/authority';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import { MatchPresentationLayer } from '../ui/MatchPresentationLayer';
-import { shouldAutoAdvancePresentation } from '../ui/presentationFlowPolicy';
+import {
+  shouldAutoAdvancePresentation,
+  shouldDeferResultOverlay,
+} from '../ui/presentationFlowPolicy';
 import { PlaytestDemoBoardScene } from './PlaytestDemoBoardScene';
 
 const BOARD = boardJson as BoardDefinition;
@@ -14,6 +17,8 @@ type NetworkStateSource = 'host' | 'state' | 'snapshot';
 
 interface PresentationBoardInternals {
   match: MatchState;
+  shell: { status: 'waiting' | 'active' | 'ended' };
+  shellOverlay: Array<{ destroy(): void }>;
   applyNetworkState(
     state: MatchState,
     commandSeq: number,
@@ -26,6 +31,7 @@ interface PresentationBoardInternals {
   queueCpuActionIfNeeded(): void;
   promptNetworkBranch(): Promise<void>;
   refreshHud(): void;
+  renderShellOverlay(): void;
   writeLog(message: string): void;
 }
 
@@ -77,6 +83,20 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       .setDepth(930);
 
     const internals = this as unknown as PresentationBoardInternals;
+
+    const clearShellOverlay = () => {
+      for (const object of internals.shellOverlay) object.destroy();
+      internals.shellOverlay = [];
+    };
+
+    const originalRenderShellOverlay = internals.renderShellOverlay.bind(this);
+    internals.renderShellOverlay = () => {
+      if (shouldDeferResultOverlay(this.presentationBlocking, internals.shell.status)) {
+        clearShellOverlay();
+        return;
+      }
+      originalRenderShellOverlay();
+    };
 
     const originalCanControl = internals.canControlCurrentPlayer.bind(this);
     internals.canControlCurrentPlayer = () => {
@@ -133,6 +153,13 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
         autoAdvance,
         onBlockingChange: (blocking) => {
           this.presentationBlocking = blocking;
+
+          if (shouldDeferResultOverlay(blocking, internals.shell.status)) {
+            clearShellOverlay();
+          } else if (!blocking && internals.shell.status === 'ended') {
+            internals.renderShellOverlay();
+          }
+
           internals.refreshHud();
 
           if (
