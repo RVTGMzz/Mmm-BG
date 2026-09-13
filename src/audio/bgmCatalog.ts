@@ -1,7 +1,7 @@
-export type BgmRole = 'menu' | 'gameplay' | 'final_round';
+export type BgmRole = 'menu' | 'gameplay' | 'final_round' | 'minigame';
 
 export interface BgmTrackDefinition {
-  id: 'menu_mememe' | 'city_bubble' | 'city_silly' | 'final_round';
+  id: 'menu_mememe' | 'city_bubble' | 'city_silly' | 'final_round' | 'mini_game';
   file: string;
   role: BgmRole;
   durationSeconds: number;
@@ -37,6 +37,15 @@ export const BGM_TRACKS: readonly BgmTrackDefinition[] = [
     file: '04_Final_Round.ogg',
     role: 'final_round',
     durationSeconds: 120.02,
+    loop: true,
+  },
+  // Compatibility alias only. Mini Game reuses the exact locked 03 file and does
+  // not introduce, copy, re-encode or substitute a fifth BGM asset.
+  {
+    id: 'mini_game',
+    file: '03_City_Silly.ogg',
+    role: 'minigame',
+    durationSeconds: 138.07,
     loop: true,
   },
 ] as const;
