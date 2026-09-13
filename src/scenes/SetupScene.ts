@@ -37,7 +37,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.20', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.21', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -70,7 +70,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.20: halo theo lượt, status gọn, xúc xắc pip thật và bước đi có tốc độ theo khoảng cách.</p>
+      <p id="setup-status" class="setup-status">0.1.21: âm thanh nằm trong ⚙️ Cài đặt; Menu BGM được preload sớm hơn. Board Feel 0.1.20 vẫn giữ nguyên.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
