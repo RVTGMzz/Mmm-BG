@@ -10,6 +10,7 @@ import {
   type ReactionSpeakerRole,
 } from '../core/reactions';
 import type { FaceExpression } from '../core/session';
+import { cpuQuirkForTurn, cpuQuirkLine } from '../core/testBot';
 import type { PlayerState } from '../core/types';
 import { npcChatDurationMs } from './npcChatPolicy';
 import { tileIdentityCopy } from './tileIdentity';
@@ -183,6 +184,23 @@ function reactionLines(
     .filter((line) => line.text.trim().length > 0);
 }
 
+function maybeNpcQuirkLine(event: MatchEvent, players: PlayerState[]): PresentationReactionLine | undefined {
+  const actorId = event.actorId;
+  if (actorId === undefined || !browserSession.isCpuSeat(actorId)) return undefined;
+  const cardId = dataString(event, 'cardId');
+  if (!cardId || !cpuQuirkForTurn(event.turnNumber, actorId, cardId)) return undefined;
+  return {
+    sequence: 0,
+    delayMs: 120,
+    durationMs: npcChatDurationMs(1800, true),
+    speakerId: actorId,
+    speakerName: playerName(players, actorId),
+    speakerRole: 'caster',
+    expression: 'angry',
+    text: cpuQuirkLine(event.turnNumber, actorId),
+  };
+}
+
 function baseModel(event: MatchEvent, players: PlayerState[]): Pick<PresentationEventModel, 'eventSeq' | 'actorId' | 'actorName' | 'affectedPlayerIds'> {
   const targetId = dataNumber(event, 'targetId');
   return {
@@ -314,6 +332,9 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
 
   if (event.type === 'card_play') {
     const resolvedReactionEventId = cardReactionEventId(event) ?? reactionEventId;
+    const reactions = reactionLines(event, players, resolvedReactionEventId);
+    const quirk = maybeNpcQuirkLine(event, players);
+    if (quirk) reactions.unshift(quirk);
     return {
       ...base,
       kind: 'card_play',
@@ -326,7 +347,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       targetId,
       targetName,
       reactionEventId: resolvedReactionEventId,
-      reactions: reactionLines(event, players, resolvedReactionEventId),
+      reactions,
       holdMs: 3500,
       amount: dataNumber(event, 'amount', true),
     };
