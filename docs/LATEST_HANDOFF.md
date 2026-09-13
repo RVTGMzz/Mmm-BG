@@ -5,104 +5,142 @@ PR: #1
 
 ## Current milestone
 
-**MVP 0.1.30 — Direct Turn Dice (ACTIVE / PLAYTEST PACKAGED)**
+**MVP 0.1.31 — Job Dice, Salary, Mini Games & Roll For Order (ACTIVE / PLAYTEST PACKAGED)**
 
-Latest artifact: `mememe-playtest-0.1.30`
+Latest artifact: `mememe-playtest-0.1.31`
 
 Read first:
-1. `docs/MVP_0.1.30_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.30.md`
-3. `src/scenes/DirectDiceBoardScene.ts`
-4. `src/ui/directDicePolicy.ts`
-5. `tests/direct-dice-030.ts`
-6. `docs/MVP_0.1.29_PROGRESS.md`
-7. `src/core/functionTiles.ts`
-8. `src/content/core/function_tiles_mvp.json`
-9. `src/content/city/board_city_mvp.json`
-10. `src/core/replay.ts`
-11. `src/ui/presentationModel.ts`
-12. `src/scenes/TacticalChoiceBoardScene.ts`
-13. `src/core/testBot.ts`
-14. `src/core/authority.ts`
+1. `docs/MVP_0.1.31_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.31.md`
+3. `src/scenes/TurnOrderScene.ts`
+4. `src/scenes/CareerMinigameBoardScene.ts`
+5. `src/ui/JobChoicePicker.ts`
+6. `src/ui/MiniGameOverlay.ts`
+7. `src/core/jobs.ts`
+8. `src/content/core/jobs_mvp.json`
+9. `src/core/matchState.ts`
+10. `src/core/checksum.ts`
+11. `src/core/replay.ts`
+12. `src/core/authority.ts`
+13. `tests/job-minigame-031.ts`
+14. `tests/replay-determinism.ts`
+15. `docs/MVP_0.1.30_PROGRESS.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## 0.1.30 summary
+## 0.1.31 rules now locked
 
-The old bottom red `ĐỔ XÚC XẮC` control is hidden and disabled.
+### Pregame Roll For Order
+- After Setup, all four players roll a D6 before the match.
+- Higher roll goes earlier.
+- Only tied players reroll until their relative positions are resolved.
+- Stable player ID, face, color and CPU/human ownership do not move; only `playOrder` changes.
+- `playOrder` is gameplay-authoritative and checksum-covered.
 
-When a locally controlled human reaches `PRE_ROLL_ACTION`:
-- a large clickable die appears directly on the board;
-- the player may still use a Card first;
-- clicking the die calls the existing authoritative Roll path;
-- the idle die immediately disappears;
-- the existing graphical roll animation displays the actual authoritative result;
-- token movement continues node-by-node as before.
+### Mandatory Job Hub
+- Job Hub is a mandatory stop at the branch merge.
+- A token stops at Job Hub even if its movement die still has unused steps.
+- First visit while unemployed draws exactly three unique Jobs from the ten-Job pool.
+- The player does NOT click-select a Job.
+- One authoritative Job D6 assigns the career:
+  - 1–2 → Job A
+  - 3–4 → Job B
+  - 5–6 → Job C
+- `job_dice_roll` is shown through the existing authoritative die presentation.
 
-The idle die uses a fixed visual pip face and consumes no gameplay RNG.
+### Salary economy
+- Every Job has a Lv.1 / Lv.2 / Lv.3 salary curve plus a small identity/trait.
+- Salary is paid when passing the Ready/start gate.
+- The old flat `READY +100 B$` reward is replaced by current Job salary.
+- No active Job means `0 B$` salary.
+- Career state (`jobId`, `jobLevel`, `jobStatus`) and pending Job offers are checksum-covered.
 
-A per-turn pending guard prevents double-submit if UI updates before host state changes.
+Current provisional salary curves live only in `src/content/core/jobs_mvp.json` so balancing does not require core-engine edits.
 
-CPU seats do not receive a clickable die. Remote/non-controlling clients also do not receive it. It is hidden during ROLLING, MOVING, presentation blocks, waiting shell and match end.
+### Career progression
+On later Job Hub visits while employed, the current Job can:
+- promote;
+- stay steady;
+- demote;
+- normal careers may be fired after a bad demotion;
+- Thief can enter `jailed` status.
 
-New regression:
+Deep jail rules such as skipped turns, bail and escape are intentionally deferred until Ron defines them.
 
-`npm run test:direct-dice`
+### Mini Games
+Playable Mini Game foundation currently includes:
+- `Nhiều ra ít bị`: repeated SẤP/NGỬA elimination rounds;
+- ties replay with no elimination;
+- survivors continue until exactly two remain;
+- 1v1 automatically switches to Oẳn Tù Xì;
+- RPS ties replay until a winner exists.
 
-It locks direct-dice visibility for human/CPU/network/phase conditions.
+Mini Game B$ payout/reward remains intentionally neutral because Ron has not defined it yet.
 
-## 0.1.29 function tile foundation retained
+## Determinism / authority notes
 
-Board nodes still include:
-- node 9 → `MINIGAME_SLOT_01`
-- node 12 → `JOB_SLOT_01`
-
-The board visibly shows 🎮 Mini Game and 💼 Job foundation spaces. They emit deterministic presentation events, consume no extra RNG, apply no rewards/penalties yet, and never deadlock CPU/replay.
-
-## Other retained systems
-
-- starting wallet 200 B$
-- READY +100 B$
-- Tactical Choice / Kèo Hai Cửa
-- rare deterministic CPU Card quirk
-- CPU/NPC chat duration 2.5×
-- live B$ leaderboard and money deltas
-- node-by-node movement and automatic parity routing
-- Settings, BGM/SFX and face editor/privacy behavior
+- Golden replay seed: `123456789`
+- 20-turn checksum: `9cb73072`
+- Job assignment consumes one authoritative gameplay D6 after the three offer draws.
+- `eventLog` remains presentation-only and checksum-excluded.
+- Presentation RNG does not perturb gameplay RNG.
+- Host/client replay preserves `playOrder`.
+- CPU QA bot rolls Job dice through the same authoritative intent path.
 
 ## Validated artifact
 
-GitHub Actions run: `34767733314` / run `#776`
+GitHub Actions run: `34770525811` / run `#889`
 
-Head SHA: `7654a8b48ebba67ab681f5f5f802cc4a562f5e28`
+Validated runtime head SHA: `b13ac17af79368702af851ca8130af807407124e`
 
-Artifact: `mememe-playtest-0.1.30`
+Artifact: `mememe-playtest-0.1.31`
 
-Digest: `sha256:a42203e5067517e022ea69430f62a7d57377cc59795a383d3ab4aadb76b8582b`
+Artifact ID: `10321787667`
+
+Size: `8,516,608 bytes`
+
+Digest: `sha256:7dde2394425bfe7ce79f92a86f6b9213a6de46207b786d9f7db6a6957194cbf0`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34767733314`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34770525811`
 
-Full CI passed through artifact upload, including Direct Dice, Mini Game + Job foundation, replay, authority, two-tab, CPU autoplay and all earlier regressions.
+Full CI passed through artifact upload, including:
+- deterministic replay;
+- lockstep;
+- host/client snapshot resync;
+- authority protocol;
+- two-tab core;
+- demo shell/rematch;
+- CPU autoplay;
+- presentation/flow/board regressions;
+- economy/tactical/direct dice regressions;
+- dedicated `Job Dice salary Roll For Order and Mini Games` regression;
+- package validation and 0.1.31 guide copy.
 
-## Next work — 0.1.31
+This handoff commit is documentation-only after the validated artifact head and does not require rebuilding by itself.
 
-Turn the Mini Game and Job foundation into playable gameplay after the exact rules are explicitly locked.
+## Important current limitation
 
-Known long-term board direction from earlier project design:
-- board target is larger than the current MVP graph;
-- Job is a supported system;
-- function spaces are intended to reshuffle when the Leader completes a lap.
+For the current local 2-tab prototype, Roll For Order is performed from the host/local setup ceremony rather than collecting a separate die press from each remote browser. The resulting `playOrder` is still authoritative and travels through snapshots/replay.
 
-Do not invent missing Mini Game or Job reward/input rules from those high-level notes alone.
+## Next work candidates
+
+Prefer runtime playtest feedback before adding more systems.
+
+Likely next targets after 0.1.31 feedback:
+- tune Job salaries/probabilities based on match pacing;
+- define actual jail gameplay only after Ron specifies the rule;
+- define Mini Game reward/penalty only after Ron specifies its economy;
+- expand Job-specific special traits from light identity into deeper mechanics if desired;
+- improve Job Hub / Roll For Order visual feel without changing authority rules.
 
 ## Hard invariants
 
 - Do not merge PR #1 or mark Ready unless Ron explicitly asks.
 - Do not substitute or re-encode approved BGM.
 - Do not add presentation RNG calls that perturb gameplay RNG.
-- Do not invent final Mini Game/Job rules without explicit confirmation.
-- Presentation eventLog remains checksum-excluded.
+- Do not invent jail or Mini Game payout rules without explicit confirmation.
+- Presentation `eventLog` remains checksum-excluded.
 - Snapshot resync must not replay stale presentation.
 - Result/ranking must wait for final presentation to clear.
 - Dice presentation must show the authoritative result.
