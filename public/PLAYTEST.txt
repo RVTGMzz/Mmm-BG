@@ -1,50 +1,53 @@
-MeMeMe MVP 0.1.16.2 — FIRST EXTERNAL PLAYTEST + CPU TEST BOTS
+MeMeMe MVP 0.1.32 — RUNTIME POLISH PLAYTEST
 
 QUICK START — WINDOWS
-1) Giai nen file ZIP playtest.
+1) Giải nén file ZIP playtest.
 2) DOUBLE-CLICK: START_PLAYTEST.bat
-3) Trinh duyet se tu mo http://127.0.0.1:4173/ (hoac cong gan do neu 4173 dang ban).
-4) GIU cua so terminal launcher mo trong luc choi. Nhan Ctrl+C de dung server khi choi xong.
+3) Trình duyệt sẽ tự mở http://127.0.0.1:4173/ (hoặc cổng gần đó nếu 4173 đang bận).
+4) GIỮ cửa sổ terminal launcher mở trong lúc chơi. Nhấn Ctrl+C để dừng server khi chơi xong.
 
-QUAN TRONG
-- KHONG double-click index.html truc tiep.
-- Neu thanh dia chi bat dau bang file:///C:/... thi game co the chi hien man hinh trang vi browser chan ES module/local asset khi chay bang file://.
-- START_PLAYTEST.bat duoc them de tranh loi nay va KHONG can cai Node/Python.
+QUAN TRỌNG
+- KHÔNG double-click index.html trực tiếp.
+- Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì game có thể chỉ hiện màn hình trắng vì browser chặn ES module/local asset khi chạy bằng file://.
+- START_PLAYTEST.bat dùng local server và KHÔNG cần cài Node/Python.
 
 PLAY MODES
-- 1 HUMAN + 3 CPU: khuyen dung de test mot minh.
-- 2 HUMAN + 2 CPU: test voi mot nguoi ban.
-- 4 HUMAN HOTSEAT: 4 nguoi tu dieu khien.
-- 4 CPU AUTOPLAY: de game tu chay ca tran, soi ket luot/nhanh/card.
-- HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phai cung browser profile/origin.
+- 1 HUMAN + 3 CPU: khuyến nghị để test một mình.
+- 2 HUMAN + 2 CPU: test với một người bạn.
+- 4 HUMAN HOTSEAT: 4 người tự điều khiển.
+- 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
+- HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-CPU TEST BOT
-- CPU tu dung La Bai hop le neu dang co bai.
-- CPU tu roll.
-- CPU tu chon nhanh.
-- CPU chi la QA bot don gian, KHONG phai AI gameplay final.
-
-DEMO RULE
-- 4 players
-- 3 rounds = 12 turns
-- highest B$ wins
-- tied B$ = tied winner
-- this is a temporary playtest rule, not the final MeMeMe win condition
+0.1.32 FOCUS
+- Roll For Order: mỗi người đổ D6, điểm cao đi trước; nhóm hòa chỉ nhóm đó đổ lại.
+- Sau khi chốt, mỗi người hiện rõ THỨ 1 / 2 / 3 / 4 trước khi vào trận.
+- Job Hub bắt buộc dừng ở điểm hợp tuyến.
+- Job Hub hiện 3 nghề A / B / C với mapping rõ: 1–2 → A, 3–4 → B, 5–6 → C.
+- Đổ XÚC XẮC JOB để nhận nghề, không click chọn nghề trực tiếp.
+- Lương theo Job + level được trả khi qua cổng Ready; chưa có Job nhận 0 B$.
+- Mini Game: Nhiều ra ít bị → còn 1v1 thì chuyển Oẳn Tù Xì.
+- Mini Game hiện chưa có thưởng/phạt B$.
 
 CONTROLS
-- Use Card before rolling when available
-- Roll Dice to move
-- Card/News tiles auto-trigger
-- Choose a route when the branch picker appears
-- Use the ? CÁCH CHƠI button in-game for the quick guide
+- Khi tới lượt người chơi, click trực tiếp xúc xắc giữa bàn để roll.
+- Có thể dùng Lá Bài trước khi roll nếu đang có bài hợp lệ.
+- Card/News/function tiles tự kích hoạt theo luồng trận.
+- Chọn route khi bộ chọn nhánh xuất hiện.
+- Settings chứa BGM mute/volume và FX mute.
 
-MANUAL LOCAL SERVER (neu khong dung launcher)
-Node:   npx serve .
-Python: python -m http.server 4173
+CPU TEST BOT
+- CPU tự dùng Lá Bài hợp lệ nếu đang có bài.
+- CPU tự roll và tự chọn các prompt QA.
+- CPU chỉ là QA bot đơn giản, KHÔNG phải AI gameplay final.
 
 KNOWN LIMITS
-- CPU is a simple deterministic test bot, not final AI
-- no internet multiplayer yet
-- no production reconnect/seat reclaim
-- client does not receive host face textures yet
-- content/presentation is still pre-alpha
+- Roll For Order trong prototype 2-tab hiện được tổ chức từ host/local setup, chưa thu nút roll riêng từ từng remote browser.
+- Thief có thể vào trạng thái jailed nhưng chưa có luật bỏ lượt/bail/escape.
+- Mini Game chưa có payout B$.
+- Chưa có internet multiplayer production, reconnect/seat reclaim production.
+- Client chưa nhận face textures từ host.
+- Content/presentation vẫn là pre-alpha.
+
+MANUAL LOCAL SERVER (nếu không dùng launcher)
+Node:   npx serve .
+Python: python -m http.server 4173
