@@ -321,9 +321,25 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
       const run = startMiniGameOverlay(this, participants.length > 0 ? participants : internals.match.players, model.eventSeq);
       presentation.active = run.root;
       run.done
+        .then((outcome) => {
+          const actor = internals.currentPlayer();
+          if (!actor) return;
+
+          // The Mini Game result is gameplay economy, so one controlling peer must
+          // submit it to host authority. In solo CPU turns the host still owns the
+          // QA bot seat even though normal human controls are intentionally disabled.
+          const canSubmit = internals.canControlCurrentPlayer()
+            || (browserSession.current.mode === 'solo' && browserSession.isCpuSeat(actor.id));
+          if (!canSubmit) return;
+
+          internals.submitIntent('resolve_minigame', {
+            gameType: outcome.gameType,
+            ranking: outcome.rankingPlayerIds.join(','),
+          });
+        })
         .catch(() => undefined)
         .finally(() => {
-          bgmController.playTrack(previousTrack === 'mini_game' ? 'city_bubble' : previousTrack);
+          bgmController.playTrack(previousTrack);
           if (presentation.currentModel === model) presentation.finishCurrent(false);
         });
     };
