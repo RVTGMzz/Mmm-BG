@@ -1,4 +1,4 @@
-import { access, readFile, readdir, stat } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { createHash } from 'node:crypto';
 
@@ -19,14 +19,14 @@ const bgmTracks = [
 ];
 
 const eventSfx = [
-  'victory.ogg',
-  'news.ogg',
-  'card.ogg',
-  'step.ogg',
-  'money_loss.ogg',
-  'money_gain.ogg',
-  'dice.ogg',
-  'choice.ogg',
+  ['card.ogg', '0ecabbc019826d5556553bd1a21b7b1b4538eb2f62b35a68efdbf2b1f1ddb605'],
+  ['choice.ogg', 'aa14cf68e00cc1accfe3aa4d009a7deeb906fc990cbaea7c7f9e48fbe69a9c30'],
+  ['dice.ogg', '4ccf255e565acabed9d69bbb308ad27ef285df9a043a9b8b72355438bc39e7a5'],
+  ['money_gain.ogg', '8a19c26ad01074fbabbb37dbfe8ebe38393a9bb06239c1c79780b66df0824ded'],
+  ['money_loss.ogg', '200ded5f3dc4e55f8235d0800a72881335984f3cb0ddd437505152fff8c6d703'],
+  ['news.ogg', 'a9901b41245a2a118c0a007af8b0fc35561939f673245a0ea728f0d4f406cd2e'],
+  ['step.ogg', '4f10b73ea78c814afd107d31982ae6774daf526cca9590c7a1e3750920058445'],
+  ['victory.ogg', '4be8669448d283a1747f32195da0235e6267100f9461d2d9093adedf25d9bd98'],
 ];
 
 await access('dist/index.html', constants.R_OK);
@@ -64,13 +64,17 @@ for (const [file, expectedSha] of bgmTracks) {
   );
 }
 
-for (const file of eventSfx) {
+for (const [file, expectedSha] of eventSfx) {
   const path = `dist/audio/sfx/${file}`;
   await access(path, constants.R_OK);
-  const info = await stat(path);
-  assert(info.size > 256, `Event SFX ${file} looks empty (${info.size} bytes).`);
+  const actualSha = await sha256(path);
+  assert(
+    actualSha === expectedSha,
+    `Event SFX checksum mismatch for ${file}. Expected ${expectedSha} but got ${actualSha}`,
+  );
 }
 
 console.log(
-  `[playtest-package-ci] PASS assets=${files.length} bgm=${bgmTracks.length}/4 checksums=PASS sfx=${eventSfx.length}/8 quickstart=PLAYTEST.txt launcher=START_PLAYTEST.bat relativePaths=PASS`,
+  `[playtest-package-ci] PASS assets=${files.length} bgm=${bgmTracks.length}/4 bgmChecksums=PASS ` +
+    `sfx=${eventSfx.length}/8 sfxChecksums=PASS quickstart=PLAYTEST.txt launcher=START_PLAYTEST.bat relativePaths=PASS`,
 );
