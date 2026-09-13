@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import jobsJson from '../src/content/core/jobs_mvp.json';
 import { createEmptyHostAuthority, submitClientIntent } from '../src/core/authority';
+import { computeMatchChecksum } from '../src/core/checksum';
 import {
   applyJobSelection,
   drawUniqueJobOffer,
+  jobOfferIndexForRoll,
+  jobSalary,
   resolveCareerCheck,
   type JobDefinition,
 } from '../src/core/jobs';
-import { createInitialMatchState, type MatchCommand } from '../src/core/matchState';
+import { advanceMatchTurn, cloneMatchState, createInitialMatchState, type MatchCommand } from '../src/core/matchState';
 import {
   minigameModeForActivePlayers,
   resolveMajorityMinorityRound,
@@ -20,6 +23,17 @@ const JOBS = jobsJson as JobDefinition[];
 assert.equal(JOBS.length, 10, 'Job pool must contain exactly 10 careers');
 assert.equal(new Set(JOBS.map((job) => job.id)).size, 10, 'Job IDs must be unique');
 assert(JOBS.some((job) => job.id === 'JOB_THIEF' && job.risk === 'crime' && job.jailChance > 0));
+for (const job of JOBS) {
+  assert.equal(job.salaryByLevel.length, job.maxLevel, `${job.id} salary curve must cover every level`);
+  assert(job.salaryByLevel.every((salary) => Number.isFinite(salary) && salary >= 0), `${job.id} salary must be non-negative`);
+  assert(job.special.trim().length > 0, `${job.id} must describe a special trait`);
+}
+assert.equal(jobOfferIndexForRoll(1), 0);
+assert.equal(jobOfferIndexForRoll(2), 0);
+assert.equal(jobOfferIndexForRoll(3), 1);
+assert.equal(jobOfferIndexForRoll(4), 1);
+assert.equal(jobOfferIndexForRoll(5), 2);
+assert.equal(jobOfferIndexForRoll(6), 2);
 
 let values = [0.01, 0.51, 0.91];
 const offer = drawUniqueJobOffer(JOBS, () => values.shift() ?? 0, 3);
@@ -38,6 +52,8 @@ applyJobSelection(player, office);
 assert.equal(player.jobId, office.id);
 assert.equal(player.jobLevel, 1);
 assert.equal(player.jobStatus, 'employed');
+assert.equal(jobSalary(office, 1), office.salaryByLevel[0]);
+assert.equal(jobSalary(office, 3), office.salaryByLevel[2]);
 
 const promoted = resolveCareerCheck(player, office, () => 0.01);
 assert.equal(promoted.outcome, 'promoted');
@@ -61,6 +77,33 @@ applyJobSelection(player, thief);
 const jailed = resolveCareerCheck(player, thief, () => 0.01);
 assert.equal(jailed.outcome, 'jailed');
 assert.equal(player.jobStatus, 'jailed');
+
+const ordered = createInitialMatchState({
+  boardId: 'order-test',
+  startNodeId: 0,
+  playerNames: ['P1', 'P2', 'P3', 'P4'],
+  seed: 99,
+  playOrder: [2, 0, 3, 1],
+});
+assert.deepEqual(ordered.playOrder, [2, 0, 3, 1]);
+assert.equal(ordered.turn.currentPlayerIndex, 2);
+advanceMatchTurn(ordered);
+assert.equal(ordered.turn.currentPlayerIndex, 0);
+advanceMatchTurn(ordered);
+assert.equal(ordered.turn.currentPlayerIndex, 3);
+advanceMatchTurn(ordered);
+assert.equal(ordered.turn.currentPlayerIndex, 1);
+advanceMatchTurn(ordered);
+assert.equal(ordered.turn.currentPlayerIndex, 2);
+const orderChecksum = computeMatchChecksum(ordered);
+const orderDrift = cloneMatchState(ordered);
+orderDrift.playOrder = [0, 1, 2, 3];
+assert.notEqual(computeMatchChecksum(orderDrift), orderChecksum, 'playOrder must be gameplay-checksummed');
+const careerDrift = cloneMatchState(ordered);
+careerDrift.players[0]!.jobId = 'JOB_DOCTOR';
+careerDrift.players[0]!.jobLevel = 2;
+careerDrift.players[0]!.jobStatus = 'employed';
+assert.notEqual(computeMatchChecksum(careerDrift), orderChecksum, 'career state must be gameplay-checksummed');
 
 assert.equal(minigameModeForActivePlayers([0, 1, 2, 3]), 'majority_minority');
 const majority = resolveMajorityMinorityRound([0, 1, 2, 3], {
@@ -114,23 +157,29 @@ assert.deepEqual(awaiting.errors, []);
 assert.equal(awaiting.state.players[0]?.nodeId, 1, 'Job Hub must force-stop movement even if roll has steps left');
 assert.equal(awaiting.state.turn.phase, 'JOB_CHOICE');
 assert.equal(awaiting.state.pendingJobOfferIds?.length, 3);
-assert.equal(awaiting.state.rng.calls, 4, 'job first visit uses 1 dice RNG + 3 unique offer draws');
+assert.equal(awaiting.state.rng.calls, 4, 'first Job visit uses 1 movement die + 3 unique offer draws');
+const offeredIds = [...awaiting.state.pendingJobOfferIds!];
 
-const chosenId = awaiting.state.pendingJobOfferIds![1]!;
 source.commandLog.push({
   seq: 2,
   type: 'choose_job',
   turnNumber: 1,
   playerIndex: 0,
   actorId: 0,
-  data: { jobId: chosenId },
+  data: {},
 });
 source.nextCommandSeq = 3;
 const selected = replayMatchCommands(source, jobBoard, [], []);
 assert.deepEqual(selected.errors, []);
-assert.equal(selected.state.players[0]?.jobId, chosenId);
+const jobDice = selected.state.eventLog.find((event) => event.type === 'job_dice_roll');
+assert(jobDice, 'Job assignment must emit authoritative job_dice_roll');
+const jobRoll = Number(jobDice.data.result);
+assert(jobRoll >= 1 && jobRoll <= 6, 'Job dice must be D6');
+const expectedJobId = offeredIds[jobOfferIndexForRoll(jobRoll)]!;
+assert.equal(selected.state.players[0]?.jobId, expectedJobId, '1–2/3–4/5–6 mapping must choose A/B/C offer');
 assert.equal(selected.state.players[0]?.jobLevel, 1);
 assert.equal(selected.state.turn.phase, 'PRE_ROLL_ACTION');
+assert.equal(selected.state.rng.calls, 5, 'Job assignment adds exactly one authoritative D6 RNG call');
 
 const authority = createEmptyHostAuthority(
   { boardId: jobBoard.id, startNodeId: 0, playerNames: ['P1'], seed: 3101 },
@@ -141,11 +190,17 @@ const rollReceipt = submitClientIntent(authority, {
 });
 assert.equal(rollReceipt.status, 'accepted');
 assert.equal(authority.state.turn.phase, 'JOB_CHOICE');
-const hostJob = authority.state.pendingJobOfferIds![0]!;
+const hostOffers = [...authority.state.pendingJobOfferIds!];
 const jobReceipt = submitClientIntent(authority, {
-  intentId: 'job-pick', clientId: 'host', actorId: 0, type: 'choose_job', observedCommandSeq: 1, data: { jobId: hostJob },
+  intentId: 'job-dice', clientId: 'host', actorId: 0, type: 'choose_job', observedCommandSeq: 1, data: {},
 });
 assert.equal(jobReceipt.status, 'accepted');
-assert.equal(authority.state.players[0]?.jobId, hostJob);
+const hostJobDice = authority.state.eventLog.find((event) => event.type === 'job_dice_roll');
+assert(hostJobDice);
+assert.equal(
+  authority.state.players[0]?.jobId,
+  hostOffers[jobOfferIndexForRoll(Number(hostJobDice.data.result))],
+  'Host authority must resolve Job from its own authoritative die result',
+);
 
-console.log('[job-minigame-031] PASS 10 Jobs + mandatory Job stop + choose 1/3 + career risks + Nhiều ra ít bị + RPS rules');
+console.log('[job-minigame-031] PASS Job salary + mandatory stop + random 3 + D6 A/B/C + career risks + Roll For Order + Nhiều ra ít bị → RPS');
