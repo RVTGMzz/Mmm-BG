@@ -25,6 +25,7 @@ assert.equal(cards.reduce((sum, card) => sum + card.dropWeight, 0), 1000);
 
 assert.equal(drawWeightedCard(cards, () => 0.10)?.effect.type, 'steal_money');
 assert.equal(drawWeightedCard(cards, () => 0.65)?.effect.type, 'block_cards');
+assert.equal(drawWeightedCard(cards, () => 0.78)?.effect.type, 'tactical_choice');
 assert.equal(drawWeightedCard(cards, () => 0.85)?.effect.type, 'rich_tax');
 assert.equal(drawWeightedCard(cards, () => 0.93)?.effect.type, 'percent_loss_all_others');
 assert.equal(drawWeightedCard(cards, () => 0.97)?.effect.type, 'catch_up_bonus');
@@ -69,4 +70,4 @@ assert.equal(node4.title, 'NGÃ TƯ ĐÔNG NGHẸT');
 assert.equal(node18.title, 'HẺM TẮT');
 assert.notEqual(node1.description, node4.description, 'normal tiles should not all read as generic clones');
 
-console.log('[content-depth-022] PASS expanded Card/News pools keep 1000 total weight with 0.1.25 economy amounts');
+console.log('[content-depth-022] PASS Card/News weights stay 1000 and R pool includes tactical_choice');
