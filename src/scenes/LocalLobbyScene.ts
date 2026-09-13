@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.25', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.26', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, '200 B$ Economy • nhịp tiền gọn hơn • READY vẫn là mốc hồi phục lớn.', {
+    this.add.text(228, 109, 'Turn Stakes • bảng B$ sống • hạng và nhịp tiền rõ hơn trong từng lượt.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        💸 0.1.25: trận mới bắt đầu 200 B$. Money tile / News / Phao Cứu Sinh đã rescale; READY +100 B$ giữ nguyên làm mốc hồi phục khi hoàn thành vòng.
+        👑 0.1.26: bảng B$ tự xếp hạng, đánh dấu người dẫn đầu / cuối bảng và hiện biến động ví nhỏ cạnh leaderboard. Economy 200 B$ của 0.1.25 giữ nguyên.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ 200B$ Economy + Party Mechanics + Reaction + Route + Settings + 2-tab local sẵn sàng.'
+        ? '✅ Turn Stakes + 200B$ Economy + Party Mechanics + Settings + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
