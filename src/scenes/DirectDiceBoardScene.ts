@@ -19,6 +19,7 @@ const IDLE_PIPS = new Set([0, 2, 4, 6, 8]);
 export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
   private directDice?: Phaser.GameObjects.Container;
   private directDiceTween?: Phaser.Tweens.Tween;
+  private rollPendingTurn?: number;
 
   create(): void {
     super.create();
@@ -33,6 +34,7 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
       this.directDiceTween = undefined;
       this.directDice?.destroy();
       this.directDice = undefined;
+      this.rollPendingTurn = undefined;
     });
   }
 
@@ -112,7 +114,8 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
         isCpu: browserSession.isCpuSeat(player.id),
         shellActive: internals.shell.status === 'active',
       });
-      if (!allowed) return;
+      if (!allowed || this.rollPendingTurn === internals.match.turn.turnNumber) return;
+      this.rollPendingTurn = internals.match.turn.turnNumber;
       this.hideDirectDiceImmediately();
       internals.handleRoll();
     });
@@ -123,12 +126,21 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
     const player = internals.currentPlayer();
     if (!this.directDice || !player) return;
 
-    const shouldShow = shouldShowDirectTurnDice({
-      phase: internals.match.turn.phase,
-      canControl: internals.canControlCurrentPlayer(),
-      isCpu: browserSession.isCpuSeat(player.id),
-      shellActive: internals.shell.status === 'active',
-    });
+    if (
+      this.rollPendingTurn !== undefined &&
+      this.rollPendingTurn !== internals.match.turn.turnNumber
+    ) {
+      this.rollPendingTurn = undefined;
+    }
+
+    const shouldShow =
+      this.rollPendingTurn !== internals.match.turn.turnNumber &&
+      shouldShowDirectTurnDice({
+        phase: internals.match.turn.phase,
+        canControl: internals.canControlCurrentPlayer(),
+        isCpu: browserSession.isCpuSeat(player.id),
+        shellActive: internals.shell.status === 'active',
+      });
 
     if (shouldShow && !this.directDice.visible) {
       this.showDirectDice();
