@@ -9,7 +9,7 @@ import {
 import { getOutgoingEdges } from '../src/core/board';
 import type { CardDefinition } from '../src/core/cards';
 import { computeMatchChecksum } from '../src/core/checksum';
-import { shouldEndDemoMatch } from '../src/core/demoMatch';
+import { demoMatchLapProgress, shouldEndDemoMatch } from '../src/core/demoMatch';
 import {
   DemoShellClientSession,
   DemoShellHostSession,
@@ -60,11 +60,12 @@ shellClient.start();
 
 assert(shellHost.shell.status === 'waiting', 'Demo shell should start waiting.');
 assert(shellClient.shell?.status === 'waiting', 'Client did not receive waiting shell state.');
-assert(shellHost.shell.turnLimit === 12, `Expected 12-turn demo, got ${shellHost.shell.turnLimit}.`);
+assert(shellHost.shell.turnLimit === 12, 'Legacy shell turnLimit metadata should remain backward-compatible.');
+assert(!shouldEndDemoMatch(authority.state, shellHost.shell), 'Fresh match must not score before anybody completes a lap.');
 
 shellHost.begin(hostAuthorityCommandSeq(authority));
 assert(shellHost.shell.status === 'active', 'Host failed to start demo shell.');
-assert(shellClient.shell?.status === 'active', 'Client did not receive active demo shell.');
+assert(shellClient.shell?.status === 'active', 'Client did not receive active demo shell state.');
 
 function submitForCurrent(type: ClientIntentType, data: Record<string, string | number | boolean | null> = {}): void {
   const current = authority.state.players[authority.state.turn.currentPlayerIndex];
@@ -74,7 +75,7 @@ function submitForCurrent(type: ClientIntentType, data: Record<string, string | 
 }
 
 let safety = 0;
-while (shellHost.shell.status === 'active' && safety < 80) {
+while (shellHost.shell.status === 'active' && safety < 240) {
   safety += 1;
   const current = authority.state.players[authority.state.turn.currentPlayerIndex];
   assert(current, 'Demo shell missing current player.');
@@ -98,10 +99,12 @@ while (shellHost.shell.status === 'active' && safety < 80) {
   }
 }
 
-assert(safety < 80, 'Demo match did not terminate inside safety limit.');
-assert(authority.state.turn.turnNumber === 13, `Expected next turn 13 after 12 demo turns, got ${authority.state.turn.turnNumber}.`);
-assert(shellHost.shell.status === 'ended', 'Host shell did not end after 3 rounds.');
-assert(shellClient.shell?.status === 'ended', 'Client did not receive match-end shell state.');
+assert(safety < 240, 'One-lap match did not terminate inside safety limit.');
+const lapProgress = demoMatchLapProgress(authority.state);
+assert(lapProgress.completedPlayers === 4, `Expected all 4 players to finish one lap, got ${lapProgress.completedPlayers}/4.`);
+assert(authority.state.players.every((player) => (player.lapsCompleted ?? 0) >= 1), 'Match ended before every player completed one lap.');
+assert(shellHost.shell.status === 'ended', 'Host shell did not end after everybody completed one lap.');
+assert(shellClient.shell?.status === 'ended', 'Client did not receive one-lap match-end shell state.');
 assert(shellHost.shell.winnerIds.length >= 1, 'Demo match ended without winner.');
 assert(JSON.stringify(shellClient.shell?.winnerIds) === JSON.stringify(shellHost.shell.winnerIds), 'Client winner list differs from host.');
 
@@ -135,9 +138,10 @@ assert(shellClient.shell?.status === 'active', 'Client did not receive rematch a
 assert(client.observedCommandSeq === 0, 'Client command boundary did not reset for rematch.');
 assert(client.state?.turn.turnNumber === 1, 'Client match state did not reset to turn 1.');
 assert(client.state?.players.every((player) => player.money === fresh.state.startingMoney), 'Client rematch money did not reset.');
+assert(client.state?.players.every((player) => (player.lapsCompleted ?? 0) === 0), 'Client rematch lap progress did not reset.');
 
-console.log(`[demo-shell-ci] PASS rounds=3 turns=12 endedChecksum=${endedChecksum} winners=${endedWinnerIds.map((id) => `P${id + 1}`).join('+')} rematchChecksum=${rematchChecksum}`);
-console.log('[demo-shell-ci] probes: waiting sync PASS • start sync PASS • Job choice PASS • match end PASS • winner sync PASS • rematch reset PASS');
+console.log(`[demo-shell-ci] PASS one-lap-score turns=${authority.source.turn.turnNumber - 1} endedChecksum=${endedChecksum} winners=${endedWinnerIds.map((id) => `P${id + 1}`).join('+')} rematchChecksum=${rematchChecksum}`);
+console.log('[demo-shell-ci] probes: waiting sync PASS • start sync PASS • Job choice PASS • all players complete 1 lap PASS • score-after-lap PASS • winner sync PASS • rematch reset PASS');
 
 shellHost.close();
 shellClient.close();
