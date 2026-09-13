@@ -1,6 +1,7 @@
 import type { MatchState } from './matchState';
 
 export const DEMO_MATCH_DEFAULT_ROUNDS = 3;
+export const DEMO_MATCH_TARGET_LAPS = 1;
 
 export type DemoMatchStatus = 'waiting' | 'active' | 'ended';
 
@@ -20,6 +21,12 @@ export interface DemoMatchResult {
   winnerIds: number[];
   winningMoney: number;
   ranking: Array<{ playerId: number; money: number }>;
+}
+
+export interface DemoMatchLapProgress {
+  completedPlayers: number;
+  totalPlayers: number;
+  targetLaps: number;
 }
 
 export function createDemoMatchShell(
@@ -62,14 +69,30 @@ export function demoMatchResult(match: MatchState): DemoMatchResult {
   };
 }
 
-/**
- * Temporary demo rule only, not final game design:
- * after N full rounds, the player(s) with the most B$ win. Ties share the win.
- */
-export function shouldEndDemoMatch(match: MatchState, shell: DemoMatchShellState): boolean {
-  return shell.status === 'active' && match.turn.turnNumber > shell.turnLimit;
+export function demoMatchLapProgress(match: MatchState): DemoMatchLapProgress {
+  const targetLaps = DEMO_MATCH_TARGET_LAPS;
+  return {
+    completedPlayers: match.players.filter((player) => (player.lapsCompleted ?? 0) >= targetLaps).length,
+    totalPlayers: match.players.length,
+    targetLaps,
+  };
 }
 
+/**
+ * Current playtest rule:
+ * scoring only starts after every player has physically completed one full board lap.
+ * Turn count / shell.rounds no longer ends the match; those fields remain for old shell compatibility.
+ */
+export function shouldEndDemoMatch(match: MatchState, shell: DemoMatchShellState): boolean {
+  if (shell.status !== 'active' || match.players.length === 0) return false;
+  const progress = demoMatchLapProgress(match);
+  return progress.completedPlayers === progress.totalPlayers;
+}
+
+/**
+ * Legacy turn progress retained for old debug surfaces only.
+ * It no longer controls match end.
+ */
 export function demoMatchTurnProgress(match: MatchState, shell: DemoMatchShellState): {
   completedTurns: number;
   totalTurns: number;
