@@ -28,8 +28,35 @@ function event(
   };
 }
 
+const moneyLanding = buildPresentationModel(
+  event(5, 'tile_land', 0, { nodeId: 2, tileType: 'money', value: 50 }),
+  match.players,
+);
+assert(moneyLanding, 'money landing should create a compact presentation model');
+assert.equal(moneyLanding.kind, 'tile_land');
+assert.equal(moneyLanding.tileType, 'money');
+assert.equal(moneyLanding.amount, 50);
+assert.equal(moneyLanding.title, '+50 B$');
+
+const normalLanding = buildPresentationModel(
+  event(6, 'tile_land', 2, { nodeId: 4, tileType: 'normal', value: 0 }),
+  match.players,
+);
+assert(normalLanding, 'normal landing should still create feedback');
+assert.equal(normalLanding.title, 'Ô THƯỜNG');
+assert.equal(normalLanding.actorName, 'Hưng');
+
+const ready = buildPresentationModel(
+  event(7, 'ready_pass', 3, { amount: 100, resultMoney: 1200 }),
+  match.players,
+);
+assert(ready, 'ready pass should create a bonus presentation');
+assert.equal(ready.kind, 'ready_bonus');
+assert.equal(ready.amount, 100);
+assert.equal(ready.title, '+100 B$');
+
 const news = buildPresentationModel(
-  event(7, 'news', 1, {
+  event(8, 'news', 1, {
     newsId: 'NEWS_DEMO_002',
     title: 'Ví Bay Màu',
     rarity: 'R',
@@ -53,7 +80,7 @@ assert.match(news.reactions[0]?.text ?? '', /Biết ngay mà!/);
 assert.match(news.reactions[1]?.text ?? '', /Còn tiền là còn gỡ/);
 
 const card = buildPresentationModel(
-  event(8, 'card_play', 0, {
+  event(9, 'card_play', 0, {
     cardId: 'ACT_001',
     title: 'Trượt Tay',
     rarity: 'N',
@@ -81,7 +108,7 @@ assert.equal(card.reactions[1]?.sequence, 2);
 assert.equal(card.reactions[2]?.sequence, 3);
 
 const amountTemplate = buildPresentationModel(
-  event(9, 'news', 0, {
+  event(10, 'news', 0, {
     newsId: 'NEWS_DEMO_002',
     title: 'Ví Bay Màu',
     rarity: 'R',
@@ -98,7 +125,7 @@ assert(amountTemplate, 'amount-template news should create a presentation model'
 assert.match(amountTemplate.reactions[0]?.text ?? '', /80B\$/);
 
 const draw = buildPresentationModel(
-  event(10, 'card_draw', 3, {
+  event(11, 'card_draw', 3, {
     cardId: 'ACT_012',
     title: 'Chuyển Sinh Đổi Vận',
     rarity: 'SSR',
@@ -113,9 +140,9 @@ assert.equal(draw.rarity, 'SSR');
 assert.equal(draw.reactions.length, 0);
 
 assert.equal(
-  buildPresentationModel(event(11, 'money_tile', 0, { amount: 50 }), match.players),
+  buildPresentationModel(event(12, 'money_tile', 0, { amount: 50 }), match.players),
   undefined,
-  'non Card/News events should stay outside the cinematic presentation queue',
+  'raw money delta stays outside cinematic queue because tile_land owns landing feedback',
 );
 
-console.log('[presentation-events] PASS Card/News/Reaction models are deterministic and spectator-aware');
+console.log('[presentation-events] PASS landing + Card/News/Reaction models are deterministic and spectator-aware');
