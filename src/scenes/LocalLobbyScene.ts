@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.28', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.29', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'NPC Banter • CPU lâu lâu ngáo nhẹ • chat góc màn hình ở lại lâu hơn.', {
+    this.add.text(228, 109, 'Function Tiles • 🎮 Mini Game + 💼 Job đã vào board ở mức foundation.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🤖 0.1.28: CPU có một tỷ lệ thấp xuất hiện pha “bấm trượt tay”; riêng Kèo Hai Cửa có thể chọn nhầm cửa thật. Chat của CPU ở góc màn hình giữ lâu gấp 2.5 lần. Gameplay RNG không đổi.
+        🎮💼 0.1.29: Mini Game và Job đã có tile riêng, content hook, presentation và replay/authority route. Foundation hiện tự đi tiếp, chưa gán luật thưởng/phạt cuối cùng.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ NPC Banter + Tactical Choice + Turn Stakes + 200B$ Economy + Settings + 2-tab local sẵn sàng.'
+        ? '✅ Function Tiles + NPC Banter + Tactical Choice + 200B$ Economy + Settings + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
