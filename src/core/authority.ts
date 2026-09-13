@@ -184,14 +184,12 @@ function buildPlayCardData(authority: HostAuthority, intent: ClientIntent): { da
   return { data: { cardId, targetId, choice } };
 }
 
-function buildJobChoiceData(authority: HostAuthority, intent: ClientIntent): { data?: Record<string, MatchEventValue>; reason?: string } {
+function buildJobChoiceData(authority: HostAuthority): { data?: Record<string, MatchEventValue>; reason?: string } {
   const player = currentPlayer(authority.state);
   if (!player) return { reason: 'missing current player.' };
   if (authority.state.pendingJobPlayerId !== player.id) return { reason: 'no Job offer for current player.' };
-  const jobId = String(intent.data.jobId ?? '');
-  if (!jobId) return { reason: 'choose_job requires jobId.' };
-  if (!(authority.state.pendingJobOfferIds ?? []).includes(jobId)) return { reason: `${jobId} is not in current Job offer.` };
-  return { data: { jobId } };
+  if ((authority.state.pendingJobOfferIds ?? []).length !== 3) return { reason: 'Job roll requires exactly 3 offered Jobs.' };
+  return { data: {} };
 }
 
 export function createHostAuthority(source: MatchState, runtime: HostAuthorityRuntime): HostAuthority {
@@ -203,7 +201,7 @@ export function createHostAuthority(source: MatchState, runtime: HostAuthorityRu
   return { source: cloned, state: replay.state, runtime, receipts: new Map() };
 }
 
-export function createEmptyHostAuthority(options: { boardId: string; startNodeId: number; playerNames: string[]; seed: number; startingMoney?: number }, runtime: HostAuthorityRuntime): HostAuthority {
+export function createEmptyHostAuthority(options: { boardId: string; startNodeId: number; playerNames: string[]; seed: number; startingMoney?: number; playOrder?: number[] }, runtime: HostAuthorityRuntime): HostAuthority {
   return createHostAuthority(createInitialMatchState(options), runtime);
 }
 
@@ -233,9 +231,9 @@ export function submitClientIntent(authority: HostAuthority, intent: ClientInten
     data = { to };
   } else if (intent.type === 'choose_job') {
     type = 'choose_job';
-    const jobData = buildJobChoiceData(authority, intent);
+    const jobData = buildJobChoiceData(authority);
     if (!jobData.data) {
-      const result = receipt(authority, intent, 'rejected', { reason: jobData.reason ?? 'invalid Job choice.' });
+      const result = receipt(authority, intent, 'rejected', { reason: jobData.reason ?? 'invalid Job roll.' });
       authority.receipts.set(intent.intentId, result);
       return cloneReceipt(result);
     }
