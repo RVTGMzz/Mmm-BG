@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.26', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.27', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Turn Stakes • bảng B$ sống • hạng và nhịp tiền rõ hơn trong từng lượt.', {
+    this.add.text(228, 109, 'Tactical Choice • lần đầu có Lá Bài cho người chơi tự chọn chiến thuật.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        👑 0.1.26: bảng B$ tự xếp hạng, đánh dấu người dẫn đầu / cuối bảng và hiện biến động ví nhỏ cạnh leaderboard. Economy 200 B$ của 0.1.25 giữ nguyên.
+        🧠 0.1.27: Lá <strong>Kèo Hai Cửa</strong> cho chọn Ăn Chắc +25 B$ hoặc Ép Top 1 lấy 15% B$. Host validate lựa chọn; CPU tự so lợi ích mà không dùng RNG.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Turn Stakes + 200B$ Economy + Party Mechanics + Settings + 2-tab local sẵn sàng.'
+        ? '✅ Tactical Choice + Turn Stakes + 200B$ Economy + Settings + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
