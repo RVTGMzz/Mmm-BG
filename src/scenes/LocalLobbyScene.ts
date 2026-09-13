@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.18', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.18.1', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Tile feedback + Image Editor + FX/SFX + BGM fade.', {
+    this.add.text(228, 109, 'Flow Fix • panel cần xác nhận • xúc xắc chẵn/lẻ tự rẽ.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎯 0.1.18: thử crop/zoom/rotate ảnh ở Setup, rồi quan sát banner + FX mỗi khi quân cờ đáp ô.
+        🎯 0.1.18.1: sau mỗi Tile/Card/News/Reaction hãy bấm SPACE / ENTER / CLICK để tiếp tục. Ngã rẽ chẵn/lẻ giờ tự chọn, không còn popup chọn đường.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ CPU test + 2-tab local sẵn sàng. Ảnh mặt vẫn là tùy chọn.'
+        ? '✅ Flow Fix + CPU test + 2-tab local sẵn sàng. Ảnh mặt vẫn là tùy chọn.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
