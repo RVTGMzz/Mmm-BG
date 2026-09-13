@@ -17,6 +17,8 @@ import {
   applyJobSelection,
   drawUniqueJobOffer,
   jobById,
+  jobOfferIndexForRoll,
+  jobSalary,
   resolveCareerCheck,
   type JobDefinition,
 } from './jobs';
@@ -126,7 +128,7 @@ function resolveJobTile(ctx: ReplayContext, player: PlayerState, nodeId: number)
         title: resolution.title,
         impact: currentJob.icon,
         description: resolution.summary,
-        summary: resolution.summary,
+        summary: currentJob.special,
         affectedPlayerIds: String(player.id),
       },
       player.id,
@@ -144,10 +146,10 @@ function resolveJobTile(ctx: ReplayContext, player: PlayerState, nodeId: number)
       nodeId,
       optionIds: offer.map((job) => job.id).join(','),
       optionTitles: offer.map((job) => `${job.icon} ${job.title}`).join(' | '),
-      title: 'CHỌN 1 TRONG 3 JOB',
-      impact: '💼',
-      description: 'Bạn bắt buộc ghé Job Hub. Chọn một trong ba nghề vừa xuất hiện.',
-      summary: 'Pool hiện có 10 nghề. Mỗi vòng quay lại Job Hub sẽ kiểm tra thăng/hạ cấp hoặc biến cố nghề nghiệp.',
+      title: '3 JOB XUẤT HIỆN!',
+      impact: '💼🎲',
+      description: 'Không chọn trực tiếp. Hãy đổ xúc xắc Job: 1–2 = A • 3–4 = B • 5–6 = C.',
+      summary: 'Mỗi nghề có lương riêng khi qua cổng và một nhịp rủi ro/đặc tính khác nhau.',
       affectedPlayerIds: String(player.id),
     },
     player.id,
@@ -187,7 +189,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
         title: 'MINI GAME',
         impact: '🎮',
         description: '3+ người: Nhiều ra ít bị. Phe sấp/ngửa thiểu số bị loại.',
-        summary: 'Khi chỉ còn 1v1, hệ thống tự chuyển sang Oẳn Tù Xì. Engine luật đã khóa; UI trận con sẽ nối ở build kế.',
+        summary: 'Chơi loại dần. Khi còn đúng 1v1, hệ thống tự chuyển sang Oẳn Tù Xì để tìm người thắng cuối.',
         status: 'rules_locked',
         affectedPlayerIds: ctx.state.players.map((entry) => entry.id).join(','),
       },
@@ -331,8 +333,19 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
     }, player.id);
 
     if (edge.to === ctx.board.startNodeId) {
-      player.money += 100;
-      appendMatchEvent(ctx.state, 'ready_pass', { amount: 100, resultMoney: player.money, affectedPlayerIds: String(player.id) }, player.id);
+      const currentJob = player.jobStatus === 'employed' ? jobById(JOBS, player.jobId) : undefined;
+      const salaryAmount = currentJob ? jobSalary(currentJob, player.jobLevel) : 0;
+      player.money += salaryAmount;
+      appendMatchEvent(ctx.state, 'ready_pass', {
+        amount: salaryAmount,
+        salaryAmount,
+        resultMoney: player.money,
+        jobId: currentJob?.id ?? null,
+        jobTitle: currentJob?.title ?? null,
+        jobIcon: currentJob?.icon ?? null,
+        jobLevel: player.jobLevel ?? 0,
+        affectedPlayerIds: String(player.id),
+      }, player.id);
     }
 
     const steppedNode = getBoardNode(ctx.board, edge.to);
@@ -354,14 +367,23 @@ function replayJobChoice(ctx: ReplayContext, command: MatchCommand): void {
   const player = currentPlayer(ctx);
   if (command.type !== 'choose_job') failCommand(ctx, command, `expected choose_job, got ${command.type}.`);
   validateCommand(ctx, command);
-  if (!ctx.phase.can('choose_job')) failCommand(ctx, command, `job choice is invalid during ${ctx.phase.phase}.`);
+  if (!ctx.phase.can('choose_job')) failCommand(ctx, command, `Job dice is invalid during ${ctx.phase.phase}.`);
   if (ctx.state.pendingJobPlayerId !== player.id) failCommand(ctx, command, 'pending Job offer belongs to another player.');
 
-  const jobId = String(command.data.jobId ?? '');
   const offered = ctx.state.pendingJobOfferIds ?? [];
-  if (!offered.includes(jobId)) failCommand(ctx, command, `${jobId} is not in the current 3-Job offer.`);
+  if (offered.length !== 3) failCommand(ctx, command, `Job dice requires exactly 3 offers, got ${offered.length}.`);
+  const result = rollD6(ctx.random);
+  const offerIndex = jobOfferIndexForRoll(result);
+  const jobId = offered[offerIndex];
   const job = jobById(JOBS, jobId);
-  if (!job) failCommand(ctx, command, `cannot find Job ${jobId}.`);
+  if (!job) failCommand(ctx, command, `cannot find rolled Job ${String(jobId)}.`);
+
+  appendMatchEvent(ctx.state, 'job_dice_roll', {
+    result,
+    offerIndex,
+    jobId: job.id,
+    affectedPlayerIds: String(player.id),
+  }, player.id);
 
   applyJobSelection(player, job);
   delete ctx.state.pendingJobOfferIds;
@@ -370,11 +392,14 @@ function replayJobChoice(ctx: ReplayContext, command: MatchCommand): void {
     jobId: job.id,
     jobTitle: job.title,
     jobIcon: job.icon,
+    roll: result,
+    offerIndex,
     level: 1,
-    title: `${job.icon} NHẬN VIỆC`,
+    salary: jobSalary(job, 1),
+    title: `${job.icon} 🎲 ${result} → NHẬN VIỆC`,
     impact: job.icon,
-    description: `${player.name} chọn nghề ${job.title}.`,
-    summary: 'Bắt đầu ở Lv.1. Lần sau qua Job Hub sẽ kiểm tra thăng/hạ cấp và biến cố nghề nghiệp.',
+    description: `${player.name} đổ ${result}, trúng ${job.title} • lương Lv.1 ${jobSalary(job, 1)} B$/cổng.`,
+    summary: job.special,
     affectedPlayerIds: String(player.id),
   }, player.id);
   finishAndAdvanceTurn(ctx, player);
@@ -449,6 +474,7 @@ export function replayMatchCommands(
     playerNames: source.players.map((player) => player.name),
     seed: source.seed,
     startingMoney: source.startingMoney,
+    playOrder: source.playOrder,
   });
   const phase = new TurnPhaseMachine(state.turn);
   const ctx: ReplayContext = {
