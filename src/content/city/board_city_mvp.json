@@ -15,7 +15,7 @@
     { "id": 9, "x": 980, "y": 540, "type": "normal", "feature": "minigame", "contentId": "MINIGAME_SLOT_01" },
     { "id": 10, "x": 820, "y": 580, "type": "news" },
     { "id": 11, "x": 660, "y": 580, "type": "money", "value": 50 },
-    { "id": 12, "x": 500, "y": 580, "type": "normal" },
+    { "id": 12, "x": 500, "y": 580, "type": "money", "value": -20 },
     { "id": 13, "x": 340, "y": 580, "type": "card" },
     { "id": 14, "x": 180, "y": 540, "type": "normal" },
     { "id": 15, "x": 70, "y": 460, "type": "news" },
@@ -29,15 +29,12 @@
     { "from": 1, "to": 2, "route": "main" },
     { "from": 2, "to": 3, "route": "main" },
     { "from": 3, "to": 4, "route": "main" },
-
     { "from": 4, "to": 5, "label": "PHỐ CHÍNH", "route": "main", "parity": "odd" },
     { "from": 5, "to": 6, "route": "main" },
     { "from": 6, "to": 7, "route": "main" },
-
     { "from": 4, "to": 18, "label": "HẺM TẮT", "route": "branch", "parity": "even" },
     { "from": 18, "to": 19, "route": "branch" },
     { "from": 19, "to": 7, "route": "branch" },
-
     { "from": 7, "to": 8, "route": "main" },
     { "from": 8, "to": 9, "route": "main" },
     { "from": 9, "to": 10, "route": "main" },
