@@ -25,11 +25,15 @@ function chooseSingleTarget(state: MatchState, casterId: number): PlayerState | 
     .sort((a, b) => b.money - a.money || a.id - b.id)[0];
 }
 
-export function shouldCpuQuirk(state: MatchState, actorId: number, cardId: string): boolean {
+export function cpuQuirkForTurn(turnNumber: number, actorId: number, cardId: string): boolean {
   let cardValue = 0;
   for (let index = 0; index < cardId.length; index += 1) cardValue += cardId.charCodeAt(index);
-  const bucket = (state.seed + state.turn.turnNumber * 17 + (actorId + 1) * 41 + cardValue) >>> 0;
+  const bucket = (Math.max(1, turnNumber) * 17 + (actorId + 1) * 41 + cardValue) >>> 0;
   return bucket % 20 === 0;
+}
+
+export function shouldCpuQuirk(state: MatchState, actorId: number, cardId: string): boolean {
+  return cpuQuirkForTurn(state.turn.turnNumber, actorId, cardId);
 }
 
 export function cpuQuirkLine(turnNumber: number, actorId: number): string {
@@ -92,7 +96,7 @@ export function chooseTestBotIntent(
 
       return {
         type: 'play_card',
-        data: { cardId: card.id, targetId, choice, cpuQuirk },
+        data: { cardId: card.id, targetId, choice },
         reason: card.effect.type === 'tactical_choice'
           ? `dùng ${card.title} → ${choice === 'pressure' ? 'Ép Top 1' : 'Ăn Chắc'}`
           : `dùng ${card.title}`,
