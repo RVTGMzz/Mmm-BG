@@ -4,7 +4,7 @@ import type { TurnPhase, TurnPhaseSnapshot } from './turnPhase';
 import type { PlayerState } from './types';
 
 export type MatchEventValue = string | number | boolean | null;
-export type MatchCommandType = 'roll' | 'choose_branch' | 'play_card';
+export type MatchCommandType = 'roll' | 'choose_branch' | 'play_card' | 'choose_job';
 
 export interface MatchEvent {
   seq: number;
@@ -33,11 +33,8 @@ export interface MatchCommand {
   playerIndex: number;
   actorId: number;
   data: Record<string, MatchEventValue>;
-  /** Exact safe-point phase before this command is accepted. */
   phase?: TurnPhase;
-  /** Turn phase revision before this command is accepted. Legacy snapshots may omit it. */
   revision?: number;
-  /** Gameplay-state checksum immediately before command acceptance. */
   preChecksum?: string;
 }
 
@@ -59,6 +56,9 @@ export interface MatchState {
   nextCommandSeq: number;
   eventLog: MatchEvent[];
   nextEventSeq: number;
+  /** Populated only while the current player is choosing 1 of 3 jobs. */
+  pendingJobOfferIds?: string[];
+  pendingJobPlayerId?: number;
 }
 
 export interface CreateMatchOptions {
@@ -80,6 +80,7 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     cardBlockTurns: 0,
     handCardIds: [],
     cardsPlayedThisTurn: 0,
+    jobStatus: 'unemployed',
   }));
 
   return {
@@ -169,6 +170,8 @@ export function advanceMatchTurn(match: MatchState): number {
     (match.turn.currentPlayerIndex + 1) % match.players.length;
   match.turn.turnNumber += 1;
   match.turn.lastRoll = null;
+  delete match.pendingJobOfferIds;
+  delete match.pendingJobPlayerId;
   return match.turn.currentPlayerIndex;
 }
 
@@ -178,6 +181,7 @@ export function serializeMatchState(match: MatchState): string {
 
 function legacyPhaseForCommand(type: MatchCommandType): TurnPhase {
   if (type === 'choose_branch') return 'BRANCH_CHOICE';
+  if (type === 'choose_job') return 'JOB_CHOICE';
   return 'PRE_ROLL_ACTION';
 }
 
@@ -195,7 +199,12 @@ export function deserializeMatchState(serialized: string): MatchState {
   const parsed = JSON.parse(serialized) as Partial<MatchState> & { schemaVersion?: number };
 
   if (parsed.schemaVersion === 3) {
-    return parsed as MatchState;
+    const state = parsed as MatchState;
+    state.players = state.players.map((player) => ({
+      ...player,
+      jobStatus: player.jobStatus ?? (player.jobId ? 'employed' : 'unemployed'),
+    }));
+    return state;
   }
 
   if (parsed.schemaVersion === 2) {
@@ -204,6 +213,7 @@ export function deserializeMatchState(serialized: string): MatchState {
     return {
       ...legacy,
       schemaVersion: 3,
+      players: legacy.players.map((player) => ({ ...player, jobStatus: player.jobId ? 'employed' : 'unemployed' })),
       commandLog,
       nextCommandSeq: legacy.nextCommandSeq ?? commandLog.length + 1,
     };
@@ -227,7 +237,7 @@ export function deserializeMatchState(serialized: string): MatchState {
       startingMoney: 1000,
       rng: legacy.rng,
       turn: legacy.turn,
-      players: legacy.players,
+      players: legacy.players.map((player) => ({ ...player, jobStatus: player.jobId ? 'employed' : 'unemployed' })),
       commandLog: [],
       nextCommandSeq: 1,
       eventLog: legacy.eventLog ?? [],
