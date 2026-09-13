@@ -16,6 +16,14 @@ import { DemoBoardScene } from './DemoBoardScene';
 const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 
+type NetworkStateSource = 'host' | 'state' | 'snapshot';
+
+type PlayerPresentationSnapshot = {
+  id: number;
+  money: number;
+  handCardIds: string[];
+};
+
 interface DemoBoardInternals {
   match: MatchState;
   phase: TurnPhaseMachine;
@@ -25,6 +33,12 @@ interface DemoBoardInternals {
   currentPlayer(): PlayerState | undefined;
   submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
   canControlCurrentPlayer(): boolean;
+  applyNetworkState(
+    state: MatchState,
+    commandSeq: number,
+    checksum: string,
+    source: NetworkStateSource,
+  ): void;
   writeLog(message: string): void;
 }
 
@@ -34,15 +48,26 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
   private lastBgmRound = 0;
 
   create(): void {
-    // Test-only hook: CPU seats must not expose the normal human Roll/Card controls.
-    // DemoBoardScene uses TypeScript-private methods, so the playtest wrapper shadows
-    // the runtime method without touching deterministic gameplay/authority code.
+    // Test-only hooks stay in the presentation wrapper so deterministic gameplay,
+    // replay and host authority code remain untouched.
     const internals = this.demoInternals();
     const originalCanControl = internals.canControlCurrentPlayer.bind(this);
     internals.canControlCurrentPlayer = () => {
       const current = internals.currentPlayer();
       if (current && browserSession.isCpuSeat(current.id)) return false;
       return originalCanControl();
+    };
+
+    const originalApplyNetworkState = internals.applyNetworkState.bind(this);
+    internals.applyNetworkState = (
+      state: MatchState,
+      commandSeq: number,
+      checksum: string,
+      source: NetworkStateSource,
+    ) => {
+      const before = this.snapshotPlayers(internals.match);
+      originalApplyNetworkState(state, commandSeq, checksum, source);
+      if (source !== 'snapshot') this.presentStateDeltas(before, state.players);
     };
 
     super.create();
@@ -127,6 +152,87 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
 
   private demoInternals(): DemoBoardInternals {
     return this as unknown as DemoBoardInternals;
+  }
+
+  private snapshotPlayers(match?: MatchState): PlayerPresentationSnapshot[] {
+    if (!match) return [];
+    return match.players.map((player) => ({
+      id: player.id,
+      money: player.money,
+      handCardIds: [...player.handCardIds],
+    }));
+  }
+
+  private presentStateDeltas(before: PlayerPresentationSnapshot[], after: PlayerState[]): void {
+    if (before.length === 0) return;
+    const lines: string[] = [];
+
+    for (const player of after) {
+      const previous = before.find((entry) => entry.id === player.id);
+      if (!previous) continue;
+
+      const moneyDelta = player.money - previous.money;
+      if (moneyDelta !== 0) {
+        const sign = moneyDelta > 0 ? '+' : '';
+        lines.push(`💸 ${player.name}: ${sign}${moneyDelta} B$ → ${player.money} B$`);
+      }
+
+      const addedCards = this.multisetDifference(player.handCardIds, previous.handCardIds);
+      const removedCards = this.multisetDifference(previous.handCardIds, player.handCardIds);
+      for (const cardId of addedCards) {
+        lines.push(`🃏 ${player.name}: + ${this.cardTitle(cardId)} • tay ${player.handCardIds.length}/${5}`);
+      }
+      for (const cardId of removedCards) {
+        lines.push(`🃏 ${player.name}: − ${this.cardTitle(cardId)} • còn ${player.handCardIds.length} lá`);
+      }
+    }
+
+    if (lines.length === 0) return;
+    const internals = this.demoInternals();
+    for (const line of lines) internals.writeLog(line);
+    this.showDeltaToast(lines.slice(0, 4));
+  }
+
+  private multisetDifference(left: string[], right: string[]): string[] {
+    const counts = new Map<string, number>();
+    for (const id of right) counts.set(id, (counts.get(id) ?? 0) + 1);
+
+    const difference: string[] = [];
+    for (const id of left) {
+      const count = counts.get(id) ?? 0;
+      if (count > 0) counts.set(id, count - 1);
+      else difference.push(id);
+    }
+    return difference;
+  }
+
+  private cardTitle(cardId: string): string {
+    return CARDS.find((card) => card.id === cardId)?.title ?? cardId;
+  }
+
+  private showDeltaToast(lines: string[]): void {
+    const toast = this.add
+      .text(640, 122, lines.join('\n'), {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#202020',
+        align: 'center',
+        backgroundColor: '#fff4d6',
+        padding: { x: 14, y: 8 },
+      })
+      .setOrigin(0.5, 0)
+      .setDepth(675);
+
+    this.tweens.add({
+      targets: toast,
+      y: 106,
+      alpha: 0,
+      delay: 1450,
+      duration: 480,
+      ease: 'Sine.easeIn',
+      onComplete: () => toast.destroy(),
+    });
   }
 
   private syncBgmToMatch(): void {
