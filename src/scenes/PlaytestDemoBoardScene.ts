@@ -154,6 +154,8 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
 
   private showPlaytestGuide(): void {
     if (this.guideObjects.length > 0) return;
+    this.botTimer?.remove(false);
+    this.botTimer = undefined;
     if (this.input.keyboard) this.input.keyboard.enabled = false;
 
     const blocker = this.add
