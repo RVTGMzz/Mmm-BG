@@ -8,7 +8,9 @@ export type SfxCue =
   | 'reaction'
   | 'ready'
   | 'land'
-  | 'ui_confirm';
+  | 'ui_confirm'
+  | 'step'
+  | 'victory';
 
 interface SfxState {
   muted: boolean;
@@ -17,8 +19,21 @@ interface SfxState {
 type SfxListener = (state: SfxState) => void;
 
 const STORAGE_KEY = 'mememe.sfx.preferences.v1';
+const SFX_BASE_PATH = 'audio/sfx';
+
+const SFX_ASSETS: Partial<Record<SfxCue, string>> = {
+  dice_roll: 'dice.mp3',
+  coin_gain: 'money_gain.mp3',
+  coin_loss: 'money_loss.mp3',
+  card_draw: 'card.mp3',
+  news: 'news.mp3',
+  ui_confirm: 'choice.mp3',
+  step: 'step.mp3',
+  victory: 'victory.mp3',
+};
 
 function loadMuted(): boolean {
+  if (typeof window === 'undefined') return false;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return false;
@@ -28,10 +43,22 @@ function loadMuted(): boolean {
   }
 }
 
+function assetUrl(file: string): string {
+  return `${SFX_BASE_PATH}/${file}`;
+}
+
 export class SfxController {
   private context?: AudioContext;
   private muted = loadMuted();
   private readonly listeners = new Set<SfxListener>();
+  private readonly prepared = new Map<SfxCue, HTMLAudioElement>();
+  private readonly activeAssets = new Set<HTMLAudioElement>();
+
+  /** Preload user-supplied SFX without requiring a scene to own the assets. */
+  start(): void {
+    if (typeof Audio === 'undefined') return;
+    for (const cue of Object.keys(SFX_ASSETS) as SfxCue[]) this.prepareCue(cue);
+  }
 
   getState(): SfxState {
     return { muted: this.muted };
@@ -46,14 +73,66 @@ export class SfxController {
   toggleMuted(): void {
     this.muted = !this.muted;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ muted: this.muted }));
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ muted: this.muted }));
+      }
     } catch {
       // Storage denial never blocks gameplay.
+    }
+    if (this.muted) {
+      for (const audio of this.activeAssets) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      this.activeAssets.clear();
     }
     this.emit();
   }
 
   play(cue: SfxCue): void {
+    if (this.muted || typeof window === 'undefined') return;
+    const file = SFX_ASSETS[cue];
+    if (file && typeof Audio !== 'undefined') {
+      const template = this.prepareCue(cue);
+      if (template) {
+        const audio = template.cloneNode(true) as HTMLAudioElement;
+        audio.preload = 'auto';
+        audio.muted = false;
+        audio.volume = cue === 'step' ? 0.82 : 1;
+        const cleanup = () => this.activeAssets.delete(audio);
+        audio.addEventListener('ended', cleanup, { once: true });
+        audio.addEventListener('error', cleanup, { once: true });
+        this.activeAssets.add(audio);
+        void audio.play().catch(() => {
+          cleanup();
+          this.playFallback(cue);
+        });
+        return;
+      }
+    }
+    this.playFallback(cue);
+  }
+
+  private prepareCue(cue: SfxCue): HTMLAudioElement | undefined {
+    if (typeof Audio === 'undefined') return undefined;
+    const cached = this.prepared.get(cue);
+    if (cached) return cached;
+    const file = SFX_ASSETS[cue];
+    if (!file) return undefined;
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.autoplay = false;
+    audio.src = assetUrl(file);
+    try {
+      audio.load();
+    } catch {
+      // Some browsers defer preload until the first play().
+    }
+    this.prepared.set(cue, audio);
+    return audio;
+  }
+
+  private playFallback(cue: SfxCue): void {
     if (this.muted || typeof window === 'undefined') return;
     const context = this.ensureContext();
     if (!context) return;
@@ -96,6 +175,14 @@ export class SfxController {
         break;
       case 'ui_confirm':
         this.tone(760, 860, now, 0.05, 0.04, 'sine');
+        break;
+      case 'step':
+        this.tone(135, 105, now, 0.055, 0.026, 'triangle');
+        break;
+      case 'victory':
+        this.tone(520, 780, now, 0.14, 0.09, 'sine');
+        this.tone(660, 980, now + 0.12, 0.16, 0.08, 'sine');
+        this.tone(780, 1240, now + 0.25, 0.22, 0.07, 'sine');
         break;
     }
   }
