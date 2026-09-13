@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import { jobSalary, type JobDefinition } from '../core/jobs';
 
 export function showJobRollPicker(
@@ -97,6 +98,7 @@ export function showJobRollPicker(
     const finish = () => {
       if (settled) return;
       settled = true;
+      sfxController.play('ui_confirm');
       rollButton.disableInteractive();
       root.destroy(true);
       resolve();
