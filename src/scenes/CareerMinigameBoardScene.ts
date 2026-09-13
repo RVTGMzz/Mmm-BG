@@ -50,17 +50,21 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
   private jobPickerOpen = false;
   private lastJobOfferSignature = '';
   private forceAuthoritativeTokenSnap = false;
+  private lapBanner?: Phaser.GameObjects.Container;
 
   create(): void {
     super.create();
     this.installStableTokenSync();
+    this.installLapCompletionFeedback();
     this.installOneLapScoreHud();
     this.installPlayableMiniGame();
-    this.updateBuildLabels033();
+    this.updateBuildLabels034();
     this.events.once('shutdown', () => {
       this.jobPickerOpen = false;
       this.lastJobOfferSignature = '';
       this.forceAuthoritativeTokenSnap = false;
+      this.lapBanner?.destroy();
+      this.lapBanner = undefined;
     });
   }
 
@@ -107,6 +111,100 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
         this.forceAuthoritativeTokenSnap = false;
       }
     };
+  }
+
+  /** Presentation-only celebration when a player completes their required first lap. */
+  private installLapCompletionFeedback(): void {
+    const internals = this as unknown as CareerInternals;
+    const originalApplyNetworkState = internals.applyNetworkState.bind(this);
+
+    internals.applyNetworkState = (
+      state: MatchState,
+      commandSeq: number,
+      checksum: string,
+      source: NetworkStateSource,
+    ) => {
+      const newlyCompleted = source === 'snapshot'
+        ? []
+        : state.players.filter((nextPlayer) => {
+            const previous = internals.match.players.find((player) => player.id === nextPlayer.id);
+            return (previous?.lapsCompleted ?? 0) < 1 && (nextPlayer.lapsCompleted ?? 0) >= 1;
+          });
+
+      originalApplyNetworkState(state, commandSeq, checksum, source);
+
+      if (newlyCompleted.length === 0) return;
+      const progress = demoMatchLapProgress(internals.match);
+      for (const player of newlyCompleted) {
+        this.showLapCompletionBanner(player, progress.completedPlayers, progress.totalPlayers);
+      }
+    };
+  }
+
+  private showLapCompletionBanner(player: PlayerState, completedPlayers: number, totalPlayers: number): void {
+    this.lapBanner?.destroy();
+
+    const container = this.add.container(640, 90).setDepth(952).setAlpha(0);
+    this.lapBanner = container;
+
+    const shadow = this.add.graphics();
+    shadow.fillStyle(0x000000, 0.18);
+    shadow.fillRoundedRect(-252, -34, 504, 72, 18);
+    shadow.setPosition(0, 5);
+
+    const panel = this.add.graphics();
+    panel.fillStyle(0xfffbf3, 0.98);
+    panel.fillRoundedRect(-248, -36, 496, 70, 17);
+    panel.lineStyle(4, 0xffd34d, 1);
+    panel.strokeRoundedRect(-248, -36, 496, 70, 17);
+
+    const title = this.add.text(0, -17, `🏁 ${player.name} HOÀN THÀNH 1 VÒNG!`, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontSize: '18px',
+      fontStyle: 'bold',
+      color: '#202020',
+    }).setOrigin(0.5);
+
+    const detail = this.add.text(
+      0,
+      11,
+      `${completedPlayers}/${totalPlayers} người đã đủ vòng • chốt B$ khi cả bàn hoàn thành`,
+      {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '12px',
+        fontStyle: 'bold',
+        color: '#6d655b',
+      },
+    ).setOrigin(0.5);
+
+    container.add([shadow, panel, title, detail]);
+
+    this.tweens.add({
+      targets: container,
+      alpha: 1,
+      y: 108,
+      scaleX: 1.02,
+      scaleY: 1.02,
+      duration: 180,
+      ease: 'Back.easeOut',
+      onComplete: () => {
+        this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 110, ease: 'Sine.easeOut' });
+        this.time.delayedCall(1700, () => {
+          if (!container.active) return;
+          this.tweens.add({
+            targets: container,
+            alpha: 0,
+            y: 96,
+            duration: 220,
+            ease: 'Sine.easeIn',
+            onComplete: () => {
+              if (this.lapBanner === container) this.lapBanner = undefined;
+              container.destroy();
+            },
+          });
+        });
+      },
+    });
   }
 
   private installOneLapScoreHud(): void {
@@ -220,13 +318,21 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     }
   }
 
-  private updateBuildLabels033(): void {
+  private updateBuildLabels034(): void {
     for (const object of this.children.list) {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
-      if (object.text.includes('CITY • MVP 0.1.31 JOB DICE + MINI GAMES')) {
-        object.setText('CITY • MVP 0.1.33 ONE-LAP SCORE + TOKEN SYNC');
-      } else if (object.text.includes('PLAYTEST 0.1.31 • JOB SALARY + PARTY RULES')) {
-        object.setText('PLAYTEST 0.1.33 • 1 LAP THEN SCORE');
+      if (
+        object.text.includes('CITY • MVP 0.1.30 DIRECT TURN DICE') ||
+        object.text.includes('CITY • MVP 0.1.31 JOB DICE + MINI GAMES') ||
+        object.text.includes('CITY • MVP 0.1.33 ONE-LAP SCORE + TOKEN SYNC')
+      ) {
+        object.setText('CITY • MVP 0.1.34 LAP CLARITY + READY CELEBRATION');
+      } else if (
+        object.text.includes('PLAYTEST 0.1.30 • DIRECT DICE') ||
+        object.text.includes('PLAYTEST 0.1.31 • JOB SALARY + PARTY RULES') ||
+        object.text.includes('PLAYTEST 0.1.33 • 1 LAP THEN SCORE')
+      ) {
+        object.setText('PLAYTEST 0.1.34 • ONE-LAP CLARITY');
       }
     }
   }
