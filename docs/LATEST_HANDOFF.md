@@ -5,81 +5,96 @@ PR: #1
 
 ## Current milestone
 
-**MVP 0.1.29 — Mini Game + Job Tile Foundation (ACTIVE / PLAYTEST PACKAGED)**
+**MVP 0.1.30 — Direct Turn Dice (ACTIVE / PLAYTEST PACKAGED)**
 
-Latest artifact: `mememe-playtest-0.1.29`
+Latest artifact: `mememe-playtest-0.1.30`
 
 Read first:
-1. `docs/MVP_0.1.29_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.29.md`
-3. `src/core/functionTiles.ts`
-4. `src/content/core/function_tiles_mvp.json`
-5. `src/content/city/board_city_mvp.json`
-6. `src/core/types.ts`
-7. `src/core/replay.ts`
-8. `src/ui/presentationModel.ts`
-9. `src/scenes/TacticalChoiceBoardScene.ts`
-10. `tests/function-tiles-029.ts`
-11. `src/core/testBot.ts`
-12. `src/ui/npcChatPolicy.ts`
-13. `tests/tactical-choice-027.ts`
+1. `docs/MVP_0.1.30_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.30.md`
+3. `src/scenes/DirectDiceBoardScene.ts`
+4. `src/ui/directDicePolicy.ts`
+5. `tests/direct-dice-030.ts`
+6. `docs/MVP_0.1.29_PROGRESS.md`
+7. `src/core/functionTiles.ts`
+8. `src/content/core/function_tiles_mvp.json`
+9. `src/content/city/board_city_mvp.json`
+10. `src/core/replay.ts`
+11. `src/ui/presentationModel.ts`
+12. `src/scenes/TacticalChoiceBoardScene.ts`
+13. `src/core/testBot.ts`
 14. `src/core/authority.ts`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## 0.1.29 summary
+## 0.1.30 summary
 
-Board nodes now support optional function-space metadata:
-- `feature: minigame | job`
-- `contentId`
+The old bottom red `ĐỔ XÚC XẮC` control is hidden and disabled.
 
-Current placements:
-- node 9 → `MINIGAME_SLOT_01`
-- node 12 → `JOB_SLOT_01`
+When a locally controlled human reaches `PRE_ROLL_ACTION`:
+- a large clickable die appears directly on the board;
+- the player may still use a Card first;
+- clicking the die calls the existing authoritative Roll path;
+- the idle die immediately disappears;
+- the existing graphical roll animation displays the actual authoritative result;
+- token movement continues node-by-node as before.
 
-The active board visibly shows a 🎮 Mini Game tile and a 💼 Job tile.
+The idle die uses a fixed visual pip face and consumes no gameplay RNG.
 
-`src/core/functionTiles.ts` resolves foundation behavior deterministically. Landing on either tile emits `minigame_tile` or `job_tile`, shows a compact presentation, applies no reward/penalty yet, consumes no extra RNG, and returns to normal turn flow.
+A per-turn pending guard prevents double-submit if UI updates before host state changes.
 
-No new command type, TurnPhase, or MatchState schema field was added. CPU autoplay therefore cannot deadlock on an unimplemented function tile.
+CPU seats do not receive a clickable die. Remote/non-controlling clients also do not receive it. It is hidden during ROLLING, MOVING, presentation blocks, waiting shell and match end.
 
 New regression:
 
-`npm run test:function-tiles`
+`npm run test:direct-dice`
 
-It locks board content hooks, presentation, zero-RNG foundation resolution, replay return to `PRE_ROLL_ACTION`, and host-authority acceptance.
+It locks direct-dice visibility for human/CPU/network/phase conditions.
 
-## Retained from previous milestones
+## 0.1.29 function tile foundation retained
 
-- 200 B$ starting wallet and economy scaling
+Board nodes still include:
+- node 9 → `MINIGAME_SLOT_01`
+- node 12 → `JOB_SLOT_01`
+
+The board visibly shows 🎮 Mini Game and 💼 Job foundation spaces. They emit deterministic presentation events, consume no extra RNG, apply no rewards/penalties yet, and never deadlock CPU/replay.
+
+## Other retained systems
+
+- starting wallet 200 B$
 - READY +100 B$
 - Tactical Choice / Kèo Hai Cửa
 - rare deterministic CPU Card quirk
 - CPU/NPC chat duration 2.5×
 - live B$ leaderboard and money deltas
-- node-by-node movement and parity routing
+- node-by-node movement and automatic parity routing
 - Settings, BGM/SFX and face editor/privacy behavior
 
 ## Validated artifact
 
-GitHub Actions run: `34767107822` / run `#748`
+GitHub Actions run: `34767733314` / run `#776`
 
-Head SHA: `210a45352efd1ddde74138ec649a786f0fc9962b`
+Head SHA: `7654a8b48ebba67ab681f5f5f802cc4a562f5e28`
 
-Artifact: `mememe-playtest-0.1.29`
+Artifact: `mememe-playtest-0.1.30`
 
-Digest: `sha256:ab5523216dad940ed3640652050b4d721296bcefe63486467246834ac89f772c`
+Digest: `sha256:a42203e5067517e022ea69430f62a7d57377cc59795a383d3ab4aadb76b8582b`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34767107822`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34767733314`
 
-Full CI passed through artifact upload, including Mini Game + Job foundation, replay, authority, two-tab, CPU autoplay and all earlier regressions.
+Full CI passed through artifact upload, including Direct Dice, Mini Game + Job foundation, replay, authority, two-tab, CPU autoplay and all earlier regressions.
 
-## Next work — 0.1.30
+## Next work — 0.1.31
 
-Build the first playable Mini Game and first playable Job end-to-end.
+Turn the Mini Game and Job foundation into playable gameplay after the exact rules are explicitly locked.
 
-Before coding their actual reward/input rules, explicitly confirm the designs with Ron rather than inventing missing rules.
+Known long-term board direction from earlier project design:
+- board target is larger than the current MVP graph;
+- Job is a supported system;
+- function spaces are intended to reshuffle when the Leader completes a lap.
+
+Do not invent missing Mini Game or Job reward/input rules from those high-level notes alone.
 
 ## Hard invariants
 
