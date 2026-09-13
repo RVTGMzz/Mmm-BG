@@ -5,9 +5,9 @@ card.ogg       940079a1a0d92150ef0c39012a68b1c9cd8b1d33
 choice.ogg     0eff4b66509b8cbcb6e8dd51159c68a0f3db7245
 dice.ogg       64722c1007c6524e74455b120fc72d520c977132
 money_gain.ogg 9b53465ade8a52f8d1345cb6b5c3faf9e8a8a2ab
-money_loss.ogg 70f5b745e37e22ddad32eae7234335f4b3afe8ce
+money_loss.ogg 1901894eed00c8a09cc0d7da876eea8f663b28c4
 news.ogg       6c4a285260562b32acb2b87a2b4e827a45b2a01a
-step.ogg       4b6963945a41f7f59b2afbad1c0651c7b74eedbc
+step.ogg       e3f8a761da9f1dda25ce829aa94d69d85b4036e0
 victory.ogg    981feab53c0443f1c34d22c65c8078664dabe958
 
 User-supplied source SHA256:
