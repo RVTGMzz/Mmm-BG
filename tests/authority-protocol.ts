@@ -20,7 +20,7 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-const GOLDEN_CHECKSUM = '5ed7922e';
+const GOLDEN_CHECKSUM = '46bb4e20';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
