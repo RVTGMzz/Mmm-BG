@@ -1,0 +1,42 @@
+{
+  "version": "0.1.16.2",
+  "format": "ogg-vorbis-q4-48khz-stereo",
+  "tracks": [
+    {
+      "id": "menu_mememe",
+      "file": "01_Menu_MeMeMe_LOOP.ogg",
+      "role": "menu",
+      "duration_seconds": 155.99,
+      "loop": true,
+      "sha256": "df2a94fcd34c016ada23481c8f027d8088b608e1d9ebd46dcd2b5986fe41e36e"
+    },
+    {
+      "id": "city_bubble",
+      "file": "02_City_Bubble_LOOP.ogg",
+      "role": "gameplay",
+      "duration_seconds": 126.38,
+      "loop": true,
+      "sha256": "c7b94b5bc698d1a86f1ffb4ba3504841167700734dcdb1d346be9fa0a352b6e5"
+    },
+    {
+      "id": "city_silly",
+      "file": "03_City_Silly_LOOP_EXTENDED.ogg",
+      "role": "gameplay",
+      "duration_seconds": 138.07,
+      "loop": true,
+      "sha256": "53c00c6d5a5d199555522e99f1ba17f6e978c092b3ea9988734e35b3f52a1b0d"
+    },
+    {
+      "id": "final_round",
+      "file": "04_Final_Round_LOOP.ogg",
+      "role": "final_round",
+      "duration_seconds": 120.02,
+      "loop": true,
+      "sha256": "3e11e5292d38485d8e8c299a54c3582a2b3c6f11b622edc15af3cd66d26e4e83"
+    }
+  ],
+  "source_bundle": {
+    "file": "MeMeMe_Audio_Pack_0.1.16.2.zip",
+    "sha256": "be197ee02d1cfcbed458e3ea6e002f6293dc3062a98a44fba315d629f3886744"
+  }
+}
