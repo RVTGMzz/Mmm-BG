@@ -1,6 +1,6 @@
 # MVP 0.1.23 — Reaction & Route Personality
 
-Status: **ACTIVE / BUILDING**
+Status: **ACTIVE / PLAYTEST PACKAGED**
 
 ## Goal
 
@@ -63,6 +63,28 @@ It locks:
 - odd roll copy resolves to `LẺ`;
 - even roll copy resolves to `CHẴN`;
 - route labels remain explicit and automatic.
+
+Full CI also passed replay, lockstep, host/client, authority, two-tab, demo shell, CPU stress, presentation flow, board flow, board feel, Settings/audio startup, content depth, face transform and package validation.
+
+## Packaged artifact
+
+Validated run:
+
+`34756511376` / run `#529`
+
+Artifact:
+
+`mememe-playtest-0.1.23`
+
+Artifact size: ~8.50 MB.
+
+Artifact digest:
+
+`sha256:ed2361fcbb87689e48817193cd4fa3dbec769e72d2547700215ba3a91726044f`
+
+GitHub run URL:
+
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34756511376`
 
 ## Invariants
 
