@@ -31,13 +31,13 @@ assert.deepEqual(r15.affectedPlayerIds, [0, 1]);
 
 const card16 = cards.find((card) => card.id === 'ACT_016');
 assert(card16);
-const b = makePlayers([700, 650, 500, 200]);
+const b = makePlayers([200, 170, 130, 60]);
 const r16a = applyCardEffect(card16, b[3]!, b);
-assert.equal(r16a.amount, 140);
-assert.equal(b[3]?.money, 340);
+assert.equal(r16a.amount, 60);
+assert.equal(b[3]?.money, 120);
 const r16b = applyCardEffect(card16, b[0]!, b);
-assert.equal(r16b.amount, 20);
-assert.equal(b[0]?.money, 720);
+assert.equal(r16b.amount, 15);
+assert.equal(b[0]?.money, 215);
 
 const news9 = news.find((entry) => entry.id === 'NEWS_DEMO_009');
 assert(news9);
@@ -53,4 +53,4 @@ assert.equal(d[3]?.money, 400);
 assert.equal(n2.amount, 300);
 assert.deepEqual(n2.deltas, { 3: -300 });
 
-console.log('[party-mechanics-024] PASS');
+console.log('[party-mechanics-024] PASS deterministic mechanics remain correct under 0.1.25 economy tuning');
