@@ -48,6 +48,9 @@ jobs:
       - name: Demo match shell and rematch
         run: npm run test:demo-shell
 
+      - name: Simple CPU autoplay stress
+        run: npm run test:bots
+
       - name: Validate external playtest package
         run: npm run test:package
 
@@ -57,7 +60,7 @@ jobs:
       - name: Upload first external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.16
+          name: mememe-playtest-0.1.16.2
           path: dist
           if-no-files-found: error
           retention-days: 14
