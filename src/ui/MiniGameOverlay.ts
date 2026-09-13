@@ -45,13 +45,8 @@ export function startMiniGameOverlay(
   const stage = scene.add.container(0, 15);
   root.add([backdrop, panel, title, subtitle, stage]);
 
-  const activeIds = players.map((player) => player.id);
   const playerById = (id: number) => players.find((player) => player.id === id);
-  const isInteractiveHuman = (id: number) => {
-    if (browserSession.current.mode !== 'solo') return false;
-    return !browserSession.isCpuSeat(id);
-  };
-
+  const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
   const clearStage = () => stage.removeAll(true);
   const wait = (ms: number) => new Promise<void>((resolve) => scene.time.delayedCall(ms, resolve));
 
@@ -84,7 +79,7 @@ export function startMiniGameOverlay(
     });
   });
 
-  const showResult = async (heading: string, body: string) => {
+  const showResult = async (heading: string, body: string, ms = 1700) => {
     clearStage();
     const head = scene.add.text(0, -40, heading, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '30px', fontStyle: 'bold', color: '#202020', align: 'center',
@@ -93,44 +88,18 @@ export function startMiniGameOverlay(
       fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#4f4740', align: 'center', fixedWidth: 680, lineSpacing: 7,
     }).setOrigin(0.5);
     stage.add([head, text]);
-    await wait(1900);
+    await wait(ms);
   };
 
-  const runMajorityMinority = async () => {
-    subtitle.setText('NHIỀU RA ÍT BỊ • Chọn SẤP hoặc NGỬA. Phe thiểu số là phe “bị”.');
-    for (let round = 1; round <= 8; round += 1) {
-      const choices: Record<number, PalmChoice> = {};
-      for (const player of players) {
-        if (isInteractiveHuman(player.id)) {
-          choices[player.id] = await choiceButtons(player, [
-            { value: 'up', icon: '🤲', label: 'NGỬA', fill: 0x9eddf0 },
-            { value: 'down', icon: '🖐️', label: 'SẤP', fill: 0xffd983 },
-          ]);
-        } else {
-          choices[player.id] = cpuPalm(eventSeq, player.id, round);
-        }
-      }
-
-      const result = resolveMajorityMinorityRound(activeIds, choices);
-      const reveal = activeIds.map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: ${choices[id] === 'up' ? 'NGỬA 🤲' : 'SẤP 🖐️'}`).join('\n');
-      if (result.tied) {
-        await showResult('🤝 HÒA, RA LẠI!', `${reveal}\n\nKhông có phe thiểu số rõ ràng.`);
-        continue;
-      }
-      const losers = result.eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
-      await showResult('😵 ÍT BỊ!', `${reveal}\n\nPhe thiểu số: ${losers}.`);
-      return;
-    }
-    await showResult('🌀 HÒA QUÁ NHIỀU', 'Mini game tự kết thúc vòng trình diễn để không kẹt trận.');
-  };
-
-  const runRps = async () => {
-    subtitle.setText('1 VS 1 • TỰ ĐỘNG CHUYỂN SANG OẲN TÙ XÌ');
-    const [a, b] = players;
+  const runRpsFinal = async (finalists: readonly number[], roundOffset: number) => {
+    const a = playerById(finalists[0] ?? -1);
+    const b = playerById(finalists[1] ?? -1);
     if (!a || !b) return;
+    subtitle.setText('CÒN 1 VS 1 • TỰ ĐỘNG CHUYỂN SANG OẲN TÙ XÌ');
+
     for (let round = 1; round <= 8; round += 1) {
       const choose = async (player: PlayerState): Promise<RpsChoice> => {
-        if (!isInteractiveHuman(player.id)) return cpuRps(eventSeq, player.id, round);
+        if (!isInteractiveHuman(player.id)) return cpuRps(eventSeq, player.id, roundOffset + round);
         return choiceButtons(player, [
           { value: 'rock', icon: '✊', label: 'BÚA', fill: 0xffd983 },
           { value: 'paper', icon: '🖐️', label: 'BAO', fill: 0x9eddf0 },
@@ -142,21 +111,72 @@ export function startMiniGameOverlay(
       const result = resolveRpsRound(a.id, choiceA, b.id, choiceB);
       const label = (choice: RpsChoice) => choice === 'rock' ? 'BÚA ✊' : choice === 'paper' ? 'BAO 🖐️' : 'KÉO ✌️';
       if (result.tied) {
-        await showResult('🤝 HÒA, CHƠI LẠI!', `${a.name}: ${label(choiceA)}\n${b.name}: ${label(choiceB)}`);
+        await showResult('🤝 HÒA, OẲN LẠI!', `${a.name}: ${label(choiceA)}\n${b.name}: ${label(choiceB)}`);
         continue;
       }
       const winner = playerById(result.winnerId ?? -1)?.name ?? '???';
       const loser = playerById(result.loserId ?? -1)?.name ?? '???';
-      await showResult('🏆 OẲN TÙ XÌ', `${a.name}: ${label(choiceA)}\n${b.name}: ${label(choiceB)}\n\n${winner} thắng • ${loser} thua.`);
+      await showResult('🏆 NGƯỜI THẮNG MINI GAME!', `${a.name}: ${label(choiceA)}\n${b.name}: ${label(choiceB)}\n\n🏆 ${winner} thắng • ${loser} thua.`, 2200);
       return;
     }
+    await showResult('🌀 HÒA QUÁ NHIỀU', 'Oẳn tù xì tự kết thúc để không kẹt trận.');
   };
 
-  const done = (async () => {
-    const mode = minigameModeForActivePlayers(activeIds);
-    if (mode === 'rps') await runRps();
-    else await runMajorityMinority();
-  })();
+  const runTournament = async () => {
+    let activeIds = players.map((player) => player.id);
+    if (activeIds.length <= 1) {
+      await showResult('🏆 MINI GAME', `${playerById(activeIds[0] ?? -1)?.name ?? 'Người chơi'} thắng mặc định.`);
+      return;
+    }
 
-  return { root, done };
+    if (minigameModeForActivePlayers(activeIds) === 'rps') {
+      await runRpsFinal(activeIds, 0);
+      return;
+    }
+
+    subtitle.setText('NHIỀU RA ÍT BỊ • Chọn SẤP hoặc NGỬA. Phe thiểu số bị loại, chơi tiếp tới 1 VS 1.');
+    let round = 0;
+    let safety = 0;
+    while (activeIds.length > 2 && safety < 16) {
+      safety += 1;
+      round += 1;
+      const choices: Record<number, PalmChoice> = {};
+      for (const id of activeIds) {
+        const player = playerById(id);
+        if (!player) continue;
+        choices[id] = isInteractiveHuman(id)
+          ? await choiceButtons(player, [
+              { value: 'up', icon: '🤲', label: 'NGỬA', fill: 0x9eddf0 },
+              { value: 'down', icon: '🖐️', label: 'SẤP', fill: 0xffd983 },
+            ])
+          : cpuPalm(eventSeq, id, round);
+      }
+
+      const result = resolveMajorityMinorityRound(activeIds, choices);
+      const reveal = activeIds
+        .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: ${choices[id] === 'up' ? 'NGỬA 🤲' : 'SẤP 🖐️'}`)
+        .join('\n');
+      if (result.tied) {
+        await showResult('🤝 HÒA, RA LẠI!', `${reveal}\n\nKhông có phe thiểu số rõ ràng.`);
+        continue;
+      }
+
+      const losers = result.eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
+      activeIds = result.survivingPlayerIds;
+      const survivors = activeIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
+      await showResult('😵 ÍT BỊ!', `${reveal}\n\n❌ Bị loại: ${losers}\n✅ Còn lại: ${survivors}`);
+    }
+
+    if (activeIds.length === 2) {
+      await runRpsFinal(activeIds, round * 10);
+      return;
+    }
+    if (activeIds.length === 1) {
+      await showResult('🏆 NGƯỜI THẮNG MINI GAME!', `${playerById(activeIds[0]!)?.name ?? '???'} thắng.`);
+      return;
+    }
+    await showResult('🌀 HÒA QUÁ NHIỀU', 'Mini game tự kết thúc để không kẹt trận.');
+  };
+
+  return { root, done: runTournament() };
 }
