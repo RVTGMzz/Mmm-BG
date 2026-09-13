@@ -22,6 +22,7 @@
     "test:settings": "tsx tests/settings-audio-021.ts",
     "test:content": "tsx tests/content-depth-022.ts",
     "test:reaction-route": "tsx tests/reaction-route-023.ts",
+    "test:party": "tsx tests/party-mechanics-024.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
