@@ -1,0 +1,31 @@
+MeMeMe MVP 0.1.16 — FIRST EXTERNAL PLAYTEST
+
+QUICK START
+1) Serve this folder with a static HTTP server. Do not rely on file://.
+2) Open index.html through localhost / your static host.
+3) SOLO / HOTSEAT is the fastest test path.
+4) HOST 2 TAB + JOIN 2 TAB works only in the same browser profile/origin for this PoC.
+
+DEMO RULE
+- 4 players
+- 3 rounds = 12 turns
+- highest B$ wins
+- tied B$ = tied winner
+- this is a temporary playtest rule, not the final MeMeMe win condition
+
+CONTROLS
+- Use Card before rolling when available
+- Roll Dice to move
+- Card/News tiles auto-trigger
+- Choose a route when the branch picker appears
+- Use the ? CÁCH CHƠI button in-game for the quick guide
+
+LOCAL SERVER EXAMPLES
+Node:   npx serve .
+Python: python -m http.server 4173
+
+KNOWN LIMITS
+- no internet multiplayer yet
+- no production reconnect/seat reclaim
+- client does not receive host face textures yet
+- content/presentation is still pre-alpha
