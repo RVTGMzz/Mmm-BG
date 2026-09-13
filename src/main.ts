@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import './styles.css';
+import './settings.css';
 import { bgmController } from './audio/bgmController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
