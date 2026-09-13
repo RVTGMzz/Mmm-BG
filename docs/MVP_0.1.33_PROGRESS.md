@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.33 — Stable Token Sync + One-Lap Scoring
 
-Status: ACTIVE / VALIDATION IN PROGRESS
+Status: ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN
 
 ## Runtime feedback addressed
 
@@ -15,19 +15,19 @@ Observed symptom:
 Root cause:
 - authoritative state sync and movement presentation both had permission to write token coordinates;
 - a non-movement state packet could run `syncVisualsToState()` while a move-step presentation was still active or after visual movement had already committed;
-- that state sync could kill/snap the tween even though the gameplay state was valid.
+- that state sync could kill/snap the tween even though gameplay state was valid.
 
 0.1.33 fix:
 - normal host/state messages no longer write token coordinates;
 - token movement is presentation-owned and only `move_step` events move tokens during normal play;
 - snapshot resync and rematch command #0 retain hard-snap authority;
-- snapshot hard-snap first advances the visual event cursor so old `move_step` events cannot suppress the resync.
+- snapshot hard-snap advances the visual event cursor so stale `move_step` events cannot replay over the resync.
 
 This is a visual ownership fix only. It does not alter dice results, movement path, node state, RNG, Card effects or turn order.
 
 ### 2. Match scoring now waits for one physical board lap
 
-New playtest rule:
+Current playtest rule:
 
 **Do not score by fixed turn/round count.**
 
@@ -44,9 +44,18 @@ The old demo-shell `rounds` / `turnLimit` fields remain serialized for backward 
 
 ## UI changes
 
-- compact turn HUD now shows `HOÀN THÀNH 1 VÒNG • X/4` rather than treating turn cycles as match rounds;
+- compact turn HUD now shows `HOÀN THÀNH 1 VÒNG • X/4`;
 - waiting/result copy explains that all four players must cross Ready once before scoring;
 - build label advances to `MVP 0.1.33 • 1 LAP THEN SCORE`.
+
+## Determinism / regression changes
+
+- old pre-lap hardcoded replay/authority checksum expectations were removed because `lapsCompleted` intentionally changes gameplay-critical checksum payload;
+- replay still proves identical command streams resolve identically;
+- explicit regression proves changing a player's completed-lap count changes checksum;
+- authority, lockstep, host/client resync and two-tab tests all remain green;
+- one-lap demo-shell regression proves the match stays alive past the old fixed turn boundary and ends only when all players finish one lap;
+- rematch regression proves lap counters reset to zero.
 
 ## Invariants retained
 
@@ -63,12 +72,40 @@ The old demo-shell `rounds` / `turnLimit` fields remain serialized for backward 
 - CPU remains a QA bot;
 - do not merge PR #1 without explicit instruction.
 
-## Validation focus
+## Validated artifact
+
+GitHub Actions run:
+
+`34772171455` / run `#938`
+
+Validated runtime head SHA:
+
+`12bd0180e37a6eca39d4b1ff63cfac407281dfb6`
+
+Artifact:
+
+`mememe-playtest-0.1.33`
+
+Artifact ID:
+
+`10322258905`
+
+Size:
+
+`8,518,927 bytes`
+
+Digest:
+
+`sha256:b5d9c0c5118756528e6573d71f97c2a795ffd6938c8d45789d7a5ad6b0a6a5af`
+
+Full CI passed through artifact upload, including build/typecheck, deterministic replay, lockstep, authority/resync, two-tab core, one-lap demo shell/rematch, CPU autoplay, presentation/board regressions, Settings/audio, economy/tactical/function-tile/direct-dice/Job-MiniGame regressions, package validation and 0.1.33 playtest guide.
+
+## Runtime playtest focus
 
 1. Move P1 several nodes and trigger Card/News presentation. Confirm the token never snaps backward.
 2. Confirm normal state updates do not interrupt an in-flight move-step tween.
 3. Confirm snapshot/rematch still snap tokens to authoritative nodes.
 4. Confirm crossing Ready increments lap count exactly once.
-5. Confirm the match does NOT end after the old fixed 12-turn / 3-round boundary.
+5. Confirm the match does NOT end at the old 12-turn / 3-round boundary.
 6. Confirm scoring appears only when all four players have completed one lap.
 7. Confirm rematch resets all lap counters to zero.
