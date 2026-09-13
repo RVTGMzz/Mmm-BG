@@ -5,163 +5,171 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.24 — Party Mechanics (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.25 — Economy Pressure & Recovery (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.24`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.25`**.
 
 Read first:
-1. `docs/MVP_0.1.24_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.24.md`
-3. `src/core/cards.ts`
-4. `src/core/news.ts`
-5. `src/content/core/cards_mvp.json`
-6. `src/content/core/news_mvp_demo.json`
-7. `tests/party-mechanics-024.ts`
-8. `tests/content-depth-022.ts`
-9. `docs/MVP_0.1.23_PROGRESS.md`
-10. `src/content/core/card_reactions_023.json`
-11. `src/ui/presentationModel.ts`
-12. `src/ui/routeFeedback.ts`
-13. `src/scenes/PresentationParityBoardScene.ts`
-14. `src/ui/SettingsPanel.ts`
-15. `src/audio/bgmController.ts`
-16. `docs/AUDIO_PACK_0.1.16.2.md`
+1. `docs/MVP_0.1.25_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.25.md`
+3. `tests/economy-scale-025.ts`
+4. `src/core/matchState.ts`
+5. `src/content/city/board_city_mvp.json`
+6. `src/content/core/cards_mvp.json`
+7. `src/content/core/news_mvp_demo.json`
+8. `tests/party-mechanics-024.ts`
+9. `tests/content-depth-022.ts`
+10. `src/scenes/PartyMechanicsBoardScene.ts`
+11. `src/ui/SettingsPanel.ts`
+12. `src/audio/bgmController.ts`
+13. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## What 0.1.24 changed
+## What 0.1.25 changed
 
-### ACT_015 — Thuế Top 1
+### New-match wallet
 
-A genuinely new deterministic Card mechanic:
-- rarity R / weight 75;
-- automatically identifies the opponent with the highest current B$;
-- ties resolve by lower player/seat ID;
-- transfers 18% of that opponent's current B$ to the caster;
-- no target picker;
-- no extra RNG call;
-- no new command type.
+All new matches now default to **200 B$**.
 
-The deterministic selector is `pickRichestOtherTarget()` in `src/core/cards.ts`.
+The 200 B$ default is locked in replay/economy regression. Existing serialized matches retain their stored values.
 
-### ACT_016 — Phao Cứu Sinh
+### Fixed-value economy rescale
 
-A comeback Card instead of another attack clone:
-- rarity SR / weight 30;
-- if caster is tied for the lowest current B$: +140B$;
-- otherwise: +20B$;
-- self-targeted and deterministic.
+Money tiles:
+- +25 B$
+- -20 B$
+- +50 B$
+- +15 B$
 
-### NEWS_DEMO_009 — Cân Bằng B$
+News:
+- positive self News: +30 B$
+- negative self News: -40 B$
+- all-player loss News: -20 B$ each
+- Cân Bằng B$ remains normalize-to-current-table-average
 
-New News outcome:
-- rarity SR / weight 50;
-- sets the landing player's B$ to the floored current table average;
-- can help a trailing player or reduce a leading player;
-- no reaction script yet because the result can be positive, negative or zero.
+### Phao Cứu Sinh retune
 
-## Probability totals
+`ACT_016` is now:
+- +60 B$ when caster is tied for lowest current B$;
+- +15 B$ otherwise.
 
-Card pool is now 13 Cards while keeping total weight 1000:
+### Relative Cards intentionally unchanged
+
+- standard steal remains 10 B$;
+- Thuế Top 1 remains 18%;
+- SR all-opponent loss remains 30%;
+- SSR money swap remains full swap.
+
+### READY recovery anchor
+
+Passing READY intentionally remains **+100 B$**.
+
+The random/fixed economy swings were reduced, while READY stays large and predictable so completing a lap provides a real recovery path in the 200 B$ economy.
+
+## Probability invariants
+
+Card total weight remains 1000:
 - N 600
 - R 300
 - SR 90
 - SSR 10
 
-News pool is now 9 News while keeping total weight 1000:
-- +60 self: 600
-- -80 self: 300
-- -40 all players: 50
-- normalize-to-average self: 50
+News total weight remains 1000:
+- positive self 600
+- negative self 300
+- group loss 50
+- normalize-to-average 50
+
+No new gameplay RNG calls or command types were added.
 
 ## Checksum promotion
 
-0.1.24 intentionally changes gameplay state rather than only presentation/content IDs.
+Starting-money hotfix first moved the golden checksum to `5ed7922e`.
 
-Golden checksum moved from:
+0.1.25 fixed-value economy rescale intentionally promotes it again:
 
-`7ad81b89` → `2338670a`
+`5ed7922e` → `46bb4e20`
 
-Replay, lockstep, host/client and authority all agree on the promoted checksum.
+Replay and authority agree on the promoted checksum.
 
 ## Regression
 
 New command:
 
-`npm run test:party`
+`npm run test:economy`
 
 It locks:
-- richest-opponent deterministic tie-break;
-- exact 18% transfer math;
-- comeback full/base branch;
-- average News raises a low player to average;
-- average News lowers a high player to average.
+- default 200 B$ opening wallet;
+- all four money tile values;
+- News +30 / -40 / -20 scale;
+- Phao Cứu Sinh +60/+15;
+- 10 B$ steal, 18% rich tax and 30% group-loss mechanics remain unchanged.
 
-All earlier replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, image and package checks remain enabled.
+All earlier replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, party-mechanics, image and package checks remain enabled.
 
 ## Existing behavior retained
 
-- Card reactions by effect from 0.1.23;
-- odd/even route banner remains non-blocking;
-- named City tile identity;
-- Card/News/Reaction timing policy from 0.1.19;
-- node-by-node token movement;
-- pip dice showing authoritative result;
-- active-turn halo and compact HUD;
-- Settings gear containing BGM volume / BGM mute / FX mute;
-- early Menu BGM preload and first-gesture unlock behavior;
-- result/ranking deferral until final presentation finishes;
-- image crop/zoom/rotate + runtime compression;
+- Thuế Top 1 / Cân Bằng B$ / money swap and other Party Mechanics;
+- effect-specific Card reactions;
+- odd/even automatic route banner;
+- node-by-node movement;
+- graphical authoritative dice;
+- compact board-first HUD;
+- Card/News/Reaction timing policy and final-result deferral;
+- Settings gear with BGM volume / BGM mute / FX mute;
+- early Menu BGM preload / first-gesture unlock;
+- approved BGM assets unchanged;
+- face crop/zoom/rotate + runtime compression;
 - CPU remains QA-only.
 
 ## Current artifact status
 
-Validated GitHub Actions run:
+Validated gameplay/artifact run before final handoff-doc commit:
 
-`34758580714` / run `#581`
+`34763514820` / run `#623`
+
+Head SHA:
+
+`304ce3511fe37b33f45c0b656419679f32dd8e45`
 
 Artifact:
 
-`mememe-playtest-0.1.24`
+`mememe-playtest-0.1.25`
 
 Artifact digest:
 
-`sha256:2543d81a8d07cf415ea3d3529f3460683d8ef1cd97cb6c1e63562393d6837737`
+`sha256:7580c4f7c10a764d8463eed41b508799a20710e3626a2bcc043fcfddc08f3ad4`
 
 Artifact size: ~8.50 MB.
 
-GitHub run URL:
-
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34758580714`
-
-CI passed through artifact upload, including **Party mechanics deterministic rules** and CPU autoplay.
+CI passed through artifact upload, including **200B economy scale** and CPU autoplay.
 
 ## Recommended next work
 
-First do one combined real playtest on 0.1.24 before adding more features. Focus on:
-1. presentation queue never backs up into endgame;
-2. movement still feels natural node-by-node;
-3. route banner remains readable and non-blocking;
-4. Thuế Top 1 resolves the visible richest opponent correctly;
-5. Phao Cứu Sinh feels useful without being absurdly strong;
-6. Cân Bằng B$ creates interesting swings rather than frustration;
-7. Settings/BGM startup and event audio still behave correctly;
-8. no UI element again starts permanently covering the future map art.
+Do a combined real playtest on 0.1.25 before another major rules expansion. Focus on:
+1. does 200 B$ feel tense rather than starved;
+2. are +30/-40 News swings noticeable but not match-ending;
+3. does READY +100 feel exciting rather than excessive;
+4. is Phao +60 useful without creating an instant first-place jump;
+5. do percentage Cards now feel too strong or appropriately rare;
+6. presentation/reaction queues still never backlog into endgame;
+7. movement, Settings and BGM behavior remain stable.
 
-Only after Ron's combined playtest feedback should the next gameplay/content milestone be chosen.
+Use Ron's next real-play feedback to choose 0.1.26. Avoid adding more economy knobs blindly before that.
 
 ## Hard invariants
 
 - Do not merge PR #1 or mark Ready unless Ron explicitly asks.
-- Do not substitute or re-encode approved BGM.
+- Do not substitute/re-encode approved BGM.
 - Do not fake/bypass browser autoplay policy.
 - Do not add presentation RNG calls that perturb gameplay RNG.
 - Do not put Settings/BGM/SFX/image preferences into gameplay-critical MatchState.
-- Presentation eventLog remains excluded from gameplay checksum.
+- Presentation eventLog stays checksum-excluded.
 - Snapshot resync must not replay stale presentation events.
 - Result/ranking must not cover unresolved final-turn presentation.
-- Route feedback must remain non-blocking and must not replace host-authoritative `choose_branch`.
-- Automatic Card mechanics must not add target prompts or client-authored random outcomes.
+- Route feedback remains non-blocking and host-authoritative.
+- Automatic Card mechanics must not add client-authored random outcomes.
 - Dice presentation must display the authoritative result.
-- Original face files must not be silently uploaded or persisted.
+- Original face files must not be silently uploaded/persisted.
 - CPU remains a QA bot, not final gameplay AI.
