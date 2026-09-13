@@ -7,7 +7,7 @@ import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { TacticalChoiceBoardScene } from './scenes/TacticalChoiceBoardScene';
+import { DirectDiceBoardScene } from './scenes/DirectDiceBoardScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -15,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [LocalLobbyScene, SetupScene, TacticalChoiceBoardScene, BoardScene, NetworkBoardScene],
+  scene: [LocalLobbyScene, SetupScene, DirectDiceBoardScene, BoardScene, NetworkBoardScene],
   dom: {
     createContainer: true,
   },
