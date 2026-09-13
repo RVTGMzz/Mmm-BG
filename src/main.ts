@@ -5,6 +5,7 @@ import { bgmController } from './audio/bgmController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
+import { TurnOrderScene } from './scenes/TurnOrderScene';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
 import { CareerMinigameBoardScene } from './scenes/CareerMinigameBoardScene';
@@ -15,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [LocalLobbyScene, SetupScene, CareerMinigameBoardScene, BoardScene, NetworkBoardScene],
+  scene: [LocalLobbyScene, SetupScene, TurnOrderScene, CareerMinigameBoardScene, BoardScene, NetworkBoardScene],
   dom: {
     createContainer: true,
   },
