@@ -102,6 +102,7 @@ function createReplaySource(peer: HostClientPeer, runtime: HostClientRuntime): M
     playerNames: peer.state.players.map((player) => player.name),
     seed: peer.state.seed,
     startingMoney: peer.state.startingMoney,
+    playOrder: peer.state.playOrder,
   });
 
   source.commandLog = commandList(peer);
@@ -171,6 +172,7 @@ export function createHostClientPeer(authority: MatchState, startNodeId: number)
       playerNames: authority.players.map((player) => player.name),
       seed: authority.seed,
       startingMoney: authority.startingMoney,
+      playOrder: authority.playOrder,
     }),
     ackSeq: 0,
     appliedSeq: 0,
