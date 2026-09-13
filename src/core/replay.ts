@@ -4,6 +4,7 @@ import {
   drawWeightedCard,
   pickRandomOtherTarget,
   type CardDefinition,
+  type TacticalCardChoice,
 } from './cards';
 import {
   formatCommandValidationError,
@@ -324,7 +325,10 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
     }
   }
 
-  const resolution = applyCardEffect(card, caster, ctx.state.players, target);
+  const tacticalChoice = card.effect.type === 'tactical_choice'
+    ? String(command.data.choice ?? '') as TacticalCardChoice
+    : undefined;
+  const resolution = applyCardEffect(card, caster, ctx.state.players, target, tacticalChoice);
   caster.handCardIds.splice(handIndex, 1);
   caster.cardsPlayedThisTurn += 1;
 
@@ -354,6 +358,7 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
       targetId: primaryTarget?.id ?? -1,
       spectatorId: spectatorId ?? -1,
       reactionEventId,
+      tacticalChoice: tacticalChoice ?? null,
       affectedPlayerIds: resolution.affectedPlayerIds.join(','),
     },
     caster.id,
