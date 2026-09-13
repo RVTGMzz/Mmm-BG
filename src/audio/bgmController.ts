@@ -23,6 +23,7 @@ function clampVolume(value: number): number {
 }
 
 function loadPreferences(): Pick<BgmUiState, 'muted' | 'volume'> {
+  if (typeof window === 'undefined') return { muted: false, volume: DEFAULT_VOLUME };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return { muted: false, volume: DEFAULT_VOLUME };
@@ -80,6 +81,17 @@ export class BgmController {
 
     // Presentation-only deterministic mapping. Audio never consumes gameplay RNG.
     this.setTrack(round === 2 ? 'city_silly' : 'city_bubble');
+  }
+
+  /** Dedicated track supplied for interactive Mini Games. */
+  playMiniGame(): void {
+    this.prepareTrack('mini_game');
+    this.setTrack('mini_game');
+  }
+
+  /** Restore a presentation track after a temporary overlay such as Mini Game. */
+  playTrack(id: BgmTrackId): void {
+    this.setTrack(id);
   }
 
   setMuted(muted: boolean): void {
@@ -253,6 +265,7 @@ export class BgmController {
   }
 
   private persistPreferences(): void {
+    if (typeof window === 'undefined') return;
     try {
       window.localStorage.setItem(
         STORAGE_KEY,
