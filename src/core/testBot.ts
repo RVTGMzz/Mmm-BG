@@ -55,13 +55,11 @@ export function chooseTestBotIntent(
   if (!actor) return undefined;
 
   if (state.turn.phase === 'JOB_CHOICE') {
-    const offered = state.pendingJobOfferIds ?? [];
-    const jobId = offered[0];
-    if (!jobId) return undefined;
+    if ((state.pendingJobOfferIds ?? []).length !== 3) return undefined;
     return {
       type: 'choose_job',
-      data: { jobId },
-      reason: `chọn Job ${jobId} trong 3 lựa chọn`,
+      data: {},
+      reason: 'đổ xúc xắc Job để nhận 1 trong 3 nghề',
     };
   }
 
