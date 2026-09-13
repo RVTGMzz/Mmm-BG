@@ -54,6 +54,9 @@ jobs:
       - name: Tile Card News Reaction presentation parity
         run: npm run test:presentation
 
+      - name: Presentation flow gate and parity routing
+        run: npm run test:flow
+
       - name: Face image transform bounds
         run: npm run test:image
 
