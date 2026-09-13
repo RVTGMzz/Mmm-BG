@@ -16,6 +16,7 @@
     "test:demo-shell": "tsx tests/demo-match-shell.ts",
     "test:bots": "tsx tests/test-bot-autoplay.ts",
     "test:presentation": "tsx tests/presentation-events.ts",
+    "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
     "preview:playtest": "vite preview --host 0.0.0.0"
