@@ -7,7 +7,7 @@ import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { DirectDiceBoardScene } from './scenes/DirectDiceBoardScene';
+import { CareerMinigameBoardScene } from './scenes/CareerMinigameBoardScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -15,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [LocalLobbyScene, SetupScene, DirectDiceBoardScene, BoardScene, NetworkBoardScene],
+  scene: [LocalLobbyScene, SetupScene, CareerMinigameBoardScene, BoardScene, NetworkBoardScene],
   dom: {
     createContainer: true,
   },
@@ -29,8 +29,6 @@ const config: Phaser.Types.Core.GameConfig = {
   },
 };
 
-// Audio is armed before Phaser scene creation so the Menu BGM can begin loading
-// immediately. Browser autoplay rules may still require the first user gesture.
 bgmController.start();
 installSettingsPanel();
 new Phaser.Game(config);
