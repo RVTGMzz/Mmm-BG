@@ -104,6 +104,11 @@ export class BgmController {
     return () => this.listeners.delete(listener);
   }
 
+  private emit(): void {
+    const state = this.getState();
+    for (const listener of this.listeners) listener(state);
+  }
+
   private setTrack(id: BgmTrackId): void {
     this.desiredTrackId = id;
     if (this.currentTrackId === id && this.audio) {
