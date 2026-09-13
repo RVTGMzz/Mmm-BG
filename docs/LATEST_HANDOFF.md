@@ -5,134 +5,124 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.21 — Settings & Audio Startup (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.23 — Reaction & Route Personality (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.21`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.23`**.
 
 Read first:
-1. `docs/MVP_0.1.21_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.21.md`
-3. `src/ui/SettingsPanel.ts`
-4. `src/settings.css`
-5. `src/audio/bgmController.ts`
-6. `src/main.ts`
-7. `tests/settings-audio-021.ts`
-8. `docs/MVP_0.1.20_PROGRESS.md`
-9. `src/scenes/PresentationParityBoardScene.ts`
-10. `src/ui/MatchPresentationLayer.ts`
-11. `docs/AUDIO_PACK_0.1.16.2.md`
+1. `docs/MVP_0.1.23_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.23.md`
+3. `src/content/core/card_reactions_023.json`
+4. `src/ui/presentationModel.ts`
+5. `src/ui/routeFeedback.ts`
+6. `src/scenes/PresentationParityBoardScene.ts`
+7. `tests/reaction-route-023.ts`
+8. `docs/MVP_0.1.22_PROGRESS.md`
+9. `src/content/core/cards_mvp.json`
+10. `src/content/core/news_mvp_demo.json`
+11. `src/ui/tileIdentity.ts`
+12. `src/ui/SettingsPanel.ts`
+13. `src/audio/bgmController.ts`
+14. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Why 0.1.21 exists
+## What 0.1.23 changed
 
-Real playtest feedback after 0.1.20 identified two UX issues:
+### Card reactions now match the effect
 
-1. permanent BGM/volume/FX controls still occupied the upper-right corner;
-2. Menu BGM could take roughly 2–3 seconds to become audible because the Menu track was only selected once LobbyScene had already been created.
+The old generic Card attack banter is no longer the only presentation path.
 
-0.1.21 moves audio preferences into a compact Settings shell and prepares Menu BGM before Phaser scene creation.
+`src/ui/presentationModel.ts` maps the Card definition to one of four presentation-only reaction scripts:
+- steal money → `CARD_STEAL_023`
+- card lock → `CARD_BLOCK_023`
+- 30% all-opponents loss → `CARD_GROUP_CURSE_023`
+- full-money swap → `CARD_SWAP_023`
 
-## Settings panel
+The reaction definitions live in `src/content/core/card_reactions_023.json`.
 
-The old exposed `installBgmControls()` HUD is no longer installed from `main.ts`.
+This mapping is presentation-only. MatchState, replay command flow and gameplay RNG were not changed.
 
-The normal screen now shows only a compact `⚙️` trigger. Opening it reveals:
-- BGM on/off;
-- BGM volume;
-- FX on/off;
-- a reserved Game section for future display/speed/accessibility preferences.
+### Odd/even branch choice is now visible
 
-Panel behavior:
-- close with `×`;
-- close with `Esc`;
-- close by clicking outside;
-- panel DOM consumes its own pointer events so Settings interaction does not become a board Roll/Card click.
+Automatic parity routing remains authoritative and unchanged:
+- odd → main route / `PHỐ CHÍNH`
+- even → branch route / `HẺM TẮT`
 
-BGM and FX preferences remain local client preferences. They are not gameplay-critical state and do not enter MatchState/checksum.
+The active board wrapper now shows a compact top-center banner for roughly one second when the branch is chosen. It contains:
+- route name;
+- current player;
+- dice value;
+- `LẺ` or `CHẴN`;
+- a note that routing was automatic.
 
-## Faster Menu BGM startup
+The banner does **not** block input, does not add a new acknowledgement step and does not create a gameplay event.
 
-`bgmController.start()` now runs before `new Phaser.Game(config)` and immediately:
-1. installs the browser autoplay unlock listeners;
-2. creates/preloads `menu_mememe` with `preload = auto` and explicit `load()`;
-3. selects the Menu track before LobbyScene exists.
+## Existing behavior retained
 
-The first track uses a short 100ms fade-in. Normal round-to-round BGM transitions keep their existing fade behavior.
-
-### Browser autoplay rule
-
-0.1.21 does **not** bypass browser autoplay policy.
-
-If Chrome/Edge/mobile allows autoplay, Menu BGM can begin as soon as the preloaded media is ready.
-
-If the browser blocks autoplay until a gesture, the first click/touch/key now unlocks an Audio element that is already created/loading, instead of waiting for LobbyScene to create the track after the gesture.
+- 11 Card / 8 News pool from 0.1.22;
+- named City tile identity;
+- Card/News/Reaction timing policy from 0.1.19;
+- node-by-node token movement;
+- pip dice showing authoritative result;
+- active-turn halo and compact HUD;
+- Settings gear containing BGM volume / BGM mute / FX mute;
+- early Menu BGM preload and first-gesture unlock behavior;
+- result/ranking deferral until final presentation finishes;
+- image crop/zoom/rotate + runtime compression;
+- CPU remains QA-only.
 
 ## Regression
 
 New command:
 
-`npm run test:settings`
+`npm run test:reaction-route`
 
-It locks:
-- BGM startup occurs before Phaser game creation;
-- Menu track is prepared and selected from `BgmController.start()`;
-- initial fast fade path exists;
-- Settings gear exists;
-- BGM toggle, BGM volume and FX toggle exist;
-- legacy exposed `installBgmControls` is not installed from `main.ts`.
+It verifies:
+- all four Card effect classes map to the intended reaction event;
+- reaction speaker roles remain deterministic;
+- odd route feedback resolves to `LẺ`;
+- even route feedback resolves to `CHẴN`;
+- route labels stay explicit and automatic.
 
-All previous replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, image and package/BGM checksum checks remain active.
+All prior deterministic/replay/authority/presentation/content/image/package checks remain enabled.
 
 ## Current artifact status
 
-Validated run:
+Validated GitHub Actions run:
 
-`34754009578` / run `#475`
+`34756511376` / run `#529`
 
 Artifact:
 
-`mememe-playtest-0.1.21`
+`mememe-playtest-0.1.23`
 
 Artifact digest:
 
-`sha256:5f64f5662f896d3eb768f6c692481b1d9cc126bcc3fbe6ec17c3b6649591dfdb`
+`sha256:ed2361fcbb87689e48817193cd4fa3dbec769e72d2547700215ba3a91726044f`
 
 Artifact size: ~8.50 MB.
 
 GitHub run URL:
 
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34754009578`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34756511376`
 
-CI passed through artifact upload, including **Settings and early Menu BGM startup**.
-
-## Existing 0.1.20 behavior retained
-
-- board-first compact HUD;
-- active-turn halo;
-- compact player status;
-- graphical pip dice;
-- distance-aware step movement;
-- Card/News/Reaction timing and side dialogue;
-- odd/even route selection;
-- result screen deferral;
-- BGM round sync protection during presentation;
-- face editor and runtime compression.
+CI passed through artifact upload, including **Card reaction personality and route feedback**.
 
 ## Recommended next work
 
-First validate 0.1.21:
-1. Settings trigger feels unobtrusive on Lobby/Setup/Board;
-2. Settings interactions never trigger gameplay behind the panel;
-3. BGM mute/volume and FX mute persist correctly;
-4. Menu BGM feels noticeably faster than 0.1.20;
-5. on autoplay-blocking browsers, first gesture starts the preloaded Menu track promptly.
+First visually validate 0.1.23:
+1. route banner is readable but does not cover future map art;
+2. banner disappears quickly and never pauses movement;
+3. steal / block / group-loss / swap Cards clearly feel like different interactions;
+4. reaction timing still does not backlog into endgame;
+5. 0.1.22 Card/News variety still feels balanced enough for the current MVP.
 
-If accepted, continue toward content/gameplay depth rather than adding more permanent HUD:
-- expand Card/News pool;
-- improve reaction/personality variety;
-- strengthen tile identity;
-- later add more client preferences inside the existing Settings shell instead of new floating controls.
+If accepted, the next useful milestone should add **genuinely new gameplay mechanics**, not more copies of existing effects. Good candidates:
+- one or two new Card effect types;
+- a new News outcome type;
+- a special tile/mechanic that creates a meaningful choice while keeping authority deterministic;
+- keep all new permanent preferences inside the existing Settings shell.
 
 ## Hard invariants
 
@@ -144,6 +134,7 @@ If accepted, continue toward content/gameplay depth rather than adding more perm
 - Presentation eventLog remains excluded from gameplay checksum.
 - Snapshot resync must not replay stale presentation events.
 - Result/ranking must not cover unresolved final-turn presentation.
+- Route feedback must remain non-blocking and must not replace host-authoritative `choose_branch`.
 - Dice presentation must display the authoritative result.
 - Original face files must not be silently uploaded or persisted.
 - CPU remains a QA bot, not final gameplay AI.
