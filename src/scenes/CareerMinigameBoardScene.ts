@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { bgmController, type BgmTrackId } from '../audio/bgmController';
+import { sfxController } from '../audio/sfxController';
 import boardJson from '../content/city/board_city_mvp.json';
 import jobsJson from '../content/core/jobs_mvp.json';
 import type { ClientIntentType } from '../core/authority';
@@ -49,6 +51,7 @@ type PresentationRuntime = {
   active?: Phaser.GameObjects.Container;
   currentModel?: PresentationEventModel;
   showLanding(model: PresentationEventModel): void;
+  runMoveStep(model: PresentationEventModel): void;
   finishCurrent(animate?: boolean): void;
 };
 
@@ -61,18 +64,21 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
   private lastJobOfferSignature = '';
   private forceAuthoritativeTokenSnap = false;
   private lapBanner?: Phaser.GameObjects.Container;
+  private victoryPlayed = false;
 
   create(): void {
     super.create();
     this.installStableTokenSync();
+    this.installStepSfx();
     this.installLapCompletionFeedback();
     this.installOneLapScoreHud();
     this.installPlayableMiniGame();
-    this.updateBuildLabels035();
+    this.updateBuildLabels036();
     this.events.once('shutdown', () => {
       this.jobPickerOpen = false;
       this.lastJobOfferSignature = '';
       this.forceAuthoritativeTokenSnap = false;
+      this.victoryPlayed = false;
       this.lapBanner?.destroy();
       this.lapBanner = undefined;
     });
@@ -120,6 +126,17 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
       } finally {
         this.forceAuthoritativeTokenSnap = false;
       }
+    };
+  }
+
+  /** One supplied footstep cue for every queued authoritative move_step. */
+  private installStepSfx(): void {
+    const presentation = (this as unknown as { presentation?: PresentationRuntime }).presentation;
+    if (!presentation) return;
+    const originalRunMoveStep = presentation.runMoveStep.bind(presentation);
+    presentation.runMoveStep = (model: PresentationEventModel) => {
+      sfxController.play('step');
+      originalRunMoveStep(model);
     };
   }
 
@@ -229,6 +246,16 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     internals.renderShellOverlay = () => {
       originalRenderShellOverlay();
       this.refreshShellLapCopy(internals);
+
+      // PresentationParity defers result overlay until its queue is empty. Only play
+      // victory once the actual result overlay exists, never early on shell state alone.
+      const resultVisible = internals.shell.status === 'ended' && internals.shellOverlay.length > 0;
+      if (resultVisible && !this.victoryPlayed) {
+        this.victoryPlayed = true;
+        sfxController.play('victory');
+      } else if (internals.shell.status !== 'ended') {
+        this.victoryPlayed = false;
+      }
     };
 
     this.refreshLapProgressCopy(internals);
@@ -289,11 +316,14 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
       const internals = this as unknown as CareerInternals;
       const affected = new Set(model.affectedPlayerIds);
       const participants = internals.match.players.filter((player) => affected.size === 0 || affected.has(player.id));
+      const previousTrack: BgmTrackId = bgmController.getState().currentTrackId ?? 'city_bubble';
+      bgmController.playMiniGame();
       const run = startMiniGameOverlay(this, participants.length > 0 ? participants : internals.match.players, model.eventSeq);
       presentation.active = run.root;
       run.done
         .catch(() => undefined)
         .finally(() => {
+          bgmController.playTrack(previousTrack === 'mini_game' ? 'city_bubble' : previousTrack);
           if (presentation.currentModel === model) presentation.finishCurrent(false);
         });
     };
@@ -354,23 +384,25 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     }
   }
 
-  private updateBuildLabels035(): void {
+  private updateBuildLabels036(): void {
     for (const object of this.children.list) {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
       if (
         object.text.includes('CITY • MVP 0.1.30 DIRECT TURN DICE') ||
         object.text.includes('CITY • MVP 0.1.31 JOB DICE + MINI GAMES') ||
         object.text.includes('CITY • MVP 0.1.33 ONE-LAP SCORE + TOKEN SYNC') ||
-        object.text.includes('CITY • MVP 0.1.34 LAP CLARITY + READY CELEBRATION')
+        object.text.includes('CITY • MVP 0.1.34 LAP CLARITY + READY CELEBRATION') ||
+        object.text.includes('CITY • MVP 0.1.35 JOB TOKEN + RPS DUEL')
       ) {
-        object.setText('CITY • MVP 0.1.35 JOB TOKEN + RPS DUEL');
+        object.setText('CITY • MVP 0.1.36 EVENT AUDIO + ORDER DICE');
       } else if (
         object.text.includes('PLAYTEST 0.1.30 • DIRECT DICE') ||
         object.text.includes('PLAYTEST 0.1.31 • JOB SALARY + PARTY RULES') ||
         object.text.includes('PLAYTEST 0.1.33 • 1 LAP THEN SCORE') ||
-        object.text.includes('PLAYTEST 0.1.34 • ONE-LAP CLARITY')
+        object.text.includes('PLAYTEST 0.1.34 • ONE-LAP CLARITY') ||
+        object.text.includes('PLAYTEST 0.1.35 • JOB TOKEN + RPS DUEL')
       ) {
-        object.setText('PLAYTEST 0.1.35 • JOB TOKEN + RPS DUEL');
+        object.setText('PLAYTEST 0.1.36 • EVENT AUDIO + MINI BGM');
       }
     }
   }
