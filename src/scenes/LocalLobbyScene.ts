@@ -24,14 +24,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'DEMO SESSION • MVP 0.1.15', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.16', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Demo 3 vòng: chơi hotseat trên một máy hoặc mở 2 tab cùng trình duyệt để chia ghế.', {
+    this.add.text(228, 109, 'Chọn cách chơi, setup tên/ảnh nếu muốn, rồi vào một trận demo 3 vòng.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -40,12 +40,13 @@ export class LocalLobbyScene extends Phaser.Scene {
     const root = document.createElement('div');
     root.className = 'mememe-lobby';
     const initialRoom = generateRoomCode();
+    const broadcastReady = typeof BroadcastChannel !== 'undefined';
     root.innerHTML = `
       <div class="lobby-grid">
         <section class="lobby-card solo-card">
           <div class="lobby-icon">🎲</div>
           <h2>SOLO / HOTSEAT</h2>
-          <p>Setup đủ 4 người, bấm bắt đầu rồi chơi demo 3 vòng trên một máy.</p>
+          <p>4 người dùng chung một máy. Nhanh nhất để test core gameplay và luật demo.</p>
           <button id="lobby-solo" type="button">CHƠI DEMO SOLO</button>
         </section>
 
@@ -56,7 +57,7 @@ export class LocalLobbyScene extends Phaser.Scene {
           <label>ROOM CODE
             <input id="host-room" maxlength="8" value="${initialRoom}" />
           </label>
-          <button id="lobby-host" type="button">TẠO PHÒNG + SETUP</button>
+          <button id="lobby-host" type="button" ${broadcastReady ? '' : 'disabled'}>TẠO PHÒNG + SETUP</button>
         </section>
 
         <section class="lobby-card join-card">
@@ -73,10 +74,15 @@ export class LocalLobbyScene extends Phaser.Scene {
               <option value="3">P4</option>
             </select>
           </label>
-          <button id="lobby-join" type="button">JOIN DEMO</button>
+          <button id="lobby-join" type="button" ${broadcastReady ? '' : 'disabled'}>JOIN DEMO</button>
         </section>
       </div>
-      <p id="lobby-status" class="lobby-status">Luật demo tạm: 3 vòng, B$ cao nhất thắng. Hai tab vẫn chỉ chạy local cùng origin, chưa phải online internet.</p>
+      <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
+        🎯 Cách chơi cực ngắn: tới lượt → có thể dùng Lá Bài → đổ xúc xắc → đi ô → ô Lá Bài/Tin Tức tự kích hoạt → gặp ngã rẽ thì chọn đường. Demo kết thúc sau 3 vòng, B$ cao nhất thắng.
+      </div>
+      <p id="lobby-status" class="lobby-status">${broadcastReady
+        ? '✅ Trình duyệt hỗ trợ 2-tab local. Ảnh mặt là tùy chọn trong playtest này.'
+        : '⚠️ Trình duyệt này không hỗ trợ BroadcastChannel. Vẫn có thể chơi SOLO / HOTSEAT.'}</p>
     `;
 
     const dom = this.add.dom(640, 408, root).setOrigin(0.5);
@@ -95,6 +101,10 @@ export class LocalLobbyScene extends Phaser.Scene {
     });
 
     node.querySelector<HTMLButtonElement>('#lobby-host')?.addEventListener('click', () => {
+      if (!broadcastReady) {
+        setStatus('Trình duyệt chưa hỗ trợ 2-tab local. Hãy dùng SOLO / HOTSEAT hoặc Chrome/Edge/Firefox mới.', true);
+        return;
+      }
       const input = node.querySelector<HTMLInputElement>('#host-room');
       const room = normalizeRoomCode(input?.value ?? '') || generateRoomCode();
       browserSession.configureHost(room);
@@ -103,6 +113,10 @@ export class LocalLobbyScene extends Phaser.Scene {
     });
 
     node.querySelector<HTMLButtonElement>('#lobby-join')?.addEventListener('click', () => {
+      if (!broadcastReady) {
+        setStatus('Trình duyệt chưa hỗ trợ 2-tab local.', true);
+        return;
+      }
       const roomInput = node.querySelector<HTMLInputElement>('#join-room');
       const seatInput = node.querySelector<HTMLSelectElement>('#join-seat');
       const room = normalizeRoomCode(roomInput?.value ?? '');
