@@ -12,6 +12,7 @@ import {
 import { rollD6 } from './dice';
 import {
   advanceMatchTurn,
+  appendMatchEvent,
   createInitialMatchState,
   type MatchCommand,
   type MatchState,
@@ -94,21 +95,69 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
   const node = getBoardNode(ctx.board, player.nodeId);
 
   switch (node.type) {
-    case 'money':
-      player.money += node.value ?? 0;
+    case 'money': {
+      const amount = node.value ?? 0;
+      player.money += amount;
+      appendMatchEvent(
+        ctx.state,
+        'money_tile',
+        {
+          nodeId: node.id,
+          amount,
+          resultMoney: player.money,
+        },
+        player.id,
+      );
       return;
+    }
 
     case 'card': {
-      if (player.handCardIds.length >= MVP_CARD_HAND_LIMIT) return;
+      if (player.handCardIds.length >= MVP_CARD_HAND_LIMIT) {
+        appendMatchEvent(
+          ctx.state,
+          'card_draw_blocked',
+          { nodeId: node.id, reason: 'hand_limit' },
+          player.id,
+        );
+        return;
+      }
       const card = drawWeightedCard(ctx.cards, ctx.random);
-      if (card) player.handCardIds.push(card.id);
+      if (card) {
+        player.handCardIds.push(card.id);
+        appendMatchEvent(
+          ctx.state,
+          'card_draw',
+          {
+            nodeId: node.id,
+            cardId: card.id,
+            title: card.title,
+            rarity: card.rarity,
+            impact: card.impact,
+          },
+          player.id,
+        );
+      }
       return;
     }
 
     case 'news': {
       const news = drawWeightedNews(ctx.news, ctx.random);
       if (!news) return;
-      applyNewsEffect(news, player, ctx.state.players);
+      const resolution = applyNewsEffect(news, player, ctx.state.players);
+      appendMatchEvent(
+        ctx.state,
+        'news',
+        {
+          nodeId: node.id,
+          newsId: news.id,
+          title: news.title,
+          rarity: news.rarity,
+          impact: news.impact,
+          summary: resolution.summary,
+          reactionEventId: news.reactionEventId ?? null,
+        },
+        player.id,
+      );
       consumeSpectatorRandom(ctx, [player.id]);
       return;
     }
@@ -171,7 +220,15 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
     }
 
     player.nodeId = edge.to;
-    if (edge.to === ctx.board.startNodeId) player.money += 100;
+    if (edge.to === ctx.board.startNodeId) {
+      player.money += 100;
+      appendMatchEvent(
+        ctx.state,
+        'ready_pass',
+        { amount: 100, resultMoney: player.money },
+        player.id,
+      );
+    }
   }
 
   transition(ctx, 'RESOLVING_TILE');
@@ -235,14 +292,29 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
     ctx.state.players.find(
       (player) => player.id !== caster.id && resolution.affectedPlayerIds.includes(player.id),
     );
+
+  appendMatchEvent(
+    ctx.state,
+    'card_play',
+    {
+      cardId: card.id,
+      title: card.title,
+      rarity: card.rarity,
+      impact: card.impact,
+      summary: resolution.summary,
+      targetId: primaryTarget?.id ?? -1,
+    },
+    caster.id,
+  );
+
   consumeSpectatorRandom(ctx, [caster.id, ...(primaryTarget ? [primaryTarget.id] : [])]);
   transition(ctx, 'PRE_ROLL_ACTION');
 }
 
 /**
  * Rebuilds gameplay state from match seed + player names + explicit player commands.
- * Presentation event logs are not replayed. Every new command envelope is validated
- * before its command mutates gameplay state.
+ * Presentation event logs are rebuilt deterministically from the same command stream,
+ * but are excluded from gameplay checksums and command envelope validation.
  */
 export function replayMatchCommands(
   source: MatchState,
