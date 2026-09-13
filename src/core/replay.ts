@@ -333,6 +333,7 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
     }, player.id);
 
     if (edge.to === ctx.board.startNodeId) {
+      player.lapsCompleted = (player.lapsCompleted ?? 0) + 1;
       const currentJob = player.jobStatus === 'employed' ? jobById(JOBS, player.jobId) : undefined;
       const salaryAmount = currentJob ? jobSalary(currentJob, player.jobLevel) : 0;
       player.money += salaryAmount;
@@ -340,6 +341,7 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
         amount: salaryAmount,
         salaryAmount,
         resultMoney: player.money,
+        lapsCompleted: player.lapsCompleted,
         jobId: currentJob?.id ?? null,
         jobTitle: currentJob?.title ?? null,
         jobIcon: currentJob?.icon ?? null,
