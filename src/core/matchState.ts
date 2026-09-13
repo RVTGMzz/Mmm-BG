@@ -4,7 +4,7 @@ import type { TurnPhase, TurnPhaseSnapshot } from './turnPhase';
 import type { PlayerState } from './types';
 
 export type MatchEventValue = string | number | boolean | null;
-export type MatchCommandType = 'roll' | 'choose_branch' | 'play_card' | 'choose_job';
+export type MatchCommandType = 'roll' | 'choose_branch' | 'play_card' | 'choose_job' | 'resolve_minigame';
 
 export interface MatchEvent {
   seq: number;
