@@ -9,9 +9,13 @@ import {
 } from '../core/minigames';
 import type { PlayerState } from '../core/types';
 
+export interface MiniGameOutcome {
+  rankingPlayerIds: number[];
+}
+
 export interface MiniGameOverlayRun {
   root: Phaser.GameObjects.Container;
-  done: Promise<void>;
+  done: Promise<MiniGameOutcome>;
 }
 
 function deterministicBit(eventSeq: number, playerId: number, round: number): number {
@@ -26,6 +30,18 @@ function cpuPalm(eventSeq: number, playerId: number, round: number): PalmChoice 
 
 function cpuRps(eventSeq: number, playerId: number, round: number): RpsChoice {
   return (['rock', 'paper', 'scissors'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? 'rock';
+}
+
+function rpsIcon(choice: RpsChoice): string {
+  if (choice === 'rock') return '✊';
+  if (choice === 'paper') return '🖐️';
+  return '✌️';
+}
+
+function rpsLabel(choice: RpsChoice): string {
+  if (choice === 'rock') return 'BÚA';
+  if (choice === 'paper') return 'BAO';
+  return 'KÉO';
 }
 
 export function startMiniGameOverlay(
@@ -91,10 +107,114 @@ export function startMiniGameOverlay(
     await wait(ms);
   };
 
-  const runRpsFinal = async (finalists: readonly number[], roundOffset: number) => {
+  const showRpsDuel = async (
+    a: PlayerState,
+    b: PlayerState,
+    choiceA: RpsChoice,
+    choiceB: RpsChoice,
+    tied: boolean,
+    winnerId?: number,
+  ) => {
+    clearStage();
+    subtitle.setText('1 VS 1 • OẲN TÙ XÌ • CPU VS CPU CŨNG DIỄN ĐỦ');
+
+    const leftName = scene.add.text(-235, -108, a.name, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#202020', fixedWidth: 240, align: 'center',
+    }).setOrigin(0.5);
+    const rightName = scene.add.text(235, -108, b.name, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#202020', fixedWidth: 240, align: 'center',
+    }).setOrigin(0.5);
+    const leftCard = scene.add.rectangle(-235, 18, 260, 235, 0xffe09a, 1).setStrokeStyle(5, 0x242424, 1);
+    const rightCard = scene.add.rectangle(235, 18, 260, 235, 0xd1b0f0, 1).setStrokeStyle(5, 0x242424, 1);
+    const leftIcon = scene.add.text(-235, 5, '✊', { fontSize: '84px' }).setOrigin(0.5);
+    const rightIcon = scene.add.text(235, 5, '✊', { fontSize: '84px' }).setOrigin(0.5);
+    const leftChoice = scene.add.text(-235, 92, '?', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '17px', fontStyle: 'bold', color: '#202020',
+    }).setOrigin(0.5);
+    const rightChoice = scene.add.text(235, 92, '?', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '17px', fontStyle: 'bold', color: '#202020',
+    }).setOrigin(0.5);
+    const vs = scene.add.text(0, 0, 'VS', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '34px', fontStyle: 'bold', color: '#ef4545',
+    }).setOrigin(0.5);
+    const chant = scene.add.text(0, 142, 'CHUẨN BỊ...', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#5d4773',
+    }).setOrigin(0.5);
+    const verdict = scene.add.text(0, 180, '', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#202020', align: 'center', fixedWidth: 700,
+    }).setOrigin(0.5);
+    stage.add([leftCard, rightCard, leftName, rightName, leftIcon, rightIcon, leftChoice, rightChoice, vs, chant, verdict]);
+
+    const cycle = ['✊', '🖐️', '✌️'];
+    const beats = ['OẲN...', 'TÙ...', 'XÌ!'];
+    for (let index = 0; index < beats.length; index += 1) {
+      chant.setText(beats[index]!);
+      leftIcon.setText(cycle[index % cycle.length]!);
+      rightIcon.setText(cycle[(index + 1) % cycle.length]!);
+      scene.tweens.add({
+        targets: [leftIcon, rightIcon],
+        scaleX: 1.16,
+        scaleY: 1.16,
+        duration: 120,
+        yoyo: true,
+        ease: 'Back.easeOut',
+      });
+      await wait(index === beats.length - 1 ? 420 : 330);
+    }
+
+    leftIcon.setText(rpsIcon(choiceA));
+    rightIcon.setText(rpsIcon(choiceB));
+    leftChoice.setText(rpsLabel(choiceA));
+    rightChoice.setText(rpsLabel(choiceB));
+    chant.setText('LẬT KÈO!');
+    scene.tweens.add({
+      targets: [leftIcon, rightIcon],
+      scaleX: 1.24,
+      scaleY: 1.24,
+      duration: 145,
+      yoyo: true,
+      ease: 'Back.easeOut',
+    });
+    scene.cameras.main.shake(95, 0.0011);
+    await wait(520);
+
+    if (tied) {
+      verdict.setText('🤝 HÒA! CHƠI LẠI');
+    } else {
+      const winner = playerById(winnerId ?? -1);
+      verdict.setText(`🏆 ${winner?.name ?? '???'} THẮNG KÈO!`);
+      if (winnerId === a.id) leftCard.setStrokeStyle(7, 0xffd34d, 1);
+      if (winnerId === b.id) rightCard.setStrokeStyle(7, 0xffd34d, 1);
+    }
+    await wait(tied ? 900 : 1150);
+  };
+
+  const showRanking = async (rankingPlayerIds: readonly number[]) => {
+    if (rankingPlayerIds.length === 0) return;
+    clearStage();
+    subtitle.setText('KẾT QUẢ MINI GAME');
+    const heading = scene.add.text(0, -98, '🏆 BẢNG XẾP HẠNG', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#202020',
+    }).setOrigin(0.5);
+    const medals = ['🥇', '🥈', '🥉', '4️⃣'];
+    const rows = rankingPlayerIds.map((id, index) => {
+      const player = playerById(id);
+      return `${medals[index] ?? `${index + 1}.`}  ${player?.name ?? `P${id + 1}`}`;
+    }).join('\n');
+    const body = scene.add.text(0, 38, rows, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#4f4740', align: 'left', lineSpacing: 12,
+    }).setOrigin(0.5);
+    stage.add([heading, body]);
+    await wait(1900);
+  };
+
+  const runRpsFinal = async (
+    finalists: readonly number[],
+    roundOffset: number,
+  ): Promise<{ winnerId: number; loserId: number } | undefined> => {
     const a = playerById(finalists[0] ?? -1);
     const b = playerById(finalists[1] ?? -1);
-    if (!a || !b) return;
+    if (!a || !b) return undefined;
     subtitle.setText('CÒN 1 VS 1 • TỰ ĐỘNG CHUYỂN SANG OẲN TÙ XÌ');
 
     for (let round = 1; round <= 8; round += 1) {
@@ -109,29 +229,34 @@ export function startMiniGameOverlay(
       const choiceA = await choose(a);
       const choiceB = await choose(b);
       const result = resolveRpsRound(a.id, choiceA, b.id, choiceB);
-      const label = (choice: RpsChoice) => choice === 'rock' ? 'BÚA ✊' : choice === 'paper' ? 'BAO 🖐️' : 'KÉO ✌️';
-      if (result.tied) {
-        await showResult('🤝 HÒA, OẲN LẠI!', `${a.name}: ${label(choiceA)}\n${b.name}: ${label(choiceB)}`);
-        continue;
-      }
-      const winner = playerById(result.winnerId ?? -1)?.name ?? '???';
-      const loser = playerById(result.loserId ?? -1)?.name ?? '???';
-      await showResult('🏆 NGƯỜI THẮNG MINI GAME!', `${a.name}: ${label(choiceA)}\n${b.name}: ${label(choiceB)}\n\n🏆 ${winner} thắng • ${loser} thua.`, 2200);
-      return;
+      await showRpsDuel(a, b, choiceA, choiceB, result.tied, result.winnerId);
+      if (result.tied) continue;
+
+      const winnerId = result.winnerId;
+      const loserId = result.loserId;
+      if (winnerId === undefined || loserId === undefined) continue;
+      return { winnerId, loserId };
     }
+
     await showResult('🌀 HÒA QUÁ NHIỀU', 'Oẳn tù xì tự kết thúc để không kẹt trận.');
+    return undefined;
   };
 
-  const runTournament = async () => {
+  const runTournament = async (): Promise<MiniGameOutcome> => {
     let activeIds = players.map((player) => player.id);
+    const eliminationOrder: number[] = [];
+
     if (activeIds.length <= 1) {
+      const rankingPlayerIds = [...activeIds];
       await showResult('🏆 MINI GAME', `${playerById(activeIds[0] ?? -1)?.name ?? 'Người chơi'} thắng mặc định.`);
-      return;
+      return { rankingPlayerIds };
     }
 
     if (minigameModeForActivePlayers(activeIds) === 'rps') {
-      await runRpsFinal(activeIds, 0);
-      return;
+      const final = await runRpsFinal(activeIds, 0);
+      const rankingPlayerIds = final ? [final.winnerId, final.loserId] : [...activeIds];
+      await showRanking(rankingPlayerIds);
+      return { rankingPlayerIds };
     }
 
     subtitle.setText('NHIỀU RA ÍT BỊ • Chọn SẤP hoặc NGỬA. Phe thiểu số bị loại, chơi tiếp tới 1 VS 1.');
@@ -161,21 +286,33 @@ export function startMiniGameOverlay(
         continue;
       }
 
+      eliminationOrder.push(...result.eliminatedPlayerIds);
       const losers = result.eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
       activeIds = result.survivingPlayerIds;
       const survivors = activeIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
       await showResult('😵 ÍT BỊ!', `${reveal}\n\n❌ Bị loại: ${losers}\n✅ Còn lại: ${survivors}`);
     }
 
+    let rankingPlayerIds: number[];
     if (activeIds.length === 2) {
-      await runRpsFinal(activeIds, round * 10);
-      return;
+      const final = await runRpsFinal(activeIds, round * 10);
+      rankingPlayerIds = final
+        ? [final.winnerId, final.loserId, ...[...eliminationOrder].reverse()]
+        : [...activeIds, ...[...eliminationOrder].reverse()];
+      await showRanking(rankingPlayerIds);
+      return { rankingPlayerIds };
     }
+
     if (activeIds.length === 1) {
+      rankingPlayerIds = [activeIds[0]!, ...[...eliminationOrder].reverse()];
       await showResult('🏆 NGƯỜI THẮNG MINI GAME!', `${playerById(activeIds[0]!)?.name ?? '???'} thắng.`);
-      return;
+      await showRanking(rankingPlayerIds);
+      return { rankingPlayerIds };
     }
+
     await showResult('🌀 HÒA QUÁ NHIỀU', 'Mini game tự kết thúc để không kẹt trận.');
+    rankingPlayerIds = [...activeIds, ...[...eliminationOrder].reverse()];
+    return { rankingPlayerIds };
   };
 
   return { root, done: runTournament() };
