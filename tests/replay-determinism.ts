@@ -17,10 +17,10 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-// 0.1.22 intentionally expands Card IDs inside the same 60/30/9/1 effect bands.
-// This fixture never plays a Card, so the checksum change comes from handCardIds,
-// while money/node/RNG semantics remain protected by the content-depth regression.
-const EXPECTED_CHECKSUM = '7ad81b89';
+// 0.1.24 intentionally changes gameplay content: the R/SR Card distribution now includes
+// deterministic comeback/leader mechanics and News can normalize a player's B$ to the table average.
+// The new checksum is therefore promoted deliberately while replay equality still guards determinism.
+const EXPECTED_CHECKSUM = '2338670a';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
