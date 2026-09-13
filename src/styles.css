@@ -340,3 +340,50 @@ canvas {
 .lobby-status.error {
   color: #c62828;
 }
+
+.mememe-bgm-hud {
+  position: fixed;
+  z-index: 10000;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 3px solid #202020;
+  border-radius: 14px;
+  background: rgba(255, 250, 240, 0.94);
+  box-shadow: 0 3px 0 rgba(32, 32, 32, 0.18);
+  color: #202020;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.mememe-bgm-hud.has-audio-error {
+  background: rgba(255, 226, 226, 0.96);
+}
+
+.bgm-label {
+  min-width: 30px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.bgm-mute {
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid #202020;
+  border-radius: 9px;
+  background: #ffd34d;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.bgm-volume {
+  width: 94px;
+  accent-color: #ef4545;
+  cursor: pointer;
+}
