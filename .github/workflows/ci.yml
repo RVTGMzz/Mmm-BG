@@ -90,7 +90,7 @@ jobs:
       - name: Direct dice control
         run: npm run test:direct-dice
 
-      - name: Job Dice salary Roll For Order and Mini Games
+      - name: Job Dice salary Roll For Order Mini Games and payout
         run: npm run test:job-minigame
 
       - name: Face image transform bounds
@@ -100,12 +100,12 @@ jobs:
         run: npm run test:package
 
       - name: Add full playtest guide to package
-        run: cp docs/PLAYTEST_0.1.34.md dist/PLAYTEST_GUIDE.md
+        run: cp docs/PLAYTEST_0.1.36.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.34 external playtest build
+      - name: Upload MVP 0.1.36 external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.34
+          name: mememe-playtest-0.1.36
           path: dist
           if-no-files-found: error
           retention-days: 14
