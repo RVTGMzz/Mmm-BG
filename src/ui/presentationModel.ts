@@ -10,7 +10,13 @@ import type { PlayerState } from '../core/types';
 
 const REACTIONS = reactionsJson as ReactionEventDefinition[];
 
-export type PresentationKind = 'card_draw' | 'card_blocked' | 'card_play' | 'news';
+export type PresentationKind =
+  | 'tile_land'
+  | 'ready_bonus'
+  | 'card_draw'
+  | 'card_blocked'
+  | 'card_play'
+  | 'news';
 
 export interface PresentationReactionLine {
   sequence: number;
@@ -39,6 +45,8 @@ export interface PresentationEventModel {
   reactionEventId?: string;
   reactions: PresentationReactionLine[];
   holdMs: number;
+  tileType?: string;
+  amount?: number;
 }
 
 function dataString(event: MatchEvent, key: string): string {
@@ -47,9 +55,11 @@ function dataString(event: MatchEvent, key: string): string {
   return String(value);
 }
 
-function dataNumber(event: MatchEvent, key: string): number | undefined {
+function dataNumber(event: MatchEvent, key: string, allowNegative = false): number | undefined {
   const value = Number(event.data[key]);
-  return Number.isFinite(value) && value >= 0 ? value : undefined;
+  if (!Number.isFinite(value)) return undefined;
+  if (!allowNegative && value < 0) return undefined;
+  return value;
 }
 
 function playerById(players: PlayerState[], id: number | undefined): PlayerState | undefined {
@@ -103,8 +113,6 @@ function reactionLines(event: MatchEvent, players: PlayerState[]): PresentationR
     .map((step) => {
       const speakerId = speakerIdForRole(step.speakerRole, event);
       const speakerName = playerName(players, speakerId, step.speakerRole === 'spectator' ? 'Cả bàn' : actorName);
-      // Personality is not yet part of synced presentation state. Pick a stable
-      // seat-based variant so host and client always render the same line.
       const variantIndex = speakerId === undefined || step.variants.length === 0
         ? 0
         : Math.abs(speakerId) % step.variants.length;
@@ -124,6 +132,43 @@ function reactionLines(event: MatchEvent, players: PlayerState[]): PresentationR
     .filter((line) => line.text.trim().length > 0);
 }
 
+function tileLandingModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
+  const actorId = event.actorId;
+  const actorName = playerName(players, actorId);
+  const tileType = dataString(event, 'tileType') || 'normal';
+  const amount = dataNumber(event, 'value', true) ?? 0;
+
+  const tileCopy: Record<string, { title: string; impact: string; description: string }> = {
+    normal: { title: 'Ô THƯỜNG', impact: '👟', description: 'Đáp xuống an toàn. Không có biến cố.' },
+    money: {
+      title: amount >= 0 ? `+${amount} B$` : `${amount} B$`,
+      impact: amount >= 0 ? '💰' : '💸',
+      description: amount >= 0 ? 'Ví dày thêm một chút.' : 'Ví vừa nhẹ đi một chút.',
+    },
+    card: { title: 'Ô LÁ BÀI', impact: '🃏', description: 'Chuẩn bị rút một Lá Bài.' },
+    news: { title: 'Ô TIN TỨC', impact: '📰', description: 'Thành phố sắp có biến.' },
+    ready: { title: 'READY', impact: '🏁', description: 'Về lại điểm xuất phát.' },
+  };
+  const copy = tileCopy[tileType] ?? tileCopy.normal;
+
+  return {
+    eventSeq: event.seq,
+    kind: 'tile_land',
+    eyebrow: `${actorName} • ĐÁP Ô`,
+    title: copy.title,
+    rarity: '',
+    impact: copy.impact,
+    description: copy.description,
+    summary: '',
+    actorId,
+    actorName,
+    reactions: [],
+    holdMs: tileType === 'normal' ? 520 : 760,
+    tileType,
+    amount,
+  };
+}
+
 export function buildPresentationModel(
   event: MatchEvent,
   players: PlayerState[],
@@ -138,6 +183,27 @@ export function buildPresentationModel(
   const description = dataString(event, 'description');
   const summary = dataString(event, 'summary');
   const reactionEventId = dataString(event, 'reactionEventId') || undefined;
+
+  if (event.type === 'tile_land') return tileLandingModel(event, players);
+
+  if (event.type === 'ready_pass') {
+    const amount = dataNumber(event, 'amount', true) ?? 100;
+    return {
+      eventSeq: event.seq,
+      kind: 'ready_bonus',
+      eyebrow: `${actorName} • QUA READY`,
+      title: `+${Math.abs(amount)} B$`,
+      rarity: '',
+      impact: '🏁✨',
+      description: 'Thưởng hoàn thành một vòng!',
+      summary: '',
+      actorId,
+      actorName,
+      reactions: [],
+      holdMs: 900,
+      amount,
+    };
+  }
 
   if (event.type === 'card_draw') {
     return {
@@ -190,6 +256,7 @@ export function buildPresentationModel(
       reactionEventId,
       reactions: reactionLines(event, players),
       holdMs: 2050,
+      amount: dataNumber(event, 'amount', true),
     };
   }
 
@@ -210,6 +277,7 @@ export function buildPresentationModel(
       reactionEventId,
       reactions: reactionLines(event, players),
       holdMs: 2200,
+      amount: dataNumber(event, 'amount', true),
     };
   }
 
