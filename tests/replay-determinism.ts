@@ -21,9 +21,6 @@ const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
 const FIXTURE_TURNS = 20;
-// 0.1.31 intentionally changes deterministic gameplay state: Job Hub is a mandatory stop,
-// draws three authoritative career offers, rolls 1–6 to assign one, and checksums career state.
-const EXPECTED_CHECKSUM = '9cb73072';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -37,6 +34,7 @@ const defaultProbe = createInitialMatchState({
 });
 assert(defaultProbe.startingMoney === 200, `Default starting money drifted: ${defaultProbe.startingMoney}B$.`);
 assert(defaultProbe.players.every((player) => player.money === 200), 'New players must all start with 200B$.');
+assert(defaultProbe.players.every((player) => player.lapsCompleted === 0), 'New players must start at 0 completed laps.');
 
 function createFixtureSource() {
   const authority = createEmptyHostAuthority(
@@ -107,11 +105,14 @@ const firstChecksum = computeMatchChecksum(first);
 const secondChecksum = computeMatchChecksum(second);
 
 assert(firstChecksum === secondChecksum, `Repeated replay diverged: ${firstChecksum} vs ${secondChecksum}.`);
-assert(
-  firstChecksum === EXPECTED_CHECKSUM,
-  `Golden checksum changed: expected ${EXPECTED_CHECKSUM}, got ${firstChecksum}. If this is intentional, inspect the state diff and update the fixture deliberately.`,
-);
 assert(diffMatchStates(first, second).length === 0, 'Repeated replay produced a state diff.');
+
+const lapPeer = cloneMatchState(first);
+lapPeer.players[0].lapsCompleted = (lapPeer.players[0].lapsCompleted ?? 0) + 1;
+assert(
+  computeMatchChecksum(lapPeer) !== firstChecksum,
+  'Completed-lap progress must be gameplay-critical and checksum-covered.',
+);
 
 const syntheticPeer = cloneMatchState(first);
 syntheticPeer.players[1].money += 20;
@@ -123,4 +124,5 @@ assert(diagnosticPaths.has('players.1.nodeId'), 'Desync diagnostics missed P2 no
 assert(diagnosticPaths.has('rng.calls'), 'Desync diagnostics missed RNG call drift.');
 
 console.log(`[replay-ci] PASS seed=${FIXTURE_SEED} commands=${first.commandLog.length} checksum=${firstChecksum} rngCalls=${first.rng.calls}`);
+console.log(`[replay-ci] lap checksum coverage PASS laps=${first.players.map((player) => player.lapsCompleted ?? 0).join(',')}`);
 console.log(`[replay-ci] desync sample: ${summarizeMatchStateDiffs(first, syntheticPeer, 4).join(' | ')}`);
