@@ -79,12 +79,27 @@ export function demoMatchLapProgress(match: MatchState): DemoMatchLapProgress {
 }
 
 /**
+ * A Mini Game landing is presentation-driven, but its payout is authoritative.
+ * If the newest event is an unresolved Mini Game, do not freeze the final B$ table
+ * before the host commits its ranking/reward command.
+ */
+export function hasPendingLatestMiniGame(match: MatchState): boolean {
+  const latest = match.eventLog.at(-1);
+  if (!latest || latest.type !== 'minigame_tile') return false;
+  return !match.eventLog.some(
+    (event) => event.type === 'minigame_reward' && Number(event.data.sourceEventSeq) === latest.seq,
+  );
+}
+
+/**
  * Current playtest rule:
  * scoring only starts after every player has physically completed one full board lap.
  * Turn count / shell.rounds no longer ends the match; those fields remain for old shell compatibility.
+ * A final Mini Game must also finish its authoritative payout before B$ is scored.
  */
 export function shouldEndDemoMatch(match: MatchState, shell: DemoMatchShellState): boolean {
   if (shell.status !== 'active' || match.players.length === 0) return false;
+  if (hasPendingLatestMiniGame(match)) return false;
   const progress = demoMatchLapProgress(match);
   return progress.completedPlayers === progress.totalPlayers;
 }
