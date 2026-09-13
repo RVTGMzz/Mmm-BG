@@ -13,12 +13,17 @@ import {
   type MatchEventValue,
   type MatchState,
 } from './matchState';
+import {
+  isMiniGameRewardType,
+  parseRankingPlayerIds,
+  validateMiniGameRanking,
+} from './minigameRewards';
 import type { NewsDefinition } from './news';
 import { replayMatchCommands } from './replay';
 import { createRandomSource } from './rng';
 import type { BoardDefinition, PlayerState } from './types';
 
-export type ClientIntentType = 'roll' | 'choose_branch' | 'play_card' | 'choose_job';
+export type ClientIntentType = 'roll' | 'choose_branch' | 'play_card' | 'choose_job' | 'resolve_minigame';
 
 export interface ClientIntent {
   intentId: string;
@@ -141,6 +146,7 @@ function validateIntentEnvelope(authority: HostAuthority, intent: ClientIntent):
 }
 
 function validateIntentPhase(authority: HostAuthority, intent: ClientIntent): string | undefined {
+  if (intent.type === 'resolve_minigame') return undefined;
   if (intent.type === 'choose_branch') {
     return authority.state.turn.phase === 'BRANCH_CHOICE' ? undefined : `choose_branch is invalid during ${authority.state.turn.phase}.`;
   }
@@ -192,6 +198,39 @@ function buildJobChoiceData(authority: HostAuthority): { data?: Record<string, M
   return { data: {} };
 }
 
+function buildMiniGameResultData(authority: HostAuthority, intent: ClientIntent): { data?: Record<string, MatchEventValue>; reason?: string } {
+  const sourceEventSeq = Number(intent.data.sourceEventSeq);
+  if (!Number.isInteger(sourceEventSeq) || sourceEventSeq <= 0) {
+    return { reason: 'resolve_minigame requires a positive integer sourceEventSeq.' };
+  }
+
+  const sourceEvent = authority.state.eventLog.find(
+    (event) => event.seq === sourceEventSeq && event.type === 'minigame_tile',
+  );
+  if (!sourceEvent) return { reason: `cannot find Mini Game event #${sourceEventSeq}.` };
+
+  const alreadyResolved = authority.state.eventLog.some(
+    (event) => event.type === 'minigame_reward' && Number(event.data.sourceEventSeq) === sourceEventSeq,
+  );
+  if (alreadyResolved) return { reason: `Mini Game event #${sourceEventSeq} is already resolved.` };
+
+  const gameType = String(intent.data.gameType ?? '');
+  if (!isMiniGameRewardType(gameType)) return { reason: `invalid Mini Game reward type ${gameType || '(empty)'}.` };
+
+  const rankingPlayerIds = parseRankingPlayerIds(intent.data.rankingPlayerIds);
+  const participantPlayerIds = parseRankingPlayerIds(sourceEvent.data.affectedPlayerIds);
+  const rankingError = validateMiniGameRanking(rankingPlayerIds, participantPlayerIds);
+  if (rankingError) return { reason: rankingError };
+
+  return {
+    data: {
+      sourceEventSeq,
+      gameType,
+      rankingPlayerIds: rankingPlayerIds.join(','),
+    },
+  };
+}
+
 export function createHostAuthority(source: MatchState, runtime: HostAuthorityRuntime): HostAuthority {
   const cloned = cloneMatchState(source);
   const replay = replayMatchCommands(cloned, runtime.board, runtime.cards, runtime.news);
@@ -238,6 +277,15 @@ export function submitClientIntent(authority: HostAuthority, intent: ClientInten
       return cloneReceipt(result);
     }
     data = jobData.data;
+  } else if (intent.type === 'resolve_minigame') {
+    type = 'resolve_minigame';
+    const miniGameData = buildMiniGameResultData(authority, intent);
+    if (!miniGameData.data) {
+      const result = receipt(authority, intent, 'rejected', { reason: miniGameData.reason ?? 'invalid Mini Game result.' });
+      authority.receipts.set(intent.intentId, result);
+      return cloneReceipt(result);
+    }
+    data = miniGameData.data;
   } else {
     type = 'play_card';
     const cardData = buildPlayCardData(authority, intent);
