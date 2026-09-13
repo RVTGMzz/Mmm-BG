@@ -17,7 +17,10 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-const EXPECTED_CHECKSUM = '0e7e9947';
+// 0.1.22 intentionally expands Card IDs inside the same 60/30/9/1 effect bands.
+// This fixture never plays a Card, so the checksum change comes from handCardIds,
+// while money/node/RNG semantics remain protected by the content-depth regression.
+const EXPECTED_CHECKSUM = '7ad81b89';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
