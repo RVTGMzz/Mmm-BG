@@ -18,13 +18,14 @@ export function showJobRollPicker(
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5);
-    const subtitle = scene.add.text(0, -174, '3 nghề đã được random. Không chọn trực tiếp: đổ xúc xắc để nhận nghề.', {
+    const subtitle = scene.add.text(0, -174, '3 nghề đã random • Xúc xắc quyết định A / B / C, không chọn nghề trực tiếp.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '14px',
       color: '#6d655b',
     }).setOrigin(0.5);
     root.add([backdrop, panel, title, subtitle]);
 
+    const letters = ['A', 'B', 'C'];
     const ranges = ['🎲 1–2', '🎲 3–4', '🎲 5–6'];
     const xs = [-300, 0, 300];
     jobs.forEach((job, index) => {
@@ -32,7 +33,15 @@ export function showJobRollPicker(
       const risky = job.risk === 'crime';
       const box = scene.add.rectangle(x, 5, 265, 275, risky ? 0xffc6c1 : 0xffe09a, 1)
         .setStrokeStyle(4, 0x242424, 1);
-      const range = scene.add.text(x, -105, ranges[index] ?? '🎲', {
+      const letterBadge = scene.add.circle(x - 104, -102, 22, risky ? 0xc34742 : 0x5d4773, 1)
+        .setStrokeStyle(3, 0x242424, 1);
+      const letter = scene.add.text(x - 104, -102, letters[index] ?? '?', {
+        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+        fontSize: '19px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+      }).setOrigin(0.5);
+      const range = scene.add.text(x + 18, -105, ranges[index] ?? '🎲', {
         fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
         fontSize: '18px',
         fontStyle: 'bold',
@@ -64,24 +73,31 @@ export function showJobRollPicker(
         fixedWidth: 225,
         wordWrap: { width: 225 },
       }).setOrigin(0.5);
-      root.add([box, range, icon, name, salary, salaryLabel, special]);
+      root.add([box, letterBadge, letter, range, icon, name, salary, salaryLabel, special]);
     });
 
-    const rollButton = scene.add.rectangle(0, 196, 270, 64, 0xef4545, 1)
+    const diceRule = scene.add.text(0, 155, '1–2 → A     •     3–4 → B     •     5–6 → C', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#4f4740',
+    }).setOrigin(0.5);
+    const rollButton = scene.add.rectangle(0, 206, 290, 64, 0xef4545, 1)
       .setStrokeStyle(4, 0x242424, 1)
       .setInteractive({ useHandCursor: true });
-    const rollText = scene.add.text(0, 196, '🎲 ĐỔ XÚC XẮC JOB', {
+    const rollText = scene.add.text(0, 206, '🎲 ĐỔ XÚC XẮC JOB', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '18px',
       fontStyle: 'bold',
       color: '#ffffff',
     }).setOrigin(0.5);
-    root.add([rollButton, rollText]);
+    root.add([diceRule, rollButton, rollText]);
 
     let settled = false;
     const finish = () => {
       if (settled) return;
       settled = true;
+      rollButton.disableInteractive();
       root.destroy(true);
       resolve();
     };
