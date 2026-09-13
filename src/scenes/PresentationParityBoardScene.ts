@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
+import { sfxController } from '../audio/sfxController';
 import boardJson from '../content/city/board_city_mvp.json';
 import { getBoardNode, getOutgoingEdges, pickParityEdge } from '../core/board';
 import { browserSession } from '../core/browserSession';
 import type { ClientIntentType } from '../core/authority';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
-import { compactPlayerStatus, movementStepDurationMs } from '../ui/boardFeelPolicy';
+import { clampDiceFace, compactPlayerStatus, movementStepDurationMs } from '../ui/boardFeelPolicy';
 import { MatchPresentationLayer } from '../ui/MatchPresentationLayer';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import {
@@ -23,8 +24,24 @@ const TOKEN_OFFSETS = [
   { x: 18, y: 18 },
 ];
 
+const DICE_PIP_MASKS: Record<number, number[]> = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+};
+
 type NetworkStateSource = 'host' | 'state' | 'snapshot';
 type PlayerVisualRuntime = { token: Phaser.GameObjects.Container };
+
+type PresentationLayerRuntime = {
+  active?: Phaser.GameObjects.Container;
+  currentModel?: PresentationEventModel;
+  showDiceRoll(model: PresentationEventModel): void;
+  finishCurrent(animate?: boolean): void;
+};
 
 interface PresentationBoardInternals {
   match: MatchState;
@@ -226,6 +243,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
         onPresentationEnd: () => this.updateCompactHud(internals),
       },
     );
+    this.installGraphicalDiceOverride(this.presentation);
 
     const originalApplyNetworkState = internals.applyNetworkState.bind(this);
     internals.applyNetworkState = (
@@ -406,6 +424,77 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
+  }
+
+  private installGraphicalDiceOverride(layer: MatchPresentationLayer): void {
+    const runtime = layer as unknown as PresentationLayerRuntime;
+    runtime.showDiceRoll = (model: PresentationEventModel) => {
+      const result = clampDiceFace(model.roll ?? 1);
+      const container = this.add.container(640, 338).setDepth(920).setAlpha(0).setScale(0.68);
+      runtime.active = container;
+
+      const glow = this.add.circle(0, 0, 82, 0xffd34d, 0.11);
+      const shadow = this.add.graphics();
+      shadow.fillStyle(0x000000, 0.22);
+      shadow.fillRoundedRect(-53, -49, 106, 106, 23);
+      shadow.setPosition(0, 8);
+      const die = this.add.graphics();
+      die.fillStyle(0xfffbf3, 1);
+      die.fillRoundedRect(-53, -53, 106, 106, 23);
+      die.lineStyle(5, 0x24211d, 1);
+      die.strokeRoundedRect(-53, -53, 106, 106, 23);
+
+      const pipPositions = [-26, 0, 26].flatMap((y) => [-26, 0, 26].map((x) => ({ x, y })));
+      const pips = pipPositions.map((position) =>
+        this.add.circle(position.x, position.y, 7, 0x24211d, 1).setVisible(false),
+      );
+      const label = this.add.text(0, 86, `${model.actorName} • ${result}`, {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '14px',
+        fontStyle: 'bold',
+        color: '#202020',
+        backgroundColor: '#fffaf0',
+        padding: { x: 11, y: 5 },
+      }).setOrigin(0.5);
+
+      const renderFace = (face: number) => {
+        const visible = new Set(DICE_PIP_MASKS[clampDiceFace(face)] ?? DICE_PIP_MASKS[1]);
+        pips.forEach((pip, index) => pip.setVisible(visible.has(index)));
+      };
+
+      container.add([glow, shadow, die, ...pips, label]);
+      renderFace(result === 6 ? 2 : result + 1);
+      sfxController.play('dice_roll');
+
+      this.tweens.add({
+        targets: container,
+        alpha: 1,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 150,
+        ease: 'Back.easeOut',
+      });
+
+      for (let index = 0; index < 6; index += 1) {
+        this.time.delayedCall(75 + index * 72, () => {
+          if (!container.active || runtime.currentModel !== model) return;
+          renderFace(((result + index * 2 + 1) % 6) + 1);
+          container.setAngle(index % 2 === 0 ? -8 : 8);
+        });
+      }
+
+      this.time.delayedCall(555, () => {
+        if (!container.active || runtime.currentModel !== model) return;
+        renderFace(result);
+        container.setAngle(0).setScale(1.1);
+        label.setText(`${model.actorName} • ${result}`);
+        this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 170, ease: 'Back.easeOut' });
+      });
+
+      this.time.delayedCall(Math.max(860, model.holdMs), () => {
+        if (runtime.currentModel === model) runtime.finishCurrent(false);
+      });
+    };
   }
 
   private animateMoveStep(
