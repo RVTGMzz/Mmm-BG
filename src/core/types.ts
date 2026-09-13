@@ -9,9 +9,7 @@ export interface BoardNode {
   y: number;
   type: TileType;
   value?: number;
-  /** Optional function-space layer. 0.1.29 keeps the base tile graph/state model intact. */
   feature?: FunctionTileType;
-  /** Stable content hook for the future playable Mini Game / Job catalog. */
   contentId?: string;
 }
 
@@ -31,6 +29,8 @@ export interface BoardDefinition {
   edges: BoardEdge[];
 }
 
+export type JobStatus = 'unemployed' | 'employed' | 'jailed';
+
 export interface PlayerState {
   id: number;
   name: string;
@@ -39,4 +39,8 @@ export interface PlayerState {
   cardBlockTurns: number;
   handCardIds: string[];
   cardsPlayedThisTurn: number;
+  /** Career fields are optional so old schema-v3 playtest snapshots still deserialize cleanly. */
+  jobId?: string;
+  jobLevel?: number;
+  jobStatus?: JobStatus;
 }
