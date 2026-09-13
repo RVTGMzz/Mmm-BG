@@ -1,5 +1,4 @@
 import { bgmUrl, getBgmTrack, type BgmTrackDefinition } from './bgmCatalog';
-import { sfxController } from './sfxController';
 
 export type BgmTrackId = BgmTrackDefinition['id'];
 
@@ -16,6 +15,7 @@ const STORAGE_KEY = 'mememe.bgm.preferences.v1';
 const DEFAULT_VOLUME = 0.55;
 const FADE_OUT_MS = 220;
 const FADE_IN_MS = 360;
+const INITIAL_FADE_IN_MS = 100;
 
 function clampVolume(value: number): number {
   if (!Number.isFinite(value)) return DEFAULT_VOLUME;
@@ -45,6 +45,7 @@ export class BgmController {
   private assetError?: string;
   private unlockInstalled = false;
   private transitionSerial = 0;
+  private readonly preparedAudio = new Map<BgmTrackId, HTMLAudioElement>();
   private readonly listeners = new Set<BgmListener>();
 
   constructor() {
@@ -53,8 +54,18 @@ export class BgmController {
     this.volume = preferences.volume;
   }
 
+  /**
+   * Arm audio before Phaser creates the first scene.
+   *
+   * Browsers may still require a user gesture before audible playback, but the
+   * Menu asset is already selected/loading by then. The first click/touch/key can
+   * therefore unlock an existing Audio element instead of waiting for LobbyScene
+   * to create and load it a few seconds later.
+   */
   start(): void {
     this.installAutoplayUnlock();
+    this.prepareTrack('menu_mememe');
+    this.setTrack('menu_mememe');
   }
 
   playMenu(): void {
@@ -125,8 +136,39 @@ export class BgmController {
     void this.transitionToTrack(id, serial);
   }
 
+  private prepareTrack(id: BgmTrackId): void {
+    if (typeof Audio === 'undefined') return;
+    if (this.preparedAudio.has(id)) return;
+    if (this.currentTrackId === id && this.audio) return;
+
+    const track = getBgmTrack(id);
+    const audio = new Audio();
+    audio.loop = true;
+    audio.preload = 'auto';
+    audio.autoplay = false;
+    audio.muted = this.muted;
+    audio.volume = 0;
+    audio.src = bgmUrl(track);
+    this.preparedAudio.set(id, audio);
+
+    // Explicit load() asks the browser to begin fetching immediately instead of
+    // waiting for the first scene/first play() call.
+    try {
+      audio.load();
+    } catch {
+      // Some embedded browsers may ignore explicit preload; normal play() remains.
+    }
+  }
+
+  private takePreparedTrack(id: BgmTrackId): HTMLAudioElement | undefined {
+    const audio = this.preparedAudio.get(id);
+    if (audio) this.preparedAudio.delete(id);
+    return audio;
+  }
+
   private async transitionToTrack(id: BgmTrackId, serial: number): Promise<void> {
     const previous = this.audio;
+    const firstTrack = !previous;
     if (previous) {
       await this.fadeAudio(previous, previous.volume, 0, FADE_OUT_MS, serial);
       if (serial !== this.transitionSerial) return;
@@ -135,7 +177,7 @@ export class BgmController {
     }
 
     const track = getBgmTrack(id);
-    const audio = new Audio(bgmUrl(track));
+    const audio = this.takePreparedTrack(id) ?? new Audio(bgmUrl(track));
     audio.loop = true;
     audio.preload = 'auto';
     audio.autoplay = false;
@@ -159,7 +201,13 @@ export class BgmController {
     this.emit();
     await this.tryPlay(audio);
     if (serial !== this.transitionSerial) return;
-    await this.fadeAudio(audio, 0, this.muted ? 0 : this.volume, FADE_IN_MS, serial);
+    await this.fadeAudio(
+      audio,
+      0,
+      this.muted ? 0 : this.volume,
+      firstTrack ? INITIAL_FADE_IN_MS : FADE_IN_MS,
+      serial,
+    );
     if (serial === this.transitionSerial) this.applyPreferences();
   }
 
@@ -173,7 +221,7 @@ export class BgmController {
     return new Promise((resolve) => {
       const start = performance.now();
       const tick = (now: number) => {
-        if (serial !== this.transitionSerial || audio !== this.audio && to > from) {
+        if (serial !== this.transitionSerial || (audio !== this.audio && to > from)) {
           resolve();
           return;
         }
@@ -236,50 +284,3 @@ export class BgmController {
 }
 
 export const bgmController = new BgmController();
-
-export function installBgmControls(): void {
-  if (typeof document === 'undefined' || document.getElementById('mememe-bgm-hud')) return;
-
-  const root = document.createElement('div');
-  root.id = 'mememe-bgm-hud';
-  root.className = 'mememe-bgm-hud';
-  root.innerHTML = `
-    <span class="bgm-label">BGM</span>
-    <button class="bgm-mute" type="button" aria-label="Bật/tắt nhạc nền">🔊</button>
-    <input class="bgm-volume" type="range" min="0" max="100" step="1" aria-label="Âm lượng nhạc nền" />
-    <button class="sfx-mute" type="button" aria-label="Bật/tắt hiệu ứng âm thanh">FX 🔔</button>
-  `;
-  document.body.appendChild(root);
-
-  const label = root.querySelector<HTMLSpanElement>('.bgm-label');
-  const mute = root.querySelector<HTMLButtonElement>('.bgm-mute');
-  const volume = root.querySelector<HTMLInputElement>('.bgm-volume');
-  const sfxMute = root.querySelector<HTMLButtonElement>('.sfx-mute');
-
-  mute?.addEventListener('click', () => bgmController.toggleMuted());
-  volume?.addEventListener('input', () => {
-    bgmController.setVolume(Number(volume.value) / 100);
-  });
-  sfxMute?.addEventListener('click', () => sfxController.toggleMuted());
-
-  bgmController.subscribe((state) => {
-    if (mute) {
-      mute.textContent = state.muted || state.volume <= 0 ? '🔇' : '🔊';
-      mute.setAttribute('aria-pressed', state.muted ? 'true' : 'false');
-    }
-    if (volume) volume.value = String(Math.round(state.volume * 100));
-    if (label) {
-      label.textContent = state.assetError ? 'BGM ⚠' : 'BGM';
-      label.title = state.assetError
-        ? `Thiếu audio: ${state.assetError}`
-        : `Track: ${state.currentTrackId ?? 'chưa chọn'}`;
-    }
-    root.classList.toggle('has-audio-error', Boolean(state.assetError));
-  });
-
-  sfxController.subscribe((state) => {
-    if (!sfxMute) return;
-    sfxMute.textContent = state.muted ? 'FX 🔕' : 'FX 🔔';
-    sfxMute.setAttribute('aria-pressed', state.muted ? 'true' : 'false');
-  });
-}
