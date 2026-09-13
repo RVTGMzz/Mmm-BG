@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController, type SfxCue } from '../audio/sfxController';
 import type { MatchEvent } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
@@ -11,6 +12,8 @@ import {
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
 
 const KIND_PALETTE: Record<PresentationEventModel['kind'], { panel: number; accent: number; label: string }> = {
+  tile_land: { panel: 0x312d28, accent: 0xffd34d, label: 'LANDING' },
+  ready_bonus: { panel: 0x173c31, accent: 0xffd34d, label: 'READY BONUS' },
   card_draw: { panel: 0x332543, accent: 0xb997d6, label: 'CARD DROP' },
   card_blocked: { panel: 0x473b2c, accent: 0xffd34d, label: 'HAND LIMIT' },
   card_play: { panel: 0x2d203f, accent: 0xd4a8ff, label: 'CARD ACTION' },
@@ -68,10 +71,74 @@ export class MatchPresentationLayer {
     if (this.destroyed || this.active || this.queue.length === 0) return;
     const model = this.queue.shift();
     if (!model) return;
-    this.showModel(model);
+    if (model.kind === 'tile_land' || model.kind === 'ready_bonus') {
+      this.showLanding(model);
+      return;
+    }
+    this.showCinematic(model);
   }
 
-  private showModel(model: PresentationEventModel): void {
+  private showLanding(model: PresentationEventModel): void {
+    const palette = KIND_PALETTE[model.kind];
+    const container = this.scene.add.container(640, 112).setDepth(895).setAlpha(0).setScale(0.88);
+    this.active = container;
+
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x000000, 0.2);
+    bg.fillRoundedRect(-238, -35, 476, 76, 20);
+    bg.setPosition(0, 5);
+    const panel = this.scene.add.graphics();
+    panel.fillStyle(palette.panel, 0.97);
+    panel.fillRoundedRect(-238, -38, 476, 76, 20);
+    panel.lineStyle(3, palette.accent, 0.95);
+    panel.strokeRoundedRect(-238, -38, 476, 76, 20);
+
+    const icon = this.scene.add.text(-202, 0, model.impact || '•', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '30px',
+    }).setOrigin(0.5);
+
+    const eyebrow = this.scene.add.text(-164, -19, model.eyebrow, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '10px',
+      fontStyle: 'bold',
+      color: '#d9d1c7',
+    });
+    const title = this.scene.add.text(-164, 2, model.title, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '22px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+    }).setOrigin(0, 0.5);
+    const description = this.scene.add.text(204, 17, model.description, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '10px',
+      color: '#e8e1d8',
+    }).setOrigin(1, 0.5);
+
+    container.add([bg, panel, icon, eyebrow, title, description]);
+    this.playModelSfx(model);
+    this.spawnBurst(palette.accent, model.kind === 'ready_bonus' ? 14 : 8, 640, 124);
+
+    if (model.kind === 'ready_bonus') this.spawnConfetti();
+    if (model.tileType === 'money' || model.kind === 'ready_bonus') {
+      this.showFloatingMoney(model.amount ?? 0, model.actorId);
+    }
+
+    this.scene.tweens.add({
+      targets: container,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      y: 126,
+      duration: 180,
+      ease: 'Back.easeOut',
+    });
+
+    this.schedule(model.holdMs, () => this.dismissActive(180));
+  }
+
+  private showCinematic(model: PresentationEventModel): void {
     const palette = KIND_PALETTE[model.kind];
     const container = this.scene.add.container(640, 236).setDepth(900).setAlpha(0).setScale(0.94);
     this.active = container;
@@ -144,6 +211,11 @@ export class MatchPresentationLayer {
     }
     if (model.rarity) this.addRarityBadge(container, 250, -93, model.rarity);
 
+    this.playModelSfx(model);
+    this.spawnBurst(palette.accent, model.rarity === 'SSR' ? 18 : 10, 640, 230);
+    if (model.kind === 'card_draw' || model.kind === 'card_play') this.spawnCardFlip(palette.accent);
+    if (model.rarity === 'SSR') this.scene.cameras.main.shake(120, 0.0016);
+
     this.scene.tweens.add({
       targets: container,
       alpha: 1,
@@ -162,6 +234,105 @@ export class MatchPresentationLayer {
 
     const visibleMs = Math.max(model.holdMs, reactionEnd + 560);
     this.schedule(visibleMs, () => this.dismissActive());
+  }
+
+  private playModelSfx(model: PresentationEventModel): void {
+    let cue: SfxCue = 'land';
+    if (model.kind === 'ready_bonus') cue = 'ready';
+    else if (model.kind === 'card_draw') cue = 'card_draw';
+    else if (model.kind === 'card_play' || model.kind === 'card_blocked') cue = 'card_play';
+    else if (model.kind === 'news') cue = 'news';
+    else if (model.kind === 'tile_land' && model.tileType === 'money') {
+      cue = (model.amount ?? 0) >= 0 ? 'coin_gain' : 'coin_loss';
+    }
+    sfxController.play(cue);
+  }
+
+  private showFloatingMoney(amount: number, playerId?: number): void {
+    if (amount === 0) return;
+    const positive = amount > 0;
+    const color = positive ? '#1d7b46' : '#c83434';
+    const sign = positive ? '+' : '';
+    const x = 640 + (playerId === undefined ? 0 : (playerId - 1.5) * 38);
+    const text = this.scene.add.text(x, 208, `${sign}${amount} B$`, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontSize: '27px',
+      fontStyle: 'bold',
+      color,
+      stroke: '#fffaf0',
+      strokeThickness: 6,
+    }).setOrigin(0.5).setDepth(925).setScale(0.7);
+
+    this.scene.tweens.add({
+      targets: text,
+      y: 160,
+      scaleX: 1.08,
+      scaleY: 1.08,
+      alpha: 0,
+      duration: 850,
+      ease: 'Cubic.easeOut',
+      onComplete: () => text.destroy(),
+    });
+  }
+
+  private spawnBurst(color: number, count: number, x: number, y: number): void {
+    for (let index = 0; index < count; index += 1) {
+      const angle = (Math.PI * 2 * index) / count;
+      const distance = 42 + (index % 3) * 18;
+      const dot = this.scene.add.circle(x, y, 3 + (index % 2), color, 0.92)
+        .setDepth(890)
+        .setScale(0.5);
+      this.scene.tweens.add({
+        targets: dot,
+        x: x + Math.cos(angle) * distance,
+        y: y + Math.sin(angle) * distance,
+        alpha: 0,
+        scaleX: 1.4,
+        scaleY: 1.4,
+        duration: 430 + (index % 4) * 45,
+        ease: 'Quad.easeOut',
+        onComplete: () => dot.destroy(),
+      });
+    }
+  }
+
+  private spawnConfetti(): void {
+    const colors = [0xef4545, 0x5b8def, 0xffd34d, 0x61b37b, 0xb997d6];
+    for (let index = 0; index < 18; index += 1) {
+      const x = 430 + (index * 53) % 420;
+      const piece = this.scene.add.rectangle(x, 82, 7, 13, colors[index % colors.length], 1)
+        .setDepth(892)
+        .setAngle((index * 37) % 180);
+      this.scene.tweens.add({
+        targets: piece,
+        y: 220 + (index % 4) * 22,
+        x: x + ((index % 2 === 0 ? 1 : -1) * (18 + (index % 5) * 6)),
+        angle: piece.angle + 220,
+        alpha: 0,
+        duration: 720 + (index % 5) * 70,
+        ease: 'Quad.easeIn',
+        onComplete: () => piece.destroy(),
+      });
+    }
+  }
+
+  private spawnCardFlip(color: number): void {
+    const card = this.scene.add.rectangle(640, 360, 54, 76, 0xfffbf3, 1)
+      .setStrokeStyle(4, color, 1)
+      .setDepth(896)
+      .setScale(0.4)
+      .setAngle(-24);
+    this.scene.tweens.add({
+      targets: card,
+      y: 286,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 6,
+      alpha: 0,
+      duration: 420,
+      ease: 'Back.easeOut',
+      onComplete: () => card.destroy(),
+    });
   }
 
   private addPlayerChip(
@@ -206,6 +377,7 @@ export class MatchPresentationLayer {
 
   private showReaction(line: PresentationReactionLine, index: number): void {
     if (this.destroyed) return;
+    sfxController.play('reaction');
 
     const x = 640;
     const y = 405 + Math.min(2, index) * 78;
@@ -307,7 +479,7 @@ export class MatchPresentationLayer {
     return avatar;
   }
 
-  private dismissActive(): void {
+  private dismissActive(duration = 260): void {
     const current = this.active;
     if (!current || !current.active) {
       this.active = undefined;
@@ -321,7 +493,7 @@ export class MatchPresentationLayer {
       y: current.y - 18,
       scaleX: 0.98,
       scaleY: 0.98,
-      duration: 260,
+      duration,
       ease: 'Sine.easeIn',
       onComplete: () => {
         current.destroy();
