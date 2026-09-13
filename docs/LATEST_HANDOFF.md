@@ -5,62 +5,104 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.23 — Reaction & Route Personality (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.24 — Party Mechanics (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.23`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.24`**.
 
 Read first:
-1. `docs/MVP_0.1.23_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.23.md`
-3. `src/content/core/card_reactions_023.json`
-4. `src/ui/presentationModel.ts`
-5. `src/ui/routeFeedback.ts`
-6. `src/scenes/PresentationParityBoardScene.ts`
-7. `tests/reaction-route-023.ts`
-8. `docs/MVP_0.1.22_PROGRESS.md`
-9. `src/content/core/cards_mvp.json`
-10. `src/content/core/news_mvp_demo.json`
-11. `src/ui/tileIdentity.ts`
-12. `src/ui/SettingsPanel.ts`
-13. `src/audio/bgmController.ts`
-14. `docs/AUDIO_PACK_0.1.16.2.md`
+1. `docs/MVP_0.1.24_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.24.md`
+3. `src/core/cards.ts`
+4. `src/core/news.ts`
+5. `src/content/core/cards_mvp.json`
+6. `src/content/core/news_mvp_demo.json`
+7. `tests/party-mechanics-024.ts`
+8. `tests/content-depth-022.ts`
+9. `docs/MVP_0.1.23_PROGRESS.md`
+10. `src/content/core/card_reactions_023.json`
+11. `src/ui/presentationModel.ts`
+12. `src/ui/routeFeedback.ts`
+13. `src/scenes/PresentationParityBoardScene.ts`
+14. `src/ui/SettingsPanel.ts`
+15. `src/audio/bgmController.ts`
+16. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## What 0.1.23 changed
+## What 0.1.24 changed
 
-### Card reactions now match the effect
+### ACT_015 — Thuế Top 1
 
-The old generic Card attack banter is no longer the only presentation path.
+A genuinely new deterministic Card mechanic:
+- rarity R / weight 75;
+- automatically identifies the opponent with the highest current B$;
+- ties resolve by lower player/seat ID;
+- transfers 18% of that opponent's current B$ to the caster;
+- no target picker;
+- no extra RNG call;
+- no new command type.
 
-`src/ui/presentationModel.ts` maps the Card definition to one of four presentation-only reaction scripts:
-- steal money → `CARD_STEAL_023`
-- card lock → `CARD_BLOCK_023`
-- 30% all-opponents loss → `CARD_GROUP_CURSE_023`
-- full-money swap → `CARD_SWAP_023`
+The deterministic selector is `pickRichestOtherTarget()` in `src/core/cards.ts`.
 
-The reaction definitions live in `src/content/core/card_reactions_023.json`.
+### ACT_016 — Phao Cứu Sinh
 
-This mapping is presentation-only. MatchState, replay command flow and gameplay RNG were not changed.
+A comeback Card instead of another attack clone:
+- rarity SR / weight 30;
+- if caster is tied for the lowest current B$: +140B$;
+- otherwise: +20B$;
+- self-targeted and deterministic.
 
-### Odd/even branch choice is now visible
+### NEWS_DEMO_009 — Cân Bằng B$
 
-Automatic parity routing remains authoritative and unchanged:
-- odd → main route / `PHỐ CHÍNH`
-- even → branch route / `HẺM TẮT`
+New News outcome:
+- rarity SR / weight 50;
+- sets the landing player's B$ to the floored current table average;
+- can help a trailing player or reduce a leading player;
+- no reaction script yet because the result can be positive, negative or zero.
 
-The active board wrapper now shows a compact top-center banner for roughly one second when the branch is chosen. It contains:
-- route name;
-- current player;
-- dice value;
-- `LẺ` or `CHẴN`;
-- a note that routing was automatic.
+## Probability totals
 
-The banner does **not** block input, does not add a new acknowledgement step and does not create a gameplay event.
+Card pool is now 13 Cards while keeping total weight 1000:
+- N 600
+- R 300
+- SR 90
+- SSR 10
+
+News pool is now 9 News while keeping total weight 1000:
+- +60 self: 600
+- -80 self: 300
+- -40 all players: 50
+- normalize-to-average self: 50
+
+## Checksum promotion
+
+0.1.24 intentionally changes gameplay state rather than only presentation/content IDs.
+
+Golden checksum moved from:
+
+`7ad81b89` → `2338670a`
+
+Replay, lockstep, host/client and authority all agree on the promoted checksum.
+
+## Regression
+
+New command:
+
+`npm run test:party`
+
+It locks:
+- richest-opponent deterministic tie-break;
+- exact 18% transfer math;
+- comeback full/base branch;
+- average News raises a low player to average;
+- average News lowers a high player to average.
+
+All earlier replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, image and package checks remain enabled.
 
 ## Existing behavior retained
 
-- 11 Card / 8 News pool from 0.1.22;
+- Card reactions by effect from 0.1.23;
+- odd/even route banner remains non-blocking;
 - named City tile identity;
 - Card/News/Reaction timing policy from 0.1.19;
 - node-by-node token movement;
@@ -72,57 +114,41 @@ The banner does **not** block input, does not add a new acknowledgement step and
 - image crop/zoom/rotate + runtime compression;
 - CPU remains QA-only.
 
-## Regression
-
-New command:
-
-`npm run test:reaction-route`
-
-It verifies:
-- all four Card effect classes map to the intended reaction event;
-- reaction speaker roles remain deterministic;
-- odd route feedback resolves to `LẺ`;
-- even route feedback resolves to `CHẴN`;
-- route labels stay explicit and automatic.
-
-All prior deterministic/replay/authority/presentation/content/image/package checks remain enabled.
-
 ## Current artifact status
 
 Validated GitHub Actions run:
 
-`34756511376` / run `#529`
+`34758580714` / run `#581`
 
 Artifact:
 
-`mememe-playtest-0.1.23`
+`mememe-playtest-0.1.24`
 
 Artifact digest:
 
-`sha256:ed2361fcbb87689e48817193cd4fa3dbec769e72d2547700215ba3a91726044f`
+`sha256:2543d81a8d07cf415ea3d3529f3460683d8ef1cd97cb6c1e63562393d6837737`
 
 Artifact size: ~8.50 MB.
 
 GitHub run URL:
 
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34756511376`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34758580714`
 
-CI passed through artifact upload, including **Card reaction personality and route feedback**.
+CI passed through artifact upload, including **Party mechanics deterministic rules** and CPU autoplay.
 
 ## Recommended next work
 
-First visually validate 0.1.23:
-1. route banner is readable but does not cover future map art;
-2. banner disappears quickly and never pauses movement;
-3. steal / block / group-loss / swap Cards clearly feel like different interactions;
-4. reaction timing still does not backlog into endgame;
-5. 0.1.22 Card/News variety still feels balanced enough for the current MVP.
+First do one combined real playtest on 0.1.24 before adding more features. Focus on:
+1. presentation queue never backs up into endgame;
+2. movement still feels natural node-by-node;
+3. route banner remains readable and non-blocking;
+4. Thuế Top 1 resolves the visible richest opponent correctly;
+5. Phao Cứu Sinh feels useful without being absurdly strong;
+6. Cân Bằng B$ creates interesting swings rather than frustration;
+7. Settings/BGM startup and event audio still behave correctly;
+8. no UI element again starts permanently covering the future map art.
 
-If accepted, the next useful milestone should add **genuinely new gameplay mechanics**, not more copies of existing effects. Good candidates:
-- one or two new Card effect types;
-- a new News outcome type;
-- a special tile/mechanic that creates a meaningful choice while keeping authority deterministic;
-- keep all new permanent preferences inside the existing Settings shell.
+Only after Ron's combined playtest feedback should the next gameplay/content milestone be chosen.
 
 ## Hard invariants
 
@@ -135,6 +161,7 @@ If accepted, the next useful milestone should add **genuinely new gameplay mecha
 - Snapshot resync must not replay stale presentation events.
 - Result/ranking must not cover unresolved final-turn presentation.
 - Route feedback must remain non-blocking and must not replace host-authoritative `choose_branch`.
+- Automatic Card mechanics must not add target prompts or client-authored random outcomes.
 - Dice presentation must display the authoritative result.
 - Original face files must not be silently uploaded or persisted.
 - CPU remains a QA bot, not final gameplay AI.
