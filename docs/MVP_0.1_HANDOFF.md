@@ -4,9 +4,9 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.16 — First External Playtest Build / Packaging + Onboarding Polish**
+**MVP 0.1.16.1 — First External Playtest Build + Windows Launcher Hotfix**
 
-Mục tiêu milestone: biến demo 0.1.15 thành build có thể đưa cho người ngoài nhóm dev test lần đầu mà không bắt họ hiểu lịch sử kỹ thuật của project.
+Mục tiêu milestone: biến demo 0.1.15 thành build có thể đưa cho người ngoài nhóm dev test lần đầu mà không bắt họ hiểu lịch sử kỹ thuật của project, đồng thời sửa friction lớn nhất khi tester Windows double-click `index.html` và gặp màn hình trắng do chạy bằng `file://`.
 
 Luật demo vẫn là **temporary playtest rule**, không phải luật MeMeMe final:
 - 4 người chơi;
@@ -51,38 +51,50 @@ Scene này kế thừa `DemoBoardScene`, giữ nguyên scene key `DemoBoardScene
 ## External playtest packaging
 
 ### Portable static paths
-File mới: `vite.config.ts` với `base: './'`.
+`vite.config.ts` dùng `base: './'`.
 
 Production `dist/index.html` dùng asset path tương đối, phù hợp hơn cho static hosting ở subpath/artifact extraction.
 
-Lưu ý: build web vẫn nên chạy qua HTTP static server, **không cam kết chạy trực tiếp bằng `file://`**.
+### Windows launcher hotfix 0.1.16.1
+
+Tester Windows **không được double-click `index.html` trực tiếp**. Khi URL là `file:///C:/...`, browser có thể chặn ES module/local asset và chỉ hiện màn hình trắng.
+
+Package giờ có:
+- `START_PLAYTEST.bat` — double-click để chạy;
+- `serve-playtest.ps1` — dependency-free local static server dùng Windows PowerShell + `.NET TcpListener`.
+
+Launcher:
+- serve chính thư mục artifact qua `127.0.0.1`;
+- ưu tiên port 4173, tự thử tới 4183 nếu bận;
+- tự mở browser ở URL localhost;
+- giữ terminal làm server cho tới khi tester nhấn `Ctrl+C`;
+- không cần Node/Python cho đường chạy mặc định.
+
+Chi tiết: `docs/HOTFIX_0.1.16.1_WINDOWS_LAUNCHER.md`.
 
 ### Quickstart nằm trong build
-File mới: `public/PLAYTEST.txt`.
-
-Vite copy file này vào `dist/PLAYTEST.txt` để tester luôn có quickstart đi kèm package.
+`public/PLAYTEST.txt` được Vite copy vào `dist/PLAYTEST.txt` và giờ đặt `START_PLAYTEST.bat` làm cách chạy Windows mặc định, kèm cảnh báo rõ về `file:///`.
 
 Guide đầy đủ:
 - `docs/PLAYTEST_0.1.16.md`
 - CI copy thành `dist/PLAYTEST_GUIDE.md` trước khi upload artifact.
 
 ### Package verification
-File mới: `scripts/verify-playtest-package.mjs`.
-
-`npm run test:package` kiểm tra:
+`scripts/verify-playtest-package.mjs` kiểm tra:
 - `dist/index.html` tồn tại;
 - `dist/PLAYTEST.txt` tồn tại;
+- `dist/START_PLAYTEST.bat` tồn tại;
+- `dist/serve-playtest.ps1` tồn tại;
 - có JS + CSS bundle;
 - index không dùng absolute `/assets/...` path;
-- asset path tương đối hợp lệ cho static hosting.
+- asset path tương đối hợp lệ;
+- quickstart trỏ Windows tester sang launcher và cảnh báo `file:///`;
+- launcher gọi PowerShell server;
+- server có `TcpListener` và tự mở browser.
 
-Verified CI output:
+## CI gate 0.1.16.1
 
-`[playtest-package-ci] PASS assets=2 quickstart=PLAYTEST.txt relativePaths=PASS`
-
-## CI gate 0.1.16
-
-CI giữ toàn bộ regression cũ và thêm package gate/artifact:
+CI giữ toàn bộ regression cũ và package gate/artifact:
 1. TypeScript + Vite production build;
 2. deterministic replay fixture;
 3. lockstep peer simulator;
@@ -94,41 +106,26 @@ CI giữ toàn bộ regression cũ và thêm package gate/artifact:
 9. copy full playtest guide;
 10. upload artifact `mememe-playtest-0.1.16`.
 
-Verified run trên head `7f15b3aacdb584d3b264c184c9c3a93b65633e1b`:
-- build: PASS;
-- replay: PASS;
-- lockstep: PASS;
-- host/client: PASS;
-- authority: PASS;
-- two-tab: PASS;
-- demo shell: PASS;
-- package validation: PASS;
-- artifact upload: PASS.
-
-Artifact từ run này:
-- name: `mememe-playtest-0.1.16`;
-- artifact id: `10310720803`;
-- size: 368055 bytes;
-- retention: 14 ngày từ run;
-- SHA-256: `72fc82c865bacf998b4ca1a09f2d78b456e1ff17a401951b134a7dff5d671be5`.
-
 Golden deterministic replay checksum nền vẫn `0e7e9947`.
 
 ## Cách chạy external playtest
 
-### Hotseat
-1. Serve thư mục `dist/` bằng static HTTP server.
-2. Mở URL localhost/static host.
-3. Chọn `SOLO / HOTSEAT`.
-4. Đặt tên 4 người; ảnh có thể bỏ qua.
-5. Bắt đầu demo và chơi đủ 3 vòng.
+### Hotseat Windows
+1. Giải nén artifact.
+2. Double-click `START_PLAYTEST.bat`.
+3. Browser tự mở URL `http://127.0.0.1:<port>/`.
+4. Chọn `SOLO / HOTSEAT`.
+5. Đặt tên 4 người; ảnh có thể bỏ qua.
+6. Bắt đầu demo và chơi đủ 3 vòng.
+7. Khi xong nhấn `Ctrl+C` trong cửa sổ launcher để dừng server.
 
 ### Two-tab local
-1. Mở cùng URL ở hai tab cùng browser profile.
-2. Tab 1: `HOST 2 TAB` → giữ room code → setup → vào bàn.
-3. Tab 2: `JOIN 2 TAB` → nhập room code → chọn P2/P3/P4.
-4. Host bấm Start.
-5. Client chỉ điều khiển seat đã claim; host điều khiển seat còn lại.
+1. Chạy `START_PLAYTEST.bat` một lần.
+2. Mở cùng URL localhost ở hai tab cùng browser profile.
+3. Tab 1: `HOST 2 TAB` → giữ room code → setup → vào bàn.
+4. Tab 2: `JOIN 2 TAB` → nhập room code → chọn P2/P3/P4.
+5. Host bấm Start.
+6. Client chỉ điều khiển seat đã claim; host điều khiển seat còn lại.
 
 Đây vẫn là `BroadcastChannel` same-origin, chưa phải internet multiplayer.
 
@@ -140,7 +137,7 @@ Golden deterministic replay checksum nền vẫn `0e7e9947`.
 - Tin Tức/reaction vẫn là demo engine content, chưa được xem là content final.
 - Luật 3 vòng/B$ cao nhất vẫn được ghi rõ là temporary playtest rule.
 
-## Known limitations sau 0.1.16
+## Known limitations sau 0.1.16.1
 
 - Chưa có WebSocket/backend/internet multiplayer.
 - Reload client chưa reclaim seat production-ready.
@@ -149,7 +146,7 @@ Golden deterministic replay checksum nền vẫn `0e7e9947`.
 - Client chưa nhận face textures của host.
 - Card/News/Reaction presentation giữa host/client chưa đạt parity với mục tiêu final.
 - Content hiện còn mỏng cho playtest dài.
-- Demo build artifact vẫn cần HTTP static server; chưa có one-click desktop executable.
+- Windows artifact giờ có one-click launcher, nhưng đây vẫn là web build chạy local HTTP server, chưa phải desktop executable native.
 - Demo shell lifecycle vẫn ở browser/session layer riêng, chưa encode vào MatchCommand/MatchState.
 
 ## Milestone kế tiếp đề xuất
@@ -184,3 +181,4 @@ Golden deterministic replay checksum nền vẫn `0e7e9947`.
 15. Two-tab local browser room + authoritative board sync. ✅ PoC.
 16. Demo match start/end/winner/rematch shell. ✅ PoC.
 17. First external playtest onboarding + verified package artifact. ✅
+18. Windows one-click local launcher hotfix. ✅
