@@ -16,7 +16,10 @@ Read first:
 4. `assets/audio/bgm/bgm_manifest.json`
 5. `src/audio/bgmCatalog.ts`
 6. `src/audio/bgmController.ts`
-7. `docs/PLAYTEST_0.1.17.md`
+7. `src/ui/presentationModel.ts`
+8. `src/ui/MatchPresentationLayer.ts`
+9. `src/scenes/PresentationParityBoardScene.ts`
+10. `docs/PLAYTEST_0.1.17.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
@@ -37,8 +40,6 @@ Format: OGG Vorbis Q4, 48 kHz stereo, whole-file seamless loops.
 
 ### Runtime binary status — VERIFIED
 
-Ron manually uploaded the four approved OGG binaries to GitHub and normalized the runtime names by removing the descriptive `_LOOP` / `_EXTENDED` suffixes.
-
 Runtime paths:
 
 ```text
@@ -48,21 +49,20 @@ public/audio/bgm/03_City_Silly.ogg
 public/audio/bgm/04_Final_Round.ogg
 ```
 
-The audio content itself remains unchanged and still loops seamlessly at runtime.
+Ron manually uploaded the four approved OGG binaries and normalized runtime filenames only. Audio content remains unchanged.
 
-`npm run test:package` now requires all four OGGs in `dist/audio/bgm/` and computes SHA-256 for each. GitHub Actions passed package validation after the upload, proving the runtime files match all four approved hashes.
+`npm run test:package` requires all four OGGs in `dist/audio/bgm/` and verifies exact SHA-256 values.
 
-Checksum-locked source importer remains available:
+Checksum-locked source importer:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\import-bgm-pack.ps1 .\MeMeMe_Audio_Pack_0.1.16.2.zip
 ```
 
-It verifies the original source ZIP + OGG hashes, then copies them to the normalized runtime filenames above.
-
 ## MVP 0.1.17 implemented
 
-BGM:
+### BGM
+
 - Lobby / Setup → `menu_mememe`;
 - Round 1 → `city_bubble`;
 - Round 2 → `city_silly`;
@@ -71,21 +71,46 @@ BGM:
 - global BGM mute + volume UI with local preference persistence;
 - browser autoplay unlock handling;
 - missing asset indicator `BGM ⚠` instead of gameplay failure;
-- four approved OGGs now packaged and checksum-locked by CI.
+- four approved OGGs packaged and checksum-locked by CI.
 
-Presentation Parity:
+### Presentation Parity
+
+Stable playtest shell features:
 - `🐛 BUG REPORT` JSON export with checksum/session/log/state diagnostics;
 - authoritative B$ deltas logged + toasted;
 - card gained/removed deltas logged + toasted;
 - remote token destination remains authoritative, with presentation-only movement tween instead of snap;
-- deterministic presentation `eventLog` is rebuilt during replay and remains excluded from gameplay checksum;
-- host/client receive the same Card draw, Card play, News and `reactionEventId` presentation events;
-- basic Card/News/Reaction toast UI is wired on both host and client;
-- snapshot resync is excluded from fake delta/event presentation.
+- snapshot resync excluded from fake delta/event presentation.
 
-Regression:
-- build, deterministic replay, lockstep, host/client snapshot resync, authority protocol, two-tab session, demo shell, CPU autoplay stress and package validation remain green;
-- package validation now includes exact BGM SHA-256 verification.
+Card / News / Reaction now goes beyond the previous generic toast layer:
+- authoritative eventLog includes title, rarity, impact, description, summary and amount when relevant;
+- card play events include deterministic target/spectator metadata and reaction hook when supported;
+- news events include deterministic spectator metadata and existing `reactionEventId`;
+- spectator selection records the result of the same RNG call already consumed previously, so RNG count/later gameplay remain unchanged;
+- presentation `eventLog` is rebuilt during replay and remains excluded from gameplay checksum;
+- `src/ui/presentationModel.ts` builds pure deterministic Card/News/Reaction models;
+- reaction text variant is currently stable seat-based so host/client choose the same variant while personality sync is not yet presentation-authoritative;
+- `src/ui/MatchPresentationLayer.ts` renders large animated Card/News panels, rarity badge, impact, actor/target chips, description, authoritative summary and queued reaction speech bubbles;
+- reaction bubbles include speaker, expression emoji and local face texture when available, with deterministic initial fallback;
+- `src/scenes/PresentationParityBoardScene.ts` layers this renderer over the stable playtest board without changing gameplay authority/core;
+- the old generic purple event toast is shadowed by the new wrapper, while B$/Card delta toasts and logs remain active.
+
+### Presentation regression
+
+New CI script:
+
+`npm run test:presentation`
+
+Coverage:
+- News actor/spectator parity;
+- Card actor/target/spectator parity;
+- Reaction sequence ordering;
+- deterministic reaction variant selection;
+- placeholder interpolation;
+- Card draw rarity model;
+- filtering non-Card/News events from cinematic queue.
+
+The latest full regression passed including this test, CPU autoplay and package upload.
 
 ## External playtest
 
@@ -104,8 +129,19 @@ Stress path: **4 CPU AUTOPLAY**.
 ## Next build work
 
 Continue **Presentation Parity** in this order:
-1. polish Card / News / Reaction visual treatment using the shared presentation events already in place;
-2. evaluate local face sharing only if the privacy contract remains explicit and no image is silently uploaded/persisted;
-3. add presentation-specific regression coverage if lifecycle complexity grows;
-4. keep running 4-CPU autoplay after presentation changes;
-5. do not change deterministic gameplay checksum/RNG/authority semantics for presentation work.
+1. tune Card/News cinematic timing, spacing and reaction readability from real playtest capture;
+2. decide whether custom personality choices become explicitly synced presentation metadata, without entering gameplay-critical checksum state;
+3. evaluate local face sharing only if the privacy contract remains explicit and no image is silently uploaded/persisted;
+4. add reaction SFX hooks only after event parity stays stable;
+5. keep running `test:presentation` + 4-CPU autoplay + full CI after lifecycle changes.
+
+## Hard invariants
+
+- Do not merge PR #1 or mark Ready unless Ron explicitly asks.
+- Do not substitute/re-encode approved BGM.
+- Do not add extra presentation RNG calls.
+- Do not put BGM or presentation preferences into gameplay-critical checksum state.
+- Presentation eventLog may sync/serialize but remains excluded from gameplay checksum.
+- Snapshot resync must never replay stale cinematic events.
+- Do not weaken replay/checksum/authority tests for UI work.
+- CPU remains a QA bot, not final gameplay AI.
