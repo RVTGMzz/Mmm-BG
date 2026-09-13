@@ -34,16 +34,20 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.16', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.16.2', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    const mode = browserSession.current.mode === 'host'
-      ? `HOST LOCAL • ROOM ${browserSession.current.roomCode}`
-      : '4 người chơi → đặt tên → thêm ảnh nếu muốn → vào demo 3 vòng';
+    const config = browserSession.current;
+    const cpuCount = config.cpuSeatIds.length;
+    const mode = config.mode === 'host'
+      ? `HOST LOCAL • ROOM ${config.roomCode}`
+      : cpuCount > 0
+        ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
+        : '4 người HOTSEAT → đặt tên → thêm ảnh nếu muốn → vào demo 3 vòng';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -58,12 +62,12 @@ export class SetupScene extends Phaser.Scene {
       </div>
       <div class="setup-footer">
         <div>
-          <p class="setup-hint"><strong>Ảnh mặt giờ là tùy chọn trong bản playtest.</strong> Nếu bỏ qua, game dùng token màu fallback để vào trận nhanh hơn.</p>
+          <p class="setup-hint"><strong>Ảnh mặt là tùy chọn.</strong> Ghế có 🤖 sẽ tự chơi sau khi bấm BẮT ĐẦU DEMO; CPU chỉ để test flow, chưa phải AI final.</p>
           <p class="setup-privacy">🔒 Nếu thêm ảnh: ảnh chỉ được xử lý trong trình duyệt và giữ trong bộ nhớ phiên chơi này. Playtest chưa upload ảnh lên server.</p>
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">Có thể vào game ngay, hoặc thêm ảnh 😐 / 😆 / 😡 để test tính năng face avatar.</p>
+      <p id="setup-status" class="setup-status">Có thể vào game ngay. CPU sẽ tự roll, dùng bài và chọn nhánh khi tới lượt.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -95,6 +99,7 @@ export class SetupScene extends Phaser.Scene {
 
   private playerCardMarkup(playerId: number): string {
     const accent = PLAYER_ACCENTS[playerId];
+    const isCpu = browserSession.isCpuSeat(playerId);
     const faceSlots = EXPRESSIONS.map(
       (expression) => `
         <label class="face-slot" id="slot-${playerId}-${expression.id}" style="--player-accent:${accent}">
@@ -110,9 +115,10 @@ export class SetupScene extends Phaser.Scene {
     return `
       <section class="player-setup-card" style="--player-accent:${accent}">
         <div class="player-card-title">
-          <span class="player-number">P${playerId + 1}</span>
-          <input id="player-name-${playerId}" class="player-name-input" value="Player ${playerId + 1}" maxlength="18" aria-label="Tên Player ${playerId + 1}" />
+          <span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span>
+          <input id="player-name-${playerId}" class="player-name-input" value="${isCpu ? `CPU ${playerId + 1}` : `Player ${playerId + 1}`}" maxlength="18" aria-label="Tên Player ${playerId + 1}" />
         </div>
+        ${isCpu ? '<div style="font-size:11px;font-weight:800;color:#795796;margin:-2px 0 7px;">CPU TEST • tự điều khiển lượt</div>' : ''}
         <div class="face-slots">${faceSlots}</div>
       </section>
     `;
@@ -173,13 +179,19 @@ export class SetupScene extends Phaser.Scene {
       (total, player) => total + Object.keys(player.faces).length,
       0,
     );
+    const cpuCount = browserSession.current.cpuSeatIds.length;
 
     if (expressionCount === 0) {
-      this.setStatus('Sẵn sàng chơi nhanh với token màu. Muốn test face avatar thì thêm ảnh bất kỳ trước khi vào trận.', false);
+      this.setStatus(
+        cpuCount > 0
+          ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự chơi. Có thể bỏ qua ảnh và vào trận ngay.`
+          : 'Sẵn sàng chơi nhanh với token màu. Muốn test face avatar thì thêm ảnh bất kỳ trước khi vào trận.',
+        false,
+      );
       return;
     }
 
-    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh • ảnh không bắt buộc để bắt đầu.`, false);
+    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh • CPU: ${cpuCount}/4.`, false);
   }
 
   private setStatus(message: string, isError: boolean): void {
