@@ -216,6 +216,16 @@ export class TwoTabHostSession extends TwoTabEventSource {
       data: { ...data },
     };
 
+    if (type === 'resolve_minigame') {
+      const result = makeSessionRejection(
+        this.authority,
+        intent.intentId,
+        'resolve_minigame is host-system only.',
+      );
+      this.emit({ kind: 'receipt', receipt: result });
+      return result;
+    }
+
     if (!this.controlsActor(actorId)) {
       const result = makeSessionRejection(
         this.authority,
@@ -226,6 +236,35 @@ export class TwoTabHostSession extends TwoTabEventSource {
       return result;
     }
 
+    return this.processIntent(intent);
+  }
+
+  /**
+   * Host-owned gameplay system command. This is intentionally separate from seat
+   * ownership so presentation subsystems can commit deterministic outcomes such as
+   * Mini Game rewards even when the current seat belongs to a joined client tab.
+   */
+  submitSystemIntent(
+    type: 'resolve_minigame',
+    data: Record<string, MatchEventValue> = {},
+  ): HostIntentReceipt {
+    this.intentSerial += 1;
+    const actor = this.authority.state.players[this.authority.state.turn.currentPlayerIndex];
+    const intentId = makeIntentId(`${this.transport.endpointId}-system`, this.intentSerial);
+    if (!actor) {
+      const result = makeSessionRejection(this.authority, intentId, 'Host system cannot resolve current actor.');
+      this.emit({ kind: 'receipt', receipt: result });
+      return result;
+    }
+
+    const intent: ClientIntent = {
+      intentId,
+      clientId: `${this.transport.endpointId}-system`,
+      actorId: actor.id,
+      type,
+      observedCommandSeq: hostAuthorityCommandSeq(this.authority),
+      data: { ...data },
+    };
     return this.processIntent(intent);
   }
 
@@ -257,6 +296,17 @@ export class TwoTabHostSession extends TwoTabEventSource {
 
     if (payload.kind === 'intent') {
       const intent = payload.intent;
+      if (intent.type === 'resolve_minigame') {
+        const result = makeSessionRejection(
+          this.authority,
+          intent.intentId,
+          'Mini Game result may only be committed by the host system.',
+        );
+        this.transport.send({ kind: 'intent_receipt', receipt: result }, message.from);
+        this.emit({ kind: 'receipt', receipt: result });
+        return;
+      }
+
       const claimedSeat = this.clientSeats.get(intent.clientId);
       if (message.from !== intent.clientId || claimedSeat === undefined || claimedSeat !== intent.actorId) {
         const result = makeSessionRejection(
@@ -448,6 +498,7 @@ export class TwoTabClientSession extends TwoTabEventSource {
     data: Record<string, MatchEventValue> = {},
   ): ClientIntent {
     if (!this.joined) throw new Error('Client chưa join host.');
+    if (type === 'resolve_minigame') throw new Error('Mini Game result is host-system only.');
     this.intentSerial += 1;
     const intent: ClientIntent = {
       intentId: makeIntentId(this.clientId, this.intentSerial),
