@@ -52,6 +52,8 @@ export interface MatchState {
   rng: SerializableRngState;
   turn: MatchTurnState;
   players: PlayerState[];
+  /** Stable player IDs in actual play order. Omitted means legacy identity order [0,1,2,...]. */
+  playOrder?: number[];
   commandLog: MatchCommand[];
   nextCommandSeq: number;
   eventLog: MatchEvent[];
@@ -66,6 +68,24 @@ export interface CreateMatchOptions {
   playerNames: string[];
   seed: number;
   startingMoney?: number;
+  playOrder?: number[];
+}
+
+let configuredInitialPlayOrder: number[] | undefined;
+
+function normalizePlayOrder(order: readonly number[] | undefined, playerCount: number): number[] | undefined {
+  if (!order || order.length !== playerCount) return undefined;
+  const normalized = order.map((value) => Math.floor(value));
+  const expected = Array.from({ length: playerCount }, (_, index) => index);
+  const unique = new Set(normalized);
+  if (unique.size !== playerCount) return undefined;
+  if (!expected.every((id) => unique.has(id))) return undefined;
+  return normalized;
+}
+
+/** Configure the next browser-created matches after the pregame Roll For Order ceremony. */
+export function configureInitialPlayOrder(order?: readonly number[]): void {
+  configuredInitialPlayOrder = order ? [...order] : undefined;
 }
 
 export function createInitialMatchState(options: CreateMatchOptions): MatchState {
@@ -80,6 +100,7 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     handCardIds: [],
     cardsPlayedThisTurn: 0,
   }));
+  const playOrder = normalizePlayOrder(options.playOrder ?? configuredInitialPlayOrder, players.length);
 
   return {
     schemaVersion: 3,
@@ -88,13 +109,14 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     startingMoney,
     rng,
     turn: {
-      currentPlayerIndex: 0,
+      currentPlayerIndex: playOrder?.[0] ?? 0,
       turnNumber: 1,
       lastRoll: null,
       phase: 'TURN_START',
       revision: 0,
     },
     players,
+    ...(playOrder ? { playOrder } : {}),
     commandLog: [],
     nextCommandSeq: 1,
     eventLog: [],
@@ -164,8 +186,11 @@ export function advanceMatchTurn(match: MatchState): number {
     throw new Error('Cannot advance a match with no players.');
   }
 
-  match.turn.currentPlayerIndex =
-    (match.turn.currentPlayerIndex + 1) % match.players.length;
+  const order = normalizePlayOrder(match.playOrder, match.players.length)
+    ?? match.players.map((player) => player.id);
+  const currentPosition = order.indexOf(match.turn.currentPlayerIndex);
+  const nextPosition = currentPosition >= 0 ? (currentPosition + 1) % order.length : 0;
+  match.turn.currentPlayerIndex = order[nextPosition] ?? 0;
   match.turn.turnNumber += 1;
   match.turn.lastRoll = null;
   delete match.pendingJobOfferIds;
