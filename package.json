@@ -4,8 +4,12 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "materialize:sfx": "node scripts/materialize-sfx.mjs",
+    "predev": "npm run materialize:sfx",
     "dev": "vite",
+    "predev:playtest": "npm run materialize:sfx",
     "dev:playtest": "vite --host 0.0.0.0",
+    "prebuild": "npm run materialize:sfx",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test:replay": "tsx tests/replay-determinism.ts",
