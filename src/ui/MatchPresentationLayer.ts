@@ -33,44 +33,92 @@ const EXPRESSION_ICON: Record<FaceExpression, string> = {
   angry: '😤',
 };
 
+export interface MatchPresentationLayerOptions {
+  autoAdvance?: boolean;
+  onBlockingChange?: (blocking: boolean) => void;
+}
+
 export class MatchPresentationLayer {
   private readonly queue: PresentationEventModel[] = [];
   private active?: Phaser.GameObjects.Container;
+  private continueHint?: Phaser.GameObjects.Text;
   private readonly timers = new Set<Phaser.Time.TimerEvent>();
   private readonly reactionObjects = new Set<Phaser.GameObjects.Container>();
   private destroyed = false;
+  private blocking = false;
+  private canAcknowledge = false;
+
+  private readonly acknowledgeKey = () => this.requestAdvance();
+  private readonly acknowledgePointer = () => this.requestAdvance();
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly getPlayers: () => PlayerState[],
-  ) {}
+    private readonly options: MatchPresentationLayerOptions = {},
+  ) {
+    this.scene.input.keyboard?.on('keydown-SPACE', this.acknowledgeKey);
+    this.scene.input.keyboard?.on('keydown-ENTER', this.acknowledgeKey);
+    this.scene.input.on('pointerdown', this.acknowledgePointer);
+  }
+
+  isBlocking(): boolean {
+    return this.blocking;
+  }
 
   enqueue(events: MatchEvent[]): void {
     if (this.destroyed) return;
 
     const players = this.getPlayers();
+    let added = false;
     for (const event of events) {
       const model = buildPresentationModel(event, players);
-      if (model) this.queue.push(model);
+      if (!model) continue;
+      this.queue.push(model);
+      added = true;
     }
+
+    if (!added) return;
+    this.setBlocking(true);
     this.pump();
   }
 
   destroy(): void {
     this.destroyed = true;
     this.queue.length = 0;
+    this.scene.input.keyboard?.off('keydown-SPACE', this.acknowledgeKey);
+    this.scene.input.keyboard?.off('keydown-ENTER', this.acknowledgeKey);
+    this.scene.input.off('pointerdown', this.acknowledgePointer);
     for (const timer of this.timers) timer.remove(false);
     this.timers.clear();
-    for (const object of this.reactionObjects) object.destroy();
-    this.reactionObjects.clear();
+    this.clearReactionObjects();
+    this.clearContinueHint();
     this.active?.destroy();
     this.active = undefined;
+    this.setBlocking(false);
+  }
+
+  private setBlocking(blocking: boolean): void {
+    if (this.blocking === blocking) return;
+    this.blocking = blocking;
+    this.options.onBlockingChange?.(blocking);
   }
 
   private pump(): void {
-    if (this.destroyed || this.active || this.queue.length === 0) return;
+    if (this.destroyed || this.active) return;
+    if (this.queue.length === 0) {
+      // Delay unlock a fraction so the SPACE/CLICK that dismissed the panel
+      // cannot also become the next gameplay input in the same gesture.
+      this.schedule(90, () => {
+        if (!this.active && this.queue.length === 0) this.setBlocking(false);
+      });
+      return;
+    }
+
     const model = this.queue.shift();
     if (!model) return;
+    this.canAcknowledge = false;
+    this.clearContinueHint();
+
     if (model.kind === 'tile_land' || model.kind === 'ready_bonus') {
       this.showLanding(model);
       return;
@@ -135,7 +183,8 @@ export class MatchPresentationLayer {
       ease: 'Back.easeOut',
     });
 
-    this.schedule(model.holdMs, () => this.dismissActive(180));
+    const readDelay = Math.min(650, Math.max(350, Math.round(model.holdMs * 0.45)));
+    this.armAcknowledge(readDelay);
   }
 
   private showCinematic(model: PresentationEventModel): void {
@@ -232,8 +281,58 @@ export class MatchPresentationLayer {
       this.schedule(260 + line.delayMs, () => this.showReaction(line, index));
     });
 
-    const visibleMs = Math.max(model.holdMs, reactionEnd + 560);
-    this.schedule(visibleMs, () => this.dismissActive());
+    const baseReadDelay = Math.min(900, Math.max(480, Math.round(model.holdMs * 0.42)));
+    const reactionReadDelay = reactionEnd > 0 ? 260 + reactionEnd + 120 : 0;
+    this.armAcknowledge(Math.max(baseReadDelay, reactionReadDelay));
+  }
+
+  private armAcknowledge(delay: number): void {
+    this.schedule(delay, () => {
+      if (this.destroyed || !this.active) return;
+      this.canAcknowledge = true;
+      this.showContinueHint();
+      if (this.options.autoAdvance) {
+        this.schedule(240, () => this.requestAdvance());
+      }
+    });
+  }
+
+  private requestAdvance(): void {
+    if (this.destroyed || !this.active || !this.canAcknowledge) return;
+    this.canAcknowledge = false;
+    this.clearContinueHint();
+    sfxController.play('ui_confirm');
+    this.dismissActive();
+  }
+
+  private showContinueHint(): void {
+    this.clearContinueHint();
+    this.continueHint = this.scene.add
+      .text(640, 682, 'SPACE / ENTER / CLICK  •  TIẾP TỤC', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#202020',
+        backgroundColor: '#ffd34d',
+        padding: { x: 14, y: 7 },
+      })
+      .setOrigin(0.5)
+      .setDepth(940)
+      .setAlpha(0.1);
+
+    this.scene.tweens.add({
+      targets: this.continueHint,
+      alpha: 1,
+      duration: 180,
+      ease: 'Sine.easeOut',
+    });
+  }
+
+  private clearContinueHint(): void {
+    if (!this.continueHint) return;
+    this.scene.tweens.killTweensOf(this.continueHint);
+    this.continueHint.destroy();
+    this.continueHint = undefined;
   }
 
   private playModelSfx(model: PresentationEventModel): void {
@@ -376,7 +475,7 @@ export class MatchPresentationLayer {
   }
 
   private showReaction(line: PresentationReactionLine, index: number): void {
-    if (this.destroyed) return;
+    if (this.destroyed || !this.active) return;
     sfxController.play('reaction');
 
     const x = 640;
@@ -479,14 +578,24 @@ export class MatchPresentationLayer {
     return avatar;
   }
 
-  private dismissActive(duration = 260): void {
+  private clearReactionObjects(): void {
+    for (const object of this.reactionObjects) {
+      this.scene.tweens.killTweensOf(object);
+      object.destroy();
+    }
+    this.reactionObjects.clear();
+  }
+
+  private dismissActive(duration = 230): void {
     const current = this.active;
     if (!current || !current.active) {
       this.active = undefined;
+      this.clearReactionObjects();
       this.pump();
       return;
     }
 
+    this.clearReactionObjects();
     this.scene.tweens.add({
       targets: current,
       alpha: 0,
