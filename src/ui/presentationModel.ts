@@ -234,6 +234,26 @@ function tileLandingModel(event: MatchEvent, players: PlayerState[]): Presentati
   };
 }
 
+function functionTileModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
+  const base = baseModel(event, players);
+  const isMiniGame = event.type === 'minigame_tile';
+  const description = dataString(event, 'description');
+  const summary = dataString(event, 'summary');
+  return {
+    ...base,
+    kind: 'tile_land',
+    eyebrow: `${base.actorName} • ${isMiniGame ? 'MINI GAME' : 'JOB'}`,
+    title: dataString(event, 'title') || (isMiniGame ? 'MINI GAME' : 'JOB'),
+    rarity: '',
+    impact: dataString(event, 'impact') || (isMiniGame ? '🎮' : '💼'),
+    description: [description, summary].filter(Boolean).join('\n'),
+    summary: '',
+    reactions: [],
+    holdMs: 2400,
+    tileType: isMiniGame ? 'minigame' : 'job',
+  };
+}
+
 export function buildPresentationModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel | undefined {
   const base = baseModel(event, players);
   const targetId = dataNumber(event, 'targetId');
@@ -281,7 +301,12 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     };
   }
 
-  if (event.type === 'tile_land') return tileLandingModel(event, players);
+  if (event.type === 'minigame_tile' || event.type === 'job_tile') return functionTileModel(event, players);
+
+  if (event.type === 'tile_land') {
+    if (dataString(event, 'featureType')) return undefined;
+    return tileLandingModel(event, players);
+  }
 
   if (event.type === 'ready_pass') {
     const amount = dataNumber(event, 'amount', true) ?? 100;
