@@ -90,9 +90,6 @@ function consumeSpectatorRandom(ctx: ReplayContext, excludedIds: number[]): numb
   const candidates = ctx.state.players.filter((player) => !excludedIds.includes(player.id));
   if (candidates.length === 0) return undefined;
 
-  // This consumes the exact same single RNG call as the previous presentation hook,
-  // but now records which spectator that call selected so every synced client can
-  // render the same reaction without consuming or guessing additional randomness.
   const index = Math.min(candidates.length - 1, Math.floor(ctx.random() * candidates.length));
   return candidates[index]?.id;
 }
@@ -100,9 +97,6 @@ function consumeSpectatorRandom(ctx: ReplayContext, excludedIds: number[]): numb
 function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
   const node = getBoardNode(ctx.board, player.nodeId);
 
-  // Every resolved landing now emits a presentation-only event before its tile effect.
-  // This gives host/client the same "I landed here" feedback without changing checksum,
-  // authority, command order, or RNG consumption.
   appendMatchEvent(
     ctx.state,
     'tile_land',
@@ -110,6 +104,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
       nodeId: node.id,
       tileType: node.type,
       value: node.value ?? 0,
+      affectedPlayerIds: String(player.id),
     },
     player.id,
   );
@@ -136,7 +131,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
         appendMatchEvent(
           ctx.state,
           'card_draw_blocked',
-          { nodeId: node.id, reason: 'hand_limit' },
+          { nodeId: node.id, reason: 'hand_limit', affectedPlayerIds: String(player.id) },
           player.id,
         );
         return;
@@ -154,6 +149,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
             rarity: card.rarity,
             impact: card.impact,
             description: card.description,
+            affectedPlayerIds: String(player.id),
           },
           player.id,
         );
@@ -180,6 +176,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
           amount: resolution.amount ?? 0,
           reactionEventId: news.reactionEventId ?? null,
           spectatorId: spectatorId ?? -1,
+          affectedPlayerIds: resolution.affectedPlayerIds.join(','),
         },
         player.id,
       );
@@ -223,6 +220,12 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
   transition(ctx, 'ROLLING');
   const result = rollD6(ctx.random);
   ctx.state.turn.lastRoll = result;
+  appendMatchEvent(
+    ctx.state,
+    'dice_roll',
+    { result, affectedPlayerIds: String(player.id) },
+    player.id,
+  );
   transition(ctx, 'MOVING');
 
   let consumedExtra = 0;
@@ -243,13 +246,27 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
       transition(ctx, 'MOVING');
     }
 
+    const fromNodeId = player.nodeId;
     player.nodeId = edge.to;
+    appendMatchEvent(
+      ctx.state,
+      'move_step',
+      {
+        fromNodeId,
+        toNodeId: edge.to,
+        step: step + 1,
+        roll: result,
+        affectedPlayerIds: String(player.id),
+      },
+      player.id,
+    );
+
     if (edge.to === ctx.board.startNodeId) {
       player.money += 100;
       appendMatchEvent(
         ctx.state,
         'ready_pass',
-        { amount: 100, resultMoney: player.money },
+        { amount: 100, resultMoney: player.money, affectedPlayerIds: String(player.id) },
         player.id,
       );
     }
@@ -337,6 +354,7 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
       targetId: primaryTarget?.id ?? -1,
       spectatorId: spectatorId ?? -1,
       reactionEventId,
+      affectedPlayerIds: resolution.affectedPlayerIds.join(','),
     },
     caster.id,
   );
@@ -344,11 +362,6 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
   transition(ctx, 'PRE_ROLL_ACTION');
 }
 
-/**
- * Rebuilds gameplay state from match seed + player names + explicit player commands.
- * Presentation event logs are rebuilt deterministically from the same command stream,
- * but are excluded from gameplay checksums and command envelope validation.
- */
 export function replayMatchCommands(
   source: MatchState,
   board: BoardDefinition,
