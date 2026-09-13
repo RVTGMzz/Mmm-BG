@@ -11,6 +11,7 @@ import {
   validateMatchCommandEnvelope,
 } from './commandValidation';
 import { rollD6 } from './dice';
+import { resolveFunctionTileFoundation } from './functionTiles';
 import {
   advanceMatchTurn,
   appendMatchEvent,
@@ -104,11 +105,34 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
     {
       nodeId: node.id,
       tileType: node.type,
+      featureType: node.feature ?? null,
+      contentId: node.contentId ?? null,
       value: node.value ?? 0,
       affectedPlayerIds: String(player.id),
     },
     player.id,
   );
+
+  const functionTile = resolveFunctionTileFoundation(node, player);
+  if (functionTile) {
+    appendMatchEvent(
+      ctx.state,
+      functionTile.eventType,
+      {
+        nodeId: node.id,
+        featureType: functionTile.kind,
+        contentId: functionTile.contentId,
+        title: functionTile.title,
+        impact: functionTile.impact,
+        description: functionTile.description,
+        summary: functionTile.summary,
+        status: 'foundation',
+        affectedPlayerIds: functionTile.affectedPlayerIds.join(','),
+      },
+      player.id,
+    );
+    return;
+  }
 
   switch (node.type) {
     case 'money': {
