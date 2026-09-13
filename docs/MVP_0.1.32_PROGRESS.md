@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.32 — Runtime Clarity Polish
 
-Status: ACTIVE / PLAYTEST PACKAGING
+Status: ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN
 
 ## Goal
 
@@ -58,10 +58,34 @@ The external `PLAYTEST.txt` was still carrying the old 0.1.16.2 title and contro
 4. Confirm a Job can still only be awarded by the authoritative Job D6 path.
 5. Smoke-test Mini Game, salary popup, direct dice, Settings/BGM and rematch.
 
-## Packaging
+## Validated artifact
 
-Target artifact name:
+GitHub Actions run:
+
+`34771327955` / run `#906`
+
+Validated runtime head SHA:
+
+`cc384e5027037bdce2427632038ff70065732d75`
+
+Artifact:
 
 `mememe-playtest-0.1.32`
 
-A build should only become the new validated runtime checkpoint after the full CI matrix and package upload pass.
+Artifact ID:
+
+`10322073071`
+
+Size:
+
+`8,517,792 bytes`
+
+Digest:
+
+`sha256:8ca6e5793f96faa6320777859ae02de1ad6bfa9f9265405991ee754e46f4f186`
+
+Full CI passed through artifact upload, including deterministic replay, lockstep, authority/resync, two-tab core, CPU autoplay, presentation/board regressions, Settings/audio, economy/tactical/function-tile/direct-dice/Job-MiniGame regressions, package validation and the 0.1.32 playtest guide.
+
+## Next step
+
+Runtime-test the packaged 0.1.32 artifact. Keep the next iteration focused on observed playfeel/visual/flow feedback unless Ron explicitly defines a new gameplay rule.
