@@ -56,7 +56,6 @@ export interface MatchState {
   nextCommandSeq: number;
   eventLog: MatchEvent[];
   nextEventSeq: number;
-  /** Populated only while the current player is choosing 1 of 3 jobs. */
   pendingJobOfferIds?: string[];
   pendingJobPlayerId?: number;
 }
@@ -80,7 +79,6 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     cardBlockTurns: 0,
     handCardIds: [],
     cardsPlayedThisTurn: 0,
-    jobStatus: 'unemployed',
   }));
 
   return {
@@ -199,12 +197,7 @@ export function deserializeMatchState(serialized: string): MatchState {
   const parsed = JSON.parse(serialized) as Partial<MatchState> & { schemaVersion?: number };
 
   if (parsed.schemaVersion === 3) {
-    const state = parsed as MatchState;
-    state.players = state.players.map((player) => ({
-      ...player,
-      jobStatus: player.jobStatus ?? (player.jobId ? 'employed' : 'unemployed'),
-    }));
-    return state;
+    return parsed as MatchState;
   }
 
   if (parsed.schemaVersion === 2) {
@@ -213,7 +206,6 @@ export function deserializeMatchState(serialized: string): MatchState {
     return {
       ...legacy,
       schemaVersion: 3,
-      players: legacy.players.map((player) => ({ ...player, jobStatus: player.jobId ? 'employed' : 'unemployed' })),
       commandLog,
       nextCommandSeq: legacy.nextCommandSeq ?? commandLog.length + 1,
     };
@@ -237,7 +229,7 @@ export function deserializeMatchState(serialized: string): MatchState {
       startingMoney: 1000,
       rng: legacy.rng,
       turn: legacy.turn,
-      players: legacy.players.map((player) => ({ ...player, jobStatus: player.jobId ? 'employed' : 'unemployed' })),
+      players: legacy.players,
       commandLog: [],
       nextCommandSeq: 1,
       eventLog: legacy.eventLog ?? [],
