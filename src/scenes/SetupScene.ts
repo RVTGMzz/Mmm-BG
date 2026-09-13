@@ -37,7 +37,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.18.1', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.19', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -70,7 +70,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.18.1: presentation sẽ chờ SPACE / ENTER / CLICK; ngã rẽ dùng luật xúc xắc chẵn/lẻ tự động.</p>
+      <p id="setup-status" class="setup-status">0.1.19: HUD gọn, dice chỉ hiện lúc roll, quân cờ đi từng ô, reaction chat tách trái/phải.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
