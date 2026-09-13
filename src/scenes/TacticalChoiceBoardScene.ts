@@ -75,17 +75,17 @@ export class TacticalChoiceBoardScene extends TurnStakesBoardScene {
       }
     };
 
-    this.updateBuildLabels027();
+    this.updateBuildLabels028();
   }
 
-  private updateBuildLabels027(): void {
+  private updateBuildLabels028(): void {
     for (const object of this.children.list) {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
       const current = object.text;
       if (current.includes('CITY • MVP 0.1.26 TURN STAKES')) {
-        object.setText('CITY • MVP 0.1.27 TACTICAL CHOICE');
+        object.setText('CITY • MVP 0.1.28 NPC BANTER');
       } else if (current.includes('PLAYTEST 0.1.26 • TURN STAKES')) {
-        object.setText('PLAYTEST 0.1.27 • TACTICAL CHOICE');
+        object.setText('PLAYTEST 0.1.28 • NPC BANTER');
       }
     }
   }
