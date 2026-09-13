@@ -34,7 +34,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • DEMO MVP 0.1.15', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.16', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -43,7 +43,7 @@ export class SetupScene extends Phaser.Scene {
 
     const mode = browserSession.current.mode === 'host'
       ? `HOST LOCAL • ROOM ${browserSession.current.roomCode}`
-      : '4 người chơi → tên → biểu cảm → vào demo match 3 vòng';
+      : '4 người chơi → đặt tên → thêm ảnh nếu muốn → vào demo 3 vòng';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -58,12 +58,12 @@ export class SetupScene extends Phaser.Scene {
       </div>
       <div class="setup-footer">
         <div>
-          <p class="setup-hint"><strong>Ảnh 😐 là bắt buộc.</strong> 😆 và 😡 có thể thêm ngay; nếu để trống MVP sẽ dùng mặt 😐 làm fallback.</p>
-          <p class="setup-privacy">🔒 Ảnh chỉ được xử lý trong trình duyệt và giữ trong bộ nhớ của phiên chơi này. MVP chưa upload ảnh lên server.</p>
+          <p class="setup-hint"><strong>Ảnh mặt giờ là tùy chọn trong bản playtest.</strong> Nếu bỏ qua, game dùng token màu fallback để vào trận nhanh hơn.</p>
+          <p class="setup-privacy">🔒 Nếu thêm ảnh: ảnh chỉ được xử lý trong trình duyệt và giữ trong bộ nhớ phiên chơi này. Playtest chưa upload ảnh lên server.</p>
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">Thêm ít nhất một ảnh mặt thường cho cả 4 người.</p>
+      <p id="setup-status" class="setup-status">Có thể vào game ngay, hoặc thêm ảnh 😐 / 😆 / 😡 để test tính năng face avatar.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -158,17 +158,9 @@ export class SetupScene extends Phaser.Scene {
       if (nameInput) gameSession.setPlayerName(player.id, nameInput.value);
     }
 
-    const missingNeutral = gameSession.players.filter((player) => !player.faces.neutral);
-    if (missingNeutral.length > 0) {
-      this.setStatus(
-        `Còn thiếu mặt 😐 của ${missingNeutral.map((player) => `P${player.id + 1}`).join(', ')}.`,
-        true,
-      );
-      return;
-    }
-
-    if (!gameSession.isReady()) {
-      this.setStatus('Hãy kiểm tra lại tên và ảnh người chơi.', true);
+    const hasInvalidName = gameSession.players.some((player) => player.name.trim().length === 0);
+    if (hasInvalidName) {
+      this.setStatus('Mỗi người chơi cần có tên trước khi vào demo.', true);
       return;
     }
 
@@ -182,12 +174,12 @@ export class SetupScene extends Phaser.Scene {
       0,
     );
 
-    if (neutralCount === 4) {
-      this.setStatus(`Sẵn sàng! Đã có ${expressionCount}/12 biểu cảm. Có thể vào demo match.`, false);
+    if (expressionCount === 0) {
+      this.setStatus('Sẵn sàng chơi nhanh với token màu. Muốn test face avatar thì thêm ảnh bất kỳ trước khi vào trận.', false);
       return;
     }
 
-    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh.`, false);
+    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh • ảnh không bắt buộc để bắt đầu.`, false);
   }
 
   private setStatus(message: string, isError: boolean): void {
