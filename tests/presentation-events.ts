@@ -36,14 +36,14 @@ assert(moneyLanding, 'money landing should create a compact presentation model')
 assert.equal(moneyLanding.kind, 'tile_land');
 assert.equal(moneyLanding.tileType, 'money');
 assert.equal(moneyLanding.amount, 50);
-assert.equal(moneyLanding.title, '+50 B$');
+assert.equal(moneyLanding.title, 'LỘC VỈA HÈ +50 B$');
 
 const normalLanding = buildPresentationModel(
   event(6, 'tile_land', 2, { nodeId: 4, tileType: 'normal', value: 0 }),
   match.players,
 );
 assert(normalLanding, 'normal landing should still create feedback');
-assert.equal(normalLanding.title, 'Ô THƯỜNG');
+assert.equal(normalLanding.title, 'NGÃ TƯ ĐÔNG NGHẸT');
 assert.equal(normalLanding.actorName, 'Hưng');
 
 const ready = buildPresentationModel(
@@ -85,7 +85,7 @@ const card = buildPresentationModel(
     title: 'Trượt Tay',
     rarity: 'N',
     impact: '⭐',
-    description: 'Lấy 10 vàng từ 1 người chơi ngẫu nhiên.',
+    description: 'Lấy 10B$ từ 1 người chơi ngẫu nhiên. Tai nạn nghề nghiệp thôi mà.',
     summary: 'Ron lấy 10B$ từ Hưng.',
     amount: 10,
     targetId: 2,
@@ -124,13 +124,31 @@ const amountTemplate = buildPresentationModel(
 assert(amountTemplate, 'amount-template news should create a presentation model');
 assert.match(amountTemplate.reactions[0]?.text ?? '', /80B\$/);
 
+const altNews = buildPresentationModel(
+  event(11, 'news', 2, {
+    newsId: 'NEWS_DEMO_006',
+    title: 'Phí Duy Trì Bí Ẩn',
+    rarity: 'R',
+    impact: '⭐⭐',
+    description: 'Ngân hàng vừa thu một loại phí mà ngay cả ngân hàng cũng khó giải thích.',
+    summary: 'Hưng mất 80B$.',
+    amount: 80,
+    reactionEventId: 'NEWS_NEGATIVE_ALT',
+    spectatorId: 0,
+  }),
+  match.players,
+);
+assert(altNews, 'alternate News reaction should resolve');
+assert.equal(altNews.reactions.length, 2);
+assert.notEqual(altNews.reactions[0]?.text, news.reactions[0]?.text);
+
 const draw = buildPresentationModel(
-  event(11, 'card_draw', 3, {
+  event(12, 'card_draw', 3, {
     cardId: 'ACT_012',
     title: 'Chuyển Sinh Đổi Vận',
     rarity: 'SSR',
     impact: '⭐⭐⭐⭐⭐',
-    description: 'Hoán đổi toàn bộ số vàng của bản thân với Target.',
+    description: 'Hoán đổi toàn bộ số B$ của bản thân với Target.',
   }),
   match.players,
 );
@@ -140,9 +158,9 @@ assert.equal(draw.rarity, 'SSR');
 assert.equal(draw.reactions.length, 0);
 
 assert.equal(
-  buildPresentationModel(event(12, 'money_tile', 0, { amount: 50 }), match.players),
+  buildPresentationModel(event(13, 'money_tile', 0, { amount: 50 }), match.players),
   undefined,
   'raw money delta stays outside cinematic queue because tile_land owns landing feedback',
 );
 
-console.log('[presentation-events] PASS landing + Card/News/Reaction models are deterministic and spectator-aware');
+console.log('[presentation-events] PASS city landing identity + Card/News/Reaction models are deterministic and spectator-aware');
