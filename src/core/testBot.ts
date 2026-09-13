@@ -1,6 +1,10 @@
 import type { ClientIntentType } from './authority';
 import { getOutgoingEdges, pickParityEdge } from './board';
-import { getValidTargets, type CardDefinition } from './cards';
+import {
+  getValidTargets,
+  tacticalChoicePressureAmount,
+  type CardDefinition,
+} from './cards';
 import type { MatchEventValue, MatchState } from './matchState';
 import { MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
 import type { BoardDefinition, PlayerState } from './types';
@@ -59,16 +63,25 @@ export function chooseTestBotIntent(
     const card = cards.find((candidate) => candidate.id === cardId);
     if (card) {
       let targetId = -1;
+      let choice: MatchEventValue = null;
       if (card.targetMode === 'single_other') {
         const target = chooseSingleTarget(state, actor.id);
         if (target) targetId = target.id;
         else return { type: 'roll', data: {}, reason: 'không có target hợp lệ nên roll' };
       }
 
+      if (card.effect.type === 'tactical_choice') {
+        const safeAmount = Math.max(0, Math.floor(card.effect.safeAmount));
+        const pressureAmount = tacticalChoicePressureAmount(card.effect, state.players, actor.id);
+        choice = pressureAmount > safeAmount ? 'pressure' : 'safe';
+      }
+
       return {
         type: 'play_card',
-        data: { cardId: card.id, targetId },
-        reason: `dùng ${card.title}`,
+        data: { cardId: card.id, targetId, choice },
+        reason: card.effect.type === 'tactical_choice'
+          ? `dùng ${card.title} → ${choice === 'pressure' ? 'Ép Top 1' : 'Ăn Chắc'}`
+          : `dùng ${card.title}`,
       };
     }
   }
