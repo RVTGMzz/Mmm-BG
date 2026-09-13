@@ -6,7 +6,12 @@ import type { ClientIntentType } from '../core/authority';
 import { browserSession } from '../core/browserSession';
 import type { CardDefinition } from '../core/cards';
 import { computeMatchChecksum } from '../core/checksum';
-import { serializeMatchState, type MatchEventValue, type MatchState } from '../core/matchState';
+import {
+  serializeMatchState,
+  type MatchEvent,
+  type MatchEventValue,
+  type MatchState,
+} from '../core/matchState';
 import { MVP_CARD_HAND_LIMIT } from '../core/rules';
 import { chooseTestBotIntent } from '../core/testBot';
 import type { TwoTabHostSession } from '../core/twoTabSession';
@@ -103,8 +108,12 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       source: NetworkStateSource,
     ) => {
       const before = this.snapshotPlayers(internals.match);
+      const beforeEventSeq = internals.match?.nextEventSeq ?? 1;
       originalApplyNetworkState(state, commandSeq, checksum, source);
-      if (source !== 'snapshot') this.presentStateDeltas(before, state.players);
+      if (source !== 'snapshot') {
+        this.presentStateDeltas(before, state.players);
+        this.presentMatchEvents(state.eventLog.filter((event) => event.seq >= beforeEventSeq));
+      }
     };
 
     super.create();
@@ -230,6 +239,45 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
     this.showDeltaToast(lines.slice(0, 4));
   }
 
+  private presentMatchEvents(events: MatchEvent[]): void {
+    const internals = this.demoInternals();
+    for (const event of events) {
+      const actor = event.actorId === undefined
+        ? 'MeMeMe'
+        : internals.match.players.find((player) => player.id === event.actorId)?.name ?? `P${event.actorId + 1}`;
+
+      if (event.type === 'card_draw') {
+        const title = String(event.data.title ?? event.data.cardId ?? 'Lá Bài');
+        const impact = String(event.data.impact ?? '');
+        this.showEventToast(`🃏 ${actor} RÚT ${title}`, impact);
+        continue;
+      }
+
+      if (event.type === 'card_draw_blocked') {
+        this.showEventToast(`✋ ${actor} KHÔNG RÚT BÀI`, 'Tay bài đã chạm giới hạn MVP.');
+        continue;
+      }
+
+      if (event.type === 'card_play') {
+        const title = String(event.data.title ?? event.data.cardId ?? 'Lá Bài');
+        const summary = String(event.data.summary ?? event.data.impact ?? '');
+        internals.writeLog(`🎴 ${actor} dùng ${title}: ${summary}`);
+        this.showEventToast(`🎴 ${actor} DÙNG ${title}`, summary);
+        continue;
+      }
+
+      if (event.type === 'news') {
+        const title = String(event.data.title ?? event.data.newsId ?? 'TIN TỨC');
+        const summary = String(event.data.summary ?? event.data.impact ?? '');
+        const reaction = event.data.reactionEventId === null || event.data.reactionEventId === undefined
+          ? ''
+          : `\n🎭 Reaction: ${String(event.data.reactionEventId)}`;
+        internals.writeLog(`📰 ${title}: ${summary}`);
+        this.showEventToast(`📰 ${title}`, `${summary}${reaction}`);
+      }
+    }
+  }
+
   private multisetDifference(left: string[], right: string[]): string[] {
     const counts = new Map<string, number>();
     for (const id of right) counts.set(id, (counts.get(id) ?? 0) + 1);
@@ -267,6 +315,33 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       alpha: 0,
       delay: 1450,
       duration: 480,
+      ease: 'Sine.easeIn',
+      onComplete: () => toast.destroy(),
+    });
+  }
+
+  private showEventToast(title: string, body: string): void {
+    const message = body.trim() ? `${title}\n${body}` : title;
+    const toast = this.add
+      .text(640, 174, message, {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '14px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        align: 'center',
+        backgroundColor: '#795796',
+        padding: { x: 18, y: 10 },
+        wordWrap: { width: 500 },
+      })
+      .setOrigin(0.5, 0)
+      .setDepth(676);
+
+    this.tweens.add({
+      targets: toast,
+      y: 158,
+      alpha: 0,
+      delay: 1900,
+      duration: 520,
       ease: 'Sine.easeIn',
       onComplete: () => toast.destroy(),
     });
