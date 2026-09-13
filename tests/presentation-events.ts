@@ -49,7 +49,8 @@ assert.equal(news.actorName, 'Bích');
 assert.equal(news.reactions.length, 2);
 assert.equal(news.reactions[0]?.speakerName, 'Bích');
 assert.equal(news.reactions[1]?.speakerName, 'Mây');
-assert.match(news.reactions[0]?.text ?? '', /80B\$/);
+assert.match(news.reactions[0]?.text ?? '', /Biết ngay mà!/);
+assert.match(news.reactions[1]?.text ?? '', /Còn tiền là còn gỡ/);
 
 const card = buildPresentationModel(
   event(8, 'card_play', 0, {
@@ -79,8 +80,25 @@ assert.equal(card.reactions[0]?.sequence, 1);
 assert.equal(card.reactions[1]?.sequence, 2);
 assert.equal(card.reactions[2]?.sequence, 3);
 
+const amountTemplate = buildPresentationModel(
+  event(9, 'news', 0, {
+    newsId: 'NEWS_DEMO_002',
+    title: 'Ví Bay Màu',
+    rarity: 'R',
+    impact: '⭐⭐',
+    description: 'Một khoản phí không ai nhớ đã đăng ký bỗng dưng trừ tiền.',
+    summary: 'Ron mất 80B$.',
+    amount: 80,
+    reactionEventId: 'NEWS_NEGATIVE_DEMO',
+    spectatorId: 2,
+  }),
+  match.players,
+);
+assert(amountTemplate, 'amount-template news should create a presentation model');
+assert.match(amountTemplate.reactions[0]?.text ?? '', /80B\$/);
+
 const draw = buildPresentationModel(
-  event(9, 'card_draw', 3, {
+  event(10, 'card_draw', 3, {
     cardId: 'ACT_012',
     title: 'Chuyển Sinh Đổi Vận',
     rarity: 'SSR',
@@ -95,7 +113,7 @@ assert.equal(draw.rarity, 'SSR');
 assert.equal(draw.reactions.length, 0);
 
 assert.equal(
-  buildPresentationModel(event(10, 'money_tile', 0, { amount: 50 }), match.players),
+  buildPresentationModel(event(11, 'money_tile', 0, { amount: 50 }), match.players),
   undefined,
   'non Card/News events should stay outside the cinematic presentation queue',
 );
