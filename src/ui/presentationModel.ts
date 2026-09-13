@@ -266,19 +266,20 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   const summary = dataString(event, 'summary');
   const reactionEventId = dataString(event, 'reactionEventId') || undefined;
 
-  if (event.type === 'dice_roll') {
+  if (event.type === 'dice_roll' || event.type === 'job_dice_roll') {
     const roll = dataNumber(event, 'result') ?? 1;
+    const isJobDie = event.type === 'job_dice_roll';
     return {
       ...base,
       kind: 'dice_roll',
-      eyebrow: `${base.actorName} • XÚC XẮC`,
+      eyebrow: `${base.actorName} • ${isJobDie ? 'XÚC XẮC JOB' : 'XÚC XẮC'}`,
       title: String(roll),
       rarity: '',
       impact: '🎲',
       description: '',
       summary: '',
       reactions: [],
-      holdMs: 780,
+      holdMs: isJobDie ? 980 : 780,
       roll,
     };
   }
@@ -318,15 +319,20 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   }
 
   if (event.type === 'ready_pass') {
-    const amount = dataNumber(event, 'amount', true) ?? 100;
+    const amount = dataNumber(event, 'amount', true) ?? 0;
+    const jobTitle = dataString(event, 'jobTitle');
+    const jobIcon = dataString(event, 'jobIcon');
+    const jobLevel = dataNumber(event, 'jobLevel') ?? 0;
     return {
       ...base,
       kind: 'ready_bonus',
-      eyebrow: `${base.actorName} • QUA READY`,
-      title: `+${Math.abs(amount)} B$`,
+      eyebrow: `${base.actorName} • LƯƠNG QUA CỔNG`,
+      title: amount > 0 ? `+${amount} B$` : '0 B$',
       rarity: '',
-      impact: '🏁✨',
-      description: 'Thưởng hoàn thành một vòng!',
+      impact: amount > 0 ? '💼💰' : '💼',
+      description: jobTitle
+        ? `${jobIcon} ${jobTitle} Lv.${jobLevel} trả lương khi qua cổng.`
+        : 'Chưa có Job đang hoạt động nên vòng này không nhận lương.',
       summary: '',
       reactions: [],
       holdMs: 1800,
