@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.27 — Tactical Choice
 
-Status: IMPLEMENTED / FINAL CI PENDING
+Status: ACTIVE / PLAYTEST PACKAGED
 
 ## Goal
 
@@ -68,6 +68,25 @@ It locks:
 - CPU deterministic option selection;
 - CPU tactical evaluation does not consume gameplay RNG;
 - R rarity total stays 300.
+
+Full CI passed, including replay, lockstep, host/client, authority, two-tab, CPU autoplay, presentation/flow, economy, Turn Stakes, Tactical Choice, image and package validation.
+
+Golden replay checksum did **not** require promotion: the Card kept the same ID/weight and the golden fixture does not play ACT_008.
+
+## Artifact
+
+Validated GitHub Actions run:
+- run ID: `34765167348`
+- run number: `#685`
+- head SHA: `90fd71c842704ed48bd97fa501f4569750ebe5af`
+
+Artifact:
+- `mememe-playtest-0.1.27`
+- size: ~8.51 MB
+- digest: `sha256:a5e9d5f60f5604c205899d9d4e9b36c74cd2ff19ea0fc1088442cc6965d76432`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34765167348`
 
 ## Retained
 
