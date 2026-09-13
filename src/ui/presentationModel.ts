@@ -1,4 +1,7 @@
+import cardReactionsJson from '../content/core/card_reactions_023.json';
+import cardsJson from '../content/core/cards_mvp.json';
 import reactionsJson from '../content/core/reactions_mvp_demo.json';
+import type { CardDefinition } from '../core/cards';
 import type { MatchEvent } from '../core/matchState';
 import {
   formatReactionText,
@@ -9,7 +12,11 @@ import type { FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
 import { tileIdentityCopy } from './tileIdentity';
 
-const REACTIONS = reactionsJson as ReactionEventDefinition[];
+const REACTIONS = [
+  ...(reactionsJson as ReactionEventDefinition[]),
+  ...(cardReactionsJson as ReactionEventDefinition[]),
+];
+const CARDS = cardsJson as CardDefinition[];
 
 export type PresentationKind =
   | 'dice_roll'
@@ -106,8 +113,29 @@ function speakerIdForRole(role: ReactionSpeakerRole, event: MatchEvent): number 
   }
 }
 
-function reactionLines(event: MatchEvent, players: PlayerState[]): PresentationReactionLine[] {
-  const reactionEventId = dataString(event, 'reactionEventId');
+function cardReactionEventId(event: MatchEvent): string | undefined {
+  const cardId = dataString(event, 'cardId');
+  const card = CARDS.find((entry) => entry.id === cardId);
+  if (!card) return undefined;
+
+  switch (card.effect.type) {
+    case 'steal_money':
+      return 'CARD_STEAL_023';
+    case 'block_cards':
+      return 'CARD_BLOCK_023';
+    case 'percent_loss_all_others':
+      return 'CARD_GROUP_CURSE_023';
+    case 'swap_money':
+      return 'CARD_SWAP_023';
+  }
+}
+
+function reactionLines(
+  event: MatchEvent,
+  players: PlayerState[],
+  reactionEventIdOverride?: string,
+): PresentationReactionLine[] {
+  const reactionEventId = reactionEventIdOverride ?? dataString(event, 'reactionEventId');
   if (!reactionEventId) return [];
 
   const definition = REACTIONS.find((entry) => entry.id === reactionEventId);
@@ -282,6 +310,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   }
 
   if (event.type === 'card_play') {
+    const resolvedReactionEventId = cardReactionEventId(event) ?? reactionEventId;
     return {
       ...base,
       kind: 'card_play',
@@ -293,8 +322,8 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       summary,
       targetId,
       targetName,
-      reactionEventId,
-      reactions: reactionLines(event, players),
+      reactionEventId: resolvedReactionEventId,
+      reactions: reactionLines(event, players, resolvedReactionEventId),
       holdMs: 3500,
       amount: dataNumber(event, 'amount', true),
     };
