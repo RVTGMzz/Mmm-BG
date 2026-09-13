@@ -6,6 +6,7 @@ import { browserSession } from '../core/browserSession';
 import type { ClientIntentType } from '../core/authority';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
+import { compactPlayerStatus, movementStepDurationMs } from '../ui/boardFeelPolicy';
 import { MatchPresentationLayer } from '../ui/MatchPresentationLayer';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import {
@@ -37,6 +38,7 @@ interface PresentationBoardInternals {
   rollButtonText: Phaser.GameObjects.Text;
   handButton: Phaser.GameObjects.Rectangle;
   handButtonText: Phaser.GameObjects.Text;
+  scoreText: Phaser.GameObjects.Text;
   logText: Phaser.GameObjects.Text;
   applyNetworkState(
     state: MatchState,
@@ -69,10 +71,13 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
   private visualNextEventSeq = 1;
   private compactObjects: Phaser.GameObjects.GameObject[] = [];
   private compactTurnText?: Phaser.GameObjects.Text;
+  private compactScoreText?: Phaser.GameObjects.Text;
   private compactRoll?: Phaser.GameObjects.Rectangle;
   private compactRollText?: Phaser.GameObjects.Text;
   private compactCard?: Phaser.GameObjects.Rectangle;
   private compactCardText?: Phaser.GameObjects.Text;
+  private readonly tokenHalos = new Map<number, Phaser.GameObjects.Arc>();
+  private activeHaloTween?: Phaser.Tweens.Tween;
 
   create(): void {
     const legacyToast = this as unknown as LegacyToastHook;
@@ -83,9 +88,10 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
     const internals = this as unknown as PresentationBoardInternals;
     this.visualNextEventSeq = internals.match?.nextEventSeq ?? 1;
     this.installBoardFirstHud(internals);
+    this.installTurnHalos(internals);
 
     this.add
-      .text(178, 45, 'CITY • MVP 0.1.19 BOARD FLOW', {
+      .text(178, 45, 'CITY • MVP 0.1.20 TURN FEEL', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '24px',
         fontStyle: 'bold',
@@ -96,7 +102,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       .setDepth(931);
 
     this.add
-      .text(1218, 690, 'PLAYTEST 0.1.19 • BOARD FLOW', {
+      .text(1218, 690, 'PLAYTEST 0.1.20 • TURN FEEL', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '10px',
         fontStyle: 'bold',
@@ -133,18 +139,12 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       originalQueueCpuAction();
     };
 
-    // Keep the currently playing round theme stable while an event/dice/movement
-    // presentation is on screen. A round transition may happen only after that
-    // presentation queue has fully cleared, so News/Card never steals the BGM.
     const originalSyncBgm = internals.syncBgmToMatch.bind(this);
     internals.syncBgmToMatch = () => {
       if (this.presentationBlocking) return;
       originalSyncBgm();
     };
 
-    // Replace the old straight-line authoritative snap/tween. New move_step events
-    // own token movement one board node at a time; non-moving players still snap to
-    // their authoritative coordinates on resync.
     internals.syncVisualsToState = () => {
       const freshEvents = internals.match.eventLog.filter((event) => event.seq >= this.visualNextEventSeq);
       this.visualNextEventSeq = internals.match.nextEventSeq;
@@ -251,17 +251,18 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       this.presentationBlocking = false;
       this.lastAutoBranchSignature = '';
       this.visualNextEventSeq = 1;
+      this.activeHaloTween?.stop();
+      this.activeHaloTween = undefined;
+      for (const halo of this.tokenHalos.values()) halo.destroy();
+      this.tokenHalos.clear();
       for (const object of this.compactObjects) object.destroy();
       this.compactObjects = [];
     });
 
-    // Ensure gameplay theme is restored if the previous build left the audio
-    // controller at menu state before entering this scene.
     bgmController.playRound(1);
   }
 
   private installBoardFirstHud(internals: PresentationBoardInternals): void {
-    // Remove the large permanent center panel from the inherited MVP shell.
     for (const object of [...this.children.list]) {
       if (
         object instanceof Phaser.GameObjects.Rectangle &&
@@ -281,6 +282,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
     internals.rollButtonText.setVisible(false);
     internals.handButton.disableInteractive().setVisible(false);
     internals.handButtonText.setVisible(false);
+    internals.scoreText.setVisible(false);
     internals.logText.setVisible(false);
 
     const bar = this.add.rectangle(640, 681, 620, 58, 0xfffbf3, 0.94)
@@ -311,6 +313,16 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#202020',
     }).setOrigin(0.5).setDepth(622);
 
+    this.compactScoreText = this.add.text(1018, 28, '', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '10px',
+      color: '#2d2925',
+      backgroundColor: '#fffaf0',
+      padding: { x: 9, y: 7 },
+      lineSpacing: 4,
+      fixedWidth: 220,
+    }).setDepth(619);
+
     this.compactRoll.on('pointerdown', () => internals.handleRoll());
     this.compactCard.on('pointerdown', () => void internals.handleUseCard());
     this.compactObjects.push(
@@ -320,7 +332,19 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       this.compactRollText,
       this.compactCard,
       this.compactCardText,
+      this.compactScoreText,
     );
+  }
+
+  private installTurnHalos(internals: PresentationBoardInternals): void {
+    for (const [playerId, visual] of internals.visuals) {
+      const halo = this.add.circle(0, 0, 32, 0xffd34d, 0.04)
+        .setStrokeStyle(3, 0xffd34d, 0.92)
+        .setVisible(false)
+        .setAlpha(0.35);
+      visual.token.addAt(halo, 0);
+      this.tokenHalos.set(playerId, halo);
+    }
   }
 
   private updateCompactHud(internals: PresentationBoardInternals): void {
@@ -351,6 +375,37 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
 
     this.compactCard.setFillStyle(canCard ? 0xb997d6 : 0xd8d2c7, 1);
     this.compactCardText.setText(`LÁ BÀI ${player.handCardIds.length}/3`);
+
+    if (this.compactScoreText) {
+      this.compactScoreText.setText(
+        internals.match.players
+          .map((entry) => compactPlayerStatus(entry, player.id, browserSession.isCpuSeat(entry.id)))
+          .join('\n'),
+      );
+    }
+    this.updateActiveTokenHalo(player.id);
+  }
+
+  private updateActiveTokenHalo(currentPlayerId: number): void {
+    this.activeHaloTween?.stop();
+    this.activeHaloTween = undefined;
+
+    for (const [playerId, halo] of this.tokenHalos) {
+      halo.setVisible(playerId === currentPlayerId).setAlpha(playerId === currentPlayerId ? 0.34 : 0.2).setScale(1);
+    }
+
+    const active = this.tokenHalos.get(currentPlayerId);
+    if (!active) return;
+    this.activeHaloTween = this.tweens.add({
+      targets: active,
+      alpha: 0.9,
+      scaleX: 1.13,
+      scaleY: 1.13,
+      duration: 560,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
   }
 
   private animateMoveStep(
@@ -364,9 +419,12 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
     const visual = internals.visuals.get(playerId);
     if (!visual) return Promise.resolve();
     const node = getBoardNode(BOARD, toNodeId);
+    const from = model.fromNodeId === undefined ? undefined : getBoardNode(BOARD, model.fromNodeId);
     const offset = TOKEN_OFFSETS[playerId] ?? { x: 0, y: 0 };
     const targetX = node.x + offset.x;
     const targetY = node.y + offset.y;
+    const distance = from ? Math.hypot(node.x - from.x, node.y - from.y) : Math.hypot(targetX - visual.token.x, targetY - visual.token.y);
+    const duration = movementStepDurationMs(distance);
 
     this.tweens.killTweensOf(visual.token);
     return new Promise((resolve) => {
@@ -374,7 +432,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
         targets: visual.token,
         x: targetX,
         y: targetY,
-        duration: 230,
+        duration,
         ease: 'Sine.easeOut',
         onComplete: () => {
           this.tweens.add({
