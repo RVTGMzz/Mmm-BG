@@ -1,4 +1,5 @@
 import { bgmUrl, getBgmTrack, type BgmTrackDefinition } from './bgmCatalog';
+import { sfxController } from './sfxController';
 
 export type BgmTrackId = BgmTrackDefinition['id'];
 
@@ -13,6 +14,8 @@ type BgmListener = (state: BgmUiState) => void;
 
 const STORAGE_KEY = 'mememe.bgm.preferences.v1';
 const DEFAULT_VOLUME = 0.55;
+const FADE_OUT_MS = 220;
+const FADE_IN_MS = 360;
 
 function clampVolume(value: number): number {
   if (!Number.isFinite(value)) return DEFAULT_VOLUME;
@@ -41,6 +44,7 @@ export class BgmController {
   private volume: number;
   private assetError?: string;
   private unlockInstalled = false;
+  private transitionSerial = 0;
   private readonly listeners = new Set<BgmListener>();
 
   constructor() {
@@ -63,9 +67,7 @@ export class BgmController {
       return;
     }
 
-    // MVP 0.1.17 keeps the first two rounds presentation-only and predictable:
-    // Round 1 = Bubble, Round 2 = Silly. This guarantees no immediate repeat
-    // without touching MatchState, seeded RNG, replay, or host authority state.
+    // Presentation-only deterministic mapping. Audio never consumes gameplay RNG.
     this.setTrack(round === 2 ? 'city_silly' : 'city_bubble');
   }
 
@@ -119,14 +121,26 @@ export class BgmController {
       return;
     }
 
-    this.audio?.pause();
-    if (this.audio) this.audio.src = '';
+    const serial = ++this.transitionSerial;
+    void this.transitionToTrack(id, serial);
+  }
+
+  private async transitionToTrack(id: BgmTrackId, serial: number): Promise<void> {
+    const previous = this.audio;
+    if (previous) {
+      await this.fadeAudio(previous, previous.volume, 0, FADE_OUT_MS, serial);
+      if (serial !== this.transitionSerial) return;
+      previous.pause();
+      previous.src = '';
+    }
 
     const track = getBgmTrack(id);
     const audio = new Audio(bgmUrl(track));
     audio.loop = true;
     audio.preload = 'auto';
     audio.autoplay = false;
+    audio.muted = this.muted;
+    audio.volume = 0;
     audio.addEventListener(
       'error',
       () => {
@@ -138,28 +152,55 @@ export class BgmController {
       { once: true },
     );
 
+    if (serial !== this.transitionSerial) return;
     this.audio = audio;
     this.currentTrackId = id;
     this.assetError = undefined;
-    this.applyPreferences();
     this.emit();
-    void this.tryPlay();
+    await this.tryPlay(audio);
+    if (serial !== this.transitionSerial) return;
+    await this.fadeAudio(audio, 0, this.muted ? 0 : this.volume, FADE_IN_MS, serial);
+    if (serial === this.transitionSerial) this.applyPreferences();
+  }
+
+  private fadeAudio(
+    audio: HTMLAudioElement,
+    from: number,
+    to: number,
+    durationMs: number,
+    serial: number,
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const start = performance.now();
+      const tick = (now: number) => {
+        if (serial !== this.transitionSerial || audio !== this.audio && to > from) {
+          resolve();
+          return;
+        }
+        const progress = Math.min(1, (now - start) / Math.max(1, durationMs));
+        audio.volume = clampVolume(from + (to - from) * progress);
+        if (progress >= 1) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
   }
 
   private applyPreferences(): void {
     if (!this.audio) return;
     this.audio.muted = this.muted;
-    this.audio.volume = this.volume;
+    this.audio.volume = this.muted ? 0 : this.volume;
   }
 
-  private async tryPlay(): Promise<void> {
-    const audio = this.audio;
+  private async tryPlay(audio = this.audio): Promise<void> {
     if (!audio || this.muted || this.volume <= 0) return;
     try {
       await audio.play();
     } catch {
       // Browser autoplay policy may block playback until the first gesture.
-      // installAutoplayUnlock() retries from an actual user interaction.
     }
   }
 
@@ -206,17 +247,20 @@ export function installBgmControls(): void {
     <span class="bgm-label">BGM</span>
     <button class="bgm-mute" type="button" aria-label="Bật/tắt nhạc nền">🔊</button>
     <input class="bgm-volume" type="range" min="0" max="100" step="1" aria-label="Âm lượng nhạc nền" />
+    <button class="sfx-mute" type="button" aria-label="Bật/tắt hiệu ứng âm thanh">FX 🔔</button>
   `;
   document.body.appendChild(root);
 
   const label = root.querySelector<HTMLSpanElement>('.bgm-label');
   const mute = root.querySelector<HTMLButtonElement>('.bgm-mute');
   const volume = root.querySelector<HTMLInputElement>('.bgm-volume');
+  const sfxMute = root.querySelector<HTMLButtonElement>('.sfx-mute');
 
   mute?.addEventListener('click', () => bgmController.toggleMuted());
   volume?.addEventListener('input', () => {
     bgmController.setVolume(Number(volume.value) / 100);
   });
+  sfxMute?.addEventListener('click', () => sfxController.toggleMuted());
 
   bgmController.subscribe((state) => {
     if (mute) {
@@ -231,5 +275,11 @@ export function installBgmControls(): void {
         : `Track: ${state.currentTrackId ?? 'chưa chọn'}`;
     }
     root.classList.toggle('has-audio-error', Boolean(state.assetError));
+  });
+
+  sfxController.subscribe((state) => {
+    if (!sfxMute) return;
+    sfxMute.textContent = state.muted ? 'FX 🔕' : 'FX 🔔';
+    sfxMute.setAttribute('aria-pressed', state.muted ? 'true' : 'false');
   });
 }
