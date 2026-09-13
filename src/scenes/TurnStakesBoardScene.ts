@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import { demoMatchLapProgress } from '../core/demoMatch';
 import type { MatchState } from '../core/matchState';
@@ -130,6 +131,11 @@ export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
   private showMoneyDeltas(deltas: MoneyDeltaEntry[], players: PlayerState[]): void {
     const ranks = moneyRanks(players);
     const rowByPlayer = new Map(ranks.map((entry, index) => [entry.playerId, index]));
+
+    // One cue per money direction per authoritative state packet. Multi-target News
+    // can affect several wallets at once, but should not stack the same sound 3–4x.
+    if (deltas.some((delta) => delta.amount > 0)) sfxController.play('coin_gain');
+    if (deltas.some((delta) => delta.amount < 0)) sfxController.play('coin_loss');
 
     for (const delta of deltas) {
       const row = rowByPlayer.get(delta.playerId) ?? 0;
