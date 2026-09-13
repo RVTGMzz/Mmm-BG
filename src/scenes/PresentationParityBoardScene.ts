@@ -19,24 +19,34 @@ interface LegacyToastHook {
 }
 
 /**
- * Presentation-only shell layered on top of the stable 0.1.17 playtest board.
+ * Presentation-only shell layered on top of the stable playtest board.
  *
  * The underlying PlaytestDemoBoardScene still owns authority, replay, deltas,
- * movement tweening and diagnostics. This wrapper only consumes authoritative
- * MatchEvents after state application and renders a richer Card/News/Reaction
+ * movement tweening and diagnostics. This wrapper consumes authoritative
+ * MatchEvents after state application and renders Tile/Card/News/Reaction
  * treatment. Snapshot restores intentionally do not replay old presentation.
  */
 export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
   private presentation?: MatchPresentationLayer;
 
   create(): void {
-    // The previous purple event toast remains useful as a fallback implementation,
-    // but the cinematic layer supersedes it. Shadow only that toast hook; B$/card
-    // delta toasts and runtime logs remain intact.
     const legacyToast = this as unknown as LegacyToastHook;
     legacyToast.showEventToast = () => undefined;
 
     super.create();
+
+    // Covers the legacy wrapper badge without touching the stable base scene.
+    this.add
+      .text(1218, 690, 'PLAYTEST 0.1.18 • FX', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        backgroundColor: '#ef4545',
+        padding: { x: 8, y: 4 },
+      })
+      .setOrigin(1, 1)
+      .setDepth(930);
 
     const internals = this as unknown as PresentationBoardInternals;
     this.presentation = new MatchPresentationLayer(this, () => internals.match?.players ?? []);
