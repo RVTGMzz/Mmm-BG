@@ -47,6 +47,14 @@ Flow:
 
 A short unlock delay prevents the same click/SPACE used to dismiss a panel from also becoming the next gameplay input.
 
+### Result screen deferral
+
+If the final turn ends the match while presentation is still blocking, the ranking/result overlay is deferred. It is rendered only after the final presentation queue drains, so the user sees:
+
+`lượt cuối → panel/reaction cuối → acknowledge → bảng kết quả`
+
+instead of seeing stale reactions on top of the ranking screen.
+
 ### Autoplay exception
 
 Only dedicated **4 CPU AUTOPLAY** may auto-ack presentation.
@@ -71,7 +79,7 @@ CPU QA now uses the same `pickParityEdge()` rule instead of selecting a branch f
 
 ## Regression added
 
-New command:
+Command:
 
 `npm run test:flow`
 
@@ -80,10 +88,12 @@ It locks:
 - 1 human + 3 CPU must remain manual-ack;
 - landing + News in one authoritative batch count as two blocking presentation steps;
 - log-only events do not add blocking panels;
+- ranking stays deferred while final presentation is blocking;
+- ranking may render after presentation unlocks;
 - odd rolls choose node 5 / `PHỐ CHÍNH`;
 - even rolls choose node 18 / `HẺM TẮT`.
 
-CI now runs `test:flow` alongside replay, lockstep, host/client, authority, two-tab, demo-shell, CPU stress, presentation, image and package checks.
+CI runs `test:flow` alongside replay, lockstep, host/client, authority, two-tab, demo-shell, CPU stress, presentation, image and package checks.
 
 ## Current artifact status
 
@@ -91,11 +101,11 @@ Latest validated artifact:
 
 `mememe-playtest-0.1.18.1`
 
-Run: `34749727990`
+Validated code run: `34749847775`
 
 Artifact digest:
 
-`sha256:d060bf0c8d67558c8510b8e46c3f79cd71c8f9fc8185b54d4866d04bae9e9880`
+`sha256:409ba23417e99cbc60db591acc122e4304ad0ffe04b8be2c66f0d71769c30bf4`
 
 Full CI passed including:
 - TypeScript + Vite build;
@@ -107,7 +117,7 @@ Full CI passed including:
 - demo shell/rematch;
 - 4-CPU stress;
 - Tile/Card/News/Reaction presentation;
-- presentation flow gate + parity routing;
+- presentation flow gate + result deferral + parity routing;
 - face image transform;
 - package/BGM checksum validation;
 - artifact upload.
@@ -141,7 +151,7 @@ All four files remain checksum-locked by package validation. Do not re-encode or
 First priority is **real playtest validation of 0.1.18.1**:
 1. confirm no old reaction appears after the event it belongs to;
 2. confirm landing → Card/News steps advance one-by-one on acknowledge;
-3. confirm the result/ranking screen never receives stale queued presentation;
+3. confirm result/ranking appears only after the final presentation is acknowledged;
 4. confirm odd/even routing feels intuitive without a branch picker;
 5. confirm 4 CPU AUTOPLAY still finishes unattended.
 
@@ -161,4 +171,5 @@ Only after this flow is accepted:
 - Original face files must not be silently uploaded or persisted.
 - Snapshot resync must not replay stale presentation events.
 - Human-containing modes must not silently auto-advance presentation.
+- Result/ranking must not cover unresolved final-turn presentation.
 - CPU remains a QA bot, not final gameplay AI.
