@@ -37,7 +37,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.29', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.30', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -70,7 +70,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.29: board đã có ô 🎮 Mini Game và 💼 Job foundation. Hai ô đã nối replay/authority nhưng chưa khóa luật chơi cuối cùng.</p>
+      <p id="setup-status" class="setup-status">0.1.30: tới lượt người chơi, xúc xắc tự hiện trên bàn và bấm trực tiếp để Roll. Mini Game + Job foundation vẫn giữ nguyên.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
