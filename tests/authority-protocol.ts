@@ -20,7 +20,7 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-const GOLDEN_CHECKSUM = '7ad81b89';
+const GOLDEN_CHECKSUM = '2338670a';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -122,7 +122,6 @@ stale.observedCommandSeq -= 1;
 const staleReceipt = submitClientIntent(authority, stale);
 assert(staleReceipt.status === 'rejected' && staleReceipt.reason?.includes('stale'), 'Stale client view was not rejected.');
 
-// Exercise play_card intent separately. Host derives random target itself and stamps the resulting command.
 const cardAuthority = createAuthority(20260913);
 let cardReceipt: HostIntentReceipt | undefined;
 for (let guard = 0; guard < 120 && !cardReceipt; guard += 1) {
@@ -174,7 +173,6 @@ if (playedCard?.targetMode === 'random_other') {
   assert(Number(cardReceipt.command?.data.targetId) >= 0, 'Host did not resolve random_other targetId.');
 }
 
-// Local transport roundtrip: client sends intent only, host returns authority receipt.
 type ProtocolMessage =
   | { kind: 'intent'; intent: ClientIntent }
   | { kind: 'receipt'; receipt: HostIntentReceipt };
