@@ -116,7 +116,7 @@ assert(diffMatchStates(first, second).length === 0, 'Repeated replay produced a 
 
 const syntheticPeer = cloneMatchState(first);
 syntheticPeer.players[1].money += 20;
-syntheticPeer.players[1].nodeId = 18;
+syntheticPeer.players[1].nodeId = first.players[1].nodeId === 18 ? 17 : 18;
 syntheticPeer.rng.calls += 1;
 const diagnosticPaths = new Set(diffMatchStates(first, syntheticPeer).map((entry) => entry.path));
 assert(diagnosticPaths.has('players.1.money'), 'Desync diagnostics missed P2 money drift.');
