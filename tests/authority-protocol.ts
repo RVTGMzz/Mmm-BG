@@ -21,7 +21,7 @@ const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
 const FIXTURE_TURNS = 20;
-const GOLDEN_CHECKSUM = 'fad794e3';
+const GOLDEN_CHECKSUM = '9cb73072';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -72,9 +72,8 @@ while (authority.state.turn.turnNumber <= FIXTURE_TURNS) {
     assert(edge, `Authority fixture cannot resolve parity branch at node ${player.nodeId}.`);
     nextIntent = intent(authority, `fixture-${++fixtureIntentCounter}`, player.id, 'choose_branch', { to: edge.to });
   } else if (authority.state.turn.phase === 'JOB_CHOICE') {
-    const jobId = authority.state.pendingJobOfferIds?.[0];
-    assert(jobId, 'Authority fixture JOB_CHOICE missing offer.');
-    nextIntent = intent(authority, `fixture-${++fixtureIntentCounter}`, player.id, 'choose_job', { jobId });
+    assert(authority.state.pendingJobOfferIds?.length === 3, 'Authority fixture JOB_CHOICE needs three offers.');
+    nextIntent = intent(authority, `fixture-${++fixtureIntentCounter}`, player.id, 'choose_job');
   } else {
     throw new Error(`Authority fixture stalled in ${authority.state.turn.phase}.`);
   }
@@ -98,15 +97,14 @@ assert(hostAuthorityCommandSeq(authority) === goldenCommandCount, 'Duplicate int
 
 const current = authority.state.players[authority.state.turn.currentPlayerIndex];
 assert(current, 'Missing current authority player.');
+const currentAction: ClientIntent['type'] = authority.state.turn.phase === 'JOB_CHOICE' ? 'choose_job' : 'roll';
 const wrongActor = submitClientIntent(
   authority,
-  intent(authority, 'wrong-actor', (current.id + 1) % authority.state.players.length, authority.state.turn.phase === 'JOB_CHOICE' ? 'choose_job' : 'roll', authority.state.turn.phase === 'JOB_CHOICE' ? { jobId: authority.state.pendingJobOfferIds?.[0] ?? '' } : {}),
+  intent(authority, 'wrong-actor', (current.id + 1) % authority.state.players.length, currentAction),
 );
 assert(wrongActor.status === 'rejected' && wrongActor.reason?.includes('actor'), 'Wrong actor intent was not rejected.');
 
-const staleType: ClientIntent['type'] = authority.state.turn.phase === 'JOB_CHOICE' ? 'choose_job' : 'roll';
-const staleData = staleType === 'choose_job' ? { jobId: authority.state.pendingJobOfferIds?.[0] ?? '' } : {};
-const stale = intent(authority, 'stale-view', current.id, staleType, staleData);
+const stale = intent(authority, 'stale-view', current.id, currentAction);
 stale.observedCommandSeq -= 1;
 const staleReceipt = submitClientIntent(authority, stale);
 assert(staleReceipt.status === 'rejected' && staleReceipt.reason?.includes('stale'), 'Stale client view was not rejected.');
@@ -130,13 +128,12 @@ for (let guard = 0; guard < 180 && !cardReceipt; guard += 1) {
   }
 
   if (cardAuthority.state.turn.phase === 'JOB_CHOICE') {
-    const jobId = cardAuthority.state.pendingJobOfferIds?.[0];
-    assert(jobId, 'Card probe Job choice missing offer.');
+    assert(cardAuthority.state.pendingJobOfferIds?.length === 3, 'Card probe Job roll needs three offers.');
     const job = submitClientIntent(
       cardAuthority,
-      intent(cardAuthority, `card-job-${guard}`, player.id, 'choose_job', { jobId }),
+      intent(cardAuthority, `card-job-${guard}`, player.id, 'choose_job'),
     );
-    assert(job.status === 'accepted', `Card probe Job choice rejected: ${job.reason ?? 'unknown'}`);
+    assert(job.status === 'accepted', `Card probe Job roll rejected: ${job.reason ?? 'unknown'}`);
     continue;
   }
 
