@@ -1,7 +1,7 @@
-export type BgmRole = 'menu' | 'gameplay' | 'final_round' | 'minigame';
+export type BgmRole = 'menu' | 'gameplay' | 'final_round';
 
 export interface BgmTrackDefinition {
-  id: 'menu_mememe' | 'city_bubble' | 'city_silly' | 'final_round' | 'mini_game';
+  id: 'menu_mememe' | 'city_bubble' | 'city_silly' | 'final_round';
   file: string;
   role: BgmRole;
   durationSeconds: number;
@@ -37,13 +37,6 @@ export const BGM_TRACKS: readonly BgmTrackDefinition[] = [
     file: '04_Final_Round.ogg',
     role: 'final_round',
     durationSeconds: 120.02,
-    loop: true,
-  },
-  {
-    id: 'mini_game',
-    file: '05_Mini_Game.ogg',
-    role: 'minigame',
-    durationSeconds: 156.13,
     loop: true,
   },
 ] as const;
