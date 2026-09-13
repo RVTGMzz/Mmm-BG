@@ -12,6 +12,7 @@ import {
   type PalmChoice,
   type RpsChoice,
 } from '../core/minigames';
+import type { MatchEventValue } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 
 export interface MiniGameOutcome {
@@ -23,6 +24,13 @@ export interface MiniGameOverlayRun {
   root: Phaser.GameObjects.Container;
   done: Promise<MiniGameOutcome>;
 }
+
+type MiniGameHostSystem = {
+  submitSystemIntent(
+    type: 'resolve_minigame',
+    data?: Record<string, MatchEventValue>,
+  ): { status: 'accepted' | 'duplicate' | 'rejected'; reason?: string };
+};
 
 function deterministicBit(eventSeq: number, playerId: number, round: number): number {
   let value = (eventSeq * 1103515245 + (playerId + 1) * 12345 + round * 2654435761) >>> 0;
@@ -334,5 +342,20 @@ export function startMiniGameOverlay(
     return { gameType, rankingPlayerIds };
   };
 
-  return { root, done: runTournament() };
+  const done = runTournament().then((outcome) => {
+    const hostSession = (scene as unknown as { hostSession?: MiniGameHostSystem }).hostSession;
+    if (hostSession) {
+      const receipt = hostSession.submitSystemIntent('resolve_minigame', {
+        sourceEventSeq: eventSeq,
+        gameType: outcome.gameType,
+        rankingPlayerIds: outcome.rankingPlayerIds.join(','),
+      });
+      if (receipt.status === 'rejected') {
+        console.warn(`[MiniGame] Host rejected payout for event #${eventSeq}: ${receipt.reason ?? 'unknown reason'}`);
+      }
+    }
+    return outcome;
+  });
+
+  return { root, done };
 }
