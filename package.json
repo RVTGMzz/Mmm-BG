@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:playtest": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test:replay": "tsx tests/replay-determinism.ts",
@@ -13,7 +14,9 @@
     "test:authority": "tsx tests/authority-protocol.ts",
     "test:two-tab": "tsx tests/two-tab-session.ts",
     "test:demo-shell": "tsx tests/demo-match-shell.ts",
-    "preview": "vite preview"
+    "test:package": "node scripts/verify-playtest-package.mjs",
+    "preview": "vite preview",
+    "preview:playtest": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "phaser": "^3.90.0"
