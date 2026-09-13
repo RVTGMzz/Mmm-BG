@@ -71,7 +71,7 @@ export interface CreateMatchOptions {
 
 export function createInitialMatchState(options: CreateMatchOptions): MatchState {
   const rng = createRngState(options.seed);
-  const startingMoney = options.startingMoney ?? 1000;
+  const startingMoney = options.startingMoney ?? 200;
   const players = options.playerNames.map<PlayerState>((name, index) => ({
     id: index,
     name: name.trim() || `Player ${index + 1}`,
