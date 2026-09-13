@@ -1,4 +1,4 @@
-import { access, readFile, readdir } from 'node:fs/promises';
+import { access, readFile, readdir, stat } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { createHash } from 'node:crypto';
 
@@ -16,6 +16,17 @@ const bgmTracks = [
   ['02_City_Bubble.ogg', 'c7b94b5bc698d1a86f1ffb4ba3504841167700734dcdb1d346be9fa0a352b6e5'],
   ['03_City_Silly.ogg', '53c00c6d5a5d199555522e99f1ba17f6e978c092b3ea9988734e35b3f52a1b0d'],
   ['04_Final_Round.ogg', '3e11e5292d38485d8e8c299a54c3582a2b3c6f11b622edc15af3cd66d26e4e83'],
+];
+
+const eventSfx = [
+  'victory.ogg',
+  'news.ogg',
+  'card.ogg',
+  'step.ogg',
+  'money_loss.ogg',
+  'money_gain.ogg',
+  'dice.ogg',
+  'choice.ogg',
 ];
 
 await access('dist/index.html', constants.R_OK);
@@ -53,6 +64,13 @@ for (const [file, expectedSha] of bgmTracks) {
   );
 }
 
+for (const file of eventSfx) {
+  const path = `dist/audio/sfx/${file}`;
+  await access(path, constants.R_OK);
+  const info = await stat(path);
+  assert(info.size > 256, `Event SFX ${file} looks empty (${info.size} bytes).`);
+}
+
 console.log(
-  `[playtest-package-ci] PASS assets=${files.length} bgm=${bgmTracks.length}/4 checksums=PASS quickstart=PLAYTEST.txt launcher=START_PLAYTEST.bat relativePaths=PASS`,
+  `[playtest-package-ci] PASS assets=${files.length} bgm=${bgmTracks.length}/4 checksums=PASS sfx=${eventSfx.length}/8 quickstart=PLAYTEST.txt launcher=START_PLAYTEST.bat relativePaths=PASS`,
 );
