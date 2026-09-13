@@ -54,6 +54,17 @@ export function chooseTestBotIntent(
   const actor = currentPlayer(state);
   if (!actor) return undefined;
 
+  if (state.turn.phase === 'JOB_CHOICE') {
+    const offered = state.pendingJobOfferIds ?? [];
+    const jobId = offered[0];
+    if (!jobId) return undefined;
+    return {
+      type: 'choose_job',
+      data: { jobId },
+      reason: `chọn Job ${jobId} trong 3 lựa chọn`,
+    };
+  }
+
   if (state.turn.phase === 'BRANCH_CHOICE') {
     const outgoing = getOutgoingEdges(board, actor.nodeId);
     const roll = state.turn.lastRoll ?? 0;
