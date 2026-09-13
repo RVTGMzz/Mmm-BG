@@ -3,7 +3,7 @@ import type { PlayerState } from './types';
 
 export type CardRarity = 'N' | 'R' | 'SR' | 'SSR';
 export type CardFaceRole = 'caster' | 'target';
-export type CardTargetMode = 'single_other' | 'random_other' | 'all_others';
+export type CardTargetMode = 'self' | 'single_other' | 'random_other' | 'richest_other' | 'all_others';
 
 export interface CardFaceSlot {
   role: CardFaceRole;
@@ -17,6 +17,17 @@ export interface CardFaceSlot {
 export interface StealMoneyEffect {
   type: 'steal_money';
   amount: number;
+}
+
+export interface RichTaxEffect {
+  type: 'rich_tax';
+  percent: number;
+}
+
+export interface CatchUpBonusEffect {
+  type: 'catch_up_bonus';
+  poorAmount: number;
+  baseAmount: number;
 }
 
 export interface BlockCardsEffect {
@@ -35,6 +46,8 @@ export interface SwapMoneyEffect {
 
 export type CardEffect =
   | StealMoneyEffect
+  | RichTaxEffect
+  | CatchUpBonusEffect
   | BlockCardsEffect
   | PercentLossAllOthersEffect
   | SwapMoneyEffect;
@@ -89,10 +102,14 @@ export function pickRandomOtherTarget<T extends PlayerState>(
   return candidates[index];
 }
 
+export function pickRichestOtherTarget<T extends PlayerState>(players: T[], casterId: number): T | undefined {
+  return getValidTargets(players, casterId)
+    .slice()
+    .sort((left, right) => right.money - left.money || left.id - right.id)[0];
+}
+
 function requiredTarget(target: PlayerState | undefined, card: CardDefinition): PlayerState {
-  if (!target) {
-    throw new Error(`Card ${card.id} requires a target.`);
-  }
+  if (!target) throw new Error(`Card ${card.id} requires a target.`);
   return target;
 }
 
@@ -109,11 +126,33 @@ export function applyCardEffect(
       const amount = Math.min(requested, Math.max(0, resolvedTarget.money));
       resolvedTarget.money -= amount;
       caster.money += amount;
+      return { amount, affectedPlayerIds: [caster.id, resolvedTarget.id], summary: `${caster.name} lấy ${amount}B$ từ ${resolvedTarget.name}.` };
+    }
 
+    case 'rich_tax': {
+      const resolvedTarget = requiredTarget(target, card);
+      const percent = Math.min(1, Math.max(0, card.effect.percent));
+      const amount = Math.floor(Math.max(0, resolvedTarget.money) * percent);
+      resolvedTarget.money -= amount;
+      caster.money += amount;
       return {
         amount,
         affectedPlayerIds: [caster.id, resolvedTarget.id],
-        summary: `${caster.name} lấy ${amount}B$ từ ${resolvedTarget.name}.`,
+        summary: `${caster.name} thu ${Math.round(percent * 100)}% từ người giàu nhất ${resolvedTarget.name} (${amount}B$).`,
+      };
+    }
+
+    case 'catch_up_bonus': {
+      const minimumMoney = Math.min(...players.map((player) => player.money));
+      const isPoorest = caster.money <= minimumMoney;
+      const amount = Math.max(0, Math.floor(isPoorest ? card.effect.poorAmount : card.effect.baseAmount));
+      caster.money += amount;
+      return {
+        amount,
+        affectedPlayerIds: [caster.id],
+        summary: isPoorest
+          ? `${caster.name} đang cuối bảng nên nhận cứu trợ ${amount}B$.`
+          : `${caster.name} chưa ở cuối bảng, nhận ${amount}B$ hỗ trợ cơ bản.`,
       };
     }
 
@@ -121,24 +160,18 @@ export function applyCardEffect(
       const resolvedTarget = requiredTarget(target, card);
       const turns = Math.max(1, Math.floor(card.effect.turns));
       resolvedTarget.cardBlockTurns = Math.max(resolvedTarget.cardBlockTurns, turns);
-
-      return {
-        affectedPlayerIds: [resolvedTarget.id],
-        summary: `${resolvedTarget.name} bị khóa Lá Bài trong ${turns} lượt.`,
-      };
+      return { affectedPlayerIds: [resolvedTarget.id], summary: `${resolvedTarget.name} bị khóa Lá Bài trong ${turns} lượt.` };
     }
 
     case 'percent_loss_all_others': {
       const percent = Math.min(1, Math.max(0, card.effect.percent));
       const opponents = players.filter((player) => player.id !== caster.id);
       let totalLost = 0;
-
       for (const opponent of opponents) {
         const loss = Math.floor(Math.max(0, opponent.money) * percent);
         opponent.money -= loss;
         totalLost += loss;
       }
-
       return {
         amount: totalLost,
         affectedPlayerIds: opponents.map((player) => player.id),
@@ -151,11 +184,7 @@ export function applyCardEffect(
       const casterMoney = caster.money;
       caster.money = resolvedTarget.money;
       resolvedTarget.money = casterMoney;
-
-      return {
-        affectedPlayerIds: [caster.id, resolvedTarget.id],
-        summary: `${caster.name} và ${resolvedTarget.name} hoán đổi toàn bộ B$.`,
-      };
+      return { affectedPlayerIds: [caster.id, resolvedTarget.id], summary: `${caster.name} và ${resolvedTarget.name} hoán đổi toàn bộ B$.` };
     }
   }
 }
