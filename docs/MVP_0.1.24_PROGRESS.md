@@ -1,6 +1,6 @@
 # MVP 0.1.24 — Party Mechanics
 
-Status: **ACTIVE / BUILDING**
+Status: **ACTIVE / PLAYTEST PACKAGED**
 
 ## Goal
 
@@ -55,6 +55,16 @@ News totals stay at 1000:
 - -40 all players: 50
 - normalize-to-average self: 50
 
+## Deterministic checksum promotion
+
+The 0.1.24 content change intentionally moves the golden gameplay checksum from:
+
+`7ad81b89` → `2338670a`
+
+This is expected because the new News outcome can change gameplay money state, not merely presentation/content IDs.
+
+Replay, lockstep, host/client and authority all agree on the new checksum.
+
 ## Regression
 
 New command:
@@ -69,6 +79,24 @@ Locks:
 - average News lowers a high player to average.
 
 Existing replay/authority/lockstep/content/presentation/image/package tests remain active.
+
+## Validated artifact
+
+GitHub Actions run:
+
+`34758580714` / run `#581`
+
+Artifact:
+
+`mememe-playtest-0.1.24`
+
+Artifact digest:
+
+`sha256:2543d81a8d07cf415ea3d3529f3460683d8ef1cd97cb6c1e63562393d6837737`
+
+Artifact size: ~8.50 MB.
+
+All CI steps passed, including **Party mechanics deterministic rules**, CPU autoplay and artifact upload.
 
 ## Invariants
 
