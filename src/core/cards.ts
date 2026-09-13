@@ -4,6 +4,7 @@ import type { PlayerState } from './types';
 export type CardRarity = 'N' | 'R' | 'SR' | 'SSR';
 export type CardFaceRole = 'caster' | 'target';
 export type CardTargetMode = 'self' | 'single_other' | 'random_other' | 'richest_other' | 'all_others';
+export type TacticalCardChoice = 'safe' | 'pressure';
 
 export interface CardFaceSlot {
   role: CardFaceRole;
@@ -22,6 +23,12 @@ export interface StealMoneyEffect {
 export interface RichTaxEffect {
   type: 'rich_tax';
   percent: number;
+}
+
+export interface TacticalChoiceEffect {
+  type: 'tactical_choice';
+  safeAmount: number;
+  taxPercent: number;
 }
 
 export interface CatchUpBonusEffect {
@@ -47,6 +54,7 @@ export interface SwapMoneyEffect {
 export type CardEffect =
   | StealMoneyEffect
   | RichTaxEffect
+  | TacticalChoiceEffect
   | CatchUpBonusEffect
   | BlockCardsEffect
   | PercentLossAllOthersEffect
@@ -108,6 +116,17 @@ export function pickRichestOtherTarget<T extends PlayerState>(players: T[], cast
     .sort((left, right) => right.money - left.money || left.id - right.id)[0];
 }
 
+export function tacticalChoicePressureAmount(
+  effect: TacticalChoiceEffect,
+  players: PlayerState[],
+  casterId: number,
+): number {
+  const richest = pickRichestOtherTarget(players, casterId);
+  if (!richest) return 0;
+  const percent = Math.min(1, Math.max(0, effect.taxPercent));
+  return Math.floor(Math.max(0, richest.money) * percent);
+}
+
 function requiredTarget(target: PlayerState | undefined, card: CardDefinition): PlayerState {
   if (!target) throw new Error(`Card ${card.id} requires a target.`);
   return target;
@@ -118,6 +137,7 @@ export function applyCardEffect(
   caster: PlayerState,
   players: PlayerState[],
   target?: PlayerState,
+  tacticalChoice?: TacticalCardChoice,
 ): CardResolution {
   switch (card.effect.type) {
     case 'steal_money': {
@@ -141,6 +161,34 @@ export function applyCardEffect(
         affectedPlayerIds: [caster.id, resolvedTarget.id],
         summary: `${caster.name} thu ${Math.round(percent * 100)}% từ người nhiều B$ nhất ${resolvedTarget.name} (${amount}B$).`,
       };
+    }
+
+    case 'tactical_choice': {
+      if (tacticalChoice === 'safe') {
+        const amount = Math.max(0, Math.floor(card.effect.safeAmount));
+        caster.money += amount;
+        return {
+          amount,
+          affectedPlayerIds: [caster.id],
+          summary: `${caster.name} chọn Ăn Chắc và nhận ${amount}B$.`,
+        };
+      }
+      if (tacticalChoice === 'pressure') {
+        const resolvedTarget = pickRichestOtherTarget(players, caster.id);
+        if (!resolvedTarget) {
+          return { amount: 0, affectedPlayerIds: [caster.id], summary: `${caster.name} không tìm thấy đối thủ để Ép Top 1.` };
+        }
+        const percent = Math.min(1, Math.max(0, card.effect.taxPercent));
+        const amount = Math.floor(Math.max(0, resolvedTarget.money) * percent);
+        resolvedTarget.money -= amount;
+        caster.money += amount;
+        return {
+          amount,
+          affectedPlayerIds: [caster.id, resolvedTarget.id],
+          summary: `${caster.name} chọn Ép Top 1 và lấy ${amount}B$ (${Math.round(percent * 100)}%) từ ${resolvedTarget.name}.`,
+        };
+      }
+      throw new Error(`Card ${card.id} requires tactical choice safe|pressure.`);
     }
 
     case 'catch_up_bonus': {
