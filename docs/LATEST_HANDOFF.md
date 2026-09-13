@@ -5,175 +5,129 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.27 — Tactical Choice (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.28 — NPC Banter & Longer Side Chat (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.27`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.28`**.
 
 Read first:
-1. `docs/MVP_0.1.27_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.27.md`
-3. `src/core/cards.ts`
-4. `src/core/authority.ts`
-5. `src/core/replay.ts`
-6. `src/content/core/cards_mvp.json`
-7. `src/ui/TacticalChoicePicker.ts`
-8. `src/scenes/TacticalChoiceBoardScene.ts`
-9. `tests/tactical-choice-027.ts`
-10. `src/scenes/TurnStakesBoardScene.ts`
-11. `src/ui/moneyStakes.ts`
-12. `tests/economy-scale-025.ts`
-13. `src/ui/SettingsPanel.ts`
-14. `src/audio/bgmController.ts`
-15. `docs/AUDIO_PACK_0.1.16.2.md`
+1. `docs/MVP_0.1.28_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.28.md`
+3. `src/core/testBot.ts`
+4. `src/ui/npcChatPolicy.ts`
+5. `src/ui/presentationModel.ts`
+6. `tests/tactical-choice-027.ts`
+7. `docs/MVP_0.1.27_PROGRESS.md`
+8. `src/core/cards.ts`
+9. `src/core/authority.ts`
+10. `src/core/replay.ts`
+11. `src/content/core/cards_mvp.json`
+12. `src/scenes/TacticalChoiceBoardScene.ts`
+13. `src/scenes/TurnStakesBoardScene.ts`
+14. `src/ui/SettingsPanel.ts`
+15. `src/audio/bgmController.ts`
+16. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## What 0.1.27 changed
+## What 0.1.28 changed
 
-### First explicit Card choice
+### Rare CPU personality quirk
 
-`ACT_008` is now **Kèo Hai Cửa**.
+CPU QA seats now have a low-frequency deterministic Card-decision quirk.
 
-It remains R rarity / weight 75, so total Card rarity probabilities stay unchanged.
+- nominal schedule: about 1 in 20 CPU Card decisions;
+- derived from existing turn / seat / Card identity;
+- consumes zero MatchState RNG calls;
+- visible through the existing left/right reaction bubbles;
+- copy includes lines such as `Ấy chết, bấm trượt tay 😭`.
 
-When used, the player chooses one of two deterministic outcomes:
-- **ĂN CHẮC**: +25 B$ to the caster;
-- **ÉP TOP 1**: transfer 15% of the current richest other player's B$ to the caster.
+For **Kèo Hai Cửa**, a quirk hit can intentionally flip the normally optimal deterministic option, so the mistake can be real rather than cosmetic-only.
 
-The richest-opponent tie-break remains lower seat/player ID.
+CPU remains a QA bot, not final gameplay AI.
 
-### Human UI
+### Longer NPC side chat
 
-A dedicated tactical choice panel opens only for `tactical_choice` Cards.
+Reaction bubbles spoken by CPU/NPC seats now stay visible for **2.5×** their previous duration.
 
-It shows before committing:
-- exact Safe payout;
-- current richest target;
-- target's current B$;
-- exact floored Pressure payout.
+Human/hotseat reaction timing remains unchanged.
 
-`QUAY LẠI` cancels without consuming the Card.
+The longer duration is represented in the presentation model itself, so the presentation queue accounts for it and does not leave stale chat behind after advancing.
 
-### Host authority / replay
-
-No new command type was added.
-
-The existing `play_card` command now carries `choice = safe|pressure` only for tactical Cards.
-
-Host validates the choice before stamping the command. Replay requires the same choice and rejects invalid streams rather than silently defaulting.
-
-Neither branch consumes gameplay RNG.
-
-### CPU QA behavior
-
-CPU remains QA-only.
-
-For Kèo Hai Cửa it compares:
-- guaranteed +25 B$;
-- current 15% richest-opponent value.
-
-CPU selects Pressure only when Pressure > Safe; otherwise it selects Safe. This evaluation consumes no MatchState RNG.
-
-## Probability invariants
-
-Total Card weight remains 1000:
-- N 600
-- R 300
-- SR 90
-- SSR 10
-
-Within R, one former duplicate block Card was replaced by Kèo Hai Cửa without changing its ID or 75 weight.
-
-No News probabilities changed.
+Dedicated 4-CPU autoplay still uses the existing fast stress timing policy.
 
 ## Gameplay retained
 
-Starting wallet remains **200 B$**.
+Tactical Choice from 0.1.27 remains:
+- Kèo Hai Cửa Safe +25 B$;
+- Pressure transfers 15% from richest other player;
+- host validates explicit `safe|pressure` choice;
+- no new command type or RNG.
 
-Money tiles:
-- +25 B$
-- -20 B$
-- +50 B$
-- +15 B$
+Economy remains:
+- starting wallet 200 B$;
+- READY +100 B$;
+- money tiles +25 / -20 / +50 / +15 B$;
+- News +30 self / -40 self / -20 all / normalize-to-average;
+- Phao Cứu Sinh +60 when lowest / +15 otherwise.
 
-News:
-- +30 B$ self
-- -40 B$ self
-- -20 B$ all players
-- normalize-to-average unchanged
-
-Phao Cứu Sinh:
-- +60 B$ when tied for lowest
-- +15 B$ otherwise
-
-READY remains **+100 B$**.
-
-Turn Stakes from 0.1.26 remains:
+Turn Stakes remains:
 - live B$ leaderboard;
-- crown/lifebuoy markers;
-- current-turn rank copy;
-- non-blocking wallet delta labels;
-- leader-change pulse;
-- snapshot resync suppresses stale wallet FX.
+- leader/trailer markers;
+- wallet delta feedback;
+- leader-change pulse.
 
-All movement, route parity, presentation timing, reaction queue, Settings, BGM/SFX and face-editor behavior remain intact.
+Movement, automatic parity routes, Card/News presentation, Settings, BGM/SFX and face editor remain intact.
 
 ## Regression
 
-New command:
-
-`npm run test:tactical`
-
-It locks:
-- Kèo Hai Cửa identity and 25/15% values;
-- Safe resolution;
-- Pressure resolution;
-- richest tie-break;
-- invalid-choice failure;
-- CPU deterministic choice;
-- CPU tactical evaluation does not consume gameplay RNG;
-- R rarity total remains 300.
+`npm run test:tactical` now also locks:
+- deterministic CPU quirk fixture;
+- tactical quirk can select the opposite choice;
+- quirk consumes zero gameplay RNG;
+- NPC chat duration multiplier is exactly 2.5×;
+- human reaction duration remains unchanged.
 
 All previous replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, party, economy, Turn Stakes, image and package tests remain enabled.
 
-Golden replay checksum stays unchanged from 0.1.25/0.1.26 because ACT_008 kept the same ID/weight and the golden fixture does not play it.
+## Validated artifact
 
-## Current artifact status
+GitHub Actions:
 
-Validated GitHub Actions run:
-
-`34765167348` / run `#685`
+`34766302140` / run `#717`
 
 Head SHA:
 
-`90fd71c842704ed48bd97fa501f4569750ebe5af`
+`966cb4b8bf6ae4ca69460ecfd1ea84ae0edbedef`
 
 Artifact:
 
-`mememe-playtest-0.1.27`
+`mememe-playtest-0.1.28`
 
 Artifact digest:
 
-`sha256:a5e9d5f60f5604c205899d9d4e9b36c74cd2ff19ea0fc1088442cc6965d76432`
+`sha256:f9cc30d9928edf2bab1068b527e698c8bb8ee7ddb268f84809bb6230dacf21f6`
 
 Artifact size: ~8.51 MB.
 
 GitHub run URL:
 
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34765167348`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34766302140`
 
-CI passed through artifact upload, including **Tactical Choice rules** and CPU autoplay.
+CI passed through artifact upload, including **Tactical Choice and NPC Banter rules** and CPU autoplay.
 
-## Recommended next work
+## Next work — 0.1.29
 
-Do a real playtest on 0.1.27 and focus on:
-1. whether the choice panel feels quick rather than interruptive;
-2. whether +25 B$ vs 15% Top-1 creates a meaningful decision at 200 B$ economy;
-3. whether the displayed Pressure preview matches the actual resolved target/value;
-4. whether cancelling preserves the Card cleanly;
-5. whether CPU tactical choice looks sensible in autoplay;
-6. whether Card presentation/reactions still remain readable after a tactical resolution;
-7. whether the next strategic layer should be another Card choice or a board-space choice.
+Build **Mini Game + Job Tile Foundation** next.
+
+Target scope:
+1. add Mini Game and Job as explicit tile/content families;
+2. add board identity/rendering for both;
+3. add deterministic resolution entry points and presentation events;
+4. add CPU-safe fallback behavior so autoplay cannot deadlock;
+5. lock replay / authority / snapshot behavior with regression tests;
+6. keep final detailed Mini Game and Job rules intentionally open until explicitly confirmed.
+
+After the foundation is green, target **0.1.30** for one playable Mini Game and one playable Job end-to-end.
 
 ## Hard invariants
 
@@ -186,8 +140,7 @@ Do a real playtest on 0.1.27 and focus on:
 - Snapshot resync must not replay stale presentation events or wallet FX.
 - Result/ranking must not cover unresolved final-turn presentation.
 - Route feedback remains non-blocking and host-authoritative.
-- Tactical Card choices are player-authored decisions, never random client-authored outcomes.
-- Automatic Card mechanics must not add client-authored random outcomes.
+- Tactical Card choices remain host-validated.
 - Dice presentation must display the authoritative result.
 - Original face files must not be silently uploaded/persisted.
 - CPU remains a QA bot, not final gameplay AI.
