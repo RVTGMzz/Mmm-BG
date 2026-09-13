@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { browserSession } from '../core/browserSession';
+import { configureInitialPlayOrder } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import { faceTextureKey } from '../systems/faces';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
@@ -23,6 +24,7 @@ export class SetupScene extends Phaser.Scene {
   create(): void {
     bgmController.playMenu();
     gameSession.reset();
+    configureInitialPlayOrder(undefined);
     this.cameras.main.setBackgroundColor('#f4ead7');
 
     this.add.rectangle(640, 360, 1190, 660, 0xfffbf3, 1).setStrokeStyle(5, 0x202020, 1);
@@ -37,7 +39,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.30', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.31', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -50,7 +52,7 @@ export class SetupScene extends Phaser.Scene {
       ? `HOST LOCAL • ROOM ${config.roomCode}`
       : cpuCount > 0
         ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
-        : '4 người HOTSEAT → đặt tên → thêm ảnh nếu muốn → vào demo 3 vòng';
+        : '4 người HOTSEAT → đặt tên → Roll For Order → vào demo 3 vòng';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -68,9 +70,9 @@ export class SetupScene extends Phaser.Scene {
           <p class="setup-hint"><strong>Ảnh mặt là tùy chọn.</strong> Chạm ảnh để crop, kéo vị trí, zoom/pinch và xoay trước khi dùng.</p>
           <p class="setup-privacy">🔒 Ảnh gốc chỉ tồn tại trong trình duyệt lúc chỉnh. Khi xác nhận, game tạo sticker runtime 320×320 và ưu tiên nén WebP; không upload ảnh lên server.</p>
         </div>
-        <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
+        <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.30: tới lượt người chơi, xúc xắc tự hiện trên bàn và bấm trực tiếp để Roll. Mini Game + Job foundation vẫn giữ nguyên.</p>
+      <p id="setup-status" class="setup-status">0.1.31: trước trận cả 4 người sẽ đổ xúc xắc xếp lượt. Job Hub dùng xúc xắc 1–2 / 3–4 / 5–6 thay cho chọn nghề trực tiếp.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -175,11 +177,11 @@ export class SetupScene extends Phaser.Scene {
 
     const hasInvalidName = gameSession.players.some((player) => player.name.trim().length === 0);
     if (hasInvalidName) {
-      this.setStatus('Mỗi người chơi cần có tên trước khi vào demo.', true);
+      this.setStatus('Mỗi người chơi cần có tên trước khi Roll For Order.', true);
       return;
     }
 
-    this.scene.start('DemoBoardScene');
+    this.scene.start('TurnOrderScene');
   }
 
   private refreshStatus(): void {
@@ -193,14 +195,14 @@ export class SetupScene extends Phaser.Scene {
     if (expressionCount === 0) {
       this.setStatus(
         cpuCount > 0
-          ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự chơi. Có thể bỏ qua ảnh và vào trận ngay.`
-          : 'Sẵn sàng chơi nhanh với token màu. Muốn test face avatar thì thêm ảnh bất kỳ trước khi vào trận.',
+          ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự đổ thứ tự và tự chơi. Có thể bỏ qua ảnh.`
+          : 'Sẵn sàng. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.',
         false,
       );
       return;
     }
 
-    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh • CPU: ${cpuCount}/4.`, false);
+    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh • CPU: ${cpuCount}/4 • tiếp theo Roll For Order.`, false);
   }
 
   private setStatus(message: string, isError: boolean): void {
