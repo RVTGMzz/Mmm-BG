@@ -87,6 +87,9 @@ jobs:
       - name: Mini Game and Job tile foundation
         run: npm run test:function-tiles
 
+      - name: Direct dice control
+        run: npm run test:direct-dice
+
       - name: Face image transform bounds
         run: npm run test:image
 
