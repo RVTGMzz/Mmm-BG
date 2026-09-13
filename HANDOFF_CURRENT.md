@@ -7,7 +7,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 ## Current milestone
 
-**MVP 0.1.32 — Runtime Clarity Polish**
+**MVP 0.1.33 — Stable Token Sync + One-Lap Scoring**
 
 Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
@@ -15,163 +15,147 @@ Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Validated playable build
 
-GitHub Actions run: `34771327955` / run `#906`
+GitHub Actions run: `34772171455` / run `#938`
 
 Validated runtime head SHA:
-`cc384e5027037bdce2427632038ff70065732d75`
+`12bd0180e37a6eca39d4b1ff63cfac407281dfb6`
 
 Artifact:
-`mememe-playtest-0.1.32`
+`mememe-playtest-0.1.33`
 
 Artifact ID:
-`10322073071`
+`10322258905`
 
 Artifact size:
-`8,517,792 bytes`
+`8,518,927 bytes`
 
 Digest:
-`sha256:8ca6e5793f96faa6320777859ae02de1ad6bfa9f9265405991ee754e46f4f186`
+`sha256:b5d9c0c5118756528e6573d71f97c2a795ffd6938c8d45789d7a5ad6b0a6a5af`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34771327955`
-
-Golden deterministic replay checksum for seed `123456789`, 20 turns:
-`9cb73072`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34772171455`
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.32_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.32.md`
-5. `docs/MVP_0.1.31_PROGRESS.md`
-6. `docs/PLAYTEST_0.1.31.md`
-7. `src/scenes/TurnOrderScene.ts`
-8. `src/scenes/CareerMinigameBoardScene.ts`
-9. `src/ui/JobChoicePicker.ts`
-10. `src/ui/MiniGameOverlay.ts`
-11. `src/core/jobs.ts`
-12. `src/content/core/jobs_mvp.json`
-13. `src/core/matchState.ts`
-14. `src/core/replay.ts`
-15. `src/core/authority.ts`
-16. `src/core/checksum.ts`
-17. `tests/job-minigame-031.ts`
+3. `docs/MVP_0.1.33_PROGRESS.md`
+4. `docs/PLAYTEST_0.1.33.md`
+5. `docs/MVP_0.1.32_PROGRESS.md`
+6. `src/scenes/CareerMinigameBoardScene.ts`
+7. `src/scenes/PresentationParityBoardScene.ts`
+8. `src/core/demoMatch.ts`
+9. `src/core/replay.ts`
+10. `src/core/matchState.ts`
+11. `src/core/checksum.ts`
+12. `src/core/types.ts`
+13. `tests/demo-match-shell.ts`
+14. `tests/replay-determinism.ts`
+15. `tests/authority-protocol.ts`
 
-## 0.1.32 runtime-feedback polish
+## Runtime feedback fixed in 0.1.33
 
-### Roll For Order
-- Final player cards now show `THỨ 1 / THỨ 2 / THỨ 3 / THỨ 4` after order resolution.
-- Rank stays attached to the same player identity, face, color and ownership.
-- Final `VÀO TRẬN` uses UI-confirm SFX rather than another dice-roll SFX.
-- Existing authoritative order/tie behavior is unchanged.
+### Token snap-back / fly-forward bug
 
-### Job Hub
-- Three offers are visibly labeled `A / B / C`.
-- Overlay repeats `1–2 → A`, `3–4 → B`, `5–6 → C` directly above the Job roll button.
-- Copy explicitly tells the player that the die decides the Job and the cards are not direct-selection buttons.
-- Job roll button disables immediately after accepted input to guard against duplicate pointer submission.
-- Job probability, salary, career progression and gameplay RNG are unchanged.
+Observed behavior was visual only: P1 could already reach the correct node, then Card/News/state presentation briefly showed P1 at an older node before flying back to the correct destination.
 
-### Playtest package
-- Packaged `PLAYTEST.txt` is refreshed from stale 0.1.16.2 text to current controls/features/known limitations.
-- Artifact now includes `docs/PLAYTEST_0.1.32.md` as `PLAYTEST_GUIDE.md`.
+Fix:
+- normal state packets no longer own token coordinates;
+- normal movement coordinates are controlled only by queued `move_step` presentation;
+- state updates therefore cannot kill/snap an in-flight movement tween;
+- snapshot resync and rematch command #0 retain hard-snap authority;
+- stale movement events are prevented from replaying over snapshot correction.
 
-## Gameplay rules retained from 0.1.31
+Authoritative player `nodeId`, movement path, dice, Card effects and RNG rules are unchanged.
 
-### Roll For Order
-Before the board match starts, all 4 players roll D6.
-- higher roll acts earlier;
-- only tied players reroll;
-- only authoritative `playOrder` changes;
-- `playOrder` is checksum-covered and replay/snapshot-safe.
+### One full lap before scoring
 
-Current local 2-tab limitation remains: host/local setup performs order rolls rather than collecting one remote click per browser.
+The old fixed `3 rounds / 12 turns` end rule is no longer active.
 
-### Mandatory Job Hub
-Job Hub remains a mandatory stop at the merge after the route split.
+Current playtest rule:
+1. each player starts with `lapsCompleted = 0`;
+2. crossing Ready/start increments that player's lap count;
+3. game continues until **all players have completed at least one full board lap**;
+4. only then is the B$ leaderboard finalized;
+5. highest B$ wins; tied B$ is a shared win.
 
-If unemployed:
-1. draw 3 unique random Jobs;
-2. show A / B / C;
-3. roll one authoritative Job D6;
-4. `1–2 → A`, `3–4 → B`, `5–6 → C`;
-5. no direct Job-card selection.
+`lapsCompleted` is authoritative, replay-safe and checksum-covered.
 
-### Job economy / progression
-- starting wallet: `200 B$`;
-- salary paid when passing Ready/start based on current Job + level;
-- no active Job gives `0 B$` salary;
-- later Job Hub visits can promote / steady / demote / fire;
-- Thief can enter `jailed`.
+The old shell `rounds` / `turnLimit` fields remain only for compatibility and do not end the match.
 
-Do **not** invent jail skipped-turn/bail/escape rules yet.
+### HUD / presentation
 
-### Mini Games
-- `Nhiều ra ít bị`: minority is eliminated, ties replay, repeat until two remain;
-- at 1v1 automatically switch to Oẳn Tù Xì;
-- RPS ties replay until a winner exists.
+- compact HUD shows `HOÀN THÀNH 1 VÒNG • X/4`;
+- waiting/result text explains the one-lap finish condition;
+- build label identifies 0.1.33 one-lap scoring/token sync.
 
-Do **not** invent Mini Game B$ payout yet.
+## Existing gameplay retained
 
-## Other gameplay retained
-
-- direct clickable dice on human turns;
+- Roll For Order before match; higher D6 acts first, tied group rerolls only;
+- mandatory Job Hub stop;
+- 3 unique Job offers A/B/C;
+- authoritative Job D6: `1–2 → A`, `3–4 → B`, `5–6 → C`;
+- no direct Job-card selection;
+- starting wallet `200 B$`;
+- crossing Ready pays current Job salary; unemployed gets `0 B$` salary but still completes the lap;
+- promotion / steady / demotion / fired and Thief `jailed` state retained;
+- Mini Game `Nhiều ra ít bị`, switching to RPS at 1v1;
+- direct clickable dice;
 - node-by-node movement;
-- automatic parity route choice logic;
+- automatic parity route logic;
 - Tactical Choice / Kèo Hai Cửa;
 - rare deterministic CPU `bấm trượt tay` quirk;
-- CPU/NPC reaction chat duration 2.5x;
-- side reaction chat remains left/right and off-center;
-- live B$ leaderboard / wallet deltas;
-- Settings panel with BGM / volume / FX;
-- approved BGM bundle checksum-locked, no re-encode/substitution;
-- face original files remain local and are not silently uploaded/persisted.
+- side reaction chat remains left/right;
+- Settings BGM / volume / FX;
+- approved BGM remains checksum-locked and must not be re-encoded/substituted.
+
+Do **not** invent jail skipped-turn/bail/escape rules or Mini Game B$ payout until Bửu Bối explicitly defines them.
 
 ## Determinism / networking invariants
 
 - no presentation RNG may perturb gameplay RNG;
 - `eventLog` remains presentation-only and checksum-excluded;
-- Job state/pending offers and `playOrder` remain checksum-covered;
+- `playOrder`, Job state/pending offers and `lapsCompleted` are checksum-covered;
+- replay determinism, lockstep, authority, host/client resync and two-tab tests are green;
 - snapshot resync must not replay stale presentation;
 - result/ranking waits until final presentation clears;
 - dice presentation must show authoritative results;
+- original face files remain local and are not silently uploaded/persisted;
 - CPU remains a QA bot, not final gameplay AI.
 
 ## Full CI state
 
-Run #906 passed:
+Run #938 passed through artifact upload:
 - build/typecheck;
-- replay determinism;
+- deterministic replay;
 - lockstep;
 - host/client queue + snapshot resync;
 - authority protocol;
 - two-tab core;
-- demo shell/rematch;
+- one-lap demo shell + rematch;
 - CPU autoplay;
-- presentation/flow/board regressions;
+- presentation / flow / board regressions;
 - Settings/audio;
 - content/reaction/party/economy/stakes/tactical;
 - function tiles;
 - direct dice;
-- Job Dice / Salary / Roll For Order / Mini Games regression;
+- Job Dice / Salary / Roll For Order / Mini Games;
 - package validation;
-- 0.1.32 guide copy;
+- 0.1.33 guide copy;
 - artifact upload.
 
 ## Recommended next step
 
-Runtime-test `mememe-playtest-0.1.32` before expanding systems.
+Runtime-test `mememe-playtest-0.1.33`.
 
-Focus:
-1. final Roll For Order rank readability;
-2. Job Hub A/B/C readability;
-3. accidental double input on Job roll;
-4. salary popup / Mini Game / direct dice / Settings/BGM / rematch smoke test;
-5. remaining visual/flow feedback.
-
-Only after exact rules are defined should work continue on jail gameplay or Mini Game economy.
+Priority checks:
+1. P1 must never visually snap back after finishing movement, including when Card/News opens;
+2. snapshot/rematch must still restore correct authoritative token location;
+3. lap HUD increments only when passing Ready;
+4. match must continue past old 12-turn boundary if somebody has not completed a lap;
+5. final B$ score appears only after the final unfinished player completes lap 1;
+6. salary and lap count happen together exactly once per Ready crossing.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.32_PROGRESS.md và docs/PLAYTEST_0.1.32.md. Current validated artifact là mememe-playtest-0.1.32, run #906, runtime SHA cc384e5027037bdce2427632038ff70065732d75. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.33_PROGRESS.md và docs/PLAYTEST_0.1.33.md. Current validated artifact là mememe-playtest-0.1.33, run #938, runtime SHA 12bd0180e37a6eca39d4b1ff63cfac407281dfb6. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
