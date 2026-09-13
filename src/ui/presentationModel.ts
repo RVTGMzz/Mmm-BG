@@ -11,6 +11,8 @@ import type { PlayerState } from '../core/types';
 const REACTIONS = reactionsJson as ReactionEventDefinition[];
 
 export type PresentationKind =
+  | 'dice_roll'
+  | 'move_step'
   | 'tile_land'
   | 'ready_bonus'
   | 'card_draw'
@@ -47,6 +49,11 @@ export interface PresentationEventModel {
   holdMs: number;
   tileType?: string;
   amount?: number;
+  affectedPlayerIds: number[];
+  roll?: number;
+  step?: number;
+  fromNodeId?: number;
+  toNodeId?: number;
 }
 
 function dataString(event: MatchEvent, key: string): string {
@@ -62,6 +69,21 @@ function dataNumber(event: MatchEvent, key: string, allowNegative = false): numb
   return value;
 }
 
+function parsePlayerIds(raw: string): number[] {
+  const ids = raw
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => Number.isInteger(value) && value >= 0);
+  return [...new Set(ids)];
+}
+
+function affectedPlayerIds(event: MatchEvent, targetId?: number): number[] {
+  const explicit = parsePlayerIds(dataString(event, 'affectedPlayerIds'));
+  if (explicit.length > 0) return explicit;
+  const fallback = [event.actorId, targetId].filter((value): value is number => value !== undefined && value >= 0);
+  return [...new Set(fallback)];
+}
+
 function playerById(players: PlayerState[], id: number | undefined): PlayerState | undefined {
   if (id === undefined) return undefined;
   return players.find((player) => player.id === id);
@@ -71,10 +93,7 @@ function playerName(players: PlayerState[], id: number | undefined, fallback = '
   return playerById(players, id)?.name ?? (id === undefined ? fallback : `P${id + 1}`);
 }
 
-function speakerIdForRole(
-  role: ReactionSpeakerRole,
-  event: MatchEvent,
-): number | undefined {
+function speakerIdForRole(role: ReactionSpeakerRole, event: MatchEvent): number | undefined {
   switch (role) {
     case 'caster':
     case 'subject':
@@ -132,12 +151,20 @@ function reactionLines(event: MatchEvent, players: PlayerState[]): PresentationR
     .filter((line) => line.text.trim().length > 0);
 }
 
+function baseModel(event: MatchEvent, players: PlayerState[]): Pick<PresentationEventModel, 'eventSeq' | 'actorId' | 'actorName' | 'affectedPlayerIds'> {
+  const targetId = dataNumber(event, 'targetId');
+  return {
+    eventSeq: event.seq,
+    actorId: event.actorId,
+    actorName: playerName(players, event.actorId),
+    affectedPlayerIds: affectedPlayerIds(event, targetId),
+  };
+}
+
 function tileLandingModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
-  const actorId = event.actorId;
-  const actorName = playerName(players, actorId);
+  const base = baseModel(event, players);
   const tileType = dataString(event, 'tileType') || 'normal';
   const amount = dataNumber(event, 'value', true) ?? 0;
-
   const tileCopy: Record<string, { title: string; impact: string; description: string }> = {
     normal: { title: 'Ô THƯỜNG', impact: '👟', description: 'Đáp xuống an toàn. Không có biến cố.' },
     money: {
@@ -152,29 +179,23 @@ function tileLandingModel(event: MatchEvent, players: PlayerState[]): Presentati
   const copy = tileCopy[tileType] ?? tileCopy.normal;
 
   return {
-    eventSeq: event.seq,
+    ...base,
     kind: 'tile_land',
-    eyebrow: `${actorName} • ĐÁP Ô`,
+    eyebrow: `${base.actorName} • ĐÁP Ô`,
     title: copy.title,
     rarity: '',
     impact: copy.impact,
     description: copy.description,
     summary: '',
-    actorId,
-    actorName,
     reactions: [],
-    holdMs: tileType === 'normal' ? 520 : 760,
+    holdMs: tileType === 'normal' ? 1200 : 1600,
     tileType,
     amount,
   };
 }
 
-export function buildPresentationModel(
-  event: MatchEvent,
-  players: PlayerState[],
-): PresentationEventModel | undefined {
-  const actorId = event.actorId;
-  const actorName = playerName(players, actorId);
+export function buildPresentationModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel | undefined {
+  const base = baseModel(event, players);
   const targetId = dataNumber(event, 'targetId');
   const targetName = targetId === undefined ? undefined : playerName(players, targetId);
   const title = dataString(event, 'title');
@@ -184,30 +205,64 @@ export function buildPresentationModel(
   const summary = dataString(event, 'summary');
   const reactionEventId = dataString(event, 'reactionEventId') || undefined;
 
+  if (event.type === 'dice_roll') {
+    const roll = dataNumber(event, 'result') ?? 1;
+    return {
+      ...base,
+      kind: 'dice_roll',
+      eyebrow: `${base.actorName} • XÚC XẮC`,
+      title: String(roll),
+      rarity: '',
+      impact: '🎲',
+      description: '',
+      summary: '',
+      reactions: [],
+      holdMs: 780,
+      roll,
+    };
+  }
+
+  if (event.type === 'move_step') {
+    return {
+      ...base,
+      kind: 'move_step',
+      eyebrow: '',
+      title: '',
+      rarity: '',
+      impact: '',
+      description: '',
+      summary: '',
+      reactions: [],
+      holdMs: 230,
+      roll: dataNumber(event, 'roll'),
+      step: dataNumber(event, 'step'),
+      fromNodeId: dataNumber(event, 'fromNodeId'),
+      toNodeId: dataNumber(event, 'toNodeId'),
+    };
+  }
+
   if (event.type === 'tile_land') return tileLandingModel(event, players);
 
   if (event.type === 'ready_pass') {
     const amount = dataNumber(event, 'amount', true) ?? 100;
     return {
-      eventSeq: event.seq,
+      ...base,
       kind: 'ready_bonus',
-      eyebrow: `${actorName} • QUA READY`,
+      eyebrow: `${base.actorName} • QUA READY`,
       title: `+${Math.abs(amount)} B$`,
       rarity: '',
       impact: '🏁✨',
       description: 'Thưởng hoàn thành một vòng!',
       summary: '',
-      actorId,
-      actorName,
       reactions: [],
-      holdMs: 900,
+      holdMs: 1800,
       amount,
     };
   }
 
   if (event.type === 'card_draw') {
     return {
-      eventSeq: event.seq,
+      ...base,
       kind: 'card_draw',
       eyebrow: 'LÁ BÀI • RÚT ĐƯỢC',
       title: title || dataString(event, 'cardId') || 'Lá Bài',
@@ -215,16 +270,14 @@ export function buildPresentationModel(
       impact,
       description,
       summary: '',
-      actorId,
-      actorName,
       reactions: [],
-      holdMs: 1350,
+      holdMs: 2600,
     };
   }
 
   if (event.type === 'card_draw_blocked') {
     return {
-      eventSeq: event.seq,
+      ...base,
       kind: 'card_blocked',
       eyebrow: 'LÁ BÀI • GIỚI HẠN TAY',
       title: 'Không thể rút thêm',
@@ -232,16 +285,14 @@ export function buildPresentationModel(
       impact: '✋',
       description: 'Tay bài đã chạm giới hạn MVP.',
       summary: '',
-      actorId,
-      actorName,
       reactions: [],
-      holdMs: 1050,
+      holdMs: 2000,
     };
   }
 
   if (event.type === 'card_play') {
     return {
-      eventSeq: event.seq,
+      ...base,
       kind: 'card_play',
       eyebrow: 'LÁ BÀI • KÍCH HOẠT',
       title: title || dataString(event, 'cardId') || 'Lá Bài',
@@ -249,20 +300,18 @@ export function buildPresentationModel(
       impact,
       description,
       summary,
-      actorId,
-      actorName,
       targetId,
       targetName,
       reactionEventId,
       reactions: reactionLines(event, players),
-      holdMs: 2050,
+      holdMs: 3500,
       amount: dataNumber(event, 'amount', true),
     };
   }
 
   if (event.type === 'news') {
     return {
-      eventSeq: event.seq,
+      ...base,
       kind: 'news',
       eyebrow: 'TIN TỨC • BREAKING',
       title: title || dataString(event, 'newsId') || 'Tin Tức',
@@ -270,13 +319,11 @@ export function buildPresentationModel(
       impact,
       description,
       summary,
-      actorId,
-      actorName,
       targetId,
       targetName,
       reactionEventId,
       reactions: reactionLines(event, players),
-      holdMs: 2200,
+      holdMs: 3800,
       amount: dataNumber(event, 'amount', true),
     };
   }
