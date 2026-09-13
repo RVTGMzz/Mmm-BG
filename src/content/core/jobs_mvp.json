@@ -1,0 +1,12 @@
+[
+  {"id":"JOB_OFFICE","title":"Nhân viên văn phòng","icon":"🗂️","risk":"normal","maxLevel":3,"promotionChance":0.20,"demotionChance":0.14,"firedOnDemotionChance":0.20,"jailChance":0},
+  {"id":"JOB_BARISTA","title":"Barista","icon":"☕","risk":"normal","maxLevel":3,"promotionChance":0.22,"demotionChance":0.13,"firedOnDemotionChance":0.18,"jailChance":0},
+  {"id":"JOB_CHEF","title":"Đầu bếp","icon":"🍳","risk":"normal","maxLevel":3,"promotionChance":0.19,"demotionChance":0.15,"firedOnDemotionChance":0.20,"jailChance":0},
+  {"id":"JOB_DRIVER","title":"Tài xế","icon":"🚕","risk":"normal","maxLevel":3,"promotionChance":0.18,"demotionChance":0.16,"firedOnDemotionChance":0.22,"jailChance":0},
+  {"id":"JOB_SHIPPER","title":"Shipper","icon":"📦","risk":"normal","maxLevel":3,"promotionChance":0.21,"demotionChance":0.15,"firedOnDemotionChance":0.18,"jailChance":0},
+  {"id":"JOB_STREAMER","title":"Streamer","icon":"📹","risk":"normal","maxLevel":3,"promotionChance":0.24,"demotionChance":0.18,"firedOnDemotionChance":0.25,"jailChance":0},
+  {"id":"JOB_ENGINEER","title":"Kỹ sư","icon":"🛠️","risk":"normal","maxLevel":3,"promotionChance":0.18,"demotionChance":0.12,"firedOnDemotionChance":0.15,"jailChance":0},
+  {"id":"JOB_DOCTOR","title":"Bác sĩ","icon":"🩺","risk":"normal","maxLevel":3,"promotionChance":0.16,"demotionChance":0.10,"firedOnDemotionChance":0.12,"jailChance":0},
+  {"id":"JOB_IDOL","title":"Idol","icon":"🎤","risk":"normal","maxLevel":3,"promotionChance":0.23,"demotionChance":0.19,"firedOnDemotionChance":0.28,"jailChance":0},
+  {"id":"JOB_THIEF","title":"Trộm cắp","icon":"🦹","risk":"crime","maxLevel":3,"promotionChance":0.28,"demotionChance":0.18,"firedOnDemotionChance":0,"jailChance":0.12}
+]
