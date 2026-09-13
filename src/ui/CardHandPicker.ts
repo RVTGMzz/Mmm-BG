@@ -14,6 +14,17 @@ export interface CardHandSelection {
   handIndex: number;
 }
 
+function targetCopy(card: CardDefinition): string {
+  if (card.effect.type === 'tactical_choice') return '🧠 2 LỰA CHỌN';
+  switch (card.targetMode) {
+    case 'self': return '🙋 CHÍNH BẠN';
+    case 'single_other': return '🎯 1 MỤC TIÊU';
+    case 'random_other': return '🎲 ĐỐI THỦ NGẪU NHIÊN';
+    case 'richest_other': return '👑 NGƯỜI GIÀU NHẤT';
+    case 'all_others': return '🌪️ TẤT CẢ ĐỐI THỦ';
+  }
+}
+
 export function showCardHandPicker(
   scene: Phaser.Scene,
   player: PlayerState,
@@ -48,7 +59,7 @@ export function showCardHandPicker(
       .setOrigin(0.5);
 
     const subtitle = scene.add
-      .text(0, -181, 'Lá chỉ bị tiêu hao sau khi chọn đủ mục tiêu và effect resolve thành công.', {
+      .text(0, -181, 'Lá chỉ bị tiêu hao sau khi chọn đủ mục tiêu / lựa chọn và effect resolve thành công.', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
         color: '#746a60',
@@ -105,17 +116,12 @@ export function showCardHandPicker(
         })
         .setOrigin(0.5);
       const targetLabel = scene.add
-        .text(
-          x,
-          93,
-          card.targetMode === 'single_other' ? '🎯 1 MỤC TIÊU' : '🌪️ TẤT CẢ ĐỐI THỦ',
-          {
-            fontFamily: 'Arial, sans-serif',
-            fontSize: '12px',
-            fontStyle: 'bold',
-            color: '#6a6057',
-          },
-        )
+        .text(x, 93, targetCopy(card), {
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '12px',
+          fontStyle: 'bold',
+          color: '#6a6057',
+        })
         .setOrigin(0.5);
       const useText = scene.add
         .text(x, 137, 'DÙNG LÁ NÀY', {
