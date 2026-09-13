@@ -8,6 +8,8 @@ export interface JobDefinition {
   icon: string;
   risk: JobRisk;
   maxLevel: number;
+  salaryByLevel: number[];
+  special: string;
   promotionChance: number;
   demotionChance: number;
   firedOnDemotionChance: number;
@@ -45,6 +47,17 @@ export function drawUniqueJobOffer(
     if (picked) offer.push(picked);
   }
   return offer;
+}
+
+export function jobSalary(job: JobDefinition, level: number | undefined): number {
+  const normalized = Math.max(1, Math.min(job.maxLevel, Math.floor(level ?? 1)));
+  const raw = job.salaryByLevel[normalized - 1] ?? job.salaryByLevel.at(-1) ?? 0;
+  return Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0;
+}
+
+export function jobOfferIndexForRoll(roll: number): number {
+  const normalized = Math.max(1, Math.min(6, Math.floor(roll)));
+  return Math.floor((normalized - 1) / 2);
 }
 
 export function applyJobSelection(player: PlayerState, job: JobDefinition): void {
@@ -92,7 +105,7 @@ export function resolveCareerCheck(
       previousLevel,
       level,
       title: `${job.icon} THĂNG CẤP!`,
-      summary: `${player.name}: ${job.title} Lv.${previousLevel} → Lv.${level}.`,
+      summary: `${player.name}: ${job.title} Lv.${previousLevel} → Lv.${level}. Lương qua cổng: ${jobSalary(job, previousLevel)} → ${jobSalary(job, level)} B$.`,
     };
   }
 
@@ -106,7 +119,7 @@ export function resolveCareerCheck(
         previousLevel,
         level: 0,
         title: '📦 BỊ SA THẢI!',
-        summary: `${player.name} bị sa thải khỏi nghề ${job.title}. Lần sau qua ô Job sẽ chọn nghề mới.`,
+        summary: `${player.name} bị sa thải khỏi nghề ${job.title}. Lần sau qua Job Hub sẽ đổ xúc xắc nhận nghề mới.`,
       };
     }
 
@@ -119,7 +132,7 @@ export function resolveCareerCheck(
       previousLevel,
       level,
       title: `${job.icon} GIẢM CẤP`,
-      summary: `${player.name}: ${job.title} Lv.${previousLevel} → Lv.${level}.`,
+      summary: `${player.name}: ${job.title} Lv.${previousLevel} → Lv.${level}. Lương qua cổng: ${jobSalary(job, previousLevel)} → ${jobSalary(job, level)} B$.`,
     };
   }
 
@@ -130,7 +143,7 @@ export function resolveCareerCheck(
     previousLevel,
     level: previousLevel,
     title: `${job.icon} GIỮ VỮNG`,
-    summary: `${player.name} vẫn giữ ${job.title} Lv.${previousLevel}.`,
+    summary: `${player.name} vẫn giữ ${job.title} Lv.${previousLevel} • lương ${jobSalary(job, previousLevel)} B$/cổng.`,
   };
 }
 
