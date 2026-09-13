@@ -55,14 +55,6 @@ export class BgmController {
     this.volume = preferences.volume;
   }
 
-  /**
-   * Arm audio before Phaser creates the first scene.
-   *
-   * Browsers may still require a user gesture before audible playback, but the
-   * Menu asset is already selected/loading by then. The first click/touch/key can
-   * therefore unlock an existing Audio element instead of waiting for LobbyScene
-   * to create and load it a few seconds later.
-   */
   start(): void {
     this.installAutoplayUnlock();
     this.prepareTrack('menu_mememe');
@@ -83,10 +75,10 @@ export class BgmController {
     this.setTrack(round === 2 ? 'city_silly' : 'city_bubble');
   }
 
-  /** Dedicated track supplied for interactive Mini Games. */
+  /** Mini Games reuse the approved, checksum-locked 03_City_Silly track. */
   playMiniGame(): void {
-    this.prepareTrack('mini_game');
-    this.setTrack('mini_game');
+    this.prepareTrack('city_silly');
+    this.setTrack('city_silly');
   }
 
   /** Restore a presentation track after a temporary overlay such as Mini Game. */
@@ -163,8 +155,6 @@ export class BgmController {
     audio.src = bgmUrl(track);
     this.preparedAudio.set(id, audio);
 
-    // Explicit load() asks the browser to begin fetching immediately instead of
-    // waiting for the first scene/first play() call.
     try {
       audio.load();
     } catch {
