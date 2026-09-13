@@ -2,6 +2,8 @@ import type { MatchEvent } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import { buildPresentationModel } from './presentationModel';
 
+export type PresentationShellStatus = 'waiting' | 'active' | 'ended';
+
 /**
  * Presentation should only self-advance during the dedicated 4-CPU stress mode.
  * Human-containing sessions must wait for an explicit acknowledge gesture so
@@ -18,6 +20,17 @@ export function shouldAutoAdvancePresentation(
     if (!seats.has(seat)) return false;
   }
   return true;
+}
+
+/**
+ * The result/ranking overlay must not cover the final unresolved presentation.
+ * It becomes visible only after the presentation gate releases.
+ */
+export function shouldDeferResultOverlay(
+  presentationBlocking: boolean,
+  shellStatus: PresentationShellStatus,
+): boolean {
+  return presentationBlocking && shellStatus === 'ended';
 }
 
 /**
