@@ -6,9 +6,10 @@ export type TurnPhase =
   | 'MOVING'
   | 'BRANCH_CHOICE'
   | 'RESOLVING_TILE'
+  | 'JOB_CHOICE'
   | 'TURN_END';
 
-export type TurnAction = 'roll' | 'use_card' | 'choose_branch';
+export type TurnAction = 'roll' | 'use_card' | 'choose_branch' | 'choose_job';
 
 export interface TurnPhaseSnapshot {
   phase: TurnPhase;
@@ -22,7 +23,8 @@ const ALLOWED_TRANSITIONS: Record<TurnPhase, readonly TurnPhase[]> = {
   ROLLING: ['MOVING'],
   MOVING: ['BRANCH_CHOICE', 'RESOLVING_TILE'],
   BRANCH_CHOICE: ['MOVING'],
-  RESOLVING_TILE: ['TURN_END'],
+  RESOLVING_TILE: ['JOB_CHOICE', 'TURN_END'],
+  JOB_CHOICE: ['TURN_END'],
   TURN_END: ['TURN_START'],
 };
 
@@ -30,6 +32,7 @@ const ACTION_PHASES: Record<TurnAction, readonly TurnPhase[]> = {
   roll: ['PRE_ROLL_ACTION'],
   use_card: ['PRE_ROLL_ACTION'],
   choose_branch: ['BRANCH_CHOICE'],
+  choose_job: ['JOB_CHOICE'],
 };
 
 export const TURN_PHASE_LABELS: Record<TurnPhase, string> = {
@@ -40,6 +43,7 @@ export const TURN_PHASE_LABELS: Record<TurnPhase, string> = {
   MOVING: 'ĐANG DI CHUYỂN',
   BRANCH_CHOICE: 'ĐANG CHỌN ĐƯỜNG',
   RESOLVING_TILE: 'ĐANG XỬ LÝ Ô',
+  JOB_CHOICE: 'ĐANG CHỌN NGHỀ',
   TURN_END: 'KẾT THÚC LƯỢT',
 };
 
