@@ -40,7 +40,7 @@ The exact ZIP/OGG binaries are still not committed. The File Library available d
 
 Do **not** silently regenerate or substitute audio.
 
-Checksum-locked importer now exists:
+Checksum-locked importer:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\import-bgm-pack.ps1 .\MeMeMe_Audio_Pack_0.1.16.2.zip
@@ -55,7 +55,7 @@ public/audio/bgm/03_City_Silly_LOOP_EXTENDED.ogg
 public/audio/bgm/04_Final_Round_LOOP.ogg
 ```
 
-## MVP 0.1.17 progress already implemented
+## MVP 0.1.17 progress implemented
 
 BGM runtime shell:
 - Lobby / Setup → `menu_mememe`;
@@ -70,23 +70,26 @@ BGM runtime shell:
 
 Presentation Parity:
 - `🐛 BUG REPORT` JSON export with checksum/session/log/state diagnostics;
-- authoritative B$ deltas are logged + toasted;
-- card gained/removed deltas are logged + toasted;
-- snapshot resync is excluded from fake delta presentation.
+- authoritative B$ deltas logged + toasted;
+- card gained/removed deltas logged + toasted;
+- remote token destination remains authoritative, with presentation-only movement tween instead of snap;
+- deterministic presentation `eventLog` is rebuilt during replay and remains excluded from gameplay checksum;
+- host/client now receive the same Card draw, Card play, News and `reactionEventId` presentation events;
+- basic Card/News/Reaction toast UI is wired on both host and client;
+- snapshot resync is excluded from fake delta/event presentation.
 
 Regression:
-- full CI passed after the BGM controller fix, including deterministic replay and 4-CPU autoplay stress;
-- check the newest CI after the B$/Card delta slice before continuing.
+- every completed 0.1.17 slice currently passes full CI;
+- includes build, deterministic replay, lockstep, host/client snapshot resync, authority protocol, two-tab session, demo shell, CPU autoplay stress and package validation.
 
 ## Next build work
 
 Continue **Presentation Parity** in this order:
-1. verify latest CI;
-2. remote movement tween/presentation;
-3. Card / News / Reaction parity on client;
-4. local face sharing only if privacy contract remains explicit;
-5. run 4-CPU autoplay after each lifecycle/presentation change;
-6. once the exact audio ZIP is accessible, run the checksum importer and then promote package verification/artifact naming to 0.1.17.
+1. polish Card / News / Reaction visual treatment using the shared presentation events already in place;
+2. evaluate local face sharing only if the privacy contract remains explicit and no image is silently uploaded/persisted;
+3. add presentation-specific regression coverage if lifecycle complexity grows;
+4. keep running 4-CPU autoplay after presentation changes;
+5. once the exact audio ZIP is accessible, run the checksum importer, require all four OGGs in package verification, then promote artifact naming/guide to 0.1.17.
 
 ## Current playtest launch path
 
