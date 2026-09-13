@@ -100,6 +100,20 @@ function consumeSpectatorRandom(ctx: ReplayContext, excludedIds: number[]): numb
 function resolveReplayTile(ctx: ReplayContext, player: PlayerState): void {
   const node = getBoardNode(ctx.board, player.nodeId);
 
+  // Every resolved landing now emits a presentation-only event before its tile effect.
+  // This gives host/client the same "I landed here" feedback without changing checksum,
+  // authority, command order, or RNG consumption.
+  appendMatchEvent(
+    ctx.state,
+    'tile_land',
+    {
+      nodeId: node.id,
+      tileType: node.type,
+      value: node.value ?? 0,
+    },
+    player.id,
+  );
+
   switch (node.type) {
     case 'money': {
       const amount = node.value ?? 0;
