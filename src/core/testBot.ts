@@ -1,5 +1,5 @@
 import type { ClientIntentType } from './authority';
-import { getOutgoingEdges } from './board';
+import { getOutgoingEdges, pickParityEdge } from './board';
 import { getValidTargets, type CardDefinition } from './cards';
 import type { MatchEventValue, MatchState } from './matchState';
 import { MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
@@ -36,13 +36,14 @@ export function chooseTestBotIntent(
 
   if (state.turn.phase === 'BRANCH_CHOICE') {
     const outgoing = getOutgoingEdges(board, actor.nodeId);
-    if (outgoing.length === 0) return undefined;
-    const index = (state.turn.turnNumber + actor.id) % outgoing.length;
-    const edge = outgoing[index];
+    const roll = state.turn.lastRoll ?? 0;
+    const edge = pickParityEdge(outgoing, roll);
+    if (!edge) return undefined;
+    const parityLabel = Math.abs(Math.floor(roll)) % 2 === 0 ? 'chẵn' : 'lẻ';
     return {
       type: 'choose_branch',
       data: { to: edge.to },
-      reason: `chọn đường ${edge.label ?? `${edge.from}→${edge.to}`}`,
+      reason: `xúc xắc ${roll} ${parityLabel} → ${edge.label ?? `${edge.from}→${edge.to}`}`,
     };
   }
 
