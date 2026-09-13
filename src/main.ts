@@ -7,7 +7,7 @@ import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { PartyMechanicsBoardScene } from './scenes/PartyMechanicsBoardScene';
+import { TurnStakesBoardScene } from './scenes/TurnStakesBoardScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -15,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [LocalLobbyScene, SetupScene, PartyMechanicsBoardScene, BoardScene, NetworkBoardScene],
+  scene: [LocalLobbyScene, SetupScene, TurnStakesBoardScene, BoardScene, NetworkBoardScene],
   dom: {
     createContainer: true,
   },
