@@ -153,5 +153,110 @@
         ]
       }
     ]
+  },
+  {
+    "id": "NEWS_POSITIVE_ALT",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "subject",
+        "expression": "happy",
+        "durationMs": 1600,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Tiền tự tìm tới tui, chịu thôi 😌" },
+          { "personalityTag": "whiny", "text": "Ơ kìa, hôm nay game xin lỗi tui hả?" },
+          { "personalityTag": "gossip", "text": "Khoan, ai tài trợ {amount}B$ vậy? Có chuyện nha." },
+          { "personalityTag": "chill", "text": "Nhặt được {amount}B$. Cảm ơn thành phố." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 650,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1400,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Rồi lát trả lại gấp đôi nha {subject}." },
+          { "personalityTag": "whiny", "text": "Tới lượt tui được phát tiền chưa?" },
+          { "personalityTag": "gossip", "text": "Ghi nhận: {subject} vừa có lộc bất thường." },
+          { "personalityTag": "chill", "text": "Hên thì hưởng đi." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "NEWS_NEGATIVE_ALT",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "subject",
+        "expression": "angry",
+        "durationMs": 1700,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "80B$ mà cũng dám lấy của tui hả?" },
+          { "personalityTag": "whiny", "text": "Tui vừa có tiền xong mà trời ơi!" },
+          { "personalityTag": "gossip", "text": "Khoản trừ này chắc chắn có người đứng sau." },
+          { "personalityTag": "chill", "text": "Bay {amount}B$. Thành phố thu học phí hơi gắt." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 700,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1450,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ví của {subject} vừa thở oxy kìa 😏" },
+          { "personalityTag": "whiny", "text": "Thôi đừng nhìn tiền nữa, đau lòng lắm." },
+          { "personalityTag": "gossip", "text": "Tui đã lưu biên bản vụ này rồi nha." },
+          { "personalityTag": "chill", "text": "Một cú trừ thôi, chưa hết game." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "NEWS_GROUP_ALT",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "subject",
+        "expression": "angry",
+        "durationMs": 1750,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ai xài quỹ chung thì tự giác giơ tay." },
+          { "personalityTag": "whiny", "text": "Sao người khác tiêu mà tui cũng mất tiền?!" },
+          { "personalityTag": "gossip", "text": "Quỹ chung bốc hơi. Tôi cần tên thủ phạm ngay." },
+          { "personalityTag": "chill", "text": "Mỗi người 40B$. Chia đều nỗi đau." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 720,
+        "speakerRole": "spectator",
+        "expression": "angry",
+        "durationMs": 1500,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Cả bàn nghèo đồng đều, đẹp đội hình." },
+          { "personalityTag": "whiny", "text": "Tui xin rút khỏi nhóm được không?" },
+          { "personalityTag": "gossip", "text": "Tin này đủ để nói tới cuối ván." },
+          { "personalityTag": "chill", "text": "Rồi, cùng mất thì cùng đi tiếp." }
+        ]
+      }
+    ]
   }
 ]
