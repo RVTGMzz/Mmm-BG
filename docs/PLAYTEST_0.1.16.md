@@ -13,6 +13,39 @@ Luật thắng trong build này chỉ là **temporary playtest rule**:
 
 Luật trên **không phải luật MeMeMe final**.
 
+## Cách chạy trên Windows
+
+### Cách khuyên dùng
+
+1. Giải nén artifact `mememe-playtest-0.1.16`.
+2. Double-click `START_PLAYTEST.bat`.
+3. Launcher sẽ mở một local HTTP server bằng PowerShell/Windows .NET, rồi tự mở trình duyệt ở `http://127.0.0.1:4173/` hoặc cổng gần đó nếu 4173 đang bận.
+4. Giữ cửa sổ launcher mở trong lúc chơi. Khi chơi xong nhấn `Ctrl+C` để dừng server.
+
+**Không mở `index.html` trực tiếp bằng double-click.** Nếu thanh địa chỉ hiện dạng `file:///C:/.../index.html`, browser có thể chặn ES module/local asset và chỉ hiện màn hình trắng. Đây là hành vi của browser khi chạy web app bằng `file://`, không phải gameplay crash.
+
+Launcher mới gồm:
+- `START_PLAYTEST.bat`;
+- `serve-playtest.ps1`.
+
+Launcher không cần cài Node hoặc Python.
+
+### Cách thủ công nếu cần
+
+Node:
+
+```bash
+npx serve .
+```
+
+Python:
+
+```bash
+python -m http.server 4173
+```
+
+Sau đó mở URL localhost mà terminal hiển thị.
+
 ## Cách chơi nhanh
 
 1. Chọn `SOLO / HOTSEAT` để 4 người chơi chung một máy, hoặc `HOST 2 TAB` + `JOIN 2 TAB` để chia một ghế sang tab thứ hai.
@@ -28,7 +61,7 @@ Trong bàn chơi có nút `? CÁCH CHƠI` để mở hướng dẫn nhanh.
 
 - Hai tab phải mở cùng build/cùng origin trong cùng trình duyệt profile.
 - Tab 1 chọn `HOST 2 TAB`, ghi lại room code, setup 4 người rồi vào bàn.
-- Tab 2 chọn `JOIN 2 TAB`, nhập room code và chọn P2/P3/P4.
+- Tab 2 mở lại đúng URL localhost của launcher, chọn `JOIN 2 TAB`, nhập room code và chọn P2/P3/P4.
 - Host vẫn điều khiển các ghế chưa có client claim.
 - Client chỉ được điều khiển đúng ghế đã chọn.
 
@@ -48,26 +81,6 @@ Trong bàn chơi có nút `? CÁCH CHƠI` để mở hướng dẫn nhanh.
 - Có lỗi treo lượt, sai người điều khiển, mất sync giữa 2 tab không?
 
 Nếu báo lỗi multiplayer, nên ghi kèm: room code, ghế client, đang ở vòng/lượt nào và thao tác ngay trước khi lỗi xảy ra.
-
-## Chạy build
-
-Build production nằm trong thư mục `dist/` hoặc artifact GitHub Actions tên `mememe-playtest-0.1.16`.
-
-Vì đây là web build, nên phục vụ bằng static HTTP server thay vì mở `index.html` trực tiếp bằng `file://`.
-
-Ví dụ với Node:
-
-```bash
-npx serve dist
-```
-
-Hoặc với Python:
-
-```bash
-python -m http.server 4173 -d dist
-```
-
-Sau đó mở URL localhost mà terminal hiển thị. Muốn test 2 tab, mở URL đó ở hai tab cùng trình duyệt.
 
 ## Known limitations 0.1.16
 
