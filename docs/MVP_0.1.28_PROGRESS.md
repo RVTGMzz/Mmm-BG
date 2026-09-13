@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.28 — NPC Banter & Longer Side Chat
 
-Status: IMPLEMENTED / FINAL CI PENDING
+Status: ACTIVE / PLAYTEST PACKAGED
 
 ## Goal
 
@@ -45,6 +45,28 @@ The existing Tactical Choice regression now also locks:
 - tactical mistake can flip the normally optimal choice;
 - NPC chat multiplier is exactly 2.5×;
 - human chat timing remains unchanged.
+
+## Validated artifact
+
+GitHub Actions run:
+
+`34766302140` / run `#717`
+
+Head SHA:
+
+`966cb4b8bf6ae4ca69460ecfd1ea84ae0edbedef`
+
+Artifact:
+
+`mememe-playtest-0.1.28`
+
+Artifact digest:
+
+`sha256:f9cc30d9928edf2bab1068b527e698c8bb8ee7ddb268f84809bb6230dacf21f6`
+
+Artifact size: ~8.51 MB.
+
+CI passed through artifact upload, including Tactical Choice + NPC Banter, replay, authority, 2-tab and CPU autoplay.
 
 ## Next planned milestones
 
