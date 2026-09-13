@@ -18,6 +18,7 @@
     "test:presentation": "tsx tests/presentation-events.ts",
     "test:flow": "tsx tests/flow-fix.ts",
     "test:board-flow": "tsx tests/board-flow-019.ts",
+    "test:board-feel": "tsx tests/board-feel-020.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
