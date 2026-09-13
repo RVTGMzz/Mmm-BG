@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.29 — Mini Game + Job Tile Foundation
 
-Status: IMPLEMENTED / FINAL CI PENDING
+Status: ACTIVE / PLAYTEST PACKAGED
 
 ## Goal
 
@@ -75,6 +75,28 @@ Locks:
 - Settings/BGM/SFX;
 - face editor and privacy constraints;
 - node-by-node movement and parity routing.
+
+## Validated artifact
+
+GitHub Actions run:
+
+`34767107822` / run `#748`
+
+Head SHA:
+
+`210a45352efd1ddde74138ec649a786f0fc9962b`
+
+Artifact:
+
+`mememe-playtest-0.1.29`
+
+Artifact digest:
+
+`sha256:ab5523216dad940ed3640652050b4d721296bcefe63486467246834ac89f772c`
+
+Artifact size: 8,507,200 bytes.
+
+CI passed through artifact upload, including the new **Mini Game and Job tile foundation** regression, replay, authority, two-tab and CPU autoplay.
 
 ## Next target — 0.1.30
 
