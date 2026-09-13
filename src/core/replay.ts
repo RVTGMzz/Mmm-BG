@@ -29,6 +29,12 @@ import {
   type MatchCommand,
   type MatchState,
 } from './matchState';
+import {
+  isMiniGameRewardType,
+  miniGameRewardForRank,
+  parseRankingPlayerIds,
+  validateMiniGameRanking,
+} from './minigameRewards';
 import { applyNewsEffect, drawWeightedNews, type NewsDefinition } from './news';
 import { createRandomSource } from './rng';
 import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
@@ -407,6 +413,54 @@ function replayJobChoice(ctx: ReplayContext, command: MatchCommand): void {
   finishAndAdvanceTurn(ctx, player);
 }
 
+function replayMiniGameResult(ctx: ReplayContext, command: MatchCommand): void {
+  if (command.type !== 'resolve_minigame') failCommand(ctx, command, `expected resolve_minigame, got ${command.type}.`);
+  validateCommand(ctx, command);
+
+  const sourceEventSeq = Number(command.data.sourceEventSeq);
+  if (!Number.isInteger(sourceEventSeq) || sourceEventSeq <= 0) {
+    failCommand(ctx, command, 'sourceEventSeq must be a positive integer.');
+  }
+
+  const sourceEvent = ctx.state.eventLog.find(
+    (event) => event.seq === sourceEventSeq && event.type === 'minigame_tile',
+  );
+  if (!sourceEvent) failCommand(ctx, command, `cannot find Mini Game event #${sourceEventSeq}.`);
+
+  if (ctx.state.eventLog.some(
+    (event) => event.type === 'minigame_reward' && Number(event.data.sourceEventSeq) === sourceEventSeq,
+  )) {
+    failCommand(ctx, command, `Mini Game event #${sourceEventSeq} is already resolved.`);
+  }
+
+  const gameType = String(command.data.gameType ?? '');
+  if (!isMiniGameRewardType(gameType)) failCommand(ctx, command, `invalid Mini Game reward type ${gameType || '(empty)'}.`);
+
+  const rankingPlayerIds = parseRankingPlayerIds(command.data.rankingPlayerIds);
+  const participantPlayerIds = parseRankingPlayerIds(sourceEvent.data.affectedPlayerIds);
+  const rankingError = validateMiniGameRanking(rankingPlayerIds, participantPlayerIds);
+  if (rankingError) failCommand(ctx, command, rankingError);
+
+  rankingPlayerIds.forEach((playerId, index) => {
+    const player = ctx.state.players.find((entry) => entry.id === playerId);
+    if (!player) failCommand(ctx, command, `cannot find ranked player P${playerId}.`);
+    const rank = index + 1;
+    const amount = miniGameRewardForRank(gameType, rank);
+    player.money += amount;
+    appendMatchEvent(ctx.state, 'minigame_reward', {
+      sourceEventSeq,
+      gameType,
+      rank,
+      amount,
+      resultMoney: player.money,
+      title: `HẠNG ${rank} MINI GAME`,
+      impact: rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '4️⃣',
+      description: amount > 0 ? `${player.name} nhận +${amount} B$.` : `${player.name} không nhận B$.`,
+      affectedPlayerIds: String(player.id),
+    }, player.id);
+  });
+}
+
 function replayCard(ctx: ReplayContext, command: MatchCommand): void {
   const caster = currentPlayer(ctx);
   if (command.type !== 'play_card') failCommand(ctx, command, `expected play_card, got ${command.type}.`);
@@ -514,6 +568,11 @@ export function replayMatchCommands(
       }
       if (command.type === 'choose_job') {
         replayJobChoice(ctx, command);
+        index += 1;
+        continue;
+      }
+      if (command.type === 'resolve_minigame') {
+        replayMiniGameResult(ctx, command);
         index += 1;
         continue;
       }
