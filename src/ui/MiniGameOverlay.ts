@@ -1,5 +1,10 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
+import {
+  miniGameRewardForRank,
+  type MiniGameRewardType,
+} from '../core/minigameRewards';
 import {
   minigameModeForActivePlayers,
   resolveMajorityMinorityRound,
@@ -10,6 +15,7 @@ import {
 import type { PlayerState } from '../core/types';
 
 export interface MiniGameOutcome {
+  gameType: MiniGameRewardType;
   rankingPlayerIds: number[];
 }
 
@@ -42,6 +48,10 @@ function rpsLabel(choice: RpsChoice): string {
   if (choice === 'rock') return 'BÚA';
   if (choice === 'paper') return 'BAO';
   return 'KÉO';
+}
+
+function rewardTitle(gameType: MiniGameRewardType): string {
+  return gameType === 'rps' ? 'OẲN TÙ XÌ' : 'NHIỀU RA ÍT BỊ';
 }
 
 export function startMiniGameOverlay(
@@ -90,7 +100,10 @@ export function startMiniGameOverlay(
       }).setOrigin(0.5);
       box.on('pointerover', () => box.setScale(1.035));
       box.on('pointerout', () => box.setScale(1));
-      box.on('pointerdown', () => resolve(choice.value));
+      box.on('pointerdown', () => {
+        sfxController.play('ui_confirm');
+        resolve(choice.value);
+      });
       stage.add([box, icon, label]);
     });
   });
@@ -189,23 +202,24 @@ export function startMiniGameOverlay(
     await wait(tied ? 900 : 1150);
   };
 
-  const showRanking = async (rankingPlayerIds: readonly number[]) => {
+  const showRanking = async (rankingPlayerIds: readonly number[], gameType: MiniGameRewardType) => {
     if (rankingPlayerIds.length === 0) return;
     clearStage();
-    subtitle.setText('KẾT QUẢ MINI GAME');
+    subtitle.setText(`${rewardTitle(gameType)} • THƯỞNG B$ THEO HẠNG`);
     const heading = scene.add.text(0, -98, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#202020',
     }).setOrigin(0.5);
     const medals = ['🥇', '🥈', '🥉', '4️⃣'];
     const rows = rankingPlayerIds.map((id, index) => {
       const player = playerById(id);
-      return `${medals[index] ?? `${index + 1}.`}  ${player?.name ?? `P${id + 1}`}`;
+      const reward = miniGameRewardForRank(gameType, index + 1);
+      return `${medals[index] ?? `${index + 1}.`}  ${player?.name ?? `P${id + 1}`}  •  ${reward > 0 ? `+${reward}` : '0'} B$`;
     }).join('\n');
     const body = scene.add.text(0, 38, rows, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#4f4740', align: 'left', lineSpacing: 12,
     }).setOrigin(0.5);
     stage.add([heading, body]);
-    await wait(1900);
+    await wait(2100);
   };
 
   const runRpsFinal = async (
@@ -245,18 +259,22 @@ export function startMiniGameOverlay(
   const runTournament = async (): Promise<MiniGameOutcome> => {
     let activeIds = players.map((player) => player.id);
     const eliminationOrder: number[] = [];
+    const gameType: MiniGameRewardType = minigameModeForActivePlayers(activeIds) === 'rps'
+      ? 'rps'
+      : 'majority_minority';
 
     if (activeIds.length <= 1) {
       const rankingPlayerIds = [...activeIds];
       await showResult('🏆 MINI GAME', `${playerById(activeIds[0] ?? -1)?.name ?? 'Người chơi'} thắng mặc định.`);
-      return { rankingPlayerIds };
+      await showRanking(rankingPlayerIds, gameType);
+      return { gameType, rankingPlayerIds };
     }
 
-    if (minigameModeForActivePlayers(activeIds) === 'rps') {
+    if (gameType === 'rps') {
       const final = await runRpsFinal(activeIds, 0);
       const rankingPlayerIds = final ? [final.winnerId, final.loserId] : [...activeIds];
-      await showRanking(rankingPlayerIds);
-      return { rankingPlayerIds };
+      await showRanking(rankingPlayerIds, gameType);
+      return { gameType, rankingPlayerIds };
     }
 
     subtitle.setText('NHIỀU RA ÍT BỊ • Chọn SẤP hoặc NGỬA. Phe thiểu số bị loại, chơi tiếp tới 1 VS 1.');
@@ -299,20 +317,21 @@ export function startMiniGameOverlay(
       rankingPlayerIds = final
         ? [final.winnerId, final.loserId, ...[...eliminationOrder].reverse()]
         : [...activeIds, ...[...eliminationOrder].reverse()];
-      await showRanking(rankingPlayerIds);
-      return { rankingPlayerIds };
+      await showRanking(rankingPlayerIds, gameType);
+      return { gameType, rankingPlayerIds };
     }
 
     if (activeIds.length === 1) {
       rankingPlayerIds = [activeIds[0]!, ...[...eliminationOrder].reverse()];
       await showResult('🏆 NGƯỜI THẮNG MINI GAME!', `${playerById(activeIds[0]!)?.name ?? '???'} thắng.`);
-      await showRanking(rankingPlayerIds);
-      return { rankingPlayerIds };
+      await showRanking(rankingPlayerIds, gameType);
+      return { gameType, rankingPlayerIds };
     }
 
     await showResult('🌀 HÒA QUÁ NHIỀU', 'Mini game tự kết thúc để không kẹt trận.');
     rankingPlayerIds = [...activeIds, ...[...eliminationOrder].reverse()];
-    return { rankingPlayerIds };
+    await showRanking(rankingPlayerIds, gameType);
+    return { gameType, rankingPlayerIds };
   };
 
   return { root, done: runTournament() };
