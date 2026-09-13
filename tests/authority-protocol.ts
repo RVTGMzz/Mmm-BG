@@ -1,7 +1,7 @@
 import boardJson from '../src/content/city/board_city_mvp.json' with { type: 'json' };
 import cardsJson from '../src/content/core/cards_mvp.json' with { type: 'json' };
 import newsJson from '../src/content/core/news_mvp_demo.json' with { type: 'json' };
-import { getOutgoingEdges } from '../src/core/board';
+import { getOutgoingEdges, pickParityEdge } from '../src/core/board';
 import type { CardDefinition } from '../src/core/cards';
 import {
   createEmptyHostAuthority,
@@ -20,7 +20,8 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-const GOLDEN_CHECKSUM = '46bb4e20';
+const FIXTURE_TURNS = 20;
+const GOLDEN_CHECKSUM = 'fad794e3';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -56,49 +57,35 @@ function intent(
 }
 
 const authority = createAuthority();
-const fixtureActions: Array<{ type: 'roll' | 'choose_branch'; actorId: number; to?: number }> = [
-  { type: 'roll', actorId: 0 },
-  { type: 'roll', actorId: 1 },
-  { type: 'roll', actorId: 2 },
-  { type: 'roll', actorId: 3 },
-  { type: 'choose_branch', actorId: 3, to: 5 },
-  { type: 'roll', actorId: 0 },
-  { type: 'choose_branch', actorId: 0, to: 5 },
-  { type: 'roll', actorId: 1 },
-  { type: 'choose_branch', actorId: 1, to: 5 },
-  { type: 'roll', actorId: 2 },
-  { type: 'choose_branch', actorId: 2, to: 5 },
-  { type: 'roll', actorId: 3 },
-  { type: 'roll', actorId: 0 },
-  { type: 'roll', actorId: 1 },
-  { type: 'roll', actorId: 2 },
-  { type: 'roll', actorId: 3 },
-  { type: 'roll', actorId: 0 },
-  { type: 'roll', actorId: 1 },
-  { type: 'roll', actorId: 2 },
-  { type: 'roll', actorId: 3 },
-  { type: 'roll', actorId: 0 },
-  { type: 'roll', actorId: 1 },
-  { type: 'roll', actorId: 2 },
-  { type: 'roll', actorId: 3 },
-];
-
 let firstAcceptedIntent: ClientIntent | undefined;
-for (let index = 0; index < fixtureActions.length; index += 1) {
-  const action = fixtureActions[index];
-  const nextIntent = intent(
-    authority,
-    `fixture-${index + 1}`,
-    action.actorId,
-    action.type,
-    action.type === 'choose_branch' ? { to: action.to ?? 5 } : {},
-  );
+let fixtureIntentCounter = 0;
+while (authority.state.turn.turnNumber <= FIXTURE_TURNS) {
+  const player = authority.state.players[authority.state.turn.currentPlayerIndex];
+  assert(player, 'Authority fixture missing current player.');
+  let nextIntent: ClientIntent;
+
+  if (authority.state.turn.phase === 'PRE_ROLL_ACTION') {
+    nextIntent = intent(authority, `fixture-${++fixtureIntentCounter}`, player.id, 'roll');
+  } else if (authority.state.turn.phase === 'BRANCH_CHOICE') {
+    const outgoing = getOutgoingEdges(BOARD, player.nodeId);
+    const edge = pickParityEdge(outgoing, authority.state.turn.lastRoll ?? 0);
+    assert(edge, `Authority fixture cannot resolve parity branch at node ${player.nodeId}.`);
+    nextIntent = intent(authority, `fixture-${++fixtureIntentCounter}`, player.id, 'choose_branch', { to: edge.to });
+  } else if (authority.state.turn.phase === 'JOB_CHOICE') {
+    const jobId = authority.state.pendingJobOfferIds?.[0];
+    assert(jobId, 'Authority fixture JOB_CHOICE missing offer.');
+    nextIntent = intent(authority, `fixture-${++fixtureIntentCounter}`, player.id, 'choose_job', { jobId });
+  } else {
+    throw new Error(`Authority fixture stalled in ${authority.state.turn.phase}.`);
+  }
+
   const result = submitClientIntent(authority, nextIntent);
   assert(result.status === 'accepted', `Fixture intent ${nextIntent.intentId} rejected: ${result.reason ?? 'unknown'}`);
   firstAcceptedIntent ??= nextIntent;
 }
 
-assert(hostAuthorityCommandSeq(authority) === 24, 'Host did not stamp all 24 authoritative commands.');
+const goldenCommandCount = hostAuthorityCommandSeq(authority);
+assert(goldenCommandCount > FIXTURE_TURNS, 'Job/branch fixture should contain extra authoritative commands.');
 assert(
   hostAuthorityChecksum(authority) === GOLDEN_CHECKSUM,
   `Authority checksum changed: expected ${GOLDEN_CHECKSUM}, got ${hostAuthorityChecksum(authority)}.`,
@@ -107,35 +94,49 @@ assert(
 assert(firstAcceptedIntent, 'Missing accepted intent for duplicate probe.');
 const duplicate = submitClientIntent(authority, firstAcceptedIntent);
 assert(duplicate.status === 'duplicate', 'Repeated intentId was not treated as duplicate.');
-assert(hostAuthorityCommandSeq(authority) === 24, 'Duplicate intent changed host command sequence.');
+assert(hostAuthorityCommandSeq(authority) === goldenCommandCount, 'Duplicate intent changed host command sequence.');
 
 const current = authority.state.players[authority.state.turn.currentPlayerIndex];
 assert(current, 'Missing current authority player.');
 const wrongActor = submitClientIntent(
   authority,
-  intent(authority, 'wrong-actor', (current.id + 1) % authority.state.players.length, 'roll'),
+  intent(authority, 'wrong-actor', (current.id + 1) % authority.state.players.length, authority.state.turn.phase === 'JOB_CHOICE' ? 'choose_job' : 'roll', authority.state.turn.phase === 'JOB_CHOICE' ? { jobId: authority.state.pendingJobOfferIds?.[0] ?? '' } : {}),
 );
 assert(wrongActor.status === 'rejected' && wrongActor.reason?.includes('actor'), 'Wrong actor intent was not rejected.');
 
-const stale = intent(authority, 'stale-view', current.id, 'roll');
+const staleType: ClientIntent['type'] = authority.state.turn.phase === 'JOB_CHOICE' ? 'choose_job' : 'roll';
+const staleData = staleType === 'choose_job' ? { jobId: authority.state.pendingJobOfferIds?.[0] ?? '' } : {};
+const stale = intent(authority, 'stale-view', current.id, staleType, staleData);
 stale.observedCommandSeq -= 1;
 const staleReceipt = submitClientIntent(authority, stale);
 assert(staleReceipt.status === 'rejected' && staleReceipt.reason?.includes('stale'), 'Stale client view was not rejected.');
 
 const cardAuthority = createAuthority(20260913);
 let cardReceipt: HostIntentReceipt | undefined;
-for (let guard = 0; guard < 120 && !cardReceipt; guard += 1) {
+for (let guard = 0; guard < 180 && !cardReceipt; guard += 1) {
   const player = cardAuthority.state.players[cardAuthority.state.turn.currentPlayerIndex];
   assert(player, 'Card probe missing current player.');
 
   if (cardAuthority.state.turn.phase === 'BRANCH_CHOICE') {
     const outgoing = getOutgoingEdges(BOARD, player.nodeId);
-    assert(outgoing.length > 0, 'Branch probe found no outgoing edge.');
+    const edge = pickParityEdge(outgoing, cardAuthority.state.turn.lastRoll ?? 0) ?? outgoing[0];
+    assert(edge, 'Branch probe found no outgoing edge.');
     const branch = submitClientIntent(
       cardAuthority,
-      intent(cardAuthority, `card-branch-${guard}`, player.id, 'choose_branch', { to: outgoing[0].to }),
+      intent(cardAuthority, `card-branch-${guard}`, player.id, 'choose_branch', { to: edge.to }),
     );
     assert(branch.status === 'accepted', `Card probe branch rejected: ${branch.reason ?? 'unknown'}`);
+    continue;
+  }
+
+  if (cardAuthority.state.turn.phase === 'JOB_CHOICE') {
+    const jobId = cardAuthority.state.pendingJobOfferIds?.[0];
+    assert(jobId, 'Card probe Job choice missing offer.');
+    const job = submitClientIntent(
+      cardAuthority,
+      intent(cardAuthority, `card-job-${guard}`, player.id, 'choose_job', { jobId }),
+    );
+    assert(job.status === 'accepted', `Card probe Job choice rejected: ${job.reason ?? 'unknown'}`);
     continue;
   }
 
@@ -153,6 +154,7 @@ for (let guard = 0; guard < 120 && !cardReceipt; guard += 1) {
       intent(cardAuthority, 'card-play', player.id, 'play_card', {
         cardId,
         ...(target !== undefined ? { targetId: target } : {}),
+        ...(card.effect.type === 'tactical_choice' ? { choice: 'safe' } : {}),
       }),
     );
     break;
@@ -206,6 +208,6 @@ hostEndpoint.close();
 clientEndpoint.close();
 
 console.log(
-  `[authority-ci] PASS commands=${hostAuthorityCommandSeq(authority)} checksum=${hostAuthorityChecksum(authority)} duplicate=PASS wrongActor=PASS stale=PASS cardIntent=PASS`,
+  `[authority-ci] PASS commands=${goldenCommandCount} checksum=${hostAuthorityChecksum(authority)} duplicate=PASS wrongActor=PASS stale=PASS cardIntent=PASS`,
 );
 console.log('[authority-ci] local transport roundtrip PASS • host stamps authority envelope/outcomes');
