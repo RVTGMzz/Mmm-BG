@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import './styles.css';
-import { bgmController, installBgmControls } from './audio/bgmController';
+import { bgmController } from './audio/bgmController';
+import { installSettingsPanel } from './ui/SettingsPanel';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
 import { BoardScene } from './scenes/BoardScene';
@@ -27,6 +28,8 @@ const config: Phaser.Types.Core.GameConfig = {
   },
 };
 
+// Audio is armed before Phaser scene creation so the Menu BGM can begin loading
+// immediately. Browser autoplay rules may still require the first user gesture.
 bgmController.start();
-installBgmControls();
+installSettingsPanel();
 new Phaser.Game(config);
