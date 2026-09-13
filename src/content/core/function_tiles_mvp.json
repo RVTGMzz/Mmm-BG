@@ -1,0 +1,18 @@
+[
+  {
+    "id": "MINIGAME_SLOT_01",
+    "kind": "minigame",
+    "title": "Mini Game Slot 01",
+    "status": "foundation",
+    "icon": "🎮",
+    "notes": "Reserved for the first playable Mini Game in 0.1.30. No reward or input rule is locked yet."
+  },
+  {
+    "id": "JOB_SLOT_01",
+    "kind": "job",
+    "title": "Job Slot 01",
+    "status": "foundation",
+    "icon": "💼",
+    "notes": "Reserved for the first playable Job in 0.1.30. No final job rule is locked yet."
+  }
+]
