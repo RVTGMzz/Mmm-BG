@@ -5,143 +5,145 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.20 — Board Readability & Turn Feel (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.21 — Settings & Audio Startup (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.20`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.21`**.
 
 Read first:
-1. `docs/MVP_0.1.20_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.20.md`
-3. `src/scenes/PresentationParityBoardScene.ts`
-4. `src/ui/boardFeelPolicy.ts`
-5. `tests/board-feel-020.ts`
-6. `docs/MVP_0.1.19_PROGRESS.md`
-7. `src/ui/MatchPresentationLayer.ts`
-8. `src/ui/presentationFlowPolicy.ts`
-9. `src/core/replay.ts`
-10. `docs/AUDIO_PACK_0.1.16.2.md`
+1. `docs/MVP_0.1.21_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.21.md`
+3. `src/ui/SettingsPanel.ts`
+4. `src/settings.css`
+5. `src/audio/bgmController.ts`
+6. `src/main.ts`
+7. `tests/settings-audio-021.ts`
+8. `docs/MVP_0.1.20_PROGRESS.md`
+9. `src/scenes/PresentationParityBoardScene.ts`
+10. `src/ui/MatchPresentationLayer.ts`
+11. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Why 0.1.20 exists
+## Why 0.1.21 exists
 
-0.1.19 made the board-first flow usable. 0.1.20 focuses on making each turn easier to read and reducing visible QA/prototype residue before adding more content.
+Real playtest feedback after 0.1.20 identified two UX issues:
 
-## New turn-readability behavior
+1. permanent BGM/volume/FX controls still occupied the upper-right corner;
+2. Menu BGM could take roughly 2–3 seconds to become audible because the Menu track was only selected once LobbyScene had already been created.
 
-### Active-turn halo
-- current player token gets a soft yellow pulse ring;
-- halo is a child of the token and moves with it;
-- when turn changes, only the new current token pulses.
+0.1.21 moves audio preferences into a compact Settings shell and prepares Menu BGM before Phaser scene creation.
 
-### Compact player status
-The old score/debug block is hidden in the active wrapper.
+## Settings panel
 
-New top-right status only shows:
-- P# / player name;
-- B$;
-- card count;
-- CPU marker where relevant;
-- card-lock status;
-- `▶` for current player.
+The old exposed `installBgmControls()` HUD is no longer installed from `main.ts`.
 
-Node IDs and checksum/debug detail are no longer part of the normal player-facing board HUD.
+The normal screen now shows only a compact `⚙️` trigger. Opening it reveals:
+- BGM on/off;
+- BGM volume;
+- FX on/off;
+- a reserved Game section for future display/speed/accessibility preferences.
 
-### Distance-aware movement
-`src/ui/boardFeelPolicy.ts` defines `movementStepDurationMs()`.
+Panel behavior:
+- close with `×`;
+- close with `Esc`;
+- close by clicking outside;
+- panel DOM consumes its own pointer events so Settings interaction does not become a board Roll/Card click.
 
-Each `move_step` still uses authoritative path metadata, but visual travel time now scales with pixel distance:
-- minimum 170ms;
-- longer board edges receive more travel time;
-- maximum 310ms;
-- landing squash/bounce remains.
+BGM and FX preferences remain local client preferences. They are not gameplay-critical state and do not enter MatchState/checksum.
 
-This is presentation-only and does not alter command timing, movement rules, RNG or checksum.
+## Faster Menu BGM startup
 
-### Graphical pip dice
-The active 0.1.20 wrapper overrides the prototype Unicode dice presentation.
+`bgmController.start()` now runs before `new Phaser.Game(config)` and immediately:
+1. installs the browser autoplay unlock listeners;
+2. creates/preloads `menu_mememe` with `preload = auto` and explicit `load()`;
+3. selects the Menu track before LobbyScene exists.
 
-The visible die now uses:
-- rounded square body;
-- physical pip layout for faces 1–6;
-- short shake/rotation sequence;
-- authoritative `dice_roll` result for the final face.
+The first track uses a short 100ms fade-in. Normal round-to-round BGM transitions keep their existing fade behavior.
 
-No random presentation roll is generated. The final face is always clamped/displayed from the authoritative result.
+### Browser autoplay rule
 
-## Existing 0.1.19 behavior retained
+0.1.21 does **not** bypass browser autoplay policy.
 
-- large permanent center HUD remains removed;
-- main Card/News/Tile notices stay centered and temporary;
-- reaction bubbles alternate left/right;
-- dice only appears during roll;
-- token movement visits each intermediate node;
-- 1P+CPU / hotseat / global timing policy remains 3s/6s/10s as documented in 0.1.19;
-- odd/even route selection remains automatic;
-- result screen waits for final presentation;
-- Card/News/Reaction do not replace gameplay BGM;
-- BGM round transitions wait until presentation queue clears;
-- face editor/compression remains intact.
+If Chrome/Edge/mobile allows autoplay, Menu BGM can begin as soon as the preloaded media is ready.
+
+If the browser blocks autoplay until a gesture, the first click/touch/key now unlocks an Audio element that is already created/loading, instead of waiting for LobbyScene to create the track after the gesture.
 
 ## Regression
 
 New command:
 
-`npm run test:board-feel`
+`npm run test:settings`
 
 It locks:
-- movement duration min/max and distance scaling;
-- compact player status format without debug node/checksum data;
-- current/CPU/card-lock markers;
-- dice face clamp 1–6.
+- BGM startup occurs before Phaser game creation;
+- Menu track is prepared and selected from `BgmController.start()`;
+- initial fast fade path exists;
+- Settings gear exists;
+- BGM toggle, BGM volume and FX toggle exist;
+- legacy exposed `installBgmControls` is not installed from `main.ts`.
 
-CI still runs all previous replay, lockstep, host/client, authority, two-tab, demo shell, CPU stress, presentation, flow, board-flow, image and package/BGM checks.
+All previous replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, image and package/BGM checksum checks remain active.
 
 ## Current artifact status
 
 Validated run:
 
-`34752504350` / run `#448`
+`34754009578` / run `#475`
 
 Artifact:
 
-`mememe-playtest-0.1.20`
+`mememe-playtest-0.1.21`
 
 Artifact digest:
 
-`sha256:013caeb86a2be0b8d36c92e033a674f0cd44fb38c88d003139cbc2f273fa0a5e`
+`sha256:5f64f5662f896d3eb768f6c692481b1d9cc126bcc3fbe6ec17c3b6649591dfdb`
 
-All CI steps passed, including **Board readability and turn feel** and artifact upload.
+Artifact size: ~8.50 MB.
 
 GitHub run URL:
 
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34752504350`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34754009578`
+
+CI passed through artifact upload, including **Settings and early Menu BGM startup**.
+
+## Existing 0.1.20 behavior retained
+
+- board-first compact HUD;
+- active-turn halo;
+- compact player status;
+- graphical pip dice;
+- distance-aware step movement;
+- Card/News/Reaction timing and side dialogue;
+- odd/even route selection;
+- result screen deferral;
+- BGM round sync protection during presentation;
+- face editor and runtime compression.
 
 ## Recommended next work
 
-First validate 0.1.20 visually:
-1. halo follows the correct token and does not lag during movement;
-2. compact status is readable without covering future map art;
-3. pip dice feels better than the Unicode prototype and always shows the correct result;
-4. distance-aware movement does not become sluggish on long edges;
-5. Card/News/Reaction timing from 0.1.19 still feels natural.
+First validate 0.1.21:
+1. Settings trigger feels unobtrusive on Lobby/Setup/Board;
+2. Settings interactions never trigger gameplay behind the panel;
+3. BGM mute/volume and FX mute persist correctly;
+4. Menu BGM feels noticeably faster than 0.1.20;
+5. on autoplay-blocking browsers, first gesture starts the preloaded Menu track promptly.
 
-If accepted, next milestone should move toward **content/gamefeel depth**, not more HUD churn:
+If accepted, continue toward content/gameplay depth rather than adding more permanent HUD:
 - expand Card/News pool;
 - improve reaction/personality variety;
-- introduce stronger tile identity and small route feedback;
-- replace synthesized SFX with approved assets when available;
-- later evaluate explicit session-only face sharing under a privacy contract.
+- strengthen tile identity;
+- later add more client preferences inside the existing Settings shell instead of new floating controls.
 
 ## Hard invariants
 
 - Do not merge PR #1 or mark Ready unless Ron explicitly asks.
 - Do not substitute or re-encode approved BGM.
+- Do not fake/bypass browser autoplay policy.
 - Do not add presentation RNG calls that perturb gameplay RNG.
-- Do not put image/BGM/SFX preferences into gameplay-critical MatchState.
+- Do not put Settings/BGM/SFX/image preferences into gameplay-critical MatchState.
 - Presentation eventLog remains excluded from gameplay checksum.
 - Snapshot resync must not replay stale presentation events.
 - Result/ranking must not cover unresolved final-turn presentation.
-- Dice presentation must display the authoritative result, never invent another roll.
+- Dice presentation must display the authoritative result.
 - Original face files must not be silently uploaded or persisted.
 - CPU remains a QA bot, not final gameplay AI.
