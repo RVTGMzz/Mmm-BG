@@ -5,6 +5,7 @@ export interface BrowserSessionConfig {
   roomCode: string;
   clientId: string;
   seatId: number;
+  cpuSeatIds: number[];
 }
 
 function makeClientId(prefix: string): string {
@@ -12,6 +13,12 @@ function makeClientId(prefix: string): string {
     ? crypto.randomUUID().slice(0, 8)
     : Math.random().toString(36).slice(2, 10);
   return `${prefix}-${suffix}`;
+}
+
+function normalizeCpuSeatIds(seatIds: number[]): number[] {
+  return [...new Set(seatIds)]
+    .filter((seatId) => Number.isInteger(seatId) && seatId >= 0 && seatId <= 3)
+    .sort((a, b) => a - b);
 }
 
 export function normalizeRoomCode(value: string): string {
@@ -32,10 +39,11 @@ class BrowserSessionState {
     roomCode: '',
     clientId: 'solo',
     seatId: 0,
+    cpuSeatIds: [],
   };
 
   get current(): BrowserSessionConfig {
-    return { ...this.config };
+    return { ...this.config, cpuSeatIds: [...this.config.cpuSeatIds] };
   }
 
   get isNetworked(): boolean {
@@ -47,12 +55,17 @@ class BrowserSessionState {
     return `mememe-local-${this.config.roomCode}`;
   }
 
-  configureSolo(): BrowserSessionConfig {
+  isCpuSeat(seatId: number): boolean {
+    return this.config.mode === 'solo' && this.config.cpuSeatIds.includes(seatId);
+  }
+
+  configureSolo(cpuSeatIds: number[] = []): BrowserSessionConfig {
     this.config = {
       mode: 'solo',
       roomCode: '',
       clientId: 'solo',
       seatId: 0,
+      cpuSeatIds: normalizeCpuSeatIds(cpuSeatIds),
     };
     return this.current;
   }
@@ -64,6 +77,7 @@ class BrowserSessionState {
       roomCode: room,
       clientId: 'host',
       seatId: 0,
+      cpuSeatIds: [],
     };
     return this.current;
   }
@@ -80,6 +94,7 @@ class BrowserSessionState {
       roomCode: room,
       clientId: makeClientId(`client-p${seatId + 1}`),
       seatId,
+      cpuSeatIds: [],
     };
     return this.current;
   }
