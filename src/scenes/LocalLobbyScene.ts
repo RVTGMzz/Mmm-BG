@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.30', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.31', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Direct Dice • tới lượt người chơi thì bấm thẳng vào xúc xắc trên bàn.', {
+    this.add.text(228, 109, 'Roll For Order • Job Dice + Salary • Nhiều ra ít bị → 1v1 Oẳn Tù Xì.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎲 0.1.30: tới lượt người thật, xúc xắc hiện trực tiếp trên bàn và chính nó là nút Roll. Nút đỏ ĐỔ XÚC XẮC dưới HUD đã bỏ. CPU vẫn tự chơi; Mini Game + Job foundation 0.1.29 giữ nguyên.
+        🎲 0.1.31: trước trận Roll For Order để xếp lượt. Tới Job Hub sẽ random 3 nghề rồi đổ 1–2 / 3–4 / 5–6 để nhận Job. Mỗi Job có lương theo cấp khi qua cổng và đặc tính/rủi ro riêng.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Direct Dice + Function Tiles + NPC Banter + Tactical Choice + 200B$ Economy + Settings + 2-tab local sẵn sàng.'
+        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Direct Dice + Settings + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
