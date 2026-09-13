@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { browserSession } from '../core/browserSession';
+import { demoMatchLapProgress } from '../core/demoMatch';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import {
@@ -15,7 +16,6 @@ type NetworkStateSource = 'host' | 'state' | 'snapshot';
 
 type TurnStakesInternals = {
   match: MatchState;
-  shell: { rounds?: number };
   compactTurnText?: Phaser.GameObjects.Text;
   compactScoreText?: Phaser.GameObjects.Text;
   currentPlayer(): PlayerState | undefined;
@@ -83,8 +83,7 @@ export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
     this.previousLeaderId = leader?.playerId;
 
     const playerCount = Math.max(1, players.length);
-    const round = Math.max(1, Math.floor((internals.match.turn.turnNumber - 1) / playerCount) + 1);
-    const rounds = internals.shell.rounds ?? 3;
+    const lapProgress = demoMatchLapProgress(internals.match);
     const currentRank = moneyRankForPlayer(players, current.id);
     const allTied = players.every((player) => player.money === players[0]?.money);
     const rankCopy = allTied
@@ -93,7 +92,7 @@ export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
     const cpu = browserSession.isCpuSeat(current.id) ? '🤖 ' : '';
 
     internals.compactTurnText?.setText(
-      `Vòng ${Math.min(round, rounds)}/${rounds}\n${cpu}${current.name} • ${current.money}B$ • ${rankCopy}`,
+      `HOÀN THÀNH 1 VÒNG • ${lapProgress.completedPlayers}/${lapProgress.totalPlayers}\n${cpu}${current.name} • ${current.money}B$ • ${rankCopy}`,
     );
 
     if (internals.compactScoreText) {
@@ -101,13 +100,17 @@ export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
       const rows = ordered
         .map((rank) => byId.get(rank.playerId))
         .filter((player): player is PlayerState => Boolean(player))
-        .map((player) => formatMoneyLeaderboardRow(
-          player,
-          players,
-          current.id,
-          browserSession.isCpuSeat(player.id),
-        ));
-      internals.compactScoreText.setText(['BẢNG B$ • XẾP HẠNG', ...rows].join('\n'));
+        .map((player) => {
+          const base = formatMoneyLeaderboardRow(
+            player,
+            players,
+            current.id,
+            browserSession.isCpuSeat(player.id),
+          );
+          const lapDone = (player.lapsCompleted ?? 0) >= lapProgress.targetLaps;
+          return `${base} • ${lapDone ? '🏁✓' : `🏁${player.lapsCompleted ?? 0}/${lapProgress.targetLaps}`}`;
+        });
+      internals.compactScoreText.setText(['BẢNG B$ • 🏁 ĐỦ 1 VÒNG', ...rows].join('\n'));
 
       if (leaderChanged) {
         this.tweens.killTweensOf(internals.compactScoreText);
