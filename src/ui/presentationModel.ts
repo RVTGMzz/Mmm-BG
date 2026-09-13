@@ -7,6 +7,7 @@ import {
 } from '../core/reactions';
 import type { FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
+import { tileIdentityCopy } from './tileIdentity';
 
 const REACTIONS = reactionsJson as ReactionEventDefinition[];
 
@@ -163,20 +164,10 @@ function baseModel(event: MatchEvent, players: PlayerState[]): Pick<Presentation
 
 function tileLandingModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
   const base = baseModel(event, players);
+  const nodeId = dataNumber(event, 'nodeId') ?? -1;
   const tileType = dataString(event, 'tileType') || 'normal';
   const amount = dataNumber(event, 'value', true) ?? 0;
-  const tileCopy: Record<string, { title: string; impact: string; description: string }> = {
-    normal: { title: 'Ô THƯỜNG', impact: '👟', description: 'Đáp xuống an toàn. Không có biến cố.' },
-    money: {
-      title: amount >= 0 ? `+${amount} B$` : `${amount} B$`,
-      impact: amount >= 0 ? '💰' : '💸',
-      description: amount >= 0 ? 'Ví dày thêm một chút.' : 'Ví vừa nhẹ đi một chút.',
-    },
-    card: { title: 'Ô LÁ BÀI', impact: '🃏', description: 'Chuẩn bị rút một Lá Bài.' },
-    news: { title: 'Ô TIN TỨC', impact: '📰', description: 'Thành phố sắp có biến.' },
-    ready: { title: 'READY', impact: '🏁', description: 'Về lại điểm xuất phát.' },
-  };
-  const copy = tileCopy[tileType] ?? tileCopy.normal;
+  const copy = tileIdentityCopy(tileType, nodeId, amount);
 
   return {
     ...base,
@@ -188,7 +179,7 @@ function tileLandingModel(event: MatchEvent, players: PlayerState[]): Presentati
     description: copy.description,
     summary: '',
     reactions: [],
-    holdMs: tileType === 'normal' ? 1200 : 1600,
+    holdMs: copy.holdMs,
     tileType,
     amount,
   };
