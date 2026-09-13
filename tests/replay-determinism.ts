@@ -22,8 +22,8 @@ const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
 const FIXTURE_TURNS = 20;
 // 0.1.31 intentionally changes deterministic gameplay state: Job Hub is a mandatory stop,
-// draws three authoritative career offers and persists chosen/career progression state.
-const EXPECTED_CHECKSUM = 'fad794e3';
+// draws three authoritative career offers, rolls 1–6 to assign one, and checksums career state.
+const EXPECTED_CHECKSUM = '9cb73072';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -82,9 +82,8 @@ function createFixtureSource() {
     }
 
     if (authority.state.turn.phase === 'JOB_CHOICE') {
-      const jobId = authority.state.pendingJobOfferIds?.[0];
-      assert(jobId, 'JOB_CHOICE missing offer ID.');
-      submit('choose_job', { jobId });
+      assert(authority.state.pendingJobOfferIds?.length === 3, 'JOB_CHOICE must expose exactly three offers.');
+      submit('choose_job', {});
       continue;
     }
 
