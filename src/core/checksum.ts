@@ -6,6 +6,7 @@ function canonicalMatchPayload(match: MatchState): string {
     boardId: match.boardId,
     seed: match.seed,
     startingMoney: match.startingMoney,
+    ...(match.playOrder ? { playOrder: [...match.playOrder] } : {}),
     rng: {
       seed: match.rng.seed,
       state: match.rng.state,
@@ -28,7 +29,12 @@ function canonicalMatchPayload(match: MatchState): string {
         cardBlockTurns: player.cardBlockTurns,
         handCardIds: [...player.handCardIds],
         cardsPlayedThisTurn: player.cardsPlayedThisTurn,
+        jobId: player.jobId,
+        jobLevel: player.jobLevel,
+        jobStatus: player.jobStatus,
       })),
+    pendingJobOfferIds: match.pendingJobOfferIds ? [...match.pendingJobOfferIds] : undefined,
+    pendingJobPlayerId: match.pendingJobPlayerId,
   });
 }
 
