@@ -5,6 +5,7 @@ import type { ClientIntentType } from '../core/authority';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import { MatchPresentationLayer } from '../ui/MatchPresentationLayer';
+import { shouldAutoAdvancePresentation } from '../ui/presentationFlowPolicy';
 import { PlaytestDemoBoardScene } from './PlaytestDemoBoardScene';
 
 const BOARD = boardJson as BoardDefinition;
@@ -50,6 +51,18 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
     legacyToast.showEventToast = () => undefined;
 
     super.create();
+
+    // Cover legacy labels from the stable base scene without churning its authority code.
+    this.add
+      .text(178, 45, 'CITY • MVP 0.1.18.1 FLOW FIX', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '24px',
+        fontStyle: 'bold',
+        color: '#202020',
+        backgroundColor: '#f4ead7',
+        padding: { x: 2, y: 2 },
+      })
+      .setDepth(931);
 
     this.add
       .text(1218, 690, 'PLAYTEST 0.1.18.1 • FLOW FIX', {
@@ -109,12 +122,15 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       internals.submitIntent('choose_branch', { to: selected.to });
     };
 
-    const fullCpuAutoplay = browserSession.current.cpuSeatIds.length === 4;
+    const autoAdvance = shouldAutoAdvancePresentation(
+      browserSession.current.cpuSeatIds,
+      internals.match?.players.length ?? 4,
+    );
     this.presentation = new MatchPresentationLayer(
       this,
       () => internals.match?.players ?? [],
       {
-        autoAdvance: fullCpuAutoplay,
+        autoAdvance,
         onBlockingChange: (blocking) => {
           this.presentationBlocking = blocking;
           internals.refreshHud();
