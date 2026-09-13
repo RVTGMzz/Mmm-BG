@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.33 — ONE-LAP SCORE + TOKEN SYNC PLAYTEST
+MeMeMe MVP 0.1.34 — ONE-LAP CLARITY PLAYTEST
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,14 +18,19 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.33 FOCUS
-- FIX token bị giật lùi: sau khi nhân vật đã đi đến ô đích, Card/News/state tiếp theo không được kéo token về ô cũ rồi bay lại.
-- Khi chơi bình thường, tọa độ token chỉ do chuỗi move_step điều khiển; snapshot/resync và rematch vẫn được hard-snap về state chuẩn.
-- Luật chốt điểm mới: KHÔNG kết thúc theo 3 vòng/12 lượt cũ.
+0.1.34 FOCUS
+- HUD/Bảng B$ giờ dùng trực tiếp luật 1 vòng, không còn tự tính Vòng 1/3, 2/3 ở lớp cũ rồi mới bị ghi đè.
+- Bảng B$ có trạng thái lap riêng cho từng người: 🏁0/1 khi chưa hoàn thành, 🏁✓ khi đã đủ vòng.
+- Khi một người đi qua READY lần đầu và hoàn thành vòng yêu cầu, game hiện banner: HOÀN THÀNH 1 VÒNG cùng tiến độ X/4.
+- Banner chỉ là presentation; không đổi RNG, node, tiền, lương, turn order hay checksum.
+- Giữ fix 0.1.33: Card/News/state thông thường không được snap token ngược về vị trí cũ.
+- Snapshot/resync và rematch vẫn được hard-snap token về state authoritative.
+
+LUẬT CHỐT ĐIỂM HIỆN TẠI
+- KHÔNG kết thúc theo 3 vòng/12 lượt cũ.
 - Mỗi người phải hoàn thành đủ 1 vòng quanh bàn, tức đi qua READY ít nhất 1 lần.
 - Chỉ khi CẢ 4 người đều hoàn thành 1 vòng mới chốt bảng B$.
 - Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
-- HUD hiển thị tiến độ HOÀN THÀNH 1 VÒNG • X/4.
 - Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
 
 RETAINED FEATURES
