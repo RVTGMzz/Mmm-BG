@@ -1,4 +1,5 @@
 export type SfxCue =
+  | 'dice_roll'
   | 'coin_gain'
   | 'coin_loss'
   | 'card_draw'
@@ -60,6 +61,12 @@ export class SfxController {
 
     const now = context.currentTime;
     switch (cue) {
+      case 'dice_roll':
+        this.tone(190, 150, now, 0.055, 0.055, 'triangle');
+        this.tone(230, 170, now + 0.075, 0.05, 0.05, 'triangle');
+        this.tone(270, 190, now + 0.15, 0.05, 0.045, 'triangle');
+        this.tone(420, 300, now + 0.23, 0.09, 0.055, 'sine');
+        break;
       case 'coin_gain':
         this.tone(660, 940, now, 0.12, 0.11, 'sine');
         this.tone(940, 1180, now + 0.07, 0.1, 0.08, 'sine');
