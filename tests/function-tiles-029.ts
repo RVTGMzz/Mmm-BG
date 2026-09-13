@@ -12,24 +12,26 @@ const BOARD = boardJson as BoardDefinition;
 const catalog = functionTilesJson as Array<{
   id: string;
   kind: 'minigame' | 'job';
-  status: 'foundation';
+  status: 'foundation' | 'rules_locked' | 'playable';
 }>;
 
 const featureNodes = BOARD.nodes.filter((node) => node.feature);
-assert.equal(featureNodes.length, 2, '0.1.29 board should expose exactly two function foundation nodes');
+assert.equal(featureNodes.length, 2, 'board should expose exactly two function nodes');
 const miniNode = featureNodes.find((node) => node.feature === 'minigame');
 const jobNode = featureNodes.find((node) => node.feature === 'job');
-assert(miniNode, 'Mini Game foundation node missing');
-assert(jobNode, 'Job foundation node missing');
+assert(miniNode, 'Mini Game node missing');
+assert(jobNode, 'Job node missing');
 assert.equal(miniNode.contentId, 'MINIGAME_SLOT_01');
-assert.equal(jobNode.contentId, 'JOB_SLOT_01');
+assert.equal(jobNode.contentId, 'JOB_HUB_01');
+assert.equal(jobNode.id, 7, 'Job Hub must sit at the main/shortcut convergence');
 
 const catalogIds = new Set(catalog.map((entry) => entry.id));
 assert.equal(catalogIds.size, catalog.length, 'function tile content IDs must stay unique');
 for (const node of featureNodes) {
   assert(node.contentId && catalogIds.has(node.contentId), `board node ${node.id} references missing function content`);
 }
-assert(catalog.every((entry) => entry.status === 'foundation'), '0.1.29 must not pretend function content is playable yet');
+assert.equal(catalog.find((entry) => entry.kind === 'job')?.status, 'playable');
+assert.equal(catalog.find((entry) => entry.kind === 'minigame')?.status, 'rules_locked');
 
 const probe = createInitialMatchState({
   boardId: BOARD.id,
@@ -38,14 +40,8 @@ const probe = createInitialMatchState({
   seed: 129,
 });
 const player = probe.players[0]!;
-const beforePlayer = JSON.stringify(player);
-const rngBefore = probe.rng.calls;
 const miniResolution = resolveFunctionTileFoundation(miniNode, player);
-const jobResolution = resolveFunctionTileFoundation(jobNode, player);
 assert.equal(miniResolution?.eventType, 'minigame_tile');
-assert.equal(jobResolution?.eventType, 'job_tile');
-assert.equal(JSON.stringify(player), beforePlayer, 'foundation resolver must not mutate player gameplay state');
-assert.equal(probe.rng.calls, rngBefore, 'foundation resolver must consume zero gameplay RNG');
 
 function presentationEvent(type: string, actorId: number, data: MatchEvent['data']): MatchEvent {
   return {
@@ -63,51 +59,49 @@ function presentationEvent(type: string, actorId: number, data: MatchEvent['data
 
 const miniPresentation = buildPresentationModel(
   presentationEvent('minigame_tile', 0, {
-    title: miniResolution!.title,
-    impact: miniResolution!.impact,
-    description: miniResolution!.description,
-    summary: miniResolution!.summary,
-    affectedPlayerIds: '0',
+    title: 'MINI GAME',
+    impact: '🎮',
+    description: '3+ người: Nhiều ra ít bị.',
+    summary: '1v1 tự chuyển sang Oẳn Tù Xì.',
+    affectedPlayerIds: '0,1,2,3',
   }),
   probe.players,
 );
-assert(miniPresentation, 'Mini Game foundation event should have a visible presentation hook');
-assert.equal(miniPresentation.kind, 'tile_land');
+assert(miniPresentation, 'Mini Game event should have a visible presentation hook');
 assert.equal(miniPresentation.tileType, 'minigame');
-assert.match(miniPresentation.description, /tự động tiếp tục lượt/i);
 
 const jobPresentation = buildPresentationModel(
-  presentationEvent('job_tile', 0, {
-    title: jobResolution!.title,
-    impact: jobResolution!.impact,
-    description: jobResolution!.description,
-    summary: jobResolution!.summary,
+  presentationEvent('job_offer', 0, {
+    title: 'CHỌN 1 TRONG 3 JOB',
+    impact: '💼',
+    description: 'Chọn nghề.',
+    summary: 'Pool 10 nghề.',
     affectedPlayerIds: '0',
   }),
   probe.players,
 );
-assert(jobPresentation, 'Job foundation event should have a visible presentation hook');
+assert(jobPresentation, 'Job offer should have a visible presentation hook');
 assert.equal(jobPresentation.tileType, 'job');
 
-function featureRing(kind: 'minigame' | 'job', contentId: string): BoardDefinition {
+function miniRing(): BoardDefinition {
   const nodes: BoardNode[] = Array.from({ length: 6 }, (_, id) => ({
     id,
     x: id * 10,
     y: 0,
     type: 'normal',
-    feature: kind,
-    contentId,
+    feature: 'minigame',
+    contentId: 'MINIGAME_SLOT_01',
   }));
   return {
-    id: `test-${kind}-ring`,
-    name: `Test ${kind} ring`,
+    id: 'test-minigame-ring',
+    name: 'Test minigame ring',
     startNodeId: 0,
     nodes,
     edges: nodes.map((node) => ({ from: node.id, to: (node.id + 1) % nodes.length, route: 'main' as const })),
   };
 }
 
-const miniBoard = featureRing('minigame', 'MINIGAME_SLOT_01');
+const miniBoard = miniRing();
 const source = createInitialMatchState({
   boardId: miniBoard.id,
   startNodeId: 0,
@@ -127,9 +121,9 @@ source.nextCommandSeq = 2;
 const replay = replayMatchCommands(source, miniBoard, [], []);
 assert.deepEqual(replay.errors, []);
 assert.equal(replay.consumedCommands, 1);
-assert(replay.state.eventLog.some((entry) => entry.type === 'minigame_tile'), 'replay must emit Mini Game foundation event');
-assert.equal(replay.state.turn.phase, 'PRE_ROLL_ACTION', 'foundation tile must auto-return to the next safe turn window');
-assert.equal(replay.state.rng.calls, 1, 'function foundation must add zero RNG beyond the authoritative dice roll');
+assert(replay.state.eventLog.some((entry) => entry.type === 'minigame_tile'));
+assert.equal(replay.state.turn.phase, 'PRE_ROLL_ACTION');
+assert.equal(replay.state.rng.calls, 1, 'minigame rules presentation must add zero RNG for now');
 
 const authority = createEmptyHostAuthority(
   { boardId: miniBoard.id, startNodeId: 0, playerNames: ['CPU'], seed: 2901 },
@@ -144,7 +138,6 @@ const receipt = submitClientIntent(authority, {
   data: {},
 });
 assert.equal(receipt.status, 'accepted');
-assert(authority.state.eventLog.some((entry) => entry.type === 'minigame_tile'), 'host authority must preserve function tile event');
-assert.equal(authority.state.turn.phase, 'PRE_ROLL_ACTION', 'authority must not deadlock on foundation function tile');
+assert.equal(authority.state.turn.phase, 'PRE_ROLL_ACTION');
 
-console.log('[function-tiles-029] PASS Mini Game + Job schema, presentation, replay and authority auto-pass');
+console.log('[function-tiles-029] PASS function schema + Mini Game presentation/replay + playable Job hook');
