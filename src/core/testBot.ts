@@ -25,11 +25,23 @@ function chooseSingleTarget(state: MatchState, casterId: number): PlayerState | 
     .sort((a, b) => b.money - a.money || a.id - b.id)[0];
 }
 
-/**
- * Tiny deterministic CPU used only for playtest/autoplay.
- * It intentionally does not consume MatchState RNG, so adding/removing a test bot
- * does not silently alter dice/card/news randomness beyond the commands it chooses.
- */
+export function shouldCpuQuirk(state: MatchState, actorId: number, cardId: string): boolean {
+  let cardValue = 0;
+  for (let index = 0; index < cardId.length; index += 1) cardValue += cardId.charCodeAt(index);
+  const bucket = (state.seed + state.turn.turnNumber * 17 + (actorId + 1) * 41 + cardValue) >>> 0;
+  return bucket % 20 === 0;
+}
+
+export function cpuQuirkLine(turnNumber: number, actorId: number): string {
+  const lines = [
+    'Ấy chết, bấm trượt tay 😭',
+    'Khoan... tui định bấm cái khác mà?',
+    'Ủa tay đi trước não rồi 😭',
+    'Ơ... thôi coi như chiến thuật nha.',
+  ];
+  return lines[Math.abs(turnNumber + actorId) % lines.length] ?? lines[0];
+}
+
 export function chooseTestBotIntent(
   state: MatchState,
   board: BoardDefinition,
@@ -64,6 +76,7 @@ export function chooseTestBotIntent(
     if (card) {
       let targetId = -1;
       let choice: MatchEventValue = null;
+      const cpuQuirk = shouldCpuQuirk(state, actor.id, card.id);
       if (card.targetMode === 'single_other') {
         const target = chooseSingleTarget(state, actor.id);
         if (target) targetId = target.id;
@@ -73,12 +86,13 @@ export function chooseTestBotIntent(
       if (card.effect.type === 'tactical_choice') {
         const safeAmount = Math.max(0, Math.floor(card.effect.safeAmount));
         const pressureAmount = tacticalChoicePressureAmount(card.effect, state.players, actor.id);
-        choice = pressureAmount > safeAmount ? 'pressure' : 'safe';
+        const optimal = pressureAmount > safeAmount ? 'pressure' : 'safe';
+        choice = cpuQuirk ? (optimal === 'pressure' ? 'safe' : 'pressure') : optimal;
       }
 
       return {
         type: 'play_card',
-        data: { cardId: card.id, targetId, choice },
+        data: { cardId: card.id, targetId, choice, cpuQuirk },
         reason: card.effect.type === 'tactical_choice'
           ? `dùng ${card.title} → ${choice === 'pressure' ? 'Ép Top 1' : 'Ăn Chắc'}`
           : `dùng ${card.title}`,
