@@ -39,6 +39,8 @@ export interface PlayerState {
   cardBlockTurns: number;
   handCardIds: string[];
   cardsPlayedThisTurn: number;
+  /** Completed board laps. Optional so older schema-v3 snapshots still deserialize safely. */
+  lapsCompleted?: number;
   /** Career fields are optional so old schema-v3 playtest snapshots still deserialize cleanly. */
   jobId?: string;
   jobLevel?: number;
