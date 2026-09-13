@@ -1,10 +1,12 @@
 import Phaser from 'phaser';
+import { bgmController } from '../audio/bgmController';
 import boardJson from '../content/city/board_city_mvp.json';
 import cardsJson from '../content/core/cards_mvp.json';
 import type { ClientIntentType } from '../core/authority';
 import { browserSession } from '../core/browserSession';
 import type { CardDefinition } from '../core/cards';
-import type { MatchEventValue, MatchState } from '../core/matchState';
+import { computeMatchChecksum } from '../core/checksum';
+import { serializeMatchState, type MatchEventValue, type MatchState } from '../core/matchState';
 import { chooseTestBotIntent } from '../core/testBot';
 import type { TwoTabHostSession } from '../core/twoTabSession';
 import type { TurnPhaseMachine } from '../core/turnPhase';
@@ -19,6 +21,7 @@ interface DemoBoardInternals {
   phase: TurnPhaseMachine;
   shell: { status: 'waiting' | 'active' | 'ended' };
   hostSession?: TwoTabHostSession;
+  logs: string[];
   currentPlayer(): PlayerState | undefined;
   submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
   canControlCurrentPlayer(): boolean;
@@ -28,6 +31,7 @@ interface DemoBoardInternals {
 export class PlaytestDemoBoardScene extends DemoBoardScene {
   private guideObjects: Phaser.GameObjects.GameObject[] = [];
   private botTimer?: Phaser.Time.TimerEvent;
+  private lastBgmRound = 0;
 
   create(): void {
     // Test-only hook: CPU seats must not expose the normal human Roll/Card controls.
@@ -42,9 +46,10 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
     };
 
     super.create();
+    this.lastBgmRound = 0;
 
     const badge = this.add
-      .text(1218, 690, 'PLAYTEST 0.1.16.2', {
+      .text(1218, 690, 'PLAYTEST 0.1.17', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '10px',
         fontStyle: 'bold',
@@ -54,6 +59,21 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       })
       .setOrigin(1, 1)
       .setDepth(680);
+
+    const bugButton = this.add
+      .text(1218, 572, '🐛  BUG REPORT', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '11px',
+        fontStyle: 'bold',
+        color: '#202020',
+        backgroundColor: '#ffd34d',
+        padding: { x: 10, y: 7 },
+      })
+      .setOrigin(1, 0.5)
+      .setDepth(680)
+      .setInteractive({ useHandCursor: true });
+
+    bugButton.on('pointerdown', () => this.downloadBugReport());
 
     const helpButton = this.add
       .text(1218, 610, '?  CÁCH CHƠI', {
@@ -91,6 +111,7 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.botTimer?.remove(false);
       this.botTimer = undefined;
+      this.lastBgmRound = 0;
       if (this.input.keyboard) this.input.keyboard.enabled = true;
       for (const object of this.guideObjects) object.destroy();
       this.guideObjects = [];
@@ -100,11 +121,57 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
   }
 
   update(): void {
+    this.syncBgmToMatch();
     this.queueCpuActionIfNeeded();
   }
 
   private demoInternals(): DemoBoardInternals {
     return this as unknown as DemoBoardInternals;
+  }
+
+  private syncBgmToMatch(): void {
+    const internals = this.demoInternals();
+    if (!internals.match || internals.shell.status !== 'active') return;
+
+    const playerCount = Math.max(1, internals.match.players.length);
+    const round = Math.max(
+      1,
+      Math.floor((Math.max(1, internals.match.turn.turnNumber) - 1) / playerCount) + 1,
+    );
+    const clampedRound = Math.min(3, round);
+    if (clampedRound === this.lastBgmRound) return;
+
+    this.lastBgmRound = clampedRound;
+    bgmController.playRound(clampedRound);
+  }
+
+  private downloadBugReport(): void {
+    const internals = this.demoInternals();
+    if (!internals.match) return;
+
+    const serializedState = serializeMatchState(internals.match);
+    const report = {
+      product: 'MeMeMe',
+      build: 'MVP 0.1.17',
+      exportedAt: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      browserSession: browserSession.current,
+      shellStatus: internals.shell.status,
+      checksum: computeMatchChecksum(internals.match),
+      bgm: bgmController.getState(),
+      logs: [...internals.logs],
+      matchState: JSON.parse(serializedState) as unknown,
+    };
+
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const stamp = report.exportedAt.replace(/[:.]/g, '-');
+    anchor.href = url;
+    anchor.download = `mememe-bug-report-${stamp}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    internals.writeLog(`🐛 Bug report exported • ${report.checksum}`);
   }
 
   private queueCpuActionIfNeeded(): void {
