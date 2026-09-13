@@ -1,14 +1,50 @@
 import Phaser from 'phaser';
+import boardJson from '../content/city/board_city_mvp.json';
+import cardsJson from '../content/core/cards_mvp.json';
+import type { ClientIntentType } from '../core/authority';
+import { browserSession } from '../core/browserSession';
+import type { CardDefinition } from '../core/cards';
+import type { MatchEventValue, MatchState } from '../core/matchState';
+import { chooseTestBotIntent } from '../core/testBot';
+import type { TwoTabHostSession } from '../core/twoTabSession';
+import type { TurnPhaseMachine } from '../core/turnPhase';
+import type { BoardDefinition, PlayerState } from '../core/types';
 import { DemoBoardScene } from './DemoBoardScene';
+
+const BOARD = boardJson as BoardDefinition;
+const CARDS = cardsJson as CardDefinition[];
+
+interface DemoBoardInternals {
+  match: MatchState;
+  phase: TurnPhaseMachine;
+  shell: { status: 'waiting' | 'active' | 'ended' };
+  hostSession?: TwoTabHostSession;
+  currentPlayer(): PlayerState | undefined;
+  submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
+  canControlCurrentPlayer(): boolean;
+  writeLog(message: string): void;
+}
 
 export class PlaytestDemoBoardScene extends DemoBoardScene {
   private guideObjects: Phaser.GameObjects.GameObject[] = [];
+  private botTimer?: Phaser.Time.TimerEvent;
 
   create(): void {
+    // Test-only hook: CPU seats must not expose the normal human Roll/Card controls.
+    // DemoBoardScene uses TypeScript-private methods, so the playtest wrapper shadows
+    // the runtime method without touching deterministic gameplay/authority code.
+    const internals = this.demoInternals();
+    const originalCanControl = internals.canControlCurrentPlayer.bind(this);
+    internals.canControlCurrentPlayer = () => {
+      const current = internals.currentPlayer();
+      if (current && browserSession.isCpuSeat(current.id)) return false;
+      return originalCanControl();
+    };
+
     super.create();
 
     const badge = this.add
-      .text(1218, 690, 'PLAYTEST 0.1.16', {
+      .text(1218, 690, 'PLAYTEST 0.1.16.2', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '10px',
         fontStyle: 'bold',
@@ -34,11 +70,16 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
 
     helpButton.on('pointerdown', () => this.showPlaytestGuide());
 
+    const cpuSeats = browserSession.current.cpuSeatIds;
+    const cpuLabel = cpuSeats.length > 0
+      ? `🤖 CPU TEST: ${cpuSeats.map((id) => `P${id + 1}`).join(', ')}`
+      : 'Tip: Lá Bài dùng trước khi đổ xúc xắc';
     this.add
-      .text(1218, 646, 'Tip: Lá Bài dùng trước khi đổ xúc xắc', {
+      .text(1218, 646, cpuLabel, {
         fontFamily: 'Arial, sans-serif',
         fontSize: '10px',
-        color: '#756d62',
+        fontStyle: cpuSeats.length > 0 ? 'bold' : 'normal',
+        color: cpuSeats.length > 0 ? '#795796' : '#756d62',
       })
       .setOrigin(1, 0.5)
       .setDepth(680);
@@ -48,12 +89,67 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.botTimer?.remove(false);
+      this.botTimer = undefined;
       if (this.input.keyboard) this.input.keyboard.enabled = true;
       for (const object of this.guideObjects) object.destroy();
       this.guideObjects = [];
     });
 
     void badge;
+  }
+
+  update(): void {
+    this.queueCpuActionIfNeeded();
+  }
+
+  private demoInternals(): DemoBoardInternals {
+    return this as unknown as DemoBoardInternals;
+  }
+
+  private queueCpuActionIfNeeded(): void {
+    if (this.botTimer || this.guideObjects.length > 0) return;
+    const internals = this.demoInternals();
+    if (!internals.match || !internals.phase || !internals.hostSession) return;
+    if (internals.shell.status !== 'active') return;
+
+    const current = internals.currentPlayer();
+    if (!current || !browserSession.isCpuSeat(current.id)) return;
+
+    const decision = chooseTestBotIntent(internals.match, BOARD, CARDS);
+    if (!decision) return;
+
+    const signature = [
+      internals.match.turn.turnNumber,
+      internals.match.turn.currentPlayerIndex,
+      internals.match.turn.phase,
+      internals.match.turn.revision,
+      current.id,
+    ].join(':');
+
+    this.botTimer = this.time.delayedCall(520, () => {
+      this.botTimer = undefined;
+      if (this.guideObjects.length > 0) return;
+
+      const live = this.demoInternals();
+      if (live.shell.status !== 'active' || !live.hostSession) return;
+      const livePlayer = live.currentPlayer();
+      if (!livePlayer || !browserSession.isCpuSeat(livePlayer.id)) return;
+
+      const liveSignature = [
+        live.match.turn.turnNumber,
+        live.match.turn.currentPlayerIndex,
+        live.match.turn.phase,
+        live.match.turn.revision,
+        livePlayer.id,
+      ].join(':');
+      if (liveSignature !== signature) return;
+
+      const liveDecision = chooseTestBotIntent(live.match, BOARD, CARDS);
+      if (!liveDecision) return;
+      live.writeLog(`🤖 ${livePlayer.name}: ${liveDecision.reason}`);
+      live.submitIntent(liveDecision.type, liveDecision.data);
+    });
   }
 
   private showPlaytestGuide(): void {
@@ -66,12 +162,12 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       .setInteractive();
 
     const panel = this.add
-      .rectangle(640, 360, 760, 500, 0xfffbf3, 1)
+      .rectangle(640, 360, 760, 520, 0xfffbf3, 1)
       .setStrokeStyle(5, 0x202020, 1)
       .setDepth(901);
 
     const title = this.add
-      .text(640, 155, '🎲 CÁCH CHƠI NHANH', {
+      .text(640, 145, '🎲 CÁCH CHƠI NHANH', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '30px',
         fontStyle: 'bold',
@@ -83,7 +179,7 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
     const body = this.add
       .text(
         360,
-        215,
+        202,
         [
           '1. Tới lượt mình → bấm ĐỔ XÚC XẮC.',
           '2. Trước khi đổ, có thể bấm LÁ BÀI nếu đang cầm bài.',
@@ -92,14 +188,17 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
           '5. Demo kéo dài 3 vòng / 12 lượt. B$ cao nhất thắng.',
           '6. Nếu hai người bằng tiền khi hết demo → đồng hạng.',
           '',
-          'Hotseat: 4 người dùng chung máy.',
-          '2 Tab: host giữ trận; client chỉ điều khiển đúng ghế đã join.',
+          '🤖 CPU TEST: bot tự dùng Lá Bài hợp lệ, roll và chọn nhánh.',
+          '1 người + 3 CPU là chế độ nên dùng khi test một mình.',
+          '4 CPU AUTOPLAY dùng để soi kẹt lượt/nhánh/card.',
+          '',
+          'CPU này chỉ là bot QA đơn giản, chưa phải AI gameplay final.',
         ].join('\n'),
         {
           fontFamily: 'Arial, sans-serif',
-          fontSize: '17px',
+          fontSize: '16px',
           color: '#403a34',
-          lineSpacing: 8,
+          lineSpacing: 7,
           wordWrap: { width: 560 },
         },
       )
@@ -107,7 +206,7 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       .setDepth(902);
 
     const note = this.add
-      .text(640, 510, 'Luật thắng 3 vòng chỉ là luật playtest tạm, chưa phải luật MeMeMe final.', {
+      .text(640, 525, 'Luật thắng 3 vòng chỉ là luật playtest tạm, chưa phải luật MeMeMe final.', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
         fontStyle: 'bold',
@@ -117,13 +216,13 @@ export class PlaytestDemoBoardScene extends DemoBoardScene {
       .setDepth(902);
 
     const closeButton = this.add
-      .rectangle(640, 565, 220, 52, 0xef4545, 1)
+      .rectangle(640, 575, 220, 52, 0xef4545, 1)
       .setStrokeStyle(3, 0x202020, 1)
       .setDepth(903)
       .setInteractive({ useHandCursor: true });
 
     const closeText = this.add
-      .text(640, 565, 'HIỂU RỒI, CHƠI! ✨', {
+      .text(640, 575, 'HIỂU RỒI, CHƠI! ✨', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '15px',
         fontStyle: 'bold',
