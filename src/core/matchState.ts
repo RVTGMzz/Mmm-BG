@@ -83,6 +83,14 @@ function normalizePlayOrder(order: readonly number[] | undefined, playerCount: n
   return normalized;
 }
 
+function normalizePlayers(players: PlayerState[]): PlayerState[] {
+  return players.map((player) => ({
+    ...player,
+    handCardIds: [...player.handCardIds],
+    lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
+  }));
+}
+
 /** Configure the next browser-created matches after the pregame Roll For Order ceremony. */
 export function configureInitialPlayOrder(order?: readonly number[]): void {
   configuredInitialPlayOrder = order ? [...order] : undefined;
@@ -99,6 +107,7 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     cardBlockTurns: 0,
     handCardIds: [],
     cardsPlayedThisTurn: 0,
+    lapsCompleted: 0,
   }));
   const playOrder = normalizePlayOrder(options.playOrder ?? configuredInitialPlayOrder, players.length);
 
@@ -222,7 +231,11 @@ export function deserializeMatchState(serialized: string): MatchState {
   const parsed = JSON.parse(serialized) as Partial<MatchState> & { schemaVersion?: number };
 
   if (parsed.schemaVersion === 3) {
-    return parsed as MatchState;
+    const current = parsed as MatchState;
+    return {
+      ...current,
+      players: normalizePlayers(current.players),
+    };
   }
 
   if (parsed.schemaVersion === 2) {
@@ -231,6 +244,7 @@ export function deserializeMatchState(serialized: string): MatchState {
     return {
       ...legacy,
       schemaVersion: 3,
+      players: normalizePlayers(legacy.players),
       commandLog,
       nextCommandSeq: legacy.nextCommandSeq ?? commandLog.length + 1,
     };
@@ -254,7 +268,7 @@ export function deserializeMatchState(serialized: string): MatchState {
       startingMoney: 1000,
       rng: legacy.rng,
       turn: legacy.turn,
-      players: legacy.players,
+      players: normalizePlayers(legacy.players),
       commandLog: [],
       nextCommandSeq: 1,
       eventLog: legacy.eventLog ?? [],
