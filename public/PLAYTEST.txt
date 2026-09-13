@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.16 — FIRST EXTERNAL PLAYTEST
+MeMeMe MVP 0.1.16.2 — FIRST EXTERNAL PLAYTEST + CPU TEST BOTS
 
 QUICK START — WINDOWS
 1) Giai nen file ZIP playtest.
@@ -12,8 +12,17 @@ QUAN TRONG
 - START_PLAYTEST.bat duoc them de tranh loi nay va KHONG can cai Node/Python.
 
 PLAY MODES
-- SOLO / HOTSEAT: nhanh nhat de test tren mot may.
+- 1 HUMAN + 3 CPU: khuyen dung de test mot minh.
+- 2 HUMAN + 2 CPU: test voi mot nguoi ban.
+- 4 HUMAN HOTSEAT: 4 nguoi tu dieu khien.
+- 4 CPU AUTOPLAY: de game tu chay ca tran, soi ket luot/nhanh/card.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phai cung browser profile/origin.
+
+CPU TEST BOT
+- CPU tu dung La Bai hop le neu dang co bai.
+- CPU tu roll.
+- CPU tu chon nhanh.
+- CPU chi la QA bot don gian, KHONG phai AI gameplay final.
 
 DEMO RULE
 - 4 players
@@ -34,6 +43,7 @@ Node:   npx serve .
 Python: python -m http.server 4173
 
 KNOWN LIMITS
+- CPU is a simple deterministic test bot, not final AI
 - no internet multiplayer yet
 - no production reconnect/seat reclaim
 - client does not receive host face textures yet
