@@ -5,6 +5,13 @@ import {
   normalizeRoomCode,
 } from '../core/browserSession';
 
+function cpuSeatsForMode(mode: string): number[] {
+  if (mode === '1p3cpu') return [1, 2, 3];
+  if (mode === '2p2cpu') return [2, 3];
+  if (mode === '4cpu') return [0, 1, 2, 3];
+  return [];
+}
+
 export class LocalLobbyScene extends Phaser.Scene {
   constructor() {
     super('LocalLobbyScene');
@@ -24,14 +31,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.16', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.16.2', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Chọn cách chơi, setup tên/ảnh nếu muốn, rồi vào một trận demo 3 vòng.', {
+    this.add.text(228, 109, 'Chơi hotseat, test một mình với CPU, hoặc mở 2 tab local.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -44,10 +51,18 @@ export class LocalLobbyScene extends Phaser.Scene {
     root.innerHTML = `
       <div class="lobby-grid">
         <section class="lobby-card solo-card">
-          <div class="lobby-icon">🎲</div>
-          <h2>SOLO / HOTSEAT</h2>
-          <p>4 người dùng chung một máy. Nhanh nhất để test core gameplay và luật demo.</p>
-          <button id="lobby-solo" type="button">CHƠI DEMO SOLO</button>
+          <div class="lobby-icon">🤖</div>
+          <h2>SOLO / CPU TEST</h2>
+          <p>Test một mình mà không phải tự bấm cả 4 ghế. CPU này chỉ là bot test, chưa phải AI final.</p>
+          <label>CHẾ ĐỘ
+            <select id="solo-mode">
+              <option value="1p3cpu" selected>1 người + 3 CPU</option>
+              <option value="2p2cpu">2 người + 2 CPU</option>
+              <option value="hotseat">4 người HOTSEAT</option>
+              <option value="4cpu">4 CPU AUTOPLAY</option>
+            </select>
+          </label>
+          <button id="lobby-solo" type="button">SETUP + CHƠI</button>
         </section>
 
         <section class="lobby-card host-card">
@@ -78,11 +93,11 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎯 Cách chơi cực ngắn: tới lượt → có thể dùng Lá Bài → đổ xúc xắc → đi ô → ô Lá Bài/Tin Tức tự kích hoạt → gặp ngã rẽ thì chọn đường. Demo kết thúc sau 3 vòng, B$ cao nhất thắng.
+        🎯 Test một mình: chọn 1 người + 3 CPU. Muốn stress-test lượt/nhánh/card thì chọn 4 CPU AUTOPLAY rồi ngồi xem cả trận tự chạy.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Trình duyệt hỗ trợ 2-tab local. Ảnh mặt là tùy chọn trong playtest này.'
-        : '⚠️ Trình duyệt này không hỗ trợ BroadcastChannel. Vẫn có thể chơi SOLO / HOTSEAT.'}</p>
+        ? '✅ CPU test + 2-tab local sẵn sàng. Ảnh mặt vẫn là tùy chọn.'
+        : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
     const dom = this.add.dom(640, 408, root).setOrigin(0.5);
@@ -96,13 +111,15 @@ export class LocalLobbyScene extends Phaser.Scene {
     };
 
     node.querySelector<HTMLButtonElement>('#lobby-solo')?.addEventListener('click', () => {
-      browserSession.configureSolo();
+      const mode = node.querySelector<HTMLSelectElement>('#solo-mode')?.value ?? '1p3cpu';
+      const cpuSeatIds = cpuSeatsForMode(mode);
+      browserSession.configureSolo(cpuSeatIds);
       this.scene.start('SetupScene');
     });
 
     node.querySelector<HTMLButtonElement>('#lobby-host')?.addEventListener('click', () => {
       if (!broadcastReady) {
-        setStatus('Trình duyệt chưa hỗ trợ 2-tab local. Hãy dùng SOLO / HOTSEAT hoặc Chrome/Edge/Firefox mới.', true);
+        setStatus('Trình duyệt chưa hỗ trợ 2-tab local. Hãy dùng SOLO / CPU TEST hoặc Chrome/Edge/Firefox mới.', true);
         return;
       }
       const input = node.querySelector<HTMLInputElement>('#host-room');
