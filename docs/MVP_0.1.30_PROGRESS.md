@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.30 — Direct Turn Dice
 
-Status: IMPLEMENTED / FINAL CI PENDING
+Status: ACTIVE / PLAYTEST PACKAGED
 
 ## Goal
 
@@ -18,6 +18,8 @@ For a locally controlled human seat:
 7. movement continues node-by-node exactly as before.
 
 The idle die never generates or previews a random result. Its visible pip face is fixed presentation art only.
+
+A per-turn pending guard prevents the same visible die from submitting Roll twice if local UI updates one frame before host state changes.
 
 ## Bottom HUD
 
@@ -63,7 +65,29 @@ Locks that the direct dice:
 - never appears for a non-controlling client;
 - never appears before match start or after match end.
 
-No gameplay checksum change is expected because this milestone only changes presentation/input routing into the existing host-authoritative Roll command.
+No gameplay checksum change occurred because this milestone only changes presentation/input routing into the existing host-authoritative Roll command.
+
+## Validated artifact
+
+GitHub Actions run:
+
+`34767733314` / run `#776`
+
+Head SHA:
+
+`7654a8b48ebba67ab681f5f5f802cc4a562f5e28`
+
+Artifact:
+
+`mememe-playtest-0.1.30`
+
+Artifact digest:
+
+`sha256:a42203e5067517e022ea69430f62a7d57377cc59795a383d3ab4aadb76b8582b`
+
+Artifact size: ~8.51 MB.
+
+CI passed all replay, authority, two-tab, CPU autoplay, function-tile and direct-dice regressions.
 
 ## Next
 
