@@ -51,6 +51,9 @@ jobs:
       - name: Simple CPU autoplay stress
         run: npm run test:bots
 
+      - name: Card News Reaction presentation parity
+        run: npm run test:presentation
+
       - name: Validate external playtest package
         run: npm run test:package
 
