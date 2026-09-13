@@ -237,19 +237,20 @@ function tileLandingModel(event: MatchEvent, players: PlayerState[]): Presentati
 function functionTileModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
   const base = baseModel(event, players);
   const isMiniGame = event.type === 'minigame_tile';
+  const isJob = event.type.startsWith('job_') || event.type === 'job_tile';
   const description = dataString(event, 'description');
   const summary = dataString(event, 'summary');
   return {
     ...base,
     kind: 'tile_land',
-    eyebrow: `${base.actorName} • ${isMiniGame ? 'MINI GAME' : 'JOB'}`,
+    eyebrow: `${base.actorName} • ${isMiniGame ? 'MINI GAME' : isJob ? 'JOB' : 'SỰ KIỆN'}`,
     title: dataString(event, 'title') || (isMiniGame ? 'MINI GAME' : 'JOB'),
     rarity: '',
     impact: dataString(event, 'impact') || (isMiniGame ? '🎮' : '💼'),
     description: [description, summary].filter(Boolean).join('\n'),
     summary: '',
     reactions: [],
-    holdMs: 2400,
+    holdMs: event.type === 'job_offer' ? 1800 : 2600,
     tileType: isMiniGame ? 'minigame' : 'job',
   };
 }
@@ -301,7 +302,15 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     };
   }
 
-  if (event.type === 'minigame_tile' || event.type === 'job_tile') return functionTileModel(event, players);
+  if (
+    event.type === 'minigame_tile' ||
+    event.type === 'job_tile' ||
+    event.type === 'job_offer' ||
+    event.type === 'job_selected' ||
+    event.type === 'job_progress'
+  ) {
+    return functionTileModel(event, players);
+  }
 
   if (event.type === 'tile_land') {
     if (dataString(event, 'featureType')) return undefined;
