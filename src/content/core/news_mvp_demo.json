@@ -7,5 +7,5 @@
 {"id":"NEWS_DEMO_007","title":"Đậu Xe Sai Hai Centimet","rarity":"R","dropWeight":100,"impact":"⭐⭐","description":"-80B$.","targetMode":"self","effect":{"type":"money_delta_self","amount":-80},"reactionEventId":"NEWS_NEGATIVE_ALT"},
 {"id":"NEWS_DEMO_003","title":"Hóa Đơn Cả Nhóm","rarity":"SR","dropWeight":25,"impact":"⭐⭐⭐","description":"Mỗi người -40B$.","targetMode":"all_players","effect":{"type":"money_delta_all","amount":-40},"reactionEventId":"NEWS_GROUP_DEMO"},
 {"id":"NEWS_DEMO_008","title":"Quỹ Chung Bốc Hơi","rarity":"SR","dropWeight":25,"impact":"⭐⭐⭐","description":"Mỗi người -40B$.","targetMode":"all_players","effect":{"type":"money_delta_all","amount":-40},"reactionEventId":"NEWS_GROUP_ALT"},
-{"id":"NEWS_DEMO_009","title":"Cân Bằng B$","rarity":"SR","dropWeight":50,"impact":"⭐⭐⭐","description":"B$ của bạn trở về mức trung bình hiện tại của cả bàn.","targetMode":"self","effect":{"type":"normalize_to_average_self"},"reactionEventId":"NEWS_AVERAGE_024"}
+{"id":"NEWS_DEMO_009","title":"Cân Bằng B$","rarity":"SR","dropWeight":50,"impact":"⭐⭐⭐","description":"B$ của bạn trở về mức trung bình hiện tại của cả bàn.","targetMode":"self","effect":{"type":"normalize_to_average_self"}}
 ]
