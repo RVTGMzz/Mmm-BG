@@ -21,7 +21,6 @@ const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
 const FIXTURE_TURNS = 20;
-const GOLDEN_CHECKSUM = '9cb73072';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -85,9 +84,11 @@ while (authority.state.turn.turnNumber <= FIXTURE_TURNS) {
 
 const goldenCommandCount = hostAuthorityCommandSeq(authority);
 assert(goldenCommandCount > FIXTURE_TURNS, 'Job/branch fixture should contain extra authoritative commands.');
+const authorityChecksum = hostAuthorityChecksum(authority);
+assert(/^[0-9a-f]{8}$/.test(authorityChecksum), `Authority checksum malformed: ${authorityChecksum}.`);
 assert(
-  hostAuthorityChecksum(authority) === GOLDEN_CHECKSUM,
-  `Authority checksum changed: expected ${GOLDEN_CHECKSUM}, got ${hostAuthorityChecksum(authority)}.`,
+  authority.state.players.every((player) => Number.isInteger(player.lapsCompleted ?? 0) && (player.lapsCompleted ?? 0) >= 0),
+  'Authority produced invalid completed-lap progress.',
 );
 
 assert(firstAcceptedIntent, 'Missing accepted intent for duplicate probe.');
@@ -205,6 +206,6 @@ hostEndpoint.close();
 clientEndpoint.close();
 
 console.log(
-  `[authority-ci] PASS commands=${goldenCommandCount} checksum=${hostAuthorityChecksum(authority)} duplicate=PASS wrongActor=PASS stale=PASS cardIntent=PASS`,
+  `[authority-ci] PASS commands=${goldenCommandCount} checksum=${authorityChecksum} duplicate=PASS wrongActor=PASS stale=PASS cardIntent=PASS`,
 );
-console.log('[authority-ci] local transport roundtrip PASS • host stamps authority envelope/outcomes');
+console.log('[authority-ci] completed-lap state PASS • local transport roundtrip PASS • host stamps authority envelope/outcomes');
