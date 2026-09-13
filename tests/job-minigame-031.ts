@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import jobsJson from '../src/content/core/jobs_mvp.json';
 import { createEmptyHostAuthority, submitClientIntent } from '../src/core/authority';
 import { computeMatchChecksum } from '../src/core/checksum';
+import { createDemoMatchShell, hasPendingLatestMiniGame, shouldEndDemoMatch } from '../src/core/demoMatch';
 import {
   applyJobSelection,
   drawUniqueJobOffer,
@@ -11,6 +12,10 @@ import {
   type JobDefinition,
 } from '../src/core/jobs';
 import { advanceMatchTurn, cloneMatchState, createInitialMatchState, type MatchCommand } from '../src/core/matchState';
+import {
+  MINI_GAME_REWARDS,
+  miniGameRewardForRank,
+} from '../src/core/minigameRewards';
 import {
   minigameModeForActivePlayers,
   resolveMajorityMinorityRound,
@@ -127,6 +132,13 @@ assert.equal(minigameModeForActivePlayers(toFinal.survivingPlayerIds), 'rps');
 assert.deepEqual(resolveRpsRound(0, 'rock', 1, 'scissors'), { winnerId: 0, loserId: 1, tied: false });
 assert.deepEqual(resolveRpsRound(0, 'paper', 1, 'paper'), { tied: true });
 
+assert.deepEqual(MINI_GAME_REWARDS.majority_minority, [30, 20, 10, 0]);
+assert.deepEqual(MINI_GAME_REWARDS.rps, [25, 15, 5, 0]);
+assert.equal(miniGameRewardForRank('majority_minority', 1), 30);
+assert.equal(miniGameRewardForRank('majority_minority', 4), 0);
+assert.equal(miniGameRewardForRank('rps', 1), 25);
+assert.equal(miniGameRewardForRank('rps', 3), 5);
+
 const jobBoard: BoardDefinition = {
   id: 'job-stop-test',
   name: 'Job stop test',
@@ -203,4 +215,77 @@ assert.equal(
   'Host authority must resolve Job from its own authoritative die result',
 );
 
-console.log('[job-minigame-031] PASS Job salary + mandatory stop + random 3 + D6 A/B/C + career risks + Roll For Order + Nhiều ra ít bị → RPS');
+const miniBoard: BoardDefinition = {
+  id: 'minigame-reward-test',
+  name: 'Mini Game reward test',
+  startNodeId: 0,
+  nodes: [
+    { id: 0, x: 0, y: 0, type: 'normal' },
+    { id: 1, x: 10, y: 0, type: 'normal', feature: 'minigame', contentId: 'MINIGAME_SLOT_01' },
+  ],
+  edges: [{ from: 0, to: 1, route: 'main' }],
+};
+const miniAuthority = createEmptyHostAuthority(
+  { boardId: miniBoard.id, startNodeId: 0, playerNames: ['P1', 'P2', 'P3', 'P4'], seed: 3610 },
+  { board: miniBoard, cards: [], news: [] },
+);
+const miniRoll = submitClientIntent(miniAuthority, {
+  intentId: 'mini-roll', clientId: 'host', actorId: 0, type: 'roll', observedCommandSeq: 0, data: {},
+});
+assert.equal(miniRoll.status, 'accepted');
+const miniEvent = miniAuthority.state.eventLog.find((event) => event.type === 'minigame_tile');
+assert(miniEvent, 'landing Mini Game must create a source event for authoritative payout');
+const beforeRewardChecksum = computeMatchChecksum(miniAuthority.state);
+
+const pendingFinish = cloneMatchState(miniAuthority.state);
+pendingFinish.players.forEach((entry) => { entry.lapsCompleted = 1; });
+const activeShell = createDemoMatchShell(4, 3, 'active');
+assert.equal(hasPendingLatestMiniGame(pendingFinish), true);
+assert.equal(shouldEndDemoMatch(pendingFinish, activeShell), false, 'final score must wait for pending Mini Game payout');
+
+const miniRewardReceipt = submitClientIntent(miniAuthority, {
+  intentId: 'mini-reward',
+  clientId: 'host-system',
+  actorId: miniAuthority.state.players[miniAuthority.state.turn.currentPlayerIndex]!.id,
+  type: 'resolve_minigame',
+  observedCommandSeq: 1,
+  data: {
+    sourceEventSeq: miniEvent.seq,
+    gameType: 'majority_minority',
+    rankingPlayerIds: '0,1,2,3',
+  },
+});
+assert.equal(miniRewardReceipt.status, 'accepted');
+assert.deepEqual(miniAuthority.state.players.map((entry) => entry.money), [230, 220, 210, 200]);
+assert.notEqual(computeMatchChecksum(miniAuthority.state), beforeRewardChecksum, 'Mini Game payout must affect gameplay checksum through B$');
+assert.equal(
+  miniAuthority.state.eventLog.filter((event) => event.type === 'minigame_reward').length,
+  4,
+  'one reward event must be emitted per ranked player',
+);
+
+const afterRewardFinish = cloneMatchState(miniAuthority.state);
+afterRewardFinish.players.forEach((entry) => { entry.lapsCompleted = 1; });
+assert.equal(hasPendingLatestMiniGame(afterRewardFinish), false);
+assert.equal(shouldEndDemoMatch(afterRewardFinish, activeShell), true, 'score may finalize after Mini Game payout is committed');
+
+const replayedMini = replayMatchCommands(miniAuthority.source, miniBoard, [], []);
+assert.deepEqual(replayedMini.errors, []);
+assert.deepEqual(replayedMini.state.players.map((entry) => entry.money), [230, 220, 210, 200]);
+assert.equal(computeMatchChecksum(replayedMini.state), computeMatchChecksum(miniAuthority.state));
+
+const duplicateReward = submitClientIntent(miniAuthority, {
+  intentId: 'mini-reward-again',
+  clientId: 'host-system',
+  actorId: miniAuthority.state.players[miniAuthority.state.turn.currentPlayerIndex]!.id,
+  type: 'resolve_minigame',
+  observedCommandSeq: 2,
+  data: {
+    sourceEventSeq: miniEvent.seq,
+    gameType: 'majority_minority',
+    rankingPlayerIds: '0,1,2,3',
+  },
+});
+assert.equal(duplicateReward.status, 'rejected', 'same Mini Game source event cannot pay twice');
+
+console.log('[job-minigame-031] PASS Job salary + mandatory stop + D6 A/B/C + career risks + Roll For Order + Mini Game rewards 30/20/10/0 and RPS 25/15/5/0');
