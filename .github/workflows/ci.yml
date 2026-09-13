@@ -61,12 +61,12 @@ jobs:
         run: npm run test:package
 
       - name: Add full playtest guide to package
-        run: cp docs/PLAYTEST_0.1.18.md dist/PLAYTEST_GUIDE.md
+        run: cp docs/PLAYTEST_0.1.18.1.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.18 external playtest build
+      - name: Upload MVP 0.1.18.1 external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.18
+          name: mememe-playtest-0.1.18.1
           path: dist
           if-no-files-found: error
           retention-days: 14
