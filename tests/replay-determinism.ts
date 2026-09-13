@@ -21,7 +21,9 @@ const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
 const FIXTURE_TURNS = 20;
-const EXPECTED_CHECKSUM = '46bb4e20';
+// 0.1.31 intentionally changes deterministic gameplay state: Job Hub is a mandatory stop,
+// draws three authoritative career offers and persists chosen/career progression state.
+const EXPECTED_CHECKSUM = 'fad794e3';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
