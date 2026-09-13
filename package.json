@@ -26,6 +26,7 @@
     "test:economy": "tsx tests/economy-scale-025.ts",
     "test:stakes": "tsx tests/money-stakes-026.ts",
     "test:tactical": "tsx tests/tactical-choice-027.ts",
+    "test:function-tiles": "tsx tests/function-tiles-029.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
