@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.32 — RUNTIME POLISH PLAYTEST
+MeMeMe MVP 0.1.33 — ONE-LAP SCORE + TOKEN SYNC PLAYTEST
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,13 +18,20 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.32 FOCUS
-- Roll For Order: mỗi người đổ D6, điểm cao đi trước; nhóm hòa chỉ nhóm đó đổ lại.
-- Sau khi chốt, mỗi người hiện rõ THỨ 1 / 2 / 3 / 4 trước khi vào trận.
-- Job Hub bắt buộc dừng ở điểm hợp tuyến.
-- Job Hub hiện 3 nghề A / B / C với mapping rõ: 1–2 → A, 3–4 → B, 5–6 → C.
-- Đổ XÚC XẮC JOB để nhận nghề, không click chọn nghề trực tiếp.
-- Lương theo Job + level được trả khi qua cổng Ready; chưa có Job nhận 0 B$.
+0.1.33 FOCUS
+- FIX token bị giật lùi: sau khi nhân vật đã đi đến ô đích, Card/News/state tiếp theo không được kéo token về ô cũ rồi bay lại.
+- Khi chơi bình thường, tọa độ token chỉ do chuỗi move_step điều khiển; snapshot/resync và rematch vẫn được hard-snap về state chuẩn.
+- Luật chốt điểm mới: KHÔNG kết thúc theo 3 vòng/12 lượt cũ.
+- Mỗi người phải hoàn thành đủ 1 vòng quanh bàn, tức đi qua READY ít nhất 1 lần.
+- Chỉ khi CẢ 4 người đều hoàn thành 1 vòng mới chốt bảng B$.
+- Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
+- HUD hiển thị tiến độ HOÀN THÀNH 1 VÒNG • X/4.
+- Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
+
+RETAINED FEATURES
+- Roll For Order: điểm D6 cao đi trước, hòa thì chỉ nhóm hòa đổ lại.
+- Job Hub bắt buộc dừng; 3 nghề A/B/C; 1–2 → A, 3–4 → B, 5–6 → C.
+- Job được quyết định bằng XÚC XẮC JOB, không click chọn nghề trực tiếp.
 - Mini Game: Nhiều ra ít bị → còn 1v1 thì chuyển Oẳn Tù Xì.
 - Mini Game hiện chưa có thưởng/phạt B$.
 
