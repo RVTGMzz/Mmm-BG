@@ -11,8 +11,8 @@ const cards = cardsJson as CardDefinition[];
 const news = newsJson as NewsDefinition[];
 const reactions = reactionsJson as ReactionEventDefinition[];
 
-assert(cards.length >= 13, '0.1.24 should expose the expanded Card pool');
-assert(news.length >= 9, '0.1.24 should expose the expanded News pool');
+assert(cards.length >= 13, '0.1.24+ should expose the expanded Card pool');
+assert(news.length >= 9, '0.1.24+ should expose the expanded News pool');
 assert.equal(new Set(cards.map((card) => card.id)).size, cards.length, 'Card IDs must stay unique');
 assert.equal(new Set(news.map((entry) => entry.id)).size, news.length, 'News IDs must stay unique');
 
@@ -49,8 +49,8 @@ assert.equal(averageNewsWeight, 50);
 assert.equal(news.reduce((sum, entry) => sum + entry.dropWeight, 0), 1000);
 
 assert.equal(drawWeightedNews(news, () => 0.10)?.effect.type, 'money_delta_self');
-assert.equal((drawWeightedNews(news, () => 0.10)?.effect as { amount: number }).amount, 60);
-assert.equal((drawWeightedNews(news, () => 0.65)?.effect as { amount: number }).amount, -80);
+assert.equal((drawWeightedNews(news, () => 0.10)?.effect as { amount: number }).amount, 30);
+assert.equal((drawWeightedNews(news, () => 0.65)?.effect as { amount: number }).amount, -40);
 assert.equal(drawWeightedNews(news, () => 0.925)?.effect.type, 'money_delta_all');
 assert.equal(drawWeightedNews(news, () => 0.975)?.effect.type, 'normalize_to_average_self');
 
@@ -69,4 +69,4 @@ assert.equal(node4.title, 'NGÃ TƯ ĐÔNG NGHẸT');
 assert.equal(node18.title, 'HẺM TẮT');
 assert.notEqual(node1.description, node4.description, 'normal tiles should not all read as generic clones');
 
-console.log('[content-depth-022] PASS expanded Card/News pools keep 1000 total weight and include 0.1.24 mechanics');
+console.log('[content-depth-022] PASS expanded Card/News pools keep 1000 total weight with 0.1.25 economy amounts');
