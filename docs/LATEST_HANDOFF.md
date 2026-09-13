@@ -5,36 +5,64 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.25 — Economy Pressure & Recovery (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.26 — Turn Stakes & Money Drama (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.25`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.26`**.
 
 Read first:
-1. `docs/MVP_0.1.25_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.25.md`
-3. `tests/economy-scale-025.ts`
-4. `src/core/matchState.ts`
-5. `src/content/city/board_city_mvp.json`
-6. `src/content/core/cards_mvp.json`
-7. `src/content/core/news_mvp_demo.json`
-8. `tests/party-mechanics-024.ts`
-9. `tests/content-depth-022.ts`
-10. `src/scenes/PartyMechanicsBoardScene.ts`
-11. `src/ui/SettingsPanel.ts`
-12. `src/audio/bgmController.ts`
-13. `docs/AUDIO_PACK_0.1.16.2.md`
+1. `docs/MVP_0.1.26_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.26.md`
+3. `src/ui/moneyStakes.ts`
+4. `src/scenes/TurnStakesBoardScene.ts`
+5. `tests/money-stakes-026.ts`
+6. `docs/MVP_0.1.25_PROGRESS.md`
+7. `tests/economy-scale-025.ts`
+8. `src/core/matchState.ts`
+9. `src/content/city/board_city_mvp.json`
+10. `src/content/core/cards_mvp.json`
+11. `src/content/core/news_mvp_demo.json`
+12. `src/scenes/PartyMechanicsBoardScene.ts`
+13. `src/ui/SettingsPanel.ts`
+14. `src/audio/bgmController.ts`
+15. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## What 0.1.25 changed
+## What 0.1.26 changed
 
-### New-match wallet
+### Live money leaderboard
 
-All new matches now default to **200 B$**.
+The compact B$ panel is now a live standings panel:
+- sorted by current B$ descending;
+- deterministic lower seat ID tiebreak;
+- leader gets `👑`;
+- trailer gets `🛟`;
+- when all players are tied, nobody gets a fake crown/lifebuoy.
 
-The 200 B$ default is locked in replay/economy regression. Existing serialized matches retain their stored values.
+The current-turn line now includes:
+- player name;
+- current B$;
+- current rank / tied state.
 
-### Fixed-value economy rescale
+### Wallet delta feedback
+
+Authoritative state transitions are compared presentation-side.
+
+When a player's B$ changes, a small transient `+/- B$` label appears beside that player's leaderboard row and fades automatically.
+
+This feedback:
+- is non-blocking;
+- does not add RNG;
+- does not enter MatchState;
+- is suppressed for snapshot resync so stale wallet changes are not replayed.
+
+### Leader change feedback
+
+When the visible leader changes, the leaderboard pulses slightly. No modal and no extra acknowledgement are introduced.
+
+## Gameplay retained from 0.1.25
+
+Starting wallet remains **200 B$**.
 
 Money tiles:
 - +25 B$
@@ -43,120 +71,75 @@ Money tiles:
 - +15 B$
 
 News:
-- positive self News: +30 B$
-- negative self News: -40 B$
-- all-player loss News: -20 B$ each
-- Cân Bằng B$ remains normalize-to-current-table-average
+- +30 B$ self
+- -40 B$ self
+- -20 B$ all players
+- normalize-to-average unchanged
 
-### Phao Cứu Sinh retune
+Phao Cứu Sinh:
+- +60 B$ when tied for lowest
+- +15 B$ otherwise
 
-`ACT_016` is now:
-- +60 B$ when caster is tied for lowest current B$;
-- +15 B$ otherwise.
+READY remains **+100 B$**.
 
-### Relative Cards intentionally unchanged
-
-- standard steal remains 10 B$;
-- Thuế Top 1 remains 18%;
-- SR all-opponent loss remains 30%;
-- SSR money swap remains full swap.
-
-### READY recovery anchor
-
-Passing READY intentionally remains **+100 B$**.
-
-The random/fixed economy swings were reduced, while READY stays large and predictable so completing a lap provides a real recovery path in the 200 B$ economy.
-
-## Probability invariants
-
-Card total weight remains 1000:
-- N 600
-- R 300
-- SR 90
-- SSR 10
-
-News total weight remains 1000:
-- positive self 600
-- negative self 300
-- group loss 50
-- normalize-to-average 50
-
-No new gameplay RNG calls or command types were added.
-
-## Checksum promotion
-
-Starting-money hotfix first moved the golden checksum to `5ed7922e`.
-
-0.1.25 fixed-value economy rescale intentionally promotes it again:
-
-`5ed7922e` → `46bb4e20`
-
-Replay and authority agree on the promoted checksum.
+Relative Card mechanics remain unchanged:
+- steal 10 B$;
+- Thuế Top 1 18%;
+- SR all-opponent loss 30%;
+- SSR full wallet swap.
 
 ## Regression
 
 New command:
 
-`npm run test:economy`
+`npm run test:stakes`
 
 It locks:
-- default 200 B$ opening wallet;
-- all four money tile values;
-- News +30 / -40 / -20 scale;
-- Phao Cứu Sinh +60/+15;
-- 10 B$ steal, 18% rich tax and 30% group-loss mechanics remain unchanged.
+- deterministic money ordering;
+- lower-seat tiebreak;
+- crown/trailer markers;
+- no markers when the whole table is tied;
+- compact leaderboard row state;
+- exact wallet delta comparison.
 
-All earlier replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, party-mechanics, image and package checks remain enabled.
-
-## Existing behavior retained
-
-- Thuế Top 1 / Cân Bằng B$ / money swap and other Party Mechanics;
-- effect-specific Card reactions;
-- odd/even automatic route banner;
-- node-by-node movement;
-- graphical authoritative dice;
-- compact board-first HUD;
-- Card/News/Reaction timing policy and final-result deferral;
-- Settings gear with BGM volume / BGM mute / FX mute;
-- early Menu BGM preload / first-gesture unlock;
-- approved BGM assets unchanged;
-- face crop/zoom/rotate + runtime compression;
-- CPU remains QA-only.
+All earlier replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, party-mechanics, 200B economy, image and package checks remain enabled.
 
 ## Current artifact status
 
-Validated gameplay/artifact run before final handoff-doc commit:
+Validated GitHub Actions run:
 
-`34763514820` / run `#623`
+`34764306363` / run `#647`
 
 Head SHA:
 
-`304ce3511fe37b33f45c0b656419679f32dd8e45`
+`6df36cde0f7c41e525ce80a261844977aebe45a8`
 
 Artifact:
 
-`mememe-playtest-0.1.25`
+`mememe-playtest-0.1.26`
 
 Artifact digest:
 
-`sha256:7580c4f7c10a764d8463eed41b508799a20710e3626a2bcc043fcfddc08f3ad4`
+`sha256:208c864fb351d21f97813a5b22049faf9856f94f547ccf6fcf348bab4d4c2a35`
 
 Artifact size: ~8.50 MB.
 
-CI passed through artifact upload, including **200B economy scale** and CPU autoplay.
+GitHub run URL:
+
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34764306363`
+
+CI passed through artifact upload, including **Turn stakes money leaderboard** and CPU autoplay.
 
 ## Recommended next work
 
-Do a combined real playtest on 0.1.25 before another major rules expansion. Focus on:
-1. does 200 B$ feel tense rather than starved;
-2. are +30/-40 News swings noticeable but not match-ending;
-3. does READY +100 feel exciting rather than excessive;
-4. is Phao +60 useful without creating an instant first-place jump;
-5. do percentage Cards now feel too strong or appropriately rare;
-6. presentation/reaction queues still never backlog into endgame;
-7. movement, Settings and BGM behavior remain stable.
-
-Use Ron's next real-play feedback to choose 0.1.26. Avoid adding more economy knobs blindly before that.
+Do a real playtest on 0.1.26 and focus on:
+1. whether the live leaderboard improves tension without becoming distracting;
+2. whether crown/lifebuoy changes are readable at a glance;
+3. whether wallet delta labels are visible but not noisy;
+4. whether 200 B$ economy still feels tense rather than starved;
+5. whether READY +100 remains exciting rather than excessive;
+6. whether presentation/reaction queues remain clean through endgame;
+7. whether the next milestone should add deeper strategic choice rather than more HUD polish.
 
 ## Hard invariants
 
@@ -166,7 +149,7 @@ Use Ron's next real-play feedback to choose 0.1.26. Avoid adding more economy kn
 - Do not add presentation RNG calls that perturb gameplay RNG.
 - Do not put Settings/BGM/SFX/image preferences into gameplay-critical MatchState.
 - Presentation eventLog stays checksum-excluded.
-- Snapshot resync must not replay stale presentation events.
+- Snapshot resync must not replay stale presentation events or wallet FX.
 - Result/ranking must not cover unresolved final-turn presentation.
 - Route feedback remains non-blocking and host-authoritative.
 - Automatic Card mechanics must not add client-authored random outcomes.
