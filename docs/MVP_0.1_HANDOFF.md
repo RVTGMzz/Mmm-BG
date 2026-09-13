@@ -4,156 +4,168 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Current milestone
 
-**MVP 0.1.15 — Demo Match Shell + Temporary Win Condition**
+**MVP 0.1.16 — First External Playtest Build / Packaging + Onboarding Polish**
 
-Mục tiêu milestone: biến vertical slice kỹ thuật thành một trận demo có đầu, giữa và cuối rõ ràng để chuẩn bị external playtest. Luật thắng ở milestone này **chỉ là luật demo tạm**, cố ý dễ thay và không được xem là game design final.
+Mục tiêu milestone: biến demo 0.1.15 thành build có thể đưa cho người ngoài nhóm dev test lần đầu mà không bắt họ hiểu lịch sử kỹ thuật của project.
 
-## Luật demo tạm 0.1.15
+Luật demo vẫn là **temporary playtest rule**, không phải luật MeMeMe final:
+- 4 người chơi;
+- 3 vòng = 12 lượt;
+- B$ cao nhất thắng;
+- bằng B$ thì đồng hạng.
 
-- 4 người chơi.
-- 3 vòng = 12 lượt tổng.
-- Sau lượt thứ 12, trận kết thúc.
-- Người có nhiều B$ nhất thắng.
-- Nếu nhiều người bằng B$ cao nhất thì đồng hạng.
-- Không thêm tiebreaker tự chế.
+## Onboarding 0.1.16
 
-Code nằm trong `src/core/demoMatch.ts`:
-- `DemoMatchShellState` với `waiting | active | ended`;
-- `turnLimit` tính từ player count × round count;
-- `shouldEndDemoMatch()`;
-- `demoMatchResult()`;
-- `demoMatchTurnProgress()`.
+### Lobby
+`LocalLobbyScene` đổi sang nhãn **FIRST PLAYTEST • MVP 0.1.16** và có quick-guide ngay trên màn hình:
+- Lá Bài có thể dùng trước roll;
+- đổ xúc xắc → di chuyển;
+- Card/News tile auto-trigger;
+- branch thì chọn đường;
+- hết 3 vòng so B$.
 
-Luật này không thay đổi deterministic MatchState schema v3 và không làm đổi golden replay checksum cũ.
+Lobby tự kiểm tra `BroadcastChannel`:
+- browser hỗ trợ → bật HOST/JOIN 2-tab;
+- không hỗ trợ → disable 2-tab nhưng vẫn cho SOLO/HOTSEAT.
 
-## Demo shell sync
+### Face Setup giảm friction
+0.1.16 không còn bắt buộc phải upload mặt 😐 cho đủ 4 người trước khi test.
 
-File mới: `src/core/demoShellSession.ts`.
+- ảnh mặt trở thành optional trong external playtest;
+- không có ảnh thì DemoBoard dùng fallback token màu sẵn có;
+- nếu có ảnh, ảnh vẫn chỉ xử lý local browser và giữ trong memory của phiên;
+- mục tiêu là cho tester vào core gameplay nhanh, nhưng vẫn có thể test USP face avatar nếu muốn.
 
-Shell state được host sở hữu và đồng bộ riêng qua local transport:
-- client gửi `shell_hello`;
-- host trả/broadcast `shell_state`;
-- host chuyển `waiting → active` khi bấm bắt đầu;
-- host tính winner và chuyển `active → ended` sau vòng cuối;
-- rematch reset shell rồi vào active lại.
+### In-game quick guide
+File mới: `src/scenes/PlaytestDemoBoardScene.ts`.
 
-Shell protocol cố ý tách khỏi `MatchCommand` để không phá deterministic gameplay contract 0.1.8–0.1.14. Gameplay command authority vẫn do `TwoTabHostSession + HostAuthority` giữ.
+Scene này kế thừa `DemoBoardScene`, giữ nguyên scene key `DemoBoardScene`, rồi thêm presentation layer cho playtest:
+- badge `PLAYTEST 0.1.16`;
+- nút `? CÁCH CHƠI`;
+- quick-guide 6 bước trong game;
+- nhắc rõ luật 3 vòng chỉ là luật tạm;
+- trong lúc guide mở, keyboard gameplay tạm disable để tránh tester vô tình roll phía sau overlay.
 
-## DemoBoardScene
+`src/main.ts` register `PlaytestDemoBoardScene` thay cho class DemoBoardScene gốc, nên các route hiện có vẫn gọi `DemoBoardScene` bình thường mà không phải đổi protocol/gameplay core.
 
-Scene mới: `src/scenes/DemoBoardScene.ts`.
+## External playtest packaging
 
-Đây là scene chính cho demo 0.1.15 ở cả hotseat và two-tab:
-- màn chờ trước trận;
-- host/hotseat có nút **BẮT ĐẦU DEMO**;
-- client thấy **CHỜ HOST BẮT ĐẦU**;
-- HUD hiện vòng hiện tại và tiến độ lượt;
-- Roll / Card / Branch chỉ mở khi shell đang `active`;
-- hết 3 vòng sẽ khóa gameplay và hiện Match End overlay;
-- winner summary + bảng xếp hạng B$;
-- host/hotseat có **CHƠI LẠI**;
-- rematch tạo seed mới, reset money/board/hand/command seq về đầu trận;
-- client nhận authoritative state mới rồi tiếp tục cùng host;
-- tất cả có nút **VỀ LOBBY**.
+### Portable static paths
+File mới: `vite.config.ts` với `base: './'`.
 
-`BoardScene` và `NetworkBoardScene` cũ vẫn giữ lại như technical reference/regression path, nhưng flow demo mới đi qua `DemoBoardScene`.
+Production `dist/index.html` dùng asset path tương đối, phù hợp hơn cho static hosting ở subpath/artifact extraction.
 
-## Lobby + Setup flow
+Lưu ý: build web vẫn nên chạy qua HTTP static server, **không cam kết chạy trực tiếp bằng `file://`**.
 
-`LocalLobbyScene` hiện có:
-1. **SOLO / HOTSEAT** — Face Setup 4 người → DemoBoardScene;
-2. **HOST 2 TAB** — room code → Face Setup → DemoBoardScene;
-3. **JOIN 2 TAB** — room code + P2/P3/P4 → vào thẳng DemoBoardScene.
+### Quickstart nằm trong build
+File mới: `public/PLAYTEST.txt`.
 
-Host có thể cho client join trước khi bấm bắt đầu.
+Vite copy file này vào `dist/PLAYTEST.txt` để tester luôn có quickstart đi kèm package.
 
-0.1.15 cũng thêm retry đơn giản ở client:
-- nếu join packet gửi trước khi host endpoint tồn tại, client re-send join request khoảng mỗi 1.5s;
-- shell state cũng được request lại cho tới khi nhận được.
+Guide đầy đủ:
+- `docs/PLAYTEST_0.1.16.md`
+- CI copy thành `dist/PLAYTEST_GUIDE.md` trước khi upload artifact.
 
-## Multiplayer behavior giữ nguyên
+### Package verification
+File mới: `scripts/verify-playtest-package.mjs`.
 
-- Host giữ `HostAuthority`.
-- Client chỉ gửi `ClientIntent`.
-- Host điều khiển ghế chưa bị client claim.
-- Client chỉ điều khiển đúng seat của mình.
-- Roll/Branch/Card đều qua authority protocol.
-- State/snapshot checksum vẫn được verify.
-- `ACT_001 — Trượt Tay` vẫn dùng host-resolved seeded `random_other` đúng source.
+`npm run test:package` kiểm tra:
+- `dist/index.html` tồn tại;
+- `dist/PLAYTEST.txt` tồn tại;
+- có JS + CSS bundle;
+- index không dùng absolute `/assets/...` path;
+- asset path tương đối hợp lệ cho static hosting.
 
-Rematch không tạo authority contract mới; host reset `authority.source/state/receipts`, broadcast state command boundary #0 và shell active mới. Seat claim hiện tại được giữ trong cùng browser session.
+Verified CI output:
 
-## Face behavior
+`[playtest-package-ci] PASS assets=2 quickstart=PLAYTEST.txt relativePaths=PASS`
 
-- Host/hotseat vẫn dùng Face Setup đủ 4 người.
-- Client join chưa nhận face texture từ host nên dùng fallback token màu.
-- Ảnh vẫn local browser, chưa upload server.
+## CI gate 0.1.16
 
-## CI gate 0.1.15
+CI giữ toàn bộ regression cũ và thêm package gate/artifact:
+1. TypeScript + Vite production build;
+2. deterministic replay fixture;
+3. lockstep peer simulator;
+4. noisy host/client + snapshot resync;
+5. client intent → host authority;
+6. two-tab local session fixture;
+7. demo match shell + rematch fixture;
+8. external playtest package validation;
+9. copy full playtest guide;
+10. upload artifact `mememe-playtest-0.1.16`.
 
-`.github/workflows/ci.yml` chạy 7 tầng:
-1. `npm run build`;
-2. `npm run test:replay`;
-3. `npm run test:lockstep`;
-4. `npm run test:host-client`;
-5. `npm run test:authority`;
-6. `npm run test:two-tab`;
-7. `npm run test:demo-shell`.
+Verified run trên head `7f15b3aacdb584d3b264c184c9c3a93b65633e1b`:
+- build: PASS;
+- replay: PASS;
+- lockstep: PASS;
+- host/client: PASS;
+- authority: PASS;
+- two-tab: PASS;
+- demo shell: PASS;
+- package validation: PASS;
+- artifact upload: PASS.
 
-Fixture mới: `tests/demo-match-shell.ts`.
+Artifact từ run này:
+- name: `mememe-playtest-0.1.16`;
+- artifact id: `10310720803`;
+- size: 368055 bytes;
+- retention: 14 ngày từ run;
+- SHA-256: `72fc82c865bacf998b4ca1a09f2d78b456e1ff17a401951b134a7dff5d671be5`.
 
-Nó kiểm tra:
-- shell waiting sync;
-- host start sync sang client;
-- 3 vòng / 12 lượt thật;
-- match end;
-- winner list đồng bộ;
-- rematch reset turn/command boundary/money;
-- client nhận state rematch.
+Golden deterministic replay checksum nền vẫn `0e7e9947`.
 
-Golden deterministic fixture nền vẫn giữ checksum `0e7e9947`.
+## Cách chạy external playtest
 
-## File mới/thay đổi chính
+### Hotseat
+1. Serve thư mục `dist/` bằng static HTTP server.
+2. Mở URL localhost/static host.
+3. Chọn `SOLO / HOTSEAT`.
+4. Đặt tên 4 người; ảnh có thể bỏ qua.
+5. Bắt đầu demo và chơi đủ 3 vòng.
 
-- `src/core/demoMatch.ts` — temporary demo rule + winner/progress helpers.
-- `src/core/demoShellSession.ts` — host/client shell state sync.
-- `src/scenes/DemoBoardScene.ts` — unified demo runtime.
-- `src/scenes/LocalLobbyScene.ts` — demo wording + JOIN route fix.
-- `src/scenes/SetupScene.ts` — route solo/host vào DemoBoardScene.
-- `src/main.ts` — register DemoBoardScene.
-- `tests/demo-match-shell.ts` — demo lifecycle regression.
-- `package.json` / `.github/workflows/ci.yml` — seventh CI gate.
+### Two-tab local
+1. Mở cùng URL ở hai tab cùng browser profile.
+2. Tab 1: `HOST 2 TAB` → giữ room code → setup → vào bàn.
+3. Tab 2: `JOIN 2 TAB` → nhập room code → chọn P2/P3/P4.
+4. Host bấm Start.
+5. Client chỉ điều khiển seat đã claim; host điều khiển seat còn lại.
 
-## Known limitations
+Đây vẫn là `BroadcastChannel` same-origin, chưa phải internet multiplayer.
 
-- **3 vòng + B$ cao nhất thắng chỉ là luật demo tạm**, chưa phải win condition final.
-- Demo shell gate hiện ở browser/session layer riêng, chưa được encode thành `MatchCommand`/MatchState schema. UI hợp lệ sẽ không gửi gameplay intent trước Start/sau End, nhưng production network protocol vẫn cần formalize lifecycle authority hơn nữa.
-- BroadcastChannel vẫn chỉ same-origin/local browser, chưa internet multiplayer.
-- Reload client tạo clientId mới; seat reclaim/reconnect production chưa xong.
+## Source/data integrity giữ nguyên
+
+- Không tự điền các Card_ID trống từ spreadsheet.
+- 4 Card runtime source-backed hiện có vẫn giữ nguyên.
+- `ACT_001 — Trượt Tay` vẫn là `random_other` host-resolved bằng seeded RNG đúng source.
+- Tin Tức/reaction vẫn là demo engine content, chưa được xem là content final.
+- Luật 3 vòng/B$ cao nhất vẫn được ghi rõ là temporary playtest rule.
+
+## Known limitations sau 0.1.16
+
+- Chưa có WebSocket/backend/internet multiplayer.
+- Reload client chưa reclaim seat production-ready.
 - Host migration/session auth/anti-cheat production chưa có.
-- Remote movement hiện snap authoritative state, chưa tween path đẹp.
-- Client chưa nhận face textures và chưa tái phát đầy đủ Card/News/Reaction presentation.
-- Full snapshot resync chưa có delta/compression/version negotiation.
-- Content vẫn rất mỏng: chỉ 4 Card source-backed và Tin Tức/reaction demo engine content.
-- Hand limit/card-per-turn, board topology và các hệ Job/Pet/Minigame chưa phải luật final.
+- Remote movement vẫn snap authoritative state, chưa tween full path.
+- Client chưa nhận face textures của host.
+- Card/News/Reaction presentation giữa host/client chưa đạt parity với mục tiêu final.
+- Content hiện còn mỏng cho playtest dài.
+- Demo build artifact vẫn cần HTTP static server; chưa có one-click desktop executable.
+- Demo shell lifecycle vẫn ở browser/session layer riêng, chưa encode vào MatchCommand/MatchState.
 
-## Milestone kế tiếp
+## Milestone kế tiếp đề xuất
 
-**MVP 0.1.16 — First External Playtest Build / Packaging + Polish**
+**MVP 0.1.17 — Playtest Feedback + Presentation Parity Pass**
 
-Ưu tiên:
-1. dọn debug text/HUD cho người ngoài dễ hiểu;
-2. thêm màn hướng dẫn cực ngắn trước trận;
-3. tween remote movement thay vì snap nếu không tạo regression;
-4. đồng bộ face avatar host → client hoặc có fallback trình bày đẹp hơn mà vẫn tôn trọng privacy;
-5. pass UI cho Card/News/Reaction trong DemoBoardScene;
-6. tạo build/package dễ mở cho tester;
-7. checklist test hotseat + two-tab;
-8. giữ rõ nhãn **PLAYTEST / RULES NOT FINAL**.
+Ưu tiên sau khi đã có build ngoài nhóm:
+1. thêm playtest diagnostics/export ngắn gọn để tester gửi bug dễ hơn;
+2. hiển thị rõ nguyên nhân B$/Card thay đổi sau mỗi authoritative action;
+3. polish remote movement thay vì snap thẳng;
+4. face/avatar sharing local giữa host-client nếu privacy contract rõ ràng;
+5. tái phát Card/News/Reaction presentation trên client;
+6. cân nhắc một hosted playtest URL sau khi local build ổn định;
+7. chỉ thay đổi rule/content sau khi có feedback thật, tránh khóa luật quá sớm.
 
-Nếu 0.1.16 không gặp blocker lớn, đây là mốc phù hợp để gửi build đầu tiên cho mem Discord/bạn bè chơi thử.
-
-## Nguyên tắc MVP
+## Nguyên tắc MVP đã đạt
 
 1. Roll → Move → Trigger. ✅
 2. Face runtime. ✅
@@ -171,3 +183,4 @@ Nếu 0.1.16 không gặp blocker lớn, đây là mốc phù hợp để gửi 
 14. ClientIntent → HostAuthority + local transport abstraction. ✅ PoC.
 15. Two-tab local browser room + authoritative board sync. ✅ PoC.
 16. Demo match start/end/winner/rematch shell. ✅ PoC.
+17. First external playtest onboarding + verified package artifact. ✅
