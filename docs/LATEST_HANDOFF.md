@@ -5,62 +5,88 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.26 — Turn Stakes & Money Drama (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.27 — Tactical Choice (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.26`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.27`**.
 
 Read first:
-1. `docs/MVP_0.1.26_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.26.md`
-3. `src/ui/moneyStakes.ts`
-4. `src/scenes/TurnStakesBoardScene.ts`
-5. `tests/money-stakes-026.ts`
-6. `docs/MVP_0.1.25_PROGRESS.md`
-7. `tests/economy-scale-025.ts`
-8. `src/core/matchState.ts`
-9. `src/content/city/board_city_mvp.json`
-10. `src/content/core/cards_mvp.json`
-11. `src/content/core/news_mvp_demo.json`
-12. `src/scenes/PartyMechanicsBoardScene.ts`
+1. `docs/MVP_0.1.27_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.27.md`
+3. `src/core/cards.ts`
+4. `src/core/authority.ts`
+5. `src/core/replay.ts`
+6. `src/content/core/cards_mvp.json`
+7. `src/ui/TacticalChoicePicker.ts`
+8. `src/scenes/TacticalChoiceBoardScene.ts`
+9. `tests/tactical-choice-027.ts`
+10. `src/scenes/TurnStakesBoardScene.ts`
+11. `src/ui/moneyStakes.ts`
+12. `tests/economy-scale-025.ts`
 13. `src/ui/SettingsPanel.ts`
 14. `src/audio/bgmController.ts`
 15. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## What 0.1.26 changed
+## What 0.1.27 changed
 
-### Live money leaderboard
+### First explicit Card choice
 
-The compact B$ panel is now a live standings panel:
-- sorted by current B$ descending;
-- deterministic lower seat ID tiebreak;
-- leader gets `👑`;
-- trailer gets `🛟`;
-- when all players are tied, nobody gets a fake crown/lifebuoy.
+`ACT_008` is now **Kèo Hai Cửa**.
 
-The current-turn line now includes:
-- player name;
-- current B$;
-- current rank / tied state.
+It remains R rarity / weight 75, so total Card rarity probabilities stay unchanged.
 
-### Wallet delta feedback
+When used, the player chooses one of two deterministic outcomes:
+- **ĂN CHẮC**: +25 B$ to the caster;
+- **ÉP TOP 1**: transfer 15% of the current richest other player's B$ to the caster.
 
-Authoritative state transitions are compared presentation-side.
+The richest-opponent tie-break remains lower seat/player ID.
 
-When a player's B$ changes, a small transient `+/- B$` label appears beside that player's leaderboard row and fades automatically.
+### Human UI
 
-This feedback:
-- is non-blocking;
-- does not add RNG;
-- does not enter MatchState;
-- is suppressed for snapshot resync so stale wallet changes are not replayed.
+A dedicated tactical choice panel opens only for `tactical_choice` Cards.
 
-### Leader change feedback
+It shows before committing:
+- exact Safe payout;
+- current richest target;
+- target's current B$;
+- exact floored Pressure payout.
 
-When the visible leader changes, the leaderboard pulses slightly. No modal and no extra acknowledgement are introduced.
+`QUAY LẠI` cancels without consuming the Card.
 
-## Gameplay retained from 0.1.25
+### Host authority / replay
+
+No new command type was added.
+
+The existing `play_card` command now carries `choice = safe|pressure` only for tactical Cards.
+
+Host validates the choice before stamping the command. Replay requires the same choice and rejects invalid streams rather than silently defaulting.
+
+Neither branch consumes gameplay RNG.
+
+### CPU QA behavior
+
+CPU remains QA-only.
+
+For Kèo Hai Cửa it compares:
+- guaranteed +25 B$;
+- current 15% richest-opponent value.
+
+CPU selects Pressure only when Pressure > Safe; otherwise it selects Safe. This evaluation consumes no MatchState RNG.
+
+## Probability invariants
+
+Total Card weight remains 1000:
+- N 600
+- R 300
+- SR 90
+- SSR 10
+
+Within R, one former duplicate block Card was replaced by Kèo Hai Cửa without changing its ID or 75 weight.
+
+No News probabilities changed.
+
+## Gameplay retained
 
 Starting wallet remains **200 B$**.
 
@@ -82,64 +108,72 @@ Phao Cứu Sinh:
 
 READY remains **+100 B$**.
 
-Relative Card mechanics remain unchanged:
-- steal 10 B$;
-- Thuế Top 1 18%;
-- SR all-opponent loss 30%;
-- SSR full wallet swap.
+Turn Stakes from 0.1.26 remains:
+- live B$ leaderboard;
+- crown/lifebuoy markers;
+- current-turn rank copy;
+- non-blocking wallet delta labels;
+- leader-change pulse;
+- snapshot resync suppresses stale wallet FX.
+
+All movement, route parity, presentation timing, reaction queue, Settings, BGM/SFX and face-editor behavior remain intact.
 
 ## Regression
 
 New command:
 
-`npm run test:stakes`
+`npm run test:tactical`
 
 It locks:
-- deterministic money ordering;
-- lower-seat tiebreak;
-- crown/trailer markers;
-- no markers when the whole table is tied;
-- compact leaderboard row state;
-- exact wallet delta comparison.
+- Kèo Hai Cửa identity and 25/15% values;
+- Safe resolution;
+- Pressure resolution;
+- richest tie-break;
+- invalid-choice failure;
+- CPU deterministic choice;
+- CPU tactical evaluation does not consume gameplay RNG;
+- R rarity total remains 300.
 
-All earlier replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, party-mechanics, 200B economy, image and package checks remain enabled.
+All previous replay, lockstep, host/client, authority, two-tab, CPU stress, presentation, flow, board-flow, board-feel, settings/audio, content, reaction/route, party, economy, Turn Stakes, image and package tests remain enabled.
+
+Golden replay checksum stays unchanged from 0.1.25/0.1.26 because ACT_008 kept the same ID/weight and the golden fixture does not play it.
 
 ## Current artifact status
 
 Validated GitHub Actions run:
 
-`34764306363` / run `#647`
+`34765167348` / run `#685`
 
 Head SHA:
 
-`6df36cde0f7c41e525ce80a261844977aebe45a8`
+`90fd71c842704ed48bd97fa501f4569750ebe5af`
 
 Artifact:
 
-`mememe-playtest-0.1.26`
+`mememe-playtest-0.1.27`
 
 Artifact digest:
 
-`sha256:208c864fb351d21f97813a5b22049faf9856f94f547ccf6fcf348bab4d4c2a35`
+`sha256:a5e9d5f60f5604c205899d9d4e9b36c74cd2ff19ea0fc1088442cc6965d76432`
 
-Artifact size: ~8.50 MB.
+Artifact size: ~8.51 MB.
 
 GitHub run URL:
 
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34764306363`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34765167348`
 
-CI passed through artifact upload, including **Turn stakes money leaderboard** and CPU autoplay.
+CI passed through artifact upload, including **Tactical Choice rules** and CPU autoplay.
 
 ## Recommended next work
 
-Do a real playtest on 0.1.26 and focus on:
-1. whether the live leaderboard improves tension without becoming distracting;
-2. whether crown/lifebuoy changes are readable at a glance;
-3. whether wallet delta labels are visible but not noisy;
-4. whether 200 B$ economy still feels tense rather than starved;
-5. whether READY +100 remains exciting rather than excessive;
-6. whether presentation/reaction queues remain clean through endgame;
-7. whether the next milestone should add deeper strategic choice rather than more HUD polish.
+Do a real playtest on 0.1.27 and focus on:
+1. whether the choice panel feels quick rather than interruptive;
+2. whether +25 B$ vs 15% Top-1 creates a meaningful decision at 200 B$ economy;
+3. whether the displayed Pressure preview matches the actual resolved target/value;
+4. whether cancelling preserves the Card cleanly;
+5. whether CPU tactical choice looks sensible in autoplay;
+6. whether Card presentation/reactions still remain readable after a tactical resolution;
+7. whether the next strategic layer should be another Card choice or a board-space choice.
 
 ## Hard invariants
 
@@ -152,6 +186,7 @@ Do a real playtest on 0.1.26 and focus on:
 - Snapshot resync must not replay stale presentation events or wallet FX.
 - Result/ranking must not cover unresolved final-turn presentation.
 - Route feedback remains non-blocking and host-authoritative.
+- Tactical Card choices are player-authored decisions, never random client-authored outcomes.
 - Automatic Card mechanics must not add client-authored random outcomes.
 - Dice presentation must display the authoritative result.
 - Original face files must not be silently uploaded/persisted.
