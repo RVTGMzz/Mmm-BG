@@ -1,4 +1,5 @@
 export type TileType = 'ready' | 'normal' | 'money' | 'news' | 'card';
+export type FunctionTileType = 'minigame' | 'job';
 export type BoardEdgeRoute = 'main' | 'branch';
 export type BoardEdgeParity = 'odd' | 'even';
 
@@ -8,6 +9,10 @@ export interface BoardNode {
   y: number;
   type: TileType;
   value?: number;
+  /** Optional function-space layer. 0.1.29 keeps the base tile graph/state model intact. */
+  feature?: FunctionTileType;
+  /** Stable content hook for the future playable Mini Game / Job catalog. */
+  contentId?: string;
 }
 
 export interface BoardEdge {
