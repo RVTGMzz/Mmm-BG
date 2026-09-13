@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { browserSession } from '../core/browserSession';
 import { gameSession, type FaceExpression } from '../core/session';
-import { buildFaceSticker, faceTextureKey } from '../systems/faces';
+import { faceTextureKey } from '../systems/faces';
+import { FaceImageEditor } from '../ui/FaceImageEditor';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -36,7 +37,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.17', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.18', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -64,8 +65,8 @@ export class SetupScene extends Phaser.Scene {
       </div>
       <div class="setup-footer">
         <div>
-          <p class="setup-hint"><strong>Ảnh mặt là tùy chọn.</strong> Ghế có 🤖 sẽ tự chơi sau khi bấm BẮT ĐẦU DEMO; CPU chỉ để test flow, chưa phải AI final.</p>
-          <p class="setup-privacy">🔒 Nếu thêm ảnh: ảnh chỉ được xử lý trong trình duyệt và giữ trong bộ nhớ phiên chơi này. Playtest chưa upload ảnh lên server.</p>
+          <p class="setup-hint"><strong>Ảnh mặt là tùy chọn.</strong> Chạm ảnh để crop, kéo vị trí, zoom/pinch và xoay trước khi dùng.</p>
+          <p class="setup-privacy">🔒 Ảnh gốc chỉ tồn tại trong trình duyệt lúc chỉnh. Khi xác nhận, game tạo sticker runtime 320×320 và ưu tiên nén WebP; không upload ảnh lên server.</p>
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
@@ -108,7 +109,7 @@ export class SetupScene extends Phaser.Scene {
           <span class="face-emoji">${expression.emoji}</span>
           <img id="preview-${playerId}-${expression.id}" alt="${expression.label}" />
           <span class="face-label">${expression.label}</span>
-          <span class="face-action">+ Ảnh</span>
+          <span class="face-action">+ Ảnh / chỉnh</span>
           <input id="face-${playerId}-${expression.id}" type="file" accept="image/*" />
         </label>
       `,
@@ -138,19 +139,25 @@ export class SetupScene extends Phaser.Scene {
     const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression}`);
     const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression}`);
     slot?.classList.add('loading');
-    this.setStatus(`Đang cắt ảnh Player ${playerId + 1} thành sticker...`, false);
+    this.setStatus(`Đang mở trình chỉnh ảnh Player ${playerId + 1}...`, false);
 
     try {
-      const dataUrl = await buildFaceSticker(file);
+      const edited = await FaceImageEditor.open(file);
+      if (!edited) {
+        this.refreshStatus();
+        return;
+      }
+
       gameSession.setFace(playerId, expression, {
-        dataUrl,
+        dataUrl: edited.dataUrl,
         textureKey: faceTextureKey(playerId, expression),
         originalName: file.name,
       });
 
-      if (preview) preview.src = dataUrl;
+      if (preview) preview.src = edited.dataUrl;
       slot?.classList.add('has-image');
-      this.refreshStatus();
+      const approxKb = Math.max(1, Math.round((edited.dataUrl.length * 0.75) / 1024));
+      this.setStatus(`✓ Sticker P${playerId + 1} ${expression}: 320×320 • ~${approxKb} KB runtime.`, false);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Không xử lý được ảnh.';
       this.setStatus(message, true);
