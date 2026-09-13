@@ -130,7 +130,8 @@ export function applyCardEffect(
     }
 
     case 'rich_tax': {
-      const resolvedTarget = requiredTarget(target, card);
+      const resolvedTarget = target ?? pickRichestOtherTarget(players, caster.id);
+      if (!resolvedTarget) return { amount: 0, affectedPlayerIds: [caster.id], summary: `${caster.name} không tìm thấy đối thủ hợp lệ.` };
       const percent = Math.min(1, Math.max(0, card.effect.percent));
       const amount = Math.floor(Math.max(0, resolvedTarget.money) * percent);
       resolvedTarget.money -= amount;
@@ -138,7 +139,7 @@ export function applyCardEffect(
       return {
         amount,
         affectedPlayerIds: [caster.id, resolvedTarget.id],
-        summary: `${caster.name} thu ${Math.round(percent * 100)}% từ người giàu nhất ${resolvedTarget.name} (${amount}B$).`,
+        summary: `${caster.name} thu ${Math.round(percent * 100)}% từ người nhiều B$ nhất ${resolvedTarget.name} (${amount}B$).`,
       };
     }
 
