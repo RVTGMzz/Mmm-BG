@@ -6,37 +6,26 @@ import type { BoardDefinition } from '../src/core/types';
 import {
   countBlockingPresentationEvents,
   shouldAutoAdvancePresentation,
+  shouldDeferResultOverlay,
 } from '../src/ui/presentationFlowPolicy';
 
 const BOARD = boardJson as BoardDefinition;
 
 const branchEdges = getOutgoingEdges(BOARD, 4);
-assert.equal(branchEdges.length, 2, 'node 4 should remain the two-way parity fork');
-assert.equal(pickParityEdge(branchEdges, 1)?.to, 5, 'odd roll should take PHỐ CHÍNH');
-assert.equal(pickParityEdge(branchEdges, 3)?.to, 5, 'odd parity must be stable');
-assert.equal(pickParityEdge(branchEdges, 2)?.to, 18, 'even roll should take HẺM TẮT');
-assert.equal(pickParityEdge(branchEdges, 6)?.to, 18, 'even parity must be stable');
+assert.equal(branchEdges.length, 2);
+assert.equal(pickParityEdge(branchEdges, 1)?.to, 5);
+assert.equal(pickParityEdge(branchEdges, 3)?.to, 5);
+assert.equal(pickParityEdge(branchEdges, 2)?.to, 18);
+assert.equal(pickParityEdge(branchEdges, 6)?.to, 18);
 
-assert.equal(
-  shouldAutoAdvancePresentation([0, 1, 2, 3]),
-  true,
-  '4 CPU AUTOPLAY may self-ack presentation',
-);
-assert.equal(
-  shouldAutoAdvancePresentation([1, 2, 3]),
-  false,
-  '1 human + 3 CPU must wait for human acknowledgement',
-);
-assert.equal(
-  shouldAutoAdvancePresentation([2, 3]),
-  false,
-  '2 human + 2 CPU must wait for acknowledgement',
-);
-assert.equal(
-  shouldAutoAdvancePresentation([0, 1, 1, 3]),
-  false,
-  'duplicate CPU seats must never accidentally enable autoplay',
-);
+assert.equal(shouldAutoAdvancePresentation([0, 1, 2, 3]), true);
+assert.equal(shouldAutoAdvancePresentation([1, 2, 3]), false);
+assert.equal(shouldAutoAdvancePresentation([2, 3]), false);
+assert.equal(shouldAutoAdvancePresentation([0, 1, 1, 3]), false);
+
+assert.equal(shouldDeferResultOverlay(true, 'ended'), true);
+assert.equal(shouldDeferResultOverlay(false, 'ended'), false);
+assert.equal(shouldDeferResultOverlay(true, 'active'), false);
 
 const match = createInitialMatchState({
   boardId: BOARD.id,
@@ -74,18 +63,13 @@ const blockingBatch = [
   }),
 ];
 
-assert.equal(
-  countBlockingPresentationEvents(blockingBatch, match.players),
-  2,
-  'landing + news must be two acknowledged presentation steps, not a timed backlog',
-);
+assert.equal(countBlockingPresentationEvents(blockingBatch, match.players), 2);
 assert.equal(
   countBlockingPresentationEvents(
     [event(3, 'money_tile', { amount: 50, resultMoney: 550 })],
     match.players,
   ),
   0,
-  'log-only events must not create extra blocking panels',
 );
 
-console.log('[flow-fix] PASS manual-ack policy + deterministic odd/even branch routing');
+console.log('[flow-fix] PASS manual acknowledge, result deferral, and parity routing');
