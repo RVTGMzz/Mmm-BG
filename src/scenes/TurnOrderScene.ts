@@ -5,6 +5,7 @@ import { configureInitialPlayOrder } from '../core/matchState';
 import { gameSession } from '../core/session';
 
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
+const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
 function localD6(): number {
   if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
@@ -85,7 +86,7 @@ export class TurnOrderScene extends Phaser.Scene {
     this.rollButton.on('pointerout', () => this.rollButton?.setScale(1));
     this.rollButton.on('pointerdown', () => {
       if (!this.waitingResolver) return;
-      sfxController.play(this.enterBattleReady ? 'ui_confirm' : 'dice_roll');
+      if (this.enterBattleReady) sfxController.play('ui_confirm');
       this.waitingResolver();
     });
 
@@ -100,7 +101,7 @@ export class TurnOrderScene extends Phaser.Scene {
 
     this.enterBattleReady = true;
     for (const [id, text] of this.valueTexts) {
-      text.setAlpha(1).setScale(1);
+      text.setAlpha(1).setScale(1).setAngle(0);
       const rank = order.indexOf(id);
       this.rankTexts.get(id)?.setText(rank >= 0 ? `THỨ ${rank + 1}` : '');
     }
@@ -133,8 +134,8 @@ export class TurnOrderScene extends Phaser.Scene {
       this.highlight(id);
       const result = await this.waitForRoll(id);
       rolls.set(id, result);
-      this.valueTexts.get(id)?.setText(`🎲 ${result}`);
-      await this.pause(420);
+      await this.animateRoll(id, result);
+      await this.pause(260);
     }
 
     const values = [...new Set(rolls.values())].sort((a, b) => b - a);
@@ -149,7 +150,7 @@ export class TurnOrderScene extends Phaser.Scene {
       this.promptText?.setText(`🤝 HÒA ${value}!`);
       this.detailText?.setText(`${tiedNames} cùng ra ${value}. Nhóm này đổ lại.`);
       await this.pause(900);
-      for (const id of tied) this.valueTexts.get(id)?.setText('↻');
+      for (const id of tied) this.valueTexts.get(id)?.setText('↻').setAngle(0);
       resolved.push(...await this.resolveGroup(tied, depth + 1));
     }
     return resolved;
@@ -162,10 +163,7 @@ export class TurnOrderScene extends Phaser.Scene {
       this.rollButton?.setVisible(false);
       this.rollButtonText?.setVisible(false);
       return new Promise((resolve) => {
-        this.time.delayedCall(620, () => {
-          sfxController.play('dice_roll');
-          resolve(localD6());
-        });
+        this.time.delayedCall(520, () => resolve(localD6()));
       });
     }
 
@@ -181,10 +179,36 @@ export class TurnOrderScene extends Phaser.Scene {
     });
   }
 
+  /** Every participant, including CPU, gets a visible suspense roll before reveal. */
+  private async animateRoll(playerId: number, result: number): Promise<void> {
+    const text = this.valueTexts.get(playerId);
+    if (!text) return;
+    sfxController.play('dice_roll');
+    text.setAlpha(1).setScale(1.14).setAngle(-8);
+
+    for (let frame = 0; frame < 7; frame += 1) {
+      const face = DICE_FACES[(result + frame * 2 + 1) % DICE_FACES.length] ?? '🎲';
+      text.setText(face).setAngle(frame % 2 === 0 ? -9 : 9);
+      await this.pause(72);
+    }
+
+    text.setText(`🎲 ${result}`).setAngle(0).setScale(1.22);
+    await new Promise<void>((resolve) => {
+      this.tweens.add({
+        targets: text,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 180,
+        ease: 'Back.easeOut',
+        onComplete: () => resolve(),
+      });
+    });
+  }
+
   private highlight(playerId: number): void {
     for (const [id, text] of this.valueTexts) {
       text.setAlpha(id === playerId ? 1 : 0.48);
-      text.setScale(id === playerId ? 1.08 : 1);
+      text.setScale(id === playerId ? 1.08 : 1).setAngle(0);
       this.rankTexts.get(id)?.setText('');
     }
   }
