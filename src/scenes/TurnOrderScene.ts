@@ -21,7 +21,9 @@ export class TurnOrderScene extends Phaser.Scene {
   private promptText?: Phaser.GameObjects.Text;
   private detailText?: Phaser.GameObjects.Text;
   private readonly valueTexts = new Map<number, Phaser.GameObjects.Text>();
+  private readonly rankTexts = new Map<number, Phaser.GameObjects.Text>();
   private waitingResolver?: () => void;
+  private enterBattleReady = false;
 
   constructor() {
     super('TurnOrderScene');
@@ -55,10 +57,14 @@ export class TurnOrderScene extends Phaser.Scene {
       this.add.text(x, 291, browserSession.isCpuSeat(player.id) ? '🤖 CPU' : '👤 PLAYER', {
         fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#746a60',
       }).setOrigin(0.5);
-      const value = this.add.text(x, 342, '—', {
-        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '43px', fontStyle: 'bold', color: '#202020',
+      const value = this.add.text(x, 338, '—', {
+        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '41px', fontStyle: 'bold', color: '#202020',
+      }).setOrigin(0.5);
+      const rank = this.add.text(x, 382, '', {
+        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#746a60',
       }).setOrigin(0.5);
       this.valueTexts.set(player.id, value);
+      this.rankTexts.set(player.id, rank);
     });
 
     this.promptText = this.add.text(640, 422, 'Chuẩn bị...', {
@@ -78,8 +84,9 @@ export class TurnOrderScene extends Phaser.Scene {
     this.rollButton.on('pointerover', () => this.rollButton?.setScale(1.035));
     this.rollButton.on('pointerout', () => this.rollButton?.setScale(1));
     this.rollButton.on('pointerdown', () => {
-      sfxController.play('dice_roll');
-      this.waitingResolver?.();
+      if (!this.waitingResolver) return;
+      sfxController.play(this.enterBattleReady ? 'ui_confirm' : 'dice_roll');
+      this.waitingResolver();
     });
 
     void this.runCeremony();
@@ -90,6 +97,13 @@ export class TurnOrderScene extends Phaser.Scene {
     const order = await this.resolveGroup(ids, 1);
     gameSession.setPlayOrder(order);
     configureInitialPlayOrder(order);
+
+    this.enterBattleReady = true;
+    for (const [id, text] of this.valueTexts) {
+      text.setAlpha(1).setScale(1);
+      const rank = order.indexOf(id);
+      this.rankTexts.get(id)?.setText(rank >= 0 ? `THỨ ${rank + 1}` : '');
+    }
 
     const names = order.map((id, index) => `${index + 1}. ${gameSession.players[id]?.name ?? `P${id + 1}`}`);
     this.promptText?.setText('🏁 THỨ TỰ ĐÃ CHỐT!');
@@ -143,6 +157,7 @@ export class TurnOrderScene extends Phaser.Scene {
 
   private waitForRoll(playerId: number): Promise<number> {
     const isCpu = browserSession.isCpuSeat(playerId);
+    this.enterBattleReady = false;
     if (isCpu) {
       this.rollButton?.setVisible(false);
       this.rollButtonText?.setVisible(false);
@@ -170,6 +185,7 @@ export class TurnOrderScene extends Phaser.Scene {
     for (const [id, text] of this.valueTexts) {
       text.setAlpha(id === playerId ? 1 : 0.48);
       text.setScale(id === playerId ? 1.08 : 1);
+      this.rankTexts.get(id)?.setText('');
     }
   }
 
