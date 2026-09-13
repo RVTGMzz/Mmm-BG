@@ -1,0 +1,187 @@
+[
+  {
+    "id": "CARD_STEAL_023",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "caster",
+        "expression": "happy",
+        "durationMs": 1500,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "{target}, cho xin {amount}B$ tiền cà phê nha 😌" },
+          { "personalityTag": "whiny", "text": "Tui thiếu đúng {amount}B$ thôi, thông cảm đi mà 😭" },
+          { "personalityTag": "gossip", "text": "Tin nội bộ: ví {target} vừa hụt {amount}B$ 👀" },
+          { "personalityTag": "chill", "text": "Mượn {amount}B$. Có dịp tính sau." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 620,
+        "speakerRole": "target",
+        "expression": "angry",
+        "durationMs": 1550,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Mượn hả? Nhớ trả kèm lãi nha." },
+          { "personalityTag": "whiny", "text": "Ví tui có làm gì đâu trời?!" },
+          { "personalityTag": "gossip", "text": "Được, vụ mất tiền này lên bản tin tối nay." },
+          { "personalityTag": "chill", "text": "Rồi, {amount}B$. Ghi sổ." }
+        ]
+      },
+      {
+        "sequence": 3,
+        "delayMs": 1180,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1250,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ví không khóa là vậy đó 😏" },
+          { "personalityTag": "whiny", "text": "May quá lần này không phải tui." },
+          { "personalityTag": "gossip", "text": "Có giao dịch đáng ngờ nha cả nhà." },
+          { "personalityTag": "chill", "text": "Tiền đổi chủ nhanh ghê." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CARD_BLOCK_023",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "caster",
+        "expression": "happy",
+        "durationMs": 1500,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "{target}, ngồi im một lượt cho bàn yên nha." },
+          { "personalityTag": "whiny", "text": "Xin lỗi nha, tui sợ lá bài của {target} lắm 😭" },
+          { "personalityTag": "gossip", "text": "Thông báo khẩn: {target} tạm thời mất quyền phát biểu." },
+          { "personalityTag": "chill", "text": "Khóa bài một lượt. Nghỉ tay chút đi." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 650,
+        "speakerRole": "target",
+        "expression": "angry",
+        "durationMs": 1600,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Khóa được bài chứ khóa được tui đâu." },
+          { "personalityTag": "whiny", "text": "Ủa sao cấm tui chơi game vậy?!" },
+          { "personalityTag": "gossip", "text": "Cái này là kiểm duyệt trắng trợn nha." },
+          { "personalityTag": "chill", "text": "Một lượt thôi. Đợi được." }
+        ]
+      },
+      {
+        "sequence": 3,
+        "delayMs": 1240,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1250,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Yên tĩnh hẳn 😌" },
+          { "personalityTag": "whiny", "text": "Đừng khóa tui tiếp theo nha…" },
+          { "personalityTag": "gossip", "text": "Drama bị mute tạm thời." },
+          { "personalityTag": "chill", "text": "Bàn cờ có một lượt bình yên." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CARD_GROUP_CURSE_023",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "caster",
+        "expression": "happy",
+        "durationMs": 1650,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Không ai giàu một mình được đâu 😌" },
+          { "personalityTag": "whiny", "text": "Tui khổ thì mọi người khổ chung cho công bằng!" },
+          { "personalityTag": "gossip", "text": "Tin nóng: tài sản cả bàn đang bốc hơi hàng loạt." },
+          { "personalityTag": "chill", "text": "Hạ mặt bằng tài chính xuống chút nha." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 760,
+        "speakerRole": "spectator",
+        "expression": "angry",
+        "durationMs": 1600,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Ai cho phép thu 30% vậy?!" },
+          { "personalityTag": "whiny", "text": "Tui đứng xem thôi cũng mất tiền hả trời?!" },
+          { "personalityTag": "gossip", "text": "Đây là vụ án tài chính lớn nhất tối nay." },
+          { "personalityTag": "chill", "text": "Ba mươi phần trăm. Hơi đau nhưng còn chơi được." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "CARD_SWAP_023",
+    "steps": [
+      {
+        "sequence": 1,
+        "delayMs": 0,
+        "speakerRole": "caster",
+        "expression": "happy",
+        "durationMs": 1650,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "{target}, cho đổi ví một tí nha 😌" },
+          { "personalityTag": "whiny", "text": "Tui cần một cuộc đời mới, đổi ví với tui đi!" },
+          { "personalityTag": "gossip", "text": "Breaking: {caster} và {target} vừa đổi toàn bộ tài sản." },
+          { "personalityTag": "chill", "text": "Đổi ví. Đổi vận. Xong." }
+        ]
+      },
+      {
+        "sequence": 2,
+        "delayMs": 700,
+        "speakerRole": "target",
+        "expression": "angry",
+        "durationMs": 1700,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Khoan, ai cho đổi nguyên cái ví?!" },
+          { "personalityTag": "whiny", "text": "Trả cuộc đời cũ lại cho tuiii!" },
+          { "personalityTag": "gossip", "text": "Vụ này phải có biên bản bàn giao tài sản nha." },
+          { "personalityTag": "chill", "text": "Ừ. Vậy giờ đây là ví của tui." }
+        ]
+      },
+      {
+        "sequence": 3,
+        "delayMs": 1350,
+        "speakerRole": "spectator",
+        "expression": "happy",
+        "durationMs": 1350,
+        "canOverlap": true,
+        "blocking": false,
+        "variants": [
+          { "personalityTag": "mean", "text": "Một cú bấm đổi luôn tầng lớp xã hội 😏" },
+          { "personalityTag": "whiny", "text": "Tự nhiên tui thấy ví mình không an toàn…" },
+          { "personalityTag": "gossip", "text": "Đây mới đúng nghĩa plot twist." },
+          { "personalityTag": "chill", "text": "Bảng xếp hạng vừa được xào lại." }
+        ]
+      }
+    ]
+  }
+]
