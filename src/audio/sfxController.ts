@@ -22,14 +22,14 @@ const STORAGE_KEY = 'mememe.sfx.preferences.v1';
 const SFX_BASE_PATH = 'audio/sfx';
 
 const SFX_ASSETS: Partial<Record<SfxCue, string>> = {
-  dice_roll: 'dice.mp3',
-  coin_gain: 'money_gain.mp3',
-  coin_loss: 'money_loss.mp3',
-  card_draw: 'card.mp3',
-  news: 'news.mp3',
-  ui_confirm: 'choice.mp3',
-  step: 'step.mp3',
-  victory: 'victory.mp3',
+  dice_roll: 'dice.ogg',
+  coin_gain: 'money_gain.ogg',
+  coin_loss: 'money_loss.ogg',
+  card_draw: 'card.ogg',
+  news: 'news.ogg',
+  ui_confirm: 'choice.ogg',
+  step: 'step.ogg',
+  victory: 'victory.ogg',
 };
 
 function loadMuted(): boolean {
