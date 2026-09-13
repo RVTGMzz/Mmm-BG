@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import './styles.css';
+import { bgmController, installBgmControls } from './audio/bgmController';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
 import { BoardScene } from './scenes/BoardScene';
@@ -26,4 +27,6 @@ const config: Phaser.Types.Core.GameConfig = {
   },
 };
 
+bgmController.start();
+installBgmControls();
 new Phaser.Game(config);
