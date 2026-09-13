@@ -3,9 +3,37 @@
     "id": "ACT_001",
     "title": "Trượt Tay",
     "rarity": "N",
-    "dropWeight": 600,
+    "dropWeight": 200,
     "impact": "⭐",
-    "description": "Lấy 10 vàng từ 1 người chơi ngẫu nhiên.",
+    "description": "Lấy 10B$ từ 1 người chơi ngẫu nhiên. Tai nạn nghề nghiệp thôi mà.",
+    "targetMode": "random_other",
+    "effect": { "type": "steal_money", "amount": 10 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 116, "rotation": -4 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 116, "rotation": 4 }
+    ]
+  },
+  {
+    "id": "ACT_002",
+    "title": "Mượn Tạm Không Hẹn Trả",
+    "rarity": "N",
+    "dropWeight": 200,
+    "impact": "⭐",
+    "description": "Mượn 10B$ của 1 người chơi ngẫu nhiên. Ngày trả đang được cập nhật.",
+    "targetMode": "random_other",
+    "effect": { "type": "steal_money", "amount": 10 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 116, "rotation": -4 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 116, "rotation": 4 }
+    ]
+  },
+  {
+    "id": "ACT_003",
+    "title": "Ví Ai Nấy Lo",
+    "rarity": "N",
+    "dropWeight": 200,
+    "impact": "⭐",
+    "description": "Lấy 10B$ từ 1 người chơi ngẫu nhiên trước khi họ kịp giữ ví.",
     "targetMode": "random_other",
     "effect": { "type": "steal_money", "amount": 10 },
     "faceSlots": [
@@ -17,9 +45,37 @@
     "id": "ACT_006",
     "title": "Khóa Mõm",
     "rarity": "R",
-    "dropWeight": 300,
+    "dropWeight": 100,
     "impact": "⭐⭐",
     "description": "Cấm Target sử dụng Lá Bài trong 1 lượt.",
+    "targetMode": "single_other",
+    "effect": { "type": "block_cards", "turns": 1 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 116, "rotation": -5 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 116, "rotation": 5 }
+    ]
+  },
+  {
+    "id": "ACT_007",
+    "title": "Seen Không Rep",
+    "rarity": "R",
+    "dropWeight": 100,
+    "impact": "⭐⭐",
+    "description": "Target bị cho vào chế độ im lặng và không thể dùng Lá Bài trong 1 lượt.",
+    "targetMode": "single_other",
+    "effect": { "type": "block_cards", "turns": 1 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 116, "rotation": -5 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 116, "rotation": 5 }
+    ]
+  },
+  {
+    "id": "ACT_008",
+    "title": "Bị Réo Tên",
+    "rarity": "R",
+    "dropWeight": 100,
+    "impact": "⭐⭐",
+    "description": "Target bận giải trình nên bị khóa Lá Bài trong 1 lượt.",
     "targetMode": "single_other",
     "effect": { "type": "block_cards", "turns": 1 },
     "faceSlots": [
@@ -31,9 +87,35 @@
     "id": "ACT_010",
     "title": "Triệu Hồi Hắc Ín",
     "rarity": "SR",
-    "dropWeight": 90,
+    "dropWeight": 30,
     "impact": "⭐⭐⭐",
     "description": "Trừ 30% tổng tài sản của tất cả người chơi khác.",
+    "targetMode": "all_others",
+    "effect": { "type": "percent_loss_all_others", "percent": 0.3 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -185, "y": 20, "size": 122, "rotation": -6 }
+    ]
+  },
+  {
+    "id": "ACT_011",
+    "title": "Thuế Drama",
+    "rarity": "SR",
+    "dropWeight": 30,
+    "impact": "⭐⭐⭐",
+    "description": "Tất cả người chơi khác đóng 30% tài sản cho quỹ xử lý drama.",
+    "targetMode": "all_others",
+    "effect": { "type": "percent_loss_all_others", "percent": 0.3 },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -185, "y": 20, "size": 122, "rotation": -6 }
+    ]
+  },
+  {
+    "id": "ACT_014",
+    "title": "Đại Hội Mất Ví",
+    "rarity": "SR",
+    "dropWeight": 30,
+    "impact": "⭐⭐⭐",
+    "description": "Mọi đối thủ cùng mất 30% tài sản. Người tổ chức thì đứng ngoài cười.",
     "targetMode": "all_others",
     "effect": { "type": "percent_loss_all_others", "percent": 0.3 },
     "faceSlots": [
@@ -44,9 +126,23 @@
     "id": "ACT_012",
     "title": "Chuyển Sinh Đổi Vận",
     "rarity": "SSR",
-    "dropWeight": 10,
+    "dropWeight": 5,
     "impact": "⭐⭐⭐⭐⭐",
-    "description": "Hoán đổi toàn bộ số vàng của bản thân với Target.",
+    "description": "Hoán đổi toàn bộ số B$ của bản thân với Target.",
+    "targetMode": "single_other",
+    "effect": { "type": "swap_money" },
+    "faceSlots": [
+      { "role": "caster", "expression": "happy", "x": -175, "y": 20, "size": 120, "rotation": -7 },
+      { "role": "target", "expression": "angry", "x": 175, "y": 20, "size": 120, "rotation": 7 }
+    ]
+  },
+  {
+    "id": "ACT_013",
+    "title": "Đổi Ví Đổi Đời",
+    "rarity": "SSR",
+    "dropWeight": 5,
+    "impact": "⭐⭐⭐⭐⭐",
+    "description": "Đổi toàn bộ B$ với Target. Nghèo hay giàu chỉ cách nhau một cú bấm.",
     "targetMode": "single_other",
     "effect": { "type": "swap_money" },
     "faceSlots": [
