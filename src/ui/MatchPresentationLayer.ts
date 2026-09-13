@@ -3,6 +3,7 @@ import { sfxController, type SfxCue } from '../audio/sfxController';
 import type { MatchEvent } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
+import type { PresentationTimingPolicy } from './presentationFlowPolicy';
 import {
   buildPresentationModel,
   type PresentationEventModel,
@@ -10,8 +11,11 @@ import {
 } from './presentationModel';
 
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
+const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
 const KIND_PALETTE: Record<PresentationEventModel['kind'], { panel: number; accent: number; label: string }> = {
+  dice_roll: { panel: 0x24211d, accent: 0xffd34d, label: 'DICE' },
+  move_step: { panel: 0x24211d, accent: 0xffd34d, label: 'MOVE' },
   tile_land: { panel: 0x312d28, accent: 0xffd34d, label: 'LANDING' },
   ready_bonus: { panel: 0x173c31, accent: 0xffd34d, label: 'READY BONUS' },
   card_draw: { panel: 0x332543, accent: 0xb997d6, label: 'CARD DROP' },
@@ -34,13 +38,17 @@ const EXPRESSION_ICON: Record<FaceExpression, string> = {
 };
 
 export interface MatchPresentationLayerOptions {
-  autoAdvance?: boolean;
   onBlockingChange?: (blocking: boolean) => void;
+  timingForModel?: (model: PresentationEventModel, textRevealMs: number) => PresentationTimingPolicy;
+  onMoveStep?: (model: PresentationEventModel) => Promise<void> | void;
+  onPresentationStart?: (model: PresentationEventModel) => void;
+  onPresentationEnd?: (model: PresentationEventModel) => void;
 }
 
 export class MatchPresentationLayer {
   private readonly queue: PresentationEventModel[] = [];
   private active?: Phaser.GameObjects.Container;
+  private currentModel?: PresentationEventModel;
   private continueHint?: Phaser.GameObjects.Text;
   private readonly timers = new Set<Phaser.Time.TimerEvent>();
   private readonly reactionObjects = new Set<Phaser.GameObjects.Container>();
@@ -67,7 +75,6 @@ export class MatchPresentationLayer {
 
   enqueue(events: MatchEvent[]): void {
     if (this.destroyed) return;
-
     const players = this.getPlayers();
     let added = false;
     for (const event of events) {
@@ -76,7 +83,6 @@ export class MatchPresentationLayer {
       this.queue.push(model);
       added = true;
     }
-
     if (!added) return;
     this.setBlocking(true);
     this.pump();
@@ -94,6 +100,7 @@ export class MatchPresentationLayer {
     this.clearContinueHint();
     this.active?.destroy();
     this.active = undefined;
+    this.currentModel = undefined;
     this.setBlocking(false);
   }
 
@@ -106,8 +113,6 @@ export class MatchPresentationLayer {
   private pump(): void {
     if (this.destroyed || this.active) return;
     if (this.queue.length === 0) {
-      // Delay unlock a fraction so the SPACE/CLICK that dismissed the panel
-      // cannot also become the next gameplay input in the same gesture.
       this.schedule(90, () => {
         if (!this.active && this.queue.length === 0) this.setBlocking(false);
       });
@@ -116,9 +121,19 @@ export class MatchPresentationLayer {
 
     const model = this.queue.shift();
     if (!model) return;
+    this.currentModel = model;
     this.canAcknowledge = false;
     this.clearContinueHint();
+    this.options.onPresentationStart?.(model);
 
+    if (model.kind === 'move_step') {
+      this.runMoveStep(model);
+      return;
+    }
+    if (model.kind === 'dice_roll') {
+      this.showDiceRoll(model);
+      return;
+    }
     if (model.kind === 'tile_land' || model.kind === 'ready_bonus') {
       this.showLanding(model);
       return;
@@ -126,206 +141,229 @@ export class MatchPresentationLayer {
     this.showCinematic(model);
   }
 
-  private showLanding(model: PresentationEventModel): void {
-    const palette = KIND_PALETTE[model.kind];
-    const container = this.scene.add.container(640, 112).setDepth(895).setAlpha(0).setScale(0.88);
+  private runMoveStep(model: PresentationEventModel): void {
+    const blocker = this.scene.add.container(-100, -100).setVisible(false);
+    this.active = blocker;
+    Promise.resolve(this.options.onMoveStep?.(model))
+      .catch(() => undefined)
+      .finally(() => {
+        if (this.destroyed || this.currentModel !== model) return;
+        this.finishCurrent(false);
+      });
+  }
+
+  private showDiceRoll(model: PresentationEventModel): void {
+    const result = Math.max(1, Math.min(6, model.roll ?? 1));
+    const container = this.scene.add.container(640, 344).setDepth(920).setAlpha(0).setScale(0.72);
     this.active = container;
 
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(0x000000, 0.2);
-    bg.fillRoundedRect(-238, -35, 476, 76, 20);
-    bg.setPosition(0, 5);
-    const panel = this.scene.add.graphics();
-    panel.fillStyle(palette.panel, 0.97);
-    panel.fillRoundedRect(-238, -38, 476, 76, 20);
-    panel.lineStyle(3, palette.accent, 0.95);
-    panel.strokeRoundedRect(-238, -38, 476, 76, 20);
-
-    const icon = this.scene.add.text(-202, 0, model.impact || '•', {
+    const glow = this.scene.add.circle(0, 0, 72, 0xfffbf3, 0.96).setStrokeStyle(5, 0x24211d, 1);
+    const die = this.scene.add.text(0, -4, DICE_FACES[(result + 1) % 6], {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '30px',
+      fontSize: '86px',
+      color: '#202020',
     }).setOrigin(0.5);
-
-    const eyebrow = this.scene.add.text(-164, -19, model.eyebrow, {
+    const label = this.scene.add.text(0, 86, `${model.actorName} đổ xúc xắc`, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '10px',
+      fontSize: '14px',
       fontStyle: 'bold',
-      color: '#d9d1c7',
-    });
-    const title = this.scene.add.text(-164, 2, model.title, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '22px',
-      fontStyle: 'bold',
-      color: '#ffffff',
-    }).setOrigin(0, 0.5);
-    const description = this.scene.add.text(204, 17, model.description, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '10px',
-      color: '#e8e1d8',
-    }).setOrigin(1, 0.5);
+      color: '#202020',
+      backgroundColor: '#fffaf0',
+      padding: { x: 10, y: 5 },
+    }).setOrigin(0.5);
+    container.add([glow, die, label]);
 
-    container.add([bg, panel, icon, eyebrow, title, description]);
-    this.playModelSfx(model);
-    this.spawnBurst(palette.accent, model.kind === 'ready_bonus' ? 14 : 8, 640, 124);
-
-    if (model.kind === 'ready_bonus') this.spawnConfetti();
-    if (model.tileType === 'money' || model.kind === 'ready_bonus') {
-      this.showFloatingMoney(model.amount ?? 0, model.actorId);
-    }
-
+    sfxController.play('dice_roll');
     this.scene.tweens.add({
       targets: container,
       alpha: 1,
       scaleX: 1,
       scaleY: 1,
-      y: 126,
-      duration: 180,
+      duration: 140,
       ease: 'Back.easeOut',
     });
 
-    const readDelay = Math.min(650, Math.max(350, Math.round(model.holdMs * 0.45)));
-    this.armAcknowledge(readDelay);
+    for (let index = 0; index < 6; index += 1) {
+      this.schedule(80 + index * 72, () => {
+        if (!die.active) return;
+        die.setText(DICE_FACES[(result + index * 3 + 2) % 6]);
+        die.setAngle(index % 2 === 0 ? -9 : 9);
+      });
+    }
+    this.schedule(560, () => {
+      if (!die.active) return;
+      die.setText(DICE_FACES[result - 1]).setAngle(0).setScale(1.12);
+      this.scene.tweens.add({ targets: die, scaleX: 1, scaleY: 1, duration: 160, ease: 'Back.easeOut' });
+    });
+    this.schedule(model.holdMs, () => this.finishCurrent(false));
+  }
+
+  private showLanding(model: PresentationEventModel): void {
+    const palette = KIND_PALETTE[model.kind];
+    const container = this.scene.add.container(640, 350).setDepth(900).setAlpha(0).setScale(0.9);
+    this.active = container;
+
+    const shadow = this.scene.add.graphics();
+    shadow.fillStyle(0x000000, 0.22);
+    shadow.fillRoundedRect(-286, -80, 572, 170, 22);
+    shadow.setPosition(0, 8);
+    const panel = this.scene.add.graphics();
+    panel.fillStyle(palette.panel, 0.98);
+    panel.fillRoundedRect(-280, -84, 560, 168, 20);
+    panel.lineStyle(3, palette.accent, 0.95);
+    panel.strokeRoundedRect(-280, -84, 560, 168, 20);
+
+    const icon = this.scene.add.text(-226, -4, model.impact || '•', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '44px',
+    }).setOrigin(0.5);
+    const eyebrow = this.scene.add.text(-178, -52, model.eyebrow, {
+      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#d9d1c7',
+    });
+    const title = this.scene.add.text(-178, -24, model.title, {
+      fontFamily: 'Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#ffffff',
+    });
+    const description = this.scene.add.text(-178, 20, '', {
+      fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#f4ede4', wordWrap: { width: 410 },
+    });
+
+    container.add([shadow, panel, icon, eyebrow, title, description]);
+    const revealMs = this.revealText(description, model.description);
+    this.playModelSfx(model);
+    this.spawnBurst(palette.accent, model.kind === 'ready_bonus' ? 14 : 8, 640, 350);
+    if (model.kind === 'ready_bonus') this.spawnConfetti();
+    if (model.tileType === 'money' || model.kind === 'ready_bonus') this.showFloatingMoney(model.amount ?? 0, model.actorId);
+
+    this.scene.tweens.add({
+      targets: container, alpha: 1, scaleX: 1, scaleY: 1, duration: 190, ease: 'Back.easeOut',
+    });
+    this.armTiming(model, revealMs);
   }
 
   private showCinematic(model: PresentationEventModel): void {
     const palette = KIND_PALETTE[model.kind];
-    const container = this.scene.add.container(640, 236).setDepth(900).setAlpha(0).setScale(0.94);
+    const container = this.scene.add.container(640, 330).setDepth(900).setAlpha(0).setScale(0.94);
     this.active = container;
 
     const shadow = this.scene.add.graphics();
-    shadow.fillStyle(0x000000, 0.26);
-    shadow.fillRoundedRect(-378, -116, 756, 250, 22);
-    shadow.setPosition(0, 8);
-
+    shadow.fillStyle(0x000000, 0.28);
+    shadow.fillRoundedRect(-366, -145, 732, 306, 24);
+    shadow.setPosition(0, 9);
     const panel = this.scene.add.graphics();
-    panel.fillStyle(palette.panel, 0.98);
-    panel.fillRoundedRect(-370, -118, 740, 246, 20);
-    panel.lineStyle(2, palette.accent, 0.9);
-    panel.strokeRoundedRect(-370, -118, 740, 246, 20);
+    panel.fillStyle(palette.panel, 0.985);
+    panel.fillRoundedRect(-360, -150, 720, 300, 22);
+    panel.lineStyle(3, palette.accent, 0.92);
+    panel.strokeRoundedRect(-360, -150, 720, 300, 22);
     panel.fillStyle(palette.accent, 1);
-    panel.fillRoundedRect(-370, -118, 9, 246, { tl: 20, bl: 20, tr: 0, br: 0 });
+    panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
 
-    const kicker = this.scene.add.text(-334, -93, model.eyebrow, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '12px',
-      fontStyle: 'bold',
-      color: '#f8f4ec',
-      letterSpacing: 1.2,
+    const kicker = this.scene.add.text(-322, -118, model.eyebrow, {
+      fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#f8f4ec', letterSpacing: 1.1,
     });
-
-    const title = this.scene.add.text(-334, -68, model.title, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '30px',
-      fontStyle: 'bold',
-      color: '#ffffff',
-      wordWrap: { width: 560 },
+    const title = this.scene.add.text(-322, -88, model.title, {
+      fontFamily: 'Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#ffffff', wordWrap: { width: 540 },
     });
-
-    const impact = this.scene.add.text(330, -76, model.impact || '•', {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '19px',
-      color: '#ffffff',
+    const impact = this.scene.add.text(314, -108, model.impact || '•', {
+      fontFamily: 'Arial, sans-serif', fontSize: '19px', color: '#ffffff',
     }).setOrigin(1, 0);
-
-    const description = this.scene.add.text(-334, -20, model.description || model.summary, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
-      color: '#f4ede4',
-      wordWrap: { width: 628 },
-      lineSpacing: 3,
+    const bodyText = [model.description, model.summary && model.summary !== model.description ? `→ ${model.summary}` : '']
+      .filter(Boolean)
+      .join('\n\n');
+    const body = this.scene.add.text(-322, -28, '', {
+      fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f4ede4', wordWrap: { width: 628 }, lineSpacing: 5,
     });
-
-    const summary = model.summary && model.summary !== model.description
-      ? this.scene.add.text(-334, 35, `→ ${model.summary}`, {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '15px',
-          fontStyle: 'bold',
-          color: '#ffffff',
-          wordWrap: { width: 628 },
-        })
-      : undefined;
-
-    const source = this.scene.add.text(332, 101, `${palette.label}  •  EVENT #${model.eventSeq}`, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '9px',
-      color: '#d8d0c6',
+    const source = this.scene.add.text(316, 126, `${palette.label} • #${model.eventSeq}`, {
+      fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#d8d0c6',
     }).setOrigin(1, 0.5);
 
-    container.add([shadow, panel, kicker, title, impact, description, source]);
-    if (summary) container.add(summary);
+    container.add([shadow, panel, kicker, title, impact, body, source]);
+    this.addPlayerChip(container, -322, 118, model.actorId, model.actorName, 'ACTOR');
+    if (model.targetId !== undefined && model.targetName) this.addPlayerChip(container, -80, 118, model.targetId, model.targetName, 'TARGET');
+    if (model.rarity) this.addRarityBadge(container, 238, -118, model.rarity);
 
-    this.addPlayerChip(container, -334, 91, model.actorId, model.actorName, 'ACTOR');
-    if (model.targetId !== undefined && model.targetName) {
-      this.addPlayerChip(container, -86, 91, model.targetId, model.targetName, 'TARGET');
-    }
-    if (model.rarity) this.addRarityBadge(container, 250, -93, model.rarity);
-
+    const revealMs = this.revealText(body, bodyText);
     this.playModelSfx(model);
-    this.spawnBurst(palette.accent, model.rarity === 'SSR' ? 18 : 10, 640, 230);
+    this.spawnBurst(palette.accent, model.rarity === 'SSR' ? 18 : 10, 640, 330);
     if (model.kind === 'card_draw' || model.kind === 'card_play') this.spawnCardFlip(palette.accent);
     if (model.rarity === 'SSR') this.scene.cameras.main.shake(120, 0.0016);
 
     this.scene.tweens.add({
-      targets: container,
-      alpha: 1,
-      scaleX: 1,
-      scaleY: 1,
-      y: 224,
-      duration: 240,
-      ease: 'Back.easeOut',
+      targets: container, alpha: 1, scaleX: 1, scaleY: 1, duration: 230, ease: 'Back.easeOut',
     });
 
     let reactionEnd = 0;
     model.reactions.forEach((line, index) => {
-      reactionEnd = Math.max(reactionEnd, line.delayMs + line.durationMs);
-      this.schedule(260 + line.delayMs, () => this.showReaction(line, index));
+      const reactionReveal = Math.min(2200, Math.max(500, line.text.length * 24));
+      reactionEnd = Math.max(reactionEnd, 320 + line.delayMs + Math.max(line.durationMs, reactionReveal));
+      this.schedule(320 + line.delayMs, () => this.showReaction(line, index));
     });
 
-    const baseReadDelay = Math.min(900, Math.max(480, Math.round(model.holdMs * 0.42)));
-    const reactionReadDelay = reactionEnd > 0 ? 260 + reactionEnd + 120 : 0;
-    this.armAcknowledge(Math.max(baseReadDelay, reactionReadDelay));
+    this.armTiming(model, Math.max(revealMs, reactionEnd));
   }
 
-  private armAcknowledge(delay: number): void {
-    this.schedule(delay, () => {
-      if (this.destroyed || !this.active) return;
-      this.canAcknowledge = true;
-      this.showContinueHint();
-      if (this.options.autoAdvance) {
-        this.schedule(240, () => this.requestAdvance());
-      }
+  private revealText(target: Phaser.GameObjects.Text, fullText: string): number {
+    if (!fullText) {
+      target.setText('');
+      return 450;
+    }
+    const duration = Math.min(2600, Math.max(500, fullText.length * 22));
+    const progress = { value: 0 };
+    target.setText('');
+    this.scene.tweens.add({
+      targets: progress,
+      value: fullText.length,
+      duration,
+      ease: 'Linear',
+      onUpdate: () => {
+        if (target.active) target.setText(fullText.slice(0, Math.floor(progress.value)));
+      },
+      onComplete: () => {
+        if (target.active) target.setText(fullText);
+      },
     });
+    return duration;
+  }
+
+  private armTiming(model: PresentationEventModel, revealMs: number): void {
+    const policy = this.options.timingForModel?.(model, revealMs) ?? {
+      mode: 'auto' as const,
+      skipAfterMs: Math.max(700, revealMs),
+      autoCloseMs: Math.max(model.holdMs, revealMs + 600),
+    };
+
+    if (Number.isFinite(policy.skipAfterMs)) {
+      this.schedule(policy.skipAfterMs, () => {
+        if (this.destroyed || !this.active || this.currentModel !== model) return;
+        this.canAcknowledge = true;
+        this.showContinueHint(policy.mode === 'manual');
+      });
+    }
+    if (policy.mode === 'auto' && policy.autoCloseMs !== undefined) {
+      this.schedule(policy.autoCloseMs, () => {
+        if (this.currentModel === model) this.finishCurrent(false);
+      });
+    }
   }
 
   private requestAdvance(): void {
     if (this.destroyed || !this.active || !this.canAcknowledge) return;
     this.canAcknowledge = false;
-    this.clearContinueHint();
     sfxController.play('ui_confirm');
-    this.dismissActive();
+    this.finishCurrent(true);
   }
 
-  private showContinueHint(): void {
+  private showContinueHint(manual: boolean): void {
     this.clearContinueHint();
-    this.continueHint = this.scene.add
-      .text(640, 682, 'SPACE / ENTER / CLICK  •  TIẾP TỤC', {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '13px',
-        fontStyle: 'bold',
-        color: '#202020',
-        backgroundColor: '#ffd34d',
-        padding: { x: 14, y: 7 },
-      })
-      .setOrigin(0.5)
-      .setDepth(940)
-      .setAlpha(0.1);
-
-    this.scene.tweens.add({
-      targets: this.continueHint,
-      alpha: 1,
-      duration: 180,
-      ease: 'Sine.easeOut',
-    });
+    this.continueHint = this.scene.add.text(
+      640,
+      526,
+      manual ? 'SPACE / ENTER / CLICK • TIẾP TỤC' : 'SPACE / ENTER / CLICK • BỎ QUA',
+      {
+        fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#202020',
+        backgroundColor: '#ffd34d', padding: { x: 13, y: 6 },
+      },
+    ).setOrigin(0.5).setDepth(940).setAlpha(0.1);
+    this.scene.tweens.add({ targets: this.continueHint, alpha: 1, duration: 160, ease: 'Sine.easeOut' });
   }
 
   private clearContinueHint(): void {
@@ -335,15 +373,44 @@ export class MatchPresentationLayer {
     this.continueHint = undefined;
   }
 
+  private finishCurrent(animate = true): void {
+    const current = this.active;
+    const model = this.currentModel;
+    if (!current || !model) return;
+    this.canAcknowledge = false;
+    this.clearContinueHint();
+    this.clearReactionObjects();
+
+    const done = () => {
+      if (current.active) current.destroy();
+      if (this.active === current) this.active = undefined;
+      if (this.currentModel === model) this.currentModel = undefined;
+      this.options.onPresentationEnd?.(model);
+      this.pump();
+    };
+
+    if (!animate || !current.visible) {
+      done();
+      return;
+    }
+    this.scene.tweens.add({
+      targets: current,
+      alpha: 0,
+      scaleX: 0.97,
+      scaleY: 0.97,
+      duration: 180,
+      ease: 'Sine.easeIn',
+      onComplete: done,
+    });
+  }
+
   private playModelSfx(model: PresentationEventModel): void {
     let cue: SfxCue = 'land';
     if (model.kind === 'ready_bonus') cue = 'ready';
     else if (model.kind === 'card_draw') cue = 'card_draw';
     else if (model.kind === 'card_play' || model.kind === 'card_blocked') cue = 'card_play';
     else if (model.kind === 'news') cue = 'news';
-    else if (model.kind === 'tile_land' && model.tileType === 'money') {
-      cue = (model.amount ?? 0) >= 0 ? 'coin_gain' : 'coin_loss';
-    }
+    else if (model.kind === 'tile_land' && model.tileType === 'money') cue = (model.amount ?? 0) >= 0 ? 'coin_gain' : 'coin_loss';
     sfxController.play(cue);
   }
 
@@ -352,24 +419,13 @@ export class MatchPresentationLayer {
     const positive = amount > 0;
     const color = positive ? '#1d7b46' : '#c83434';
     const sign = positive ? '+' : '';
-    const x = 640 + (playerId === undefined ? 0 : (playerId - 1.5) * 38);
-    const text = this.scene.add.text(x, 208, `${sign}${amount} B$`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '27px',
-      fontStyle: 'bold',
-      color,
-      stroke: '#fffaf0',
-      strokeThickness: 6,
-    }).setOrigin(0.5).setDepth(925).setScale(0.7);
-
+    const x = 640 + (playerId === undefined ? 0 : (playerId - 1.5) * 34);
+    const text = this.scene.add.text(x, 438, `${sign}${amount} B$`, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '27px', fontStyle: 'bold', color,
+      stroke: '#fffaf0', strokeThickness: 6,
+    }).setOrigin(0.5).setDepth(925).setScale(0.72);
     this.scene.tweens.add({
-      targets: text,
-      y: 160,
-      scaleX: 1.08,
-      scaleY: 1.08,
-      alpha: 0,
-      duration: 850,
-      ease: 'Cubic.easeOut',
+      targets: text, y: 390, scaleX: 1.08, scaleY: 1.08, alpha: 0, duration: 900, ease: 'Cubic.easeOut',
       onComplete: () => text.destroy(),
     });
   }
@@ -377,10 +433,8 @@ export class MatchPresentationLayer {
   private spawnBurst(color: number, count: number, x: number, y: number): void {
     for (let index = 0; index < count; index += 1) {
       const angle = (Math.PI * 2 * index) / count;
-      const distance = 42 + (index % 3) * 18;
-      const dot = this.scene.add.circle(x, y, 3 + (index % 2), color, 0.92)
-        .setDepth(890)
-        .setScale(0.5);
+      const distance = 50 + (index % 3) * 18;
+      const dot = this.scene.add.circle(x, y, 3 + (index % 2), color, 0.9).setDepth(890).setScale(0.5);
       this.scene.tweens.add({
         targets: dot,
         x: x + Math.cos(angle) * distance,
@@ -399,12 +453,11 @@ export class MatchPresentationLayer {
     const colors = [0xef4545, 0x5b8def, 0xffd34d, 0x61b37b, 0xb997d6];
     for (let index = 0; index < 18; index += 1) {
       const x = 430 + (index * 53) % 420;
-      const piece = this.scene.add.rectangle(x, 82, 7, 13, colors[index % colors.length], 1)
-        .setDepth(892)
-        .setAngle((index * 37) % 180);
+      const piece = this.scene.add.rectangle(x, 260, 7, 13, colors[index % colors.length], 1)
+        .setDepth(892).setAngle((index * 37) % 180);
       this.scene.tweens.add({
         targets: piece,
-        y: 220 + (index % 4) * 22,
+        y: 470 + (index % 4) * 18,
         x: x + ((index % 2 === 0 ? 1 : -1) * (18 + (index % 5) * 6)),
         angle: piece.angle + 220,
         alpha: 0,
@@ -416,20 +469,10 @@ export class MatchPresentationLayer {
   }
 
   private spawnCardFlip(color: number): void {
-    const card = this.scene.add.rectangle(640, 360, 54, 76, 0xfffbf3, 1)
-      .setStrokeStyle(4, color, 1)
-      .setDepth(896)
-      .setScale(0.4)
-      .setAngle(-24);
+    const card = this.scene.add.rectangle(640, 515, 54, 76, 0xfffbf3, 1)
+      .setStrokeStyle(4, color, 1).setDepth(896).setScale(0.4).setAngle(-24);
     this.scene.tweens.add({
-      targets: card,
-      y: 286,
-      scaleX: 1,
-      scaleY: 1,
-      angle: 6,
-      alpha: 0,
-      duration: 420,
-      ease: 'Back.easeOut',
+      targets: card, y: 448, scaleX: 1, scaleY: 1, angle: 6, alpha: 0, duration: 420, ease: 'Back.easeOut',
       onComplete: () => card.destroy(),
     });
   }
@@ -445,96 +488,65 @@ export class MatchPresentationLayer {
     const color = playerId === undefined ? 0x746b61 : PLAYER_COLORS[playerId % PLAYER_COLORS.length];
     const bg = this.scene.add.graphics();
     bg.fillStyle(color, 0.95);
-    bg.fillRoundedRect(x, y - 14, 222, 28, 14);
+    bg.fillRoundedRect(x, y - 14, 214, 28, 14);
     const text = this.scene.add.text(x + 12, y, `${role}  ${name}`, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      fontStyle: 'bold',
-      color: '#ffffff',
+      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#ffffff',
     }).setOrigin(0, 0.5);
     container.add([bg, text]);
   }
 
-  private addRarityBadge(
-    container: Phaser.GameObjects.Container,
-    x: number,
-    y: number,
-    rarity: string,
-  ): void {
+  private addRarityBadge(container: Phaser.GameObjects.Container, x: number, y: number, rarity: string): void {
     const color = RARITY_COLORS[rarity] ?? 0xe4ded2;
     const bg = this.scene.add.graphics();
     bg.fillStyle(color, 1);
-    bg.fillRoundedRect(x, y - 11, 78, 22, 11);
-    const text = this.scene.add.text(x + 39, y, rarity, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      fontStyle: 'bold',
-      color: '#24211d',
+    bg.fillRoundedRect(x, y - 11, 74, 22, 11);
+    const text = this.scene.add.text(x + 37, y, rarity, {
+      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#24211d',
     }).setOrigin(0.5);
     container.add([bg, text]);
   }
 
   private showReaction(line: PresentationReactionLine, index: number): void {
-    if (this.destroyed || !this.active) return;
+    if (this.destroyed || this.currentModel === undefined) return;
     sfxController.play('reaction');
 
-    const x = 640;
-    const y = 405 + Math.min(2, index) * 78;
-    const color = line.speakerId === undefined
-      ? 0x746b61
-      : PLAYER_COLORS[line.speakerId % PLAYER_COLORS.length];
+    const left = index % 2 === 0;
+    const x = left ? 212 : 1068;
+    const y = 195 + (index % 3) * 112;
+    const color = line.speakerId === undefined ? 0x746b61 : PLAYER_COLORS[line.speakerId % PLAYER_COLORS.length];
     const bubble = this.scene.add.container(x, y).setDepth(910).setAlpha(0);
     this.reactionObjects.add(bubble);
 
     const shadow = this.scene.add.graphics();
     shadow.fillStyle(0x000000, 0.2);
-    shadow.fillRoundedRect(-310, -30, 620, 64, 16);
+    shadow.fillRoundedRect(-176, -42, 352, 88, 18);
     shadow.setPosition(0, 5);
-
     const bg = this.scene.add.graphics();
-    bg.fillStyle(0xfffbf3, 0.98);
-    bg.fillRoundedRect(-310, -34, 620, 64, 16);
-    bg.lineStyle(2, color, 0.85);
-    bg.strokeRoundedRect(-310, -34, 620, 64, 16);
+    bg.fillStyle(0xfffbf3, 0.985);
+    bg.fillRoundedRect(-176, -46, 352, 88, 18);
+    bg.lineStyle(3, color, 0.88);
+    bg.strokeRoundedRect(-176, -46, 352, 88, 18);
 
     const avatar = this.buildAvatar(line.speakerId, line.expression, color);
-    avatar.setPosition(-274, -2);
-
-    const speaker = this.scene.add.text(-238, -22, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '11px',
-      fontStyle: 'bold',
-      color: '#4b4239',
+    avatar.setPosition(left ? -140 : 140, -4);
+    const textX = left ? -105 : -160;
+    const speaker = this.scene.add.text(textX, -31, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
+      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#4b4239',
     });
-
-    const text = this.scene.add.text(-238, -3, line.text, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '14px',
-      fontStyle: 'bold',
-      color: '#201d1a',
-      wordWrap: { width: 520 },
+    const text = this.scene.add.text(textX, -8, '', {
+      fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#201d1a',
+      wordWrap: { width: 270 },
     }).setOrigin(0, 0.5);
 
     bubble.add([shadow, bg, avatar, speaker, text]);
-    const slide = line.speakerId !== undefined && line.speakerId % 2 === 0 ? -22 : 22;
-    bubble.x += slide;
+    bubble.x += left ? -22 : 22;
+    this.revealText(text, line.text);
+    this.scene.tweens.add({ targets: bubble, x, alpha: 1, duration: 180, ease: 'Sine.easeOut' });
 
-    this.scene.tweens.add({
-      targets: bubble,
-      x,
-      alpha: 1,
-      duration: 180,
-      ease: 'Sine.easeOut',
-    });
-
-    this.schedule(Math.max(650, line.durationMs), () => {
+    this.schedule(Math.max(850, line.durationMs), () => {
       if (!bubble.active) return;
       this.scene.tweens.add({
-        targets: bubble,
-        alpha: 0,
-        y: y - 10,
-        duration: 260,
-        ease: 'Sine.easeIn',
+        targets: bubble, alpha: 0, y: y - 8, duration: 240, ease: 'Sine.easeIn',
         onComplete: () => {
           this.reactionObjects.delete(bubble);
           bubble.destroy();
@@ -543,11 +555,7 @@ export class MatchPresentationLayer {
     });
   }
 
-  private buildAvatar(
-    playerId: number | undefined,
-    expression: FaceExpression,
-    color: number,
-  ): Phaser.GameObjects.Container {
+  private buildAvatar(playerId: number | undefined, expression: FaceExpression, color: number): Phaser.GameObjects.Container {
     const avatar = this.scene.add.container(0, 0);
     const frame = this.scene.add.graphics();
     frame.fillStyle(color, 1);
@@ -559,8 +567,7 @@ export class MatchPresentationLayer {
     if (playerId !== undefined) {
       const face = gameSession.getFace(playerId, expression);
       if (face && this.scene.textures.exists(face.textureKey)) {
-        const image = this.scene.add.image(0, 0, face.textureKey).setDisplaySize(38, 38);
-        avatar.add(image);
+        avatar.add(this.scene.add.image(0, 0, face.textureKey).setDisplaySize(38, 38));
         return avatar;
       }
     }
@@ -568,12 +575,8 @@ export class MatchPresentationLayer {
     const name = playerId === undefined
       ? '?'
       : this.getPlayers().find((player) => player.id === playerId)?.name ?? `P${playerId + 1}`;
-    const initial = name.trim().charAt(0).toUpperCase() || '?';
-    avatar.add(this.scene.add.text(0, 0, initial, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '18px',
-      fontStyle: 'bold',
-      color: '#332f2b',
+    avatar.add(this.scene.add.text(0, 0, name.trim().charAt(0).toUpperCase() || '?', {
+      fontFamily: 'Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#332f2b',
     }).setOrigin(0.5));
     return avatar;
   }
@@ -586,34 +589,8 @@ export class MatchPresentationLayer {
     this.reactionObjects.clear();
   }
 
-  private dismissActive(duration = 230): void {
-    const current = this.active;
-    if (!current || !current.active) {
-      this.active = undefined;
-      this.clearReactionObjects();
-      this.pump();
-      return;
-    }
-
-    this.clearReactionObjects();
-    this.scene.tweens.add({
-      targets: current,
-      alpha: 0,
-      y: current.y - 18,
-      scaleX: 0.98,
-      scaleY: 0.98,
-      duration,
-      ease: 'Sine.easeIn',
-      onComplete: () => {
-        current.destroy();
-        if (this.active === current) this.active = undefined;
-        this.pump();
-      },
-    });
-  }
-
   private schedule(delay: number, callback: () => void): void {
-    const timer = this.scene.time.delayedCall(delay, () => {
+    const timer = this.scene.time.delayedCall(Math.max(0, delay), () => {
       this.timers.delete(timer);
       callback();
     });
