@@ -14,6 +14,7 @@ import {
   presentationTimingForModel,
   shouldDeferResultOverlay,
 } from '../ui/presentationFlowPolicy';
+import { routeFeedbackCopy } from '../ui/routeFeedback';
 import { PlaytestDemoBoardScene } from './PlaytestDemoBoardScene';
 
 const BOARD = boardJson as BoardDefinition;
@@ -95,6 +96,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
   private compactCardText?: Phaser.GameObjects.Text;
   private readonly tokenHalos = new Map<number, Phaser.GameObjects.Arc>();
   private activeHaloTween?: Phaser.Tweens.Tween;
+  private routeBanner?: Phaser.GameObjects.Container;
 
   create(): void {
     const legacyToast = this as unknown as LegacyToastHook;
@@ -108,7 +110,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
     this.installTurnHalos(internals);
 
     this.add
-      .text(178, 45, 'CITY • MVP 0.1.20 TURN FEEL', {
+      .text(178, 45, 'CITY • MVP 0.1.23 REACTION + ROUTE', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '24px',
         fontStyle: 'bold',
@@ -119,7 +121,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       .setDepth(931);
 
     this.add
-      .text(1218, 690, 'PLAYTEST 0.1.20 • TURN FEEL', {
+      .text(1218, 690, 'PLAYTEST 0.1.23 • REACTION + ROUTE', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '10px',
         fontStyle: 'bold',
@@ -204,7 +206,9 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       this.lastAutoBranchSignature = signature;
 
       const parityLabel = Math.abs(Math.floor(roll)) % 2 === 0 ? 'CHẴN' : 'LẺ';
-      internals.writeLog(`🛣️ ${player.name}: ${roll} ${parityLabel} → ${selected.label ?? `${selected.from}→${selected.to}`}`);
+      const routeLabel = selected.label ?? `${selected.from}→${selected.to}`;
+      internals.writeLog(`🛣️ ${player.name}: ${roll} ${parityLabel} → ${routeLabel}`);
+      this.showRouteChoice(player.name, roll, routeLabel);
       internals.submitIntent('choose_branch', { to: selected.to });
     };
 
@@ -271,6 +275,8 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       this.visualNextEventSeq = 1;
       this.activeHaloTween?.stop();
       this.activeHaloTween = undefined;
+      this.routeBanner?.destroy();
+      this.routeBanner = undefined;
       for (const halo of this.tokenHalos.values()) halo.destroy();
       this.tokenHalos.clear();
       for (const object of this.compactObjects) object.destroy();
@@ -423,6 +429,50 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       yoyo: true,
       repeat: -1,
       ease: 'Sine.easeInOut',
+    });
+  }
+
+  private showRouteChoice(playerName: string, roll: number, routeLabel?: string): void {
+    this.routeBanner?.destroy();
+    const copy = routeFeedbackCopy(roll, routeLabel);
+    const accent = copy.parityLabel === 'CHẴN' ? 0x795796 : 0xef4545;
+    const container = this.add.container(640, 104).setDepth(945).setAlpha(0).setY(88);
+    this.routeBanner = container;
+
+    const shadow = this.add.graphics();
+    shadow.fillStyle(0x000000, 0.18);
+    shadow.fillRoundedRect(-214, -34, 428, 72, 17);
+    shadow.setPosition(0, 5);
+    const panel = this.add.graphics();
+    panel.fillStyle(0xfffbf3, 0.97);
+    panel.fillRoundedRect(-210, -36, 420, 70, 16);
+    panel.lineStyle(3, accent, 0.95);
+    panel.strokeRoundedRect(-210, -36, 420, 70, 16);
+    const icon = this.add.text(-176, -1, copy.icon, {
+      fontFamily: 'Arial, sans-serif', fontSize: '30px', fontStyle: 'bold', color: '#202020',
+    }).setOrigin(0.5);
+    const title = this.add.text(-145, -22, `${copy.title} • ${playerName}`, {
+      fontFamily: 'Arial, sans-serif', fontSize: '15px', fontStyle: 'bold', color: '#202020',
+    });
+    const detail = this.add.text(-145, 4, copy.detail, {
+      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#6d655b',
+    });
+    container.add([shadow, panel, icon, title, detail]);
+
+    this.tweens.add({ targets: container, alpha: 1, y: 104, duration: 150, ease: 'Back.easeOut' });
+    this.time.delayedCall(1050, () => {
+      if (!container.active) return;
+      this.tweens.add({
+        targets: container,
+        alpha: 0,
+        y: 92,
+        duration: 180,
+        ease: 'Sine.easeIn',
+        onComplete: () => {
+          if (this.routeBanner === container) this.routeBanner = undefined;
+          container.destroy();
+        },
+      });
     });
   }
 
