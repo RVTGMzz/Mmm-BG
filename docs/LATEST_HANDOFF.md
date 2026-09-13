@@ -3,6 +3,8 @@
 Branch: `mememe-mvp-0.1-core`
 PR: #1
 
+Root checkpoint for new chats: `HANDOFF_CURRENT.md`
+
 ## Current milestone
 
 **MVP 0.1.31 — Job Dice, Salary, Mini Games & Roll For Order (ACTIVE / PLAYTEST PACKAGED)**
@@ -10,21 +12,22 @@ PR: #1
 Latest artifact: `mememe-playtest-0.1.31`
 
 Read first:
-1. `docs/MVP_0.1.31_PROGRESS.md`
-2. `docs/PLAYTEST_0.1.31.md`
-3. `src/scenes/TurnOrderScene.ts`
-4. `src/scenes/CareerMinigameBoardScene.ts`
-5. `src/ui/JobChoicePicker.ts`
-6. `src/ui/MiniGameOverlay.ts`
-7. `src/core/jobs.ts`
-8. `src/content/core/jobs_mvp.json`
-9. `src/core/matchState.ts`
-10. `src/core/checksum.ts`
-11. `src/core/replay.ts`
-12. `src/core/authority.ts`
-13. `tests/job-minigame-031.ts`
-14. `tests/replay-determinism.ts`
-15. `docs/MVP_0.1.30_PROGRESS.md`
+1. `HANDOFF_CURRENT.md`
+2. `docs/MVP_0.1.31_PROGRESS.md`
+3. `docs/PLAYTEST_0.1.31.md`
+4. `src/scenes/TurnOrderScene.ts`
+5. `src/scenes/CareerMinigameBoardScene.ts`
+6. `src/ui/JobChoicePicker.ts`
+7. `src/ui/MiniGameOverlay.ts`
+8. `src/core/jobs.ts`
+9. `src/content/core/jobs_mvp.json`
+10. `src/core/matchState.ts`
+11. `src/core/checksum.ts`
+12. `src/core/replay.ts`
+13. `src/core/authority.ts`
+14. `tests/job-minigame-031.ts`
+15. `tests/replay-determinism.ts`
+16. `docs/MVP_0.1.30_PROGRESS.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
@@ -133,6 +136,10 @@ Likely next targets after 0.1.31 feedback:
 - define Mini Game reward/penalty only after Ron specifies its economy;
 - expand Job-specific special traits from light identity into deeper mechanics if desired;
 - improve Job Hub / Roll For Order visual feel without changing authority rules.
+
+## New-chat resume prompt
+
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.31_PROGRESS.md và docs/PLAYTEST_0.1.31.md. Current validated artifact là mememe-playtest-0.1.31, run #889, runtime SHA b13ac17af79368702af851ca8130af807407124e. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
 
 ## Hard invariants
 
