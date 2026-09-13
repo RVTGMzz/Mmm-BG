@@ -13,28 +13,28 @@ export const BGM_BASE_PATH = 'audio/bgm';
 export const BGM_TRACKS: readonly BgmTrackDefinition[] = [
   {
     id: 'menu_mememe',
-    file: '01_Menu_MeMeMe_LOOP.ogg',
+    file: '01_Menu_MeMeMe.ogg',
     role: 'menu',
     durationSeconds: 155.99,
     loop: true,
   },
   {
     id: 'city_bubble',
-    file: '02_City_Bubble_LOOP.ogg',
+    file: '02_City_Bubble.ogg',
     role: 'gameplay',
     durationSeconds: 126.38,
     loop: true,
   },
   {
     id: 'city_silly',
-    file: '03_City_Silly_LOOP_EXTENDED.ogg',
+    file: '03_City_Silly.ogg',
     role: 'gameplay',
     durationSeconds: 138.07,
     loop: true,
   },
   {
     id: 'final_round',
-    file: '04_Final_Round_LOOP.ogg',
+    file: '04_Final_Round.ogg',
     role: 'final_round',
     durationSeconds: 120.02,
     loop: true,
