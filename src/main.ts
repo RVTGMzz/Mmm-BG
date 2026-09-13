@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import './styles.css';
 import './settings.css';
 import { bgmController } from './audio/bgmController';
+import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
@@ -31,5 +32,6 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 bgmController.start();
+sfxController.start();
 installSettingsPanel();
 new Phaser.Game(config);
