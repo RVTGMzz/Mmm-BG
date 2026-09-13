@@ -5,7 +5,7 @@ import { browserSession } from '../core/browserSession';
 import type { JobDefinition } from '../core/jobs';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
-import { showJobChoicePicker } from '../ui/JobChoicePicker';
+import { showJobRollPicker } from '../ui/JobChoicePicker';
 import { startMiniGameOverlay } from '../ui/MiniGameOverlay';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { DirectDiceBoardScene } from './DirectDiceBoardScene';
@@ -42,7 +42,7 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
 
   update(): void {
     super.update();
-    void this.maybePromptJobChoice();
+    void this.maybePromptJobRoll();
   }
 
   private installPlayableMiniGame(): void {
@@ -69,7 +69,7 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     };
   }
 
-  private async maybePromptJobChoice(): Promise<void> {
+  private async maybePromptJobRoll(): Promise<void> {
     if (this.jobPickerOpen) return;
     const internals = this as unknown as CareerInternals;
     const match = internals.match;
@@ -79,24 +79,20 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     if (!internals.canControlCurrentPlayer() || browserSession.isCpuSeat(player.id)) return;
 
     const offerIds = match.pendingJobOfferIds ?? [];
-    if (offerIds.length === 0 || match.pendingJobPlayerId !== player.id) return;
+    if (offerIds.length !== 3 || match.pendingJobPlayerId !== player.id) return;
     const signature = `${match.turn.turnNumber}:${match.turn.revision}:${player.id}:${offerIds.join(',')}`;
     if (signature === this.lastJobOfferSignature) return;
 
     const offer = offerIds
       .map((id) => JOBS.find((job) => job.id === id))
       .filter((job): job is JobDefinition => Boolean(job));
-    if (offer.length === 0) return;
+    if (offer.length !== 3) return;
 
     this.jobPickerOpen = true;
     this.lastJobOfferSignature = signature;
     try {
-      const jobId = await showJobChoicePicker(this, player.name, offer);
-      if (!jobId) {
-        this.lastJobOfferSignature = '';
-        return;
-      }
-      internals.submitIntent('choose_job', { jobId });
+      await showJobRollPicker(this, player.name, offer);
+      internals.submitIntent('choose_job', {});
     } finally {
       this.jobPickerOpen = false;
     }
@@ -106,9 +102,9 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     for (const object of this.children.list) {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
       if (object.text.includes('CITY • MVP 0.1.30 DIRECT TURN DICE')) {
-        object.setText('CITY • MVP 0.1.31 JOB HUB + MINI GAMES');
+        object.setText('CITY • MVP 0.1.31 JOB DICE + MINI GAMES');
       } else if (object.text.includes('PLAYTEST 0.1.30 • DIRECT DICE')) {
-        object.setText('PLAYTEST 0.1.31 • CAREER + MINI GAMES');
+        object.setText('PLAYTEST 0.1.31 • JOB SALARY + PARTY RULES');
       }
     }
   }
