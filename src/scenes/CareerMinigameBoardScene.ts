@@ -1,17 +1,27 @@
 import Phaser from 'phaser';
+import boardJson from '../content/city/board_city_mvp.json';
 import jobsJson from '../content/core/jobs_mvp.json';
 import type { ClientIntentType } from '../core/authority';
+import { getBoardNode } from '../core/board';
 import { browserSession } from '../core/browserSession';
 import { demoMatchLapProgress } from '../core/demoMatch';
 import type { JobDefinition } from '../core/jobs';
 import type { MatchEventValue, MatchState } from '../core/matchState';
-import type { PlayerState } from '../core/types';
+import type { BoardDefinition, PlayerState } from '../core/types';
 import { showJobRollPicker } from '../ui/JobChoicePicker';
 import { startMiniGameOverlay } from '../ui/MiniGameOverlay';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { DirectDiceBoardScene } from './DirectDiceBoardScene';
 
+const BOARD = boardJson as BoardDefinition;
 const JOBS = jobsJson as JobDefinition[];
+const TOKEN_OFFSETS = [
+  { x: -18, y: -18 },
+  { x: 18, y: -18 },
+  { x: -18, y: 18 },
+  { x: 18, y: 18 },
+];
+
 type NetworkStateSource = 'host' | 'state' | 'snapshot';
 type PlayerVisualRuntime = { token: Phaser.GameObjects.Container };
 
@@ -58,7 +68,7 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     this.installLapCompletionFeedback();
     this.installOneLapScoreHud();
     this.installPlayableMiniGame();
-    this.updateBuildLabels034();
+    this.updateBuildLabels035();
     this.events.once('shutdown', () => {
       this.jobPickerOpen = false;
       this.lastJobOfferSignature = '';
@@ -289,6 +299,27 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     };
   }
 
+  /**
+   * Human Job choice pauses the turn on JOB_CHOICE. At that safe idle point there is
+   * no movement presentation left to preserve, so explicitly reconcile the human
+   * token to the authoritative Job node. This prevents a stale visual from remaining
+   * one node behind until the player's next turn.
+   */
+  private reconcileJobToken(internals: CareerInternals, playerId: number): void {
+    const player = internals.match.players.find((candidate) => candidate.id === playerId);
+    const visual = internals.visuals.get(playerId);
+    if (!player || !visual) return;
+
+    const node = getBoardNode(BOARD, player.nodeId);
+    const offset = TOKEN_OFFSETS[playerId] ?? { x: 0, y: 0 };
+    const targetX = node.x + offset.x;
+    const targetY = node.y + offset.y;
+    if (Math.hypot(visual.token.x - targetX, visual.token.y - targetY) < 1) return;
+
+    this.tweens.killTweensOf(visual.token);
+    visual.token.setPosition(targetX, targetY).setScale(1);
+  }
+
   private async maybePromptJobRoll(): Promise<void> {
     if (this.jobPickerOpen) return;
     const internals = this as unknown as CareerInternals;
@@ -311,28 +342,35 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     this.jobPickerOpen = true;
     this.lastJobOfferSignature = signature;
     try {
-      await showJobRollPicker(this, player.name, offer);
+      // showJobRollPicker creates its backdrop synchronously; reconcile behind it so
+      // the player never watches a stale token fly around the board.
+      const picker = showJobRollPicker(this, player.name, offer);
+      this.reconcileJobToken(internals, player.id);
+      await picker;
+      this.reconcileJobToken(internals, player.id);
       internals.submitIntent('choose_job', {});
     } finally {
       this.jobPickerOpen = false;
     }
   }
 
-  private updateBuildLabels034(): void {
+  private updateBuildLabels035(): void {
     for (const object of this.children.list) {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
       if (
         object.text.includes('CITY • MVP 0.1.30 DIRECT TURN DICE') ||
         object.text.includes('CITY • MVP 0.1.31 JOB DICE + MINI GAMES') ||
-        object.text.includes('CITY • MVP 0.1.33 ONE-LAP SCORE + TOKEN SYNC')
+        object.text.includes('CITY • MVP 0.1.33 ONE-LAP SCORE + TOKEN SYNC') ||
+        object.text.includes('CITY • MVP 0.1.34 LAP CLARITY + READY CELEBRATION')
       ) {
-        object.setText('CITY • MVP 0.1.34 LAP CLARITY + READY CELEBRATION');
+        object.setText('CITY • MVP 0.1.35 JOB TOKEN + RPS DUEL');
       } else if (
         object.text.includes('PLAYTEST 0.1.30 • DIRECT DICE') ||
         object.text.includes('PLAYTEST 0.1.31 • JOB SALARY + PARTY RULES') ||
-        object.text.includes('PLAYTEST 0.1.33 • 1 LAP THEN SCORE')
+        object.text.includes('PLAYTEST 0.1.33 • 1 LAP THEN SCORE') ||
+        object.text.includes('PLAYTEST 0.1.34 • ONE-LAP CLARITY')
       ) {
-        object.setText('PLAYTEST 0.1.34 • ONE-LAP CLARITY');
+        object.setText('PLAYTEST 0.1.35 • JOB TOKEN + RPS DUEL');
       }
     }
   }
