@@ -7,7 +7,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 ## Current milestone
 
-**MVP 0.1.33 — Stable Token Sync + One-Lap Scoring**
+**MVP 0.1.34 — One-Lap Clarity + Ready Celebration**
 
 Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
@@ -15,79 +15,83 @@ Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Validated playable build
 
-GitHub Actions run: `34772171455` / run `#938`
+GitHub Actions run: `34772895816` / run `#956`
 
 Validated runtime head SHA:
-`12bd0180e37a6eca39d4b1ff63cfac407281dfb6`
+`f6431f8523bdb10cd438e84ca103a7a7d449009d`
 
 Artifact:
-`mememe-playtest-0.1.33`
+`mememe-playtest-0.1.34`
 
 Artifact ID:
-`10322258905`
+`10321679066`
 
 Artifact size:
-`8,518,927 bytes`
+`8,518,701 bytes`
 
 Digest:
-`sha256:b5d9c0c5118756528e6573d71f97c2a795ffd6938c8d45789d7a5ad6b0a6a5af`
+`sha256:3aa3513b6ea14757026b520340aa52cca46f16b7886830a2956a52d4accd1f29`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34772171455`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34772895816`
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.33_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.33.md`
-5. `docs/MVP_0.1.32_PROGRESS.md`
-6. `src/scenes/CareerMinigameBoardScene.ts`
-7. `src/scenes/PresentationParityBoardScene.ts`
-8. `src/core/demoMatch.ts`
-9. `src/core/replay.ts`
-10. `src/core/matchState.ts`
-11. `src/core/checksum.ts`
-12. `src/core/types.ts`
-13. `tests/demo-match-shell.ts`
-14. `tests/replay-determinism.ts`
-15. `tests/authority-protocol.ts`
+3. `docs/MVP_0.1.34_PROGRESS.md`
+4. `docs/PLAYTEST_0.1.34.md`
+5. `docs/MVP_0.1.33_PROGRESS.md`
+6. `docs/PLAYTEST_0.1.33.md`
+7. `src/scenes/CareerMinigameBoardScene.ts`
+8. `src/scenes/TurnStakesBoardScene.ts`
+9. `src/scenes/PresentationParityBoardScene.ts`
+10. `src/core/demoMatch.ts`
+11. `src/core/replay.ts`
+12. `src/core/matchState.ts`
+13. `src/core/checksum.ts`
+14. `src/core/types.ts`
+15. `tests/demo-match-shell.ts`
+16. `tests/replay-determinism.ts`
 
-## Runtime feedback fixed in 0.1.33
+## 0.1.34 polish
 
-### Token snap-back / fly-forward bug
+### Lap-native HUD / leaderboard
+- Compact HUD reads authoritative lap progress directly: `HOÀN THÀNH 1 VÒNG • X/4`.
+- No active board-first HUD logic needs to derive old `Vòng 1/3`, `2/3`, `3/3` progress anymore.
+- Every B$ leaderboard row shows lap state:
+  - `🏁0/1` before the required lap is complete;
+  - `🏁✓` after the player completes lap 1.
+- Money ranking still depends only on B$, not lap status.
 
-Observed behavior was visual only: P1 could already reach the correct node, then Card/News/state presentation briefly showed P1 at an older node before flying back to the correct destination.
+### READY completion banner
+- First required READY crossing shows `🏁 <PLAYER> HOÀN THÀNH 1 VÒNG!`.
+- Detail line shows table progress such as `2/4 người đã đủ vòng`.
+- Banner is presentation-only and does not perturb gameplay RNG or checksum.
+- Snapshot/resync does not replay already-consumed lap completion feedback.
 
-Fix:
-- normal state packets no longer own token coordinates;
-- normal movement coordinates are controlled only by queued `move_step` presentation;
-- state updates therefore cannot kill/snap an in-flight movement tween;
-- snapshot resync and rematch command #0 retain hard-snap authority;
-- stale movement events are prevented from replaying over snapshot correction.
+### Build label
+- Current scene recognizes inherited 0.1.30 / 0.1.31 / 0.1.33 labels and promotes them to the visible 0.1.34 badge.
 
-Authoritative player `nodeId`, movement path, dice, Card effects and RNG rules are unchanged.
+## 0.1.33 fixes retained
+
+### Token snap-back / fly-forward
+- Normal host/state packets do not own token coordinates during normal play.
+- Queued `move_step` presentation owns visual movement.
+- Card/News/state updates must not snap P1 back to an older node.
+- Snapshot resync and rematch command #0 retain hard-snap authority.
 
 ### One full lap before scoring
-
-The old fixed `3 rounds / 12 turns` end rule is no longer active.
-
 Current playtest rule:
-1. each player starts with `lapsCompleted = 0`;
+1. every player starts with `lapsCompleted = 0`;
 2. crossing Ready/start increments that player's lap count;
 3. game continues until **all players have completed at least one full board lap**;
 4. only then is the B$ leaderboard finalized;
-5. highest B$ wins; tied B$ is a shared win.
+5. highest B$ wins; tied B$ remains shared win.
 
-`lapsCompleted` is authoritative, replay-safe and checksum-covered.
+`lapsCompleted` remains authoritative, replay-safe and checksum-covered.
 
-The old shell `rounds` / `turnLimit` fields remain only for compatibility and do not end the match.
-
-### HUD / presentation
-
-- compact HUD shows `HOÀN THÀNH 1 VÒNG • X/4`;
-- waiting/result text explains the one-lap finish condition;
-- build label identifies 0.1.33 one-lap scoring/token sync.
+The old shell `rounds` / `turnLimit` fields remain for compatibility only and do not end the match.
 
 ## Existing gameplay retained
 
@@ -125,7 +129,7 @@ Do **not** invent jail skipped-turn/bail/escape rules or Mini Game B$ payout unt
 
 ## Full CI state
 
-Run #938 passed through artifact upload:
+Run #956 passed through artifact upload:
 - build/typecheck;
 - deterministic replay;
 - lockstep;
@@ -141,21 +145,21 @@ Run #938 passed through artifact upload:
 - direct dice;
 - Job Dice / Salary / Roll For Order / Mini Games;
 - package validation;
-- 0.1.33 guide copy;
+- 0.1.34 guide copy;
 - artifact upload.
 
 ## Recommended next step
 
-Runtime-test `mememe-playtest-0.1.33`.
+Runtime-test `mememe-playtest-0.1.34`.
 
 Priority checks:
-1. P1 must never visually snap back after finishing movement, including when Card/News opens;
-2. snapshot/rematch must still restore correct authoritative token location;
-3. lap HUD increments only when passing Ready;
-4. match must continue past old 12-turn boundary if somebody has not completed a lap;
-5. final B$ score appears only after the final unfinished player completes lap 1;
+1. B$ rows change from `🏁0/1` to `🏁✓` exactly when each player first crosses Ready;
+2. lap-complete banner appears once and does not block flow;
+3. snapshot/resync does not replay the banner;
+4. P1 still never snaps backward after movement + Card/News;
+5. final B$ score waits for the last unfinished player to complete lap 1;
 6. salary and lap count happen together exactly once per Ready crossing.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.33_PROGRESS.md và docs/PLAYTEST_0.1.33.md. Current validated artifact là mememe-playtest-0.1.33, run #938, runtime SHA 12bd0180e37a6eca39d4b1ff63cfac407281dfb6. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.34_PROGRESS.md và docs/PLAYTEST_0.1.34.md. Current validated artifact là mememe-playtest-0.1.34, run #956, runtime SHA f6431f8523bdb10cd438e84ca103a7a7d449009d. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
