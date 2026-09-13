@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
+import { sfxController } from '../audio/sfxController';
 import {
   browserSession,
   generateRoomCode,
@@ -33,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.17', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.18', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Chơi hotseat, test một mình với CPU, hoặc mở 2 tab local.', {
+    this.add.text(228, 109, 'Tile feedback + Image Editor + FX/SFX + BGM fade.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -95,7 +96,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎯 Test một mình: chọn 1 người + 3 CPU. Muốn stress-test lượt/nhánh/card thì chọn 4 CPU AUTOPLAY rồi ngồi xem cả trận tự chạy.
+        🎯 0.1.18: thử crop/zoom/rotate ảnh ở Setup, rồi quan sát banner + FX mỗi khi quân cờ đáp ô.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
         ? '✅ CPU test + 2-tab local sẵn sàng. Ảnh mặt vẫn là tùy chọn.'
@@ -113,6 +114,7 @@ export class LocalLobbyScene extends Phaser.Scene {
     };
 
     node.querySelector<HTMLButtonElement>('#lobby-solo')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
       const mode = node.querySelector<HTMLSelectElement>('#solo-mode')?.value ?? '1p3cpu';
       const cpuSeatIds = cpuSeatsForMode(mode);
       browserSession.configureSolo(cpuSeatIds);
@@ -120,6 +122,7 @@ export class LocalLobbyScene extends Phaser.Scene {
     });
 
     node.querySelector<HTMLButtonElement>('#lobby-host')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
       if (!broadcastReady) {
         setStatus('Trình duyệt chưa hỗ trợ 2-tab local. Hãy dùng SOLO / CPU TEST hoặc Chrome/Edge/Firefox mới.', true);
         return;
@@ -132,6 +135,7 @@ export class LocalLobbyScene extends Phaser.Scene {
     });
 
     node.querySelector<HTMLButtonElement>('#lobby-join')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
       if (!broadcastReady) {
         setStatus('Trình duyệt chưa hỗ trợ 2-tab local.', true);
         return;
