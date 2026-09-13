@@ -51,19 +51,22 @@ jobs:
       - name: Simple CPU autoplay stress
         run: npm run test:bots
 
-      - name: Card News Reaction presentation parity
+      - name: Tile Card News Reaction presentation parity
         run: npm run test:presentation
+
+      - name: Face image transform bounds
+        run: npm run test:image
 
       - name: Validate external playtest package
         run: npm run test:package
 
       - name: Add full playtest guide to package
-        run: cp docs/PLAYTEST_0.1.17.md dist/PLAYTEST_GUIDE.md
+        run: cp docs/PLAYTEST_0.1.18.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.17 external playtest build
+      - name: Upload MVP 0.1.18 external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.17
+          name: mememe-playtest-0.1.18
           path: dist
           if-no-files-found: error
           retention-days: 14
