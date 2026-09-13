@@ -17,9 +17,9 @@ const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const FIXTURE_SEED = 123456789;
-// 0.1.24 balance follow-up: new matches now start at 200B$ instead of 1000B$.
+// 0.1.25 rescales fixed-value economy effects around the 200B$ starting wallet.
 // This intentionally changes gameplay state/checksum while replay equality still guards determinism.
-const EXPECTED_CHECKSUM = '5ed7922e';
+const EXPECTED_CHECKSUM = '46bb4e20';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
