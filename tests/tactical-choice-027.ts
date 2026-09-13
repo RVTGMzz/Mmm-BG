@@ -8,8 +8,9 @@ import {
   type CardDefinition,
 } from '../src/core/cards';
 import { createInitialMatchState } from '../src/core/matchState';
-import { chooseTestBotIntent } from '../src/core/testBot';
+import { chooseTestBotIntent, cpuQuirkLine, shouldCpuQuirk } from '../src/core/testBot';
 import type { BoardDefinition } from '../src/core/types';
+import { NPC_CHAT_DURATION_MULTIPLIER, npcChatDurationMs } from '../src/ui/npcChatPolicy';
 
 const BOARD = boardJson as BoardDefinition;
 const CARDS = cardsJson as CardDefinition[];
@@ -72,9 +73,23 @@ assert.equal(safeDecision?.type, 'play_card');
 assert.equal(safeDecision?.data.choice, 'safe');
 assert.equal(safeBot.rng.calls, rngBeforeSafe, 'CPU safe evaluation must not consume gameplay RNG');
 
+const quirkBot = makeState([100, 300, 200, 150]);
+quirkBot.turn.turnNumber = 8;
+quirkBot.players[0]!.handCardIds = ['ACT_008'];
+const rngBeforeQuirk = quirkBot.rng.calls;
+assert.equal(shouldCpuQuirk(quirkBot, 0, 'ACT_008'), true, 'turn 8 fixture should hit the rare CPU quirk');
+const quirkDecision = chooseTestBotIntent(quirkBot, BOARD, CARDS);
+assert.equal(quirkDecision?.data.choice, 'safe', 'rare quirk intentionally flips the otherwise-better pressure choice');
+assert.equal(quirkBot.rng.calls, rngBeforeQuirk, 'CPU quirk must consume zero gameplay RNG');
+assert(cpuQuirkLine(8, 0).length > 0, 'CPU quirk needs visible side-chat copy');
+
+assert.equal(NPC_CHAT_DURATION_MULTIPLIER, 2.5);
+assert.equal(npcChatDurationMs(1700, true), 4250, 'NPC side chat should linger 2.5x');
+assert.equal(npcChatDurationMs(1700, false), 1700, 'human side chat timing must remain unchanged');
+
 const rarityWeight = CARDS
   .filter((card) => card.rarity === 'R')
   .reduce((sum, card) => sum + card.dropWeight, 0);
 assert.equal(rarityWeight, 300, 'R rarity total must stay 300/1000');
 
-console.log('[tactical-choice-027] PASS safe=25 pressure=15% deterministic CPU=no-RNG');
+console.log('[tactical-choice-027/0.1.28] PASS tactical choice + rare CPU quirk + 2.5x NPC chat');
