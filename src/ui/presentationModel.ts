@@ -1,6 +1,7 @@
 import cardReactionsJson from '../content/core/card_reactions_023.json';
 import cardsJson from '../content/core/cards_mvp.json';
 import reactionsJson from '../content/core/reactions_mvp_demo.json';
+import { browserSession } from '../core/browserSession';
 import type { CardDefinition } from '../core/cards';
 import type { MatchEvent } from '../core/matchState';
 import {
@@ -10,6 +11,7 @@ import {
 } from '../core/reactions';
 import type { FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
+import { npcChatDurationMs } from './npcChatPolicy';
 import { tileIdentityCopy } from './tileIdentity';
 
 const REACTIONS = [
@@ -165,11 +167,12 @@ function reactionLines(
         ? 0
         : Math.abs(speakerId) % step.variants.length;
       const variant = step.variants[variantIndex] ?? step.variants[0];
+      const isNpc = speakerId !== undefined && browserSession.isCpuSeat(speakerId);
 
       return {
         sequence: step.sequence,
         delayMs: step.delayMs,
-        durationMs: step.durationMs,
+        durationMs: npcChatDurationMs(step.durationMs, isNpc),
         speakerId,
         speakerName,
         speakerRole: step.speakerRole,
