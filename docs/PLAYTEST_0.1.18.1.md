@@ -26,7 +26,9 @@ Mục tiêu là không còn tình trạng gameplay chạy trước còn reaction
 
 ### 4 CPU AUTOPLAY
 
-Chế độ 4 CPU vẫn tự acknowledge presentation để giữ chức năng stress-test tự động. Các mode có người chơi thật dùng manual acknowledge.
+Chỉ chế độ **đủ P1/P2/P3/P4 đều là CPU** mới tự acknowledge presentation để giữ chức năng stress-test tự động.
+
+Các mode có ít nhất một người chơi thật, bao gồm **1 người + 3 CPU**, đều phải chờ thao tác xác nhận. Rule này được khóa bằng `presentationFlowPolicy.ts` + `test:flow` để tránh tái phát spam queue.
 
 ## Luật nhánh chẵn/lẻ
 
@@ -52,14 +54,17 @@ Khuyên dùng **1 người + 3 CPU**.
 2. Đợi reaction của đúng event hiện xong.
 3. Khi thấy `SPACE / ENTER / CLICK • TIẾP TỤC`, bấm một lần.
 4. Xác nhận không có reaction cũ xuất hiện muộn ở lượt sau.
-5. Đi tới ngã rẽ nhiều lần:
-   - số lẻ phải tự theo route odd;
-   - số chẵn phải tự theo route even;
+5. Nếu một lượt tạo nhiều presentation, ví dụ landing vào ô News, từng panel phải đi đúng thứ tự và mỗi panel phải được xác nhận trước khi sang panel kế.
+6. Đi tới ngã rẽ nhiều lần:
+   - số lẻ phải tự theo `PHỐ CHÍNH` / route odd;
+   - số chẵn phải tự theo `HẺM TẮT` / route even;
    - không được hiện màn chọn đường.
-6. Chơi hết 3 vòng và xác nhận màn xếp hạng không còn bị một loạt panel/reaction cũ tràn lên sau đó.
-7. Chạy 4 CPU AUTOPLAY để chắc chắn stress mode vẫn tự chạy hết trận.
+7. Chơi hết 3 vòng và xác nhận màn xếp hạng không còn bị một loạt panel/reaction cũ tràn lên sau đó.
+8. Chạy **4 CPU AUTOPLAY** và xác nhận stress mode vẫn tự chạy hết trận mà không cần click tay.
 
-## Regression giữ nguyên
+## Regression
+
+CI bắt buộc chạy:
 
 - deterministic replay;
 - lockstep peer;
@@ -69,8 +74,18 @@ Khuyên dùng **1 người + 3 CPU**.
 - demo match shell/rematch;
 - CPU autoplay stress;
 - Tile/Card/News/Reaction presentation model;
+- **presentation flow gate + odd/even parity routing (`npm run test:flow`)**;
 - image transform bounds;
 - package/BGM checksum verification.
+
+`test:flow` hiện khóa các invariant sau:
+
+- 4 CPU mới được auto-ack;
+- 1 người + 3 CPU không được auto-ack;
+- batch landing + News phải tạo hai bước presentation blocking;
+- event log-only không được tạo panel thừa;
+- odd tại fork MVP đi node 5 / `PHỐ CHÍNH`;
+- even tại fork MVP đi node 18 / `HẺM TẮT`.
 
 ## Known limitations
 
