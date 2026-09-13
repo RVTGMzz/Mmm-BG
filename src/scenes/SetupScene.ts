@@ -37,7 +37,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.25', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.26', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -70,7 +70,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.25: trận mới bắt đầu 200 B$. Economy tile / News / Phao Cứu Sinh đã rescale; READY +100 B$ giữ vai trò hồi phục cuối vòng.</p>
+      <p id="setup-status" class="setup-status">0.1.26: Economy 200 B$ giữ nguyên. Bảng B$ trong trận giờ tự xếp hạng, có 👑 người dẫn đầu, 🛟 người cuối và wallet delta nhỏ.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
