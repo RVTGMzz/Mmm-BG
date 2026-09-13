@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.21', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.22', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Settings panel • early Menu BGM preload • Board Feel 0.1.20 retained.', {
+    this.add.text(228, 109, 'Content Depth • 11 Cards • 8 News • city tile identity.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎯 0.1.21: BGM / âm lượng / FX đã chuyển vào nút ⚙️ Cài đặt. Menu BGM được chuẩn bị ngay từ lúc tải trang để bật nhanh hơn sau tương tác đầu tiên.
+        🎯 0.1.22: pool tăng lên 11 Lá Bài + 8 Tin Tức; từng ô City có tên và câu mô tả riêng. Tier odds/effect bands vẫn giữ như trước.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Settings + Audio Startup + CPU test + 2-tab local sẵn sàng.'
+        ? '✅ Content Depth + Settings + CPU test + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
