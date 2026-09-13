@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { bgmController } from '../audio/bgmController';
 import { browserSession } from '../core/browserSession';
 import { gameSession, type FaceExpression } from '../core/session';
 import { buildFaceSticker, faceTextureKey } from '../systems/faces';
@@ -19,6 +20,7 @@ export class SetupScene extends Phaser.Scene {
   }
 
   create(): void {
+    bgmController.playMenu();
     gameSession.reset();
     this.cameras.main.setBackgroundColor('#f4ead7');
 
@@ -34,7 +36,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.16.2', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.17', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
