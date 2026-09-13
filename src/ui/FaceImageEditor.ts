@@ -77,7 +77,7 @@ export class FaceImageEditor {
 
       let transform: FaceTransform = { ...DEFAULT_FACE_TRANSFORM };
       const pointers = new Map<number, PointerEvent>();
-      let lastDrag?: { x: number; y: number };
+      let lastDrag: { x: number; y: number } | undefined;
       let pinchDistance = 0;
       let pinchZoom = 1;
 
