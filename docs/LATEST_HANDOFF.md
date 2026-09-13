@@ -5,137 +5,121 @@ PR: #1
 
 ## Resume from here
 
-Current development milestone: **MVP 0.1.18.1 — Presentation Flow Fix (ACTIVE / PLAYTEST PACKAGED)**.
+Current development milestone: **MVP 0.1.19 — Board Flow & Movement (ACTIVE / PLAYTEST PACKAGED)**.
 
-Latest external playtest artifact: **`mememe-playtest-0.1.18.1`**.
+Latest external playtest artifact: **`mememe-playtest-0.1.19`**.
 
 Read first:
-1. `docs/PLAYTEST_0.1.18.1.md`
-2. `docs/MVP_0.1.18_PROGRESS.md`
+1. `docs/MVP_0.1.19_PROGRESS.md`
+2. `docs/PLAYTEST_0.1.19.md`
 3. `src/scenes/PresentationParityBoardScene.ts`
 4. `src/ui/MatchPresentationLayer.ts`
 5. `src/ui/presentationFlowPolicy.ts`
-6. `tests/flow-fix.ts`
-7. `src/ui/FaceImageEditor.ts`
-8. `src/audio/sfxController.ts`
-9. `src/audio/bgmController.ts`
-10. `docs/AUDIO_PACK_0.1.16.2.md`
+6. `src/ui/presentationModel.ts`
+7. `tests/board-flow-019.ts`
+8. `tests/flow-fix.ts`
+9. `src/core/replay.ts`
+10. `src/audio/bgmController.ts`
+11. `src/audio/sfxController.ts`
+12. `docs/AUDIO_PACK_0.1.16.2.md`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Why 0.1.18.1 exists
+## Why 0.1.19 exists
 
-Real playtest of 0.1.18 exposed a presentation-flow bug:
+Real playtest feedback after 0.1.18.1 identified five playfeel problems:
 
-- gameplay/CPU continued while Tile/Card/News/Reaction cinematics were still queued;
-- reactions therefore appeared late and could dump in a large backlog near the result screen;
-- branch selection still interrupted play with a manual picker even though the intended MVP rule is dice parity.
+1. permanent center HUD obscured the board and would fight future map art;
+2. important notifications were visually disconnected from the center of attention;
+3. reaction dialogue was stacked in the same region instead of reading like side conversation;
+4. player tokens still appeared to jump directly to their final destination;
+5. BGM changes near News/Card could be perceived as the event replacing the gameplay theme.
 
-0.1.18.1 fixes those issues without changing gameplay checksum architecture.
+0.1.19 addresses these as presentation changes while keeping authoritative gameplay/replay/checksum architecture intact.
 
-## Presentation flow gate
+## Board-first HUD
 
-`MatchPresentationLayer` is now blocking for recognized presentation events.
+The large inherited center control panel is removed in the active wrapper.
 
-Flow:
-1. authoritative event arrives;
-2. its panel/FX/SFX appears;
-3. reactions for that event finish in sequence;
-4. UI shows `SPACE / ENTER / CLICK • TIẾP TỤC`;
-5. acknowledge closes that presentation step;
-6. only after the presentation queue is empty are human controls / CPU actions re-enabled.
+A compact bottom control strip now contains only:
+- round/current player;
+- Roll;
+- Card.
 
-A short unlock delay prevents the same click/SPACE used to dismiss a panel from also becoming the next gameplay input.
+The old always-visible phase/checksum/dice/log area is hidden from the middle of the board. QA score information remains for the current playtest.
 
-### Result screen deferral
+## Dice → movement → resolution timeline
 
-If the final turn ends the match while presentation is still blocking, the ranking/result overlay is deferred. It is rendered only after the final presentation queue drains, so the user sees:
+Roll replay now rebuilds deterministic presentation events:
 
-`lượt cuối → panel/reaction cuối → acknowledge → bảng kết quả`
+1. `dice_roll`
+2. one `move_step` for every traversed board edge
+3. `ready_pass` when applicable
+4. `tile_land`
+5. Card/News event when applicable
+6. Reaction sequence when applicable
 
-instead of seeing stale reactions on top of the ranking screen.
+The dice result still comes from the existing authoritative gameplay RNG. Presentation only animates that result and does not roll separately.
 
-### Autoplay exception
+`move_step` includes `fromNodeId`, `toNodeId`, `step`, and `roll`.
 
-Only dedicated **4 CPU AUTOPLAY** may auto-ack presentation.
+The wrapper prevents moving actors from snapping to the final authoritative position and animates each step sequentially with a short tween plus squash/bounce.
 
-Human-containing modes, including **1 human + 3 CPU**, must wait for explicit acknowledge. This rule is centralized in `src/ui/presentationFlowPolicy.ts` and regression-tested.
+## Notification timing policy
 
-## Odd / even branch rule
+Presentation events now carry `affectedPlayerIds` metadata and timing decisions are centralized in `presentationFlowPolicy.ts`.
 
-Branch picker is no longer shown during normal play.
+### 1 human + CPUs
 
-At a fork:
-- odd roll → edge with `parity: odd`;
-- even roll → edge with `parity: even`.
+- event affects the human → manual acknowledgement after text is readable;
+- CPU-only event → auto-close <=6s;
+- CPU-only skip is unavailable before 3s.
 
-Current MVP fork:
-- odd → `PHỐ CHÍNH` → node 5;
-- even → `HẺM TẮT` → node 18.
+### Hotseat / host-client / multiple humans
 
-The game still records an authoritative `choose_branch` command, so replay, checksum and host authority semantics remain intact.
+Normal notices:
+- auto-close <=6s;
+- skip after >=3s and once text reveal permits.
 
-CPU QA now uses the same `pickParityEdge()` rule instead of selecting a branch from turn/player indexing.
+### Global/all-player or long event
 
-## Regression added
+- auto-close <=10s;
+- skip only after displayed text has fully revealed.
 
-Command:
+### 4 CPU AUTOPLAY
 
-`npm run test:flow`
+Dedicated QA stress mode remains fast auto-advance and does not wait 6 seconds per event.
 
-It locks:
-- only seats P1/P2/P3/P4 all CPU may enable presentation auto-advance;
-- 1 human + 3 CPU must remain manual-ack;
-- landing + News in one authoritative batch count as two blocking presentation steps;
-- log-only events do not add blocking panels;
-- ranking stays deferred while final presentation is blocking;
-- ranking may render after presentation unlocks;
-- odd rolls choose node 5 / `PHỐ CHÍNH`;
-- even rolls choose node 18 / `HẺM TẮT`.
+## Presentation layout
 
-CI runs `test:flow` alongside replay, lockstep, host/client, authority, two-tab, demo-shell, CPU stress, presentation, image and package checks.
+Main Tile/Card/News/Ready notices are temporary **center-screen** panels.
 
-## Current artifact status
+Reaction/chat bubbles now alternate **left/right** around the board instead of piling below the main notification. They keep avatar/expression and reveal text progressively.
 
-Latest validated artifact:
+## Dice presentation
 
-`mememe-playtest-0.1.18.1`
+The old permanent dice readout is hidden.
 
-Validated code run: `34749847775`
+A temporary animated die:
+- appears only when a roll resolves;
+- cycles faces;
+- settles on the authoritative result;
+- plays a lightweight dice SFX;
+- disappears before step movement.
 
-Artifact digest:
+Current dice art is lightweight Unicode/prototype presentation, not final art.
 
-`sha256:409ba23417e99cbc60db591acc122e4304ad0ffe04b8be2c66f0d71769c30bf4`
+## BGM behavior
 
-Full CI passed including:
-- TypeScript + Vite build;
-- deterministic replay;
-- lockstep peer;
-- host/client queue + resync;
-- authority protocol;
-- two-tab session;
-- demo shell/rematch;
-- 4-CPU stress;
-- Tile/Card/News/Reaction presentation;
-- presentation flow gate + result deferral + parity routing;
-- face image transform;
-- package/BGM checksum validation;
-- artifact upload.
+Card/News/Reaction never select a BGM track directly.
 
-## Existing 0.1.18 features retained
+0.1.19 additionally blocks round BGM synchronization while any presentation queue is active. This prevents a legitimate round transition from happening at the exact moment a News/Card panel appears and being misread as an event music change.
 
-- Face Image Editor: drag, crop, zoom, pinch, rotate, reset, preview;
-- runtime face sticker 320×320 with WebP ~0.84 when supported;
-- Tile landing presentation;
-- Card/News cinematic presentation;
-- reaction bubbles;
-- floating B$ / burst / confetti / card FX;
-- synthesized SFX with separate FX mute;
-- approved four-track BGM with fade transitions.
+When the queue clears, round BGM may sync normally.
 
-## BGM source-of-truth
+Entering the board restores Round 1 gameplay music after Lobby/Setup.
 
-Approved runtime audio remains:
+Approved runtime audio remains checksum-locked:
 
 ```text
 public/audio/bgm/01_Menu_MeMeMe.ogg
@@ -144,22 +128,81 @@ public/audio/bgm/03_City_Silly.ogg
 public/audio/bgm/04_Final_Round.ogg
 ```
 
-All four files remain checksum-locked by package validation. Do not re-encode or substitute them.
+Do not re-encode or substitute these files.
+
+## Existing flow fixes retained
+
+0.1.18.1 behavior remains:
+- odd roll → odd branch / `PHỐ CHÍNH`;
+- even roll → even branch / `HẺM TẮT`;
+- no manual branch picker;
+- result/ranking overlay waits for unresolved final presentation;
+- snapshot resync does not replay stale presentation;
+- gameplay/CPU remains gated by active presentation timeline.
+
+## Regression
+
+New command:
+
+`npm run test:board-flow`
+
+It locks:
+- roll emits `dice_roll`;
+- `dice_roll` precedes movement;
+- roll emits sequential `move_step` metadata;
+- 1P+3CPU event affecting P1 is manual;
+- CPU-only notice skip >=3s and close <=6s;
+- hotseat/host normal notice close <=6s;
+- whole-board notice skip waits for text reveal and closes <=10s.
+
+Full CI still runs replay, lockstep, host/client, authority, two-tab, demo-shell, CPU stress, presentation, previous flow regression, image regression and package/BGM checksum verification.
+
+## Current artifact status
+
+Latest validated artifact:
+
+`mememe-playtest-0.1.19`
+
+Validated code run: `34751573683`
+
+Artifact digest:
+
+`sha256:2bc85ce89829ff37d484cfbe41000f01c53a5486d863687bdeb479e42ae8a972`
+
+Full CI passed all required steps including the new board-flow regression and artifact upload.
+
+## Existing features retained
+
+- Face Image Editor: drag/crop/zoom/pinch/rotate/reset/preview;
+- 320×320 WebP runtime stickers when supported;
+- Tile/Card/News/Ready presentation;
+- floating B$, burst, confetti, card FX;
+- synthesized SFX + FX mute;
+- four approved BGM tracks with fade transition;
+- 3-round QA match shell;
+- deterministic CPU QA bots.
 
 ## Recommended next work
 
-First priority is **real playtest validation of 0.1.18.1**:
-1. confirm no old reaction appears after the event it belongs to;
-2. confirm landing → Card/News steps advance one-by-one on acknowledge;
-3. confirm result/ranking appears only after the final presentation is acknowledged;
-4. confirm odd/even routing feels intuitive without a branch picker;
-5. confirm 4 CPU AUTOPLAY still finishes unattended.
+First priority is **real playtest validation of 0.1.19**:
+1. confirm the board now feels visually open without the old giant center HUD;
+2. confirm dice only appears during the roll;
+3. confirm token movement visibly visits each intermediate tile;
+4. confirm CPU notices and multiplayer notices feel right at 3s/6s;
+5. confirm global/long notices remain readable but never exceed 10s;
+6. confirm player-related events in 1P+3CPU wait for the human;
+7. confirm reactions read naturally from left/right and do not obscure the central panel;
+8. confirm News/Card never appear to replace the current BGM theme;
+9. confirm final result still appears only after the final presentation clears.
 
-Only after this flow is accepted:
-- tune FX/SFX intensity and panel readability;
+After this feel is accepted:
+- tune movement speed by visual map scale;
+- replace prototype dice artwork with final dice treatment;
+- reduce/remove remaining QA score UI for presentation builds;
+- tune reaction bubble size/placement from captured footage;
 - consider presentation-only personality sync;
-- decide explicit privacy contract before any face sharing to client tabs;
-- eventually replace synth SFX with approved audio assets.
+- decide explicit privacy contract before any face sharing between clients;
+- eventually replace synthesized SFX with approved audio assets.
 
 ## Hard invariants
 
@@ -170,6 +213,6 @@ Only after this flow is accepted:
 - Presentation eventLog may sync/serialize but remains excluded from gameplay checksum.
 - Original face files must not be silently uploaded or persisted.
 - Snapshot resync must not replay stale presentation events.
-- Human-containing modes must not silently auto-advance presentation.
 - Result/ranking must not cover unresolved final-turn presentation.
+- Dice animation must display the authoritative result, never invent another roll.
 - CPU remains a QA bot, not final gameplay AI.
