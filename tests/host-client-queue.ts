@@ -1,6 +1,13 @@
 import boardJson from '../src/content/city/board_city_mvp.json' with { type: 'json' };
 import cardsJson from '../src/content/core/cards_mvp.json' with { type: 'json' };
 import newsJson from '../src/content/core/news_mvp_demo.json' with { type: 'json' };
+import {
+  createEmptyHostAuthority,
+  hostAuthorityCommandSeq,
+  submitClientIntent,
+  type ClientIntentType,
+} from '../src/core/authority';
+import { getOutgoingEdges, pickParityEdge } from '../src/core/board';
 import type { CardDefinition } from '../src/core/cards';
 import {
   applyAuthoritativeSnapshot,
@@ -13,11 +20,7 @@ import {
   type HostClientRuntime,
   type HostCommandPacket,
 } from '../src/core/hostClient';
-import { stampCommandEnvelopes } from '../src/core/lockstep';
-import {
-  createInitialMatchState,
-  type MatchCommand,
-} from '../src/core/matchState';
+import { cloneMatchState, type MatchCommand } from '../src/core/matchState';
 import type { NewsDefinition } from '../src/core/news';
 import type { BoardDefinition } from '../src/core/types';
 
@@ -26,6 +29,7 @@ const CARDS = cardsJson as CardDefinition[];
 const NEWS = newsJson as NewsDefinition[];
 const RUNTIME: HostClientRuntime = { board: BOARD, cards: CARDS, news: NEWS };
 const FIXTURE_SEED = 123456789;
+const FIXTURE_TURNS = 20;
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -35,45 +39,64 @@ function cloneCommand(command: MatchCommand): MatchCommand {
   return { ...command, data: { ...command.data } };
 }
 
-const COMMANDS: MatchCommand[] = [
-  { seq: 1, type: 'roll', turnNumber: 1, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 2, type: 'roll', turnNumber: 2, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 3, type: 'roll', turnNumber: 3, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 4, type: 'roll', turnNumber: 4, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 5, type: 'choose_branch', turnNumber: 4, playerIndex: 3, actorId: 3, data: { to: 5 } },
-  { seq: 6, type: 'roll', turnNumber: 5, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 7, type: 'choose_branch', turnNumber: 5, playerIndex: 0, actorId: 0, data: { to: 5 } },
-  { seq: 8, type: 'roll', turnNumber: 6, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 9, type: 'choose_branch', turnNumber: 6, playerIndex: 1, actorId: 1, data: { to: 5 } },
-  { seq: 10, type: 'roll', turnNumber: 7, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 11, type: 'choose_branch', turnNumber: 7, playerIndex: 2, actorId: 2, data: { to: 5 } },
-  { seq: 12, type: 'roll', turnNumber: 8, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 13, type: 'roll', turnNumber: 9, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 14, type: 'roll', turnNumber: 10, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 15, type: 'roll', turnNumber: 11, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 16, type: 'roll', turnNumber: 12, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 17, type: 'roll', turnNumber: 13, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 18, type: 'roll', turnNumber: 14, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 19, type: 'roll', turnNumber: 15, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 20, type: 'roll', turnNumber: 16, playerIndex: 3, actorId: 3, data: {} },
-  { seq: 21, type: 'roll', turnNumber: 17, playerIndex: 0, actorId: 0, data: {} },
-  { seq: 22, type: 'roll', turnNumber: 18, playerIndex: 1, actorId: 1, data: {} },
-  { seq: 23, type: 'roll', turnNumber: 19, playerIndex: 2, actorId: 2, data: {} },
-  { seq: 24, type: 'roll', turnNumber: 20, playerIndex: 3, actorId: 3, data: {} },
-];
+function buildAuthorityFixture() {
+  const authority = createEmptyHostAuthority(
+    {
+      boardId: BOARD.id,
+      startNodeId: BOARD.startNodeId,
+      playerNames: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
+      seed: FIXTURE_SEED,
+    },
+    RUNTIME,
+  );
+  const turnBoundarySeqs: number[] = [];
+  let counter = 0;
 
-const rawAuthority = createInitialMatchState({
-  boardId: BOARD.id,
-  startNodeId: BOARD.startNodeId,
-  playerNames: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
-  seed: FIXTURE_SEED,
-});
-rawAuthority.commandLog = COMMANDS.map(cloneCommand);
-rawAuthority.nextCommandSeq = rawAuthority.commandLog.length + 1;
+  const submit = (type: ClientIntentType, data: Record<string, string | number | boolean | null>) => {
+    const beforeTurn = authority.state.turn.turnNumber;
+    const player = authority.state.players[authority.state.turn.currentPlayerIndex];
+    assert(player, 'Host-client fixture missing current player.');
+    const receipt = submitClientIntent(authority, {
+      intentId: `queue-${++counter}`,
+      clientId: 'queue-fixture',
+      actorId: player.id,
+      type,
+      observedCommandSeq: hostAuthorityCommandSeq(authority),
+      data,
+    });
+    assert(receipt.status === 'accepted', `Host-client fixture ${type} rejected: ${receipt.reason ?? 'unknown'}`);
+    if (authority.state.turn.turnNumber > beforeTurn) turnBoundarySeqs.push(hostAuthorityCommandSeq(authority));
+  };
 
-const authority = stampCommandEnvelopes(rawAuthority, BOARD, CARDS, NEWS);
-const snapshot11 = createAuthoritativeSnapshot(authority, 11, RUNTIME);
-const snapshot24 = createAuthoritativeSnapshot(authority, 24, RUNTIME);
+  while (authority.state.turn.turnNumber <= FIXTURE_TURNS) {
+    const player = authority.state.players[authority.state.turn.currentPlayerIndex];
+    assert(player, 'Host-client fixture missing player.');
+    if (authority.state.turn.phase === 'PRE_ROLL_ACTION') {
+      submit('roll', {});
+    } else if (authority.state.turn.phase === 'BRANCH_CHOICE') {
+      const edge = pickParityEdge(getOutgoingEdges(BOARD, player.nodeId), authority.state.turn.lastRoll ?? 0);
+      assert(edge, `Host-client fixture cannot resolve branch at node ${player.nodeId}.`);
+      submit('choose_branch', { to: edge.to });
+    } else if (authority.state.turn.phase === 'JOB_CHOICE') {
+      const jobId = authority.state.pendingJobOfferIds?.[0];
+      assert(jobId, 'Host-client fixture Job offer missing.');
+      submit('choose_job', { jobId });
+    } else {
+      throw new Error(`Host-client fixture stalled in ${authority.state.turn.phase}.`);
+    }
+  }
+
+  return { source: cloneMatchState(authority.source), turnBoundarySeqs };
+}
+
+const fixture = buildAuthorityFixture();
+const authority = fixture.source;
+const finalSeq = authority.commandLog.at(-1)?.seq ?? 0;
+const splitSeq = fixture.turnBoundarySeqs[Math.min(9, fixture.turnBoundarySeqs.length - 1)] ?? Math.floor(finalSeq / 2);
+assert(splitSeq > 2 && splitSeq < finalSeq, `Invalid transport split #${splitSeq}/${finalSeq}.`);
+
+const snapshotA = createAuthoritativeSnapshot(authority, splitSeq, RUNTIME);
+const snapshotFinal = createAuthoritativeSnapshot(authority, finalSeq, RUNTIME);
 const client = createHostClientPeer(authority, BOARD.startNodeId);
 
 function makePackets(startSeq: number, endSeq: number, tickOffset: number): HostCommandPacket[] {
@@ -86,75 +109,68 @@ function makePackets(startSeq: number, endSeq: number, tickOffset: number): Host
     }));
 
   const bySeq = new Map(packets.map((packet) => [packet.command.seq, packet]));
-  const forceBefore = (earlySeq: number, delayedSeq: number) => {
-    const early = bySeq.get(earlySeq);
-    const delayed = bySeq.get(delayedSeq);
-    if (early && delayed) {
-      early.deliverAt = delayed.deliverAt - 5;
-      delayed.deliverAt += 10;
-    }
+  const reorderPair = (firstSeq: number, secondSeq: number) => {
+    const first = bySeq.get(firstSeq);
+    const second = bySeq.get(secondSeq);
+    if (!first || !second) return;
+    second.deliverAt = first.deliverAt - 3;
   };
 
-  forceBefore(4, 3);
-  forceBefore(9, 8);
-  forceBefore(15, 14);
-  forceBefore(21, 20);
+  if (endSeq - startSeq >= 3) reorderPair(startSeq + 1, startSeq + 2);
+  if (endSeq - startSeq >= 7) reorderPair(startSeq + 5, startSeq + 6);
 
-  const duplicateSeq = startSeq === 1 ? 2 : 13;
+  const duplicateSeq = Math.min(endSeq, startSeq + 1);
   const duplicate = authority.commandLog.find((command) => command.seq === duplicateSeq);
-  if (duplicate && duplicateSeq >= startSeq && duplicateSeq <= endSeq) {
+  if (duplicate) {
     packets.push({
       packetId: `dup-${duplicateSeq}`,
       deliverAt: tickOffset + duplicateSeq * 10 + 45,
       command: cloneCommand(duplicate),
     });
   }
-
   return packets;
 }
 
-const firstReceipts = deliverHostPackets(client, makePackets(1, 11, 0), RUNTIME);
-assert(client.ackSeq === 11, `Expected ACK #11, got #${client.ackSeq}.`);
-assert(client.appliedSeq === 11, `Expected applied #11, got #${client.appliedSeq}.`);
-assert(clientMatchesSnapshot(client, snapshot11), 'Client did not converge to authoritative snapshot #11.');
+const firstReceipts = deliverHostPackets(client, makePackets(1, splitSeq, 0), RUNTIME);
+assert(client.ackSeq === splitSeq, `Expected ACK #${splitSeq}, got #${client.ackSeq}.`);
+assert(client.appliedSeq === splitSeq, `Expected applied #${splitSeq}, got #${client.appliedSeq}.`);
+assert(clientMatchesSnapshot(client, snapshotA), `Client did not converge to authoritative snapshot #${splitSeq}.`);
 assert(client.outOfOrderPackets > 0, 'Out-of-order delivery probe did not buffer any packet.');
 assert(client.duplicatePackets > 0, 'Duplicate delivery probe did not ignore a duplicate.');
 assert(
-  firstReceipts.some((receipt) => receipt.status === 'waiting_dependency'),
-  'Branch dependency wait was not exercised by the queued roll/branch packet split.',
+  firstReceipts.some((receipt) => receipt.status === 'waiting_dependency') ||
+    authority.commandLog.slice(0, splitSeq).every((command, index, commands) => command.type !== 'roll' || commands[index + 1]?.type !== 'choose_branch'),
+  'Branch dependency wait was expected but never exercised.',
 );
 
-client.state.players[2].money += 77;
-assert(!clientMatchesSnapshot(client, snapshot11), 'Synthetic client drift did not change gameplay checksum.');
+client.state.players[2]!.money += 77;
+assert(!clientMatchesSnapshot(client, snapshotA), 'Synthetic client drift did not change gameplay checksum.');
 
-const staleConflict = cloneCommand(authority.commandLog[5]);
-staleConflict.actorId = 3;
+const staleSource = authority.commandLog.find((command) => command.seq <= splitSeq && command.actorId < 3) ?? authority.commandLog[0];
+assert(staleSource, 'Missing stale conflict source command.');
+const staleConflict = cloneCommand(staleSource);
+staleConflict.actorId = (staleConflict.actorId + 1) % 4;
 const staleReceipt = receiveHostCommand(
   client,
-  { packetId: 'stale-conflict-6', deliverAt: 999, command: staleConflict },
+  { packetId: `stale-conflict-${staleConflict.seq}`, deliverAt: 999, command: staleConflict },
   RUNTIME,
 );
 assert(staleReceipt.status === 'rejected', 'Stale conflicting ACKed command was not rejected.');
 assert(client.staleRejected === 1, `Expected one stale rejection, got ${client.staleRejected}.`);
 assert(client.resyncRequested, 'Client did not request resync after stale/conflicting command.');
 
-applyAuthoritativeSnapshot(client, snapshot11);
+applyAuthoritativeSnapshot(client, snapshotA);
 assert(client.resyncCount === 1, `Expected one snapshot resync, got ${client.resyncCount}.`);
 assert(!client.resyncRequested, 'Resync request flag stayed set after authoritative snapshot apply.');
-assert(clientMatchesSnapshot(client, snapshot11), 'Snapshot resync failed to repair client gameplay state.');
+assert(clientMatchesSnapshot(client, snapshotA), 'Snapshot resync failed to repair client gameplay state.');
 
-const secondReceipts = deliverHostPackets(client, makePackets(12, 24, 2000), RUNTIME);
-assert(client.ackSeq === 24, `Expected final ACK #24, got #${client.ackSeq}.`);
-assert(client.appliedSeq === 24, `Expected final applied #24, got #${client.appliedSeq}.`);
-assert(clientMatchesSnapshot(client, snapshot24), 'Client did not converge to final host snapshot.');
-assert(clientGameplayChecksum(client) === snapshot24.checksum, 'Final host/client checksum mismatch.');
+const secondReceipts = deliverHostPackets(client, makePackets(splitSeq + 1, finalSeq, 2000), RUNTIME);
+assert(client.ackSeq === finalSeq, `Expected final ACK #${finalSeq}, got #${client.ackSeq}.`);
+assert(client.appliedSeq === finalSeq, `Expected final applied #${finalSeq}, got #${client.appliedSeq}.`);
+assert(clientMatchesSnapshot(client, snapshotFinal), 'Client did not converge to final host snapshot.');
+assert(clientGameplayChecksum(client) === snapshotFinal.checksum, 'Final host/client checksum mismatch.');
 assert(client.pending.size === 0, `Client still has ${client.pending.size} buffered packet(s).`);
-assert(
-  secondReceipts.some((receipt) => receipt.status === 'buffered'),
-  'Second transport phase did not exercise out-of-order buffering.',
-);
+assert(secondReceipts.some((receipt) => receipt.status === 'buffered'), 'Second transport phase did not exercise out-of-order buffering.');
 
-console.log(
-  `[host-client-ci] PASS ack=${client.ackSeq} applied=${client.appliedSeq} checksum=${snapshot24.checksum} outOfOrder=${client.outOfOrderPackets} duplicates=${client.duplicatePackets} staleRejected=${client.staleRejected} resyncs=${client.resyncCount}`,
-);
-console.log('[host-client-ci] probes: latency/out-of-order PASS • duplicate PASS • stale reject PASS • snapshot resync PASS');
+console.log(`[host-client-ci] PASS ack=${client.ackSeq} applied=${client.appliedSeq} checksum=${snapshotFinal.checksum} split=#${splitSeq} outOfOrder=${client.outOfOrderPackets} duplicates=${client.duplicatePackets} staleRejected=${client.staleRejected} resyncs=${client.resyncCount}`);
+console.log('[host-client-ci] probes: Job-aware queue PASS • latency/out-of-order PASS • duplicate PASS • stale reject PASS • snapshot resync PASS');
