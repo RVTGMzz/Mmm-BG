@@ -60,6 +60,9 @@ jobs:
       - name: Board flow movement and timing policy
         run: npm run test:board-flow
 
+      - name: Board readability and turn feel
+        run: npm run test:board-feel
+
       - name: Face image transform bounds
         run: npm run test:image
 
@@ -67,12 +70,12 @@ jobs:
         run: npm run test:package
 
       - name: Add full playtest guide to package
-        run: cp docs/PLAYTEST_0.1.19.md dist/PLAYTEST_GUIDE.md
+        run: cp docs/PLAYTEST_0.1.20.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.19 external playtest build
+      - name: Upload MVP 0.1.20 external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.19
+          name: mememe-playtest-0.1.20
           path: dist
           if-no-files-found: error
           retention-days: 14
