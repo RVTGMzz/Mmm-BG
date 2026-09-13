@@ -47,3 +47,17 @@ jobs:
 
       - name: Demo match shell and rematch
         run: npm run test:demo-shell
+
+      - name: Validate external playtest package
+        run: npm run test:package
+
+      - name: Add full playtest guide to package
+        run: cp docs/PLAYTEST_0.1.16.md dist/PLAYTEST_GUIDE.md
+
+      - name: Upload first external playtest build
+        uses: actions/upload-artifact@v4
+        with:
+          name: mememe-playtest-0.1.16
+          path: dist
+          if-no-files-found: error
+          retention-days: 14
