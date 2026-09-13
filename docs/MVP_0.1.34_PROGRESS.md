@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.34 — One-Lap Clarity + Ready Celebration
 
-Status: ACTIVE / VALIDATION IN PROGRESS
+Status: ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN
 
 ## Goal
 
@@ -50,6 +50,30 @@ The current scene now upgrades older 0.1.30 / 0.1.31 / 0.1.33 inherited labels d
 - presentation RNG must not perturb gameplay RNG;
 - approved BGM remains checksum-locked;
 - PR #1 must not be merged without explicit instruction.
+
+## Validated artifact
+
+GitHub Actions run: `34772895816` / run `#956`
+
+Validated runtime head SHA:
+`f6431f8523bdb10cd438e84ca103a7a7d449009d`
+
+Artifact:
+`mememe-playtest-0.1.34`
+
+Artifact ID:
+`10321679066`
+
+Size:
+`8,518,701 bytes`
+
+Digest:
+`sha256:3aa3513b6ea14757026b520340aa52cca46f16b7886830a2956a52d4accd1f29`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34772895816`
+
+Full CI passed through artifact upload, including build/typecheck, replay, lockstep, host/client resync, authority, two-tab core, one-lap demo shell/rematch, CPU autoplay, presentation/board regressions, Settings/audio, economy/tactical/function-tile/direct-dice/Job-MiniGame tests and package validation.
 
 ## Validation focus
 
