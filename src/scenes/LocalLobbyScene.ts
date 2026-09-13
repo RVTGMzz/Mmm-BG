@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.29', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.30', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Function Tiles • 🎮 Mini Game + 💼 Job đã vào board ở mức foundation.', {
+    this.add.text(228, 109, 'Direct Dice • tới lượt người chơi thì bấm thẳng vào xúc xắc trên bàn.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎮💼 0.1.29: Mini Game và Job đã có tile riêng, content hook, presentation và replay/authority route. Foundation hiện tự đi tiếp, chưa gán luật thưởng/phạt cuối cùng.
+        🎲 0.1.30: tới lượt người thật, xúc xắc hiện trực tiếp trên bàn và chính nó là nút Roll. Nút đỏ ĐỔ XÚC XẮC dưới HUD đã bỏ. CPU vẫn tự chơi; Mini Game + Job foundation 0.1.29 giữ nguyên.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Function Tiles + NPC Banter + Tactical Choice + 200B$ Economy + Settings + 2-tab local sẵn sàng.'
+        ? '✅ Direct Dice + Function Tiles + NPC Banter + Tactical Choice + 200B$ Economy + Settings + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
