@@ -9,7 +9,7 @@ Status: **IN PROGRESS**. Do not merge PR #1 or mark it Ready unless Ron explicit
 
 Playtest Feedback + Presentation Parity + BGM Integration.
 
-This milestone must keep audio/presentation outside deterministic `MatchState`, seeded RNG, replay and host-authority state.
+Audio and visual presentation must not alter gameplay-critical checksum state, command authority, seeded RNG behavior, or replay outcomes.
 
 ## BGM source-of-truth
 
@@ -45,7 +45,7 @@ The exact ZIP/OGG binaries are **still not committed**. The ChatGPT File Library
 
 Do not regenerate, re-encode, rename, or silently substitute audio.
 
-A strict importer now exists:
+A strict importer exists:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\import-bgm-pack.ps1 .\MeMeMe_Audio_Pack_0.1.16.2.zip
@@ -69,20 +69,20 @@ Behavior:
 - Round 1 requests `city_bubble`.
 - Round 2 requests `city_silly`.
 - Round 3 requests `final_round`.
-- Round 1/2 therefore never immediately repeat and do not consume gameplay RNG.
+- Round 1/2 never immediately repeat and consume no gameplay RNG.
 - Global BGM mute + volume control is always available.
 - Mute/volume preference persists in localStorage.
-- Browser autoplay restrictions are handled by retrying after first real user gesture.
+- Browser autoplay restrictions are handled by retrying after the first real user gesture.
 - Missing/unreadable binary asset shows `BGM ⚠` instead of failing the match.
-- BGM selection is presentation-only and never enters deterministic match commands/state.
+- BGM selection never enters gameplay checksum state or command authority.
 
-## Presentation Parity progress completed
+## Presentation Parity completed so far
 
-### Diagnostics / export bug report
+### Diagnostics / bug report export
 
-`PlaytestDemoBoardScene` now has a `🐛 BUG REPORT` button.
+`PlaytestDemoBoardScene` has a `🐛 BUG REPORT` button.
 
-It exports JSON containing:
+The exported JSON contains:
 - build ID;
 - export timestamp;
 - user agent;
@@ -93,24 +93,48 @@ It exports JSON containing:
 - current visible runtime logs;
 - full serialized `MatchState`.
 
-This is intended for tester reports without changing gameplay authority.
-
 ### Clear B$ / Card deltas
 
-The playtest presentation wrapper now compares authoritative before/after player state and surfaces only real changes:
+The playtest presentation wrapper compares authoritative before/after player state and surfaces only real changes:
 - B$ delta and resulting total;
 - card gained + resulting hand size;
 - card removed/played + remaining hand size.
 
-Changes are written to the playtest log and briefly shown as a toast. Snapshot resync does not produce fake delta spam.
+Changes are written to the playtest log and briefly shown as toast notifications. Snapshot resync does not create fake delta spam.
 
-The delta hook is presentation-only and wraps authoritative state application; it does not modify state.
+### Remote movement presentation
+
+Authoritative token destinations still come entirely from synced `MatchState`.
+
+The playtest wrapper now intercepts the old snap-to-position visual update and tweens the token from its previous screen position to the new authoritative destination over a short presentation-only animation.
+
+No movement coordinates are predicted or written back into gameplay state.
+
+### Card / News / Reaction parity foundation
+
+`src/core/replay.ts` now deterministically rebuilds presentation events while replaying the same authoritative command stream:
+- `money_tile`;
+- `ready_pass`;
+- `card_draw`;
+- `card_draw_blocked`;
+- `card_play`;
+- `news` including `reactionEventId` when present.
+
+`eventLog` remains excluded from `computeMatchChecksum()`, so these presentation records do not alter gameplay checksum validation.
+
+`PlaytestDemoBoardScene` consumes only newly arrived presentation events on non-snapshot state updates. Host and client can now display:
+- Card draw title/impact;
+- Card play title + authoritative resolution summary;
+- News title + authoritative resolution summary;
+- Reaction event ID when defined.
+
+This is parity plumbing and basic toast presentation, not final polished Card/News/Reaction art direction yet.
 
 ## Regression status
 
-After the first BGM controller commit, CI caught a missing local `emit()` helper in the new controller. That was fixed immediately.
+The first BGM controller slice initially exposed one TypeScript omission (`emit()` missing). It was fixed immediately.
 
-A subsequent full CI run passed:
+Every completed 0.1.17 slice after that has passed the full GitHub Actions regression suite, including the latest Card/News/Reaction parity UI slice:
 - TypeScript + Vite build;
 - deterministic replay fixture;
 - lockstep peer simulator;
@@ -121,28 +145,26 @@ A subsequent full CI run passed:
 - simple CPU autoplay stress;
 - external playtest package validation.
 
-A new CI run is also triggered by the B$/Card delta slice and should be checked before the next code slice.
-
 ## Intentionally not promoted yet
 
-The GitHub Actions artifact is still named `mememe-playtest-0.1.16.2` and still uses the 0.1.16 guide. This is intentional until the exact approved OGG binaries are imported and verified.
+The GitHub Actions artifact is still named `mememe-playtest-0.1.16.2` and still uses the 0.1.16 guide.
 
-Do not call the external artifact a complete 0.1.17 audio build while the approved binaries are absent.
+This is intentional until the exact approved OGG binaries are imported and verified. Do not call the current external artifact a complete 0.1.17 audio build while those binaries are absent.
 
 ## Next Presentation Parity slices
 
-1. Check the latest CI after the B$/Card delta hook.
-2. Add remote token movement tween/presentation while keeping authoritative destination state unchanged.
-3. Improve Card / News / Reaction presentation parity on client.
-4. Evaluate local face sharing only with an explicit privacy contract and no silent upload/persistence.
-5. Re-run 4-CPU autoplay regression after each presentation lifecycle change.
-6. When the exact bundle becomes accessible, run `scripts/import-bgm-pack.ps1`, confirm all five checksums (bundle + four tracks), then allow CI/package verification to require the four OGG files.
+1. Add polished Card / News / Reaction visual treatment on top of the now-shared deterministic presentation events.
+2. Evaluate local face sharing only with an explicit privacy contract and no silent upload/persistence.
+3. Add/extend presentation-specific regression checks if the visual lifecycle becomes more complex.
+4. Re-run 4-CPU autoplay after each presentation lifecycle change.
+5. When the exact bundle becomes accessible, run `scripts/import-bgm-pack.ps1`, confirm all five checksums (bundle + four tracks), then make package verification require the four OGG files and promote artifact naming/guide to 0.1.17.
 
 ## Important invariants
 
 - Do not merge PR #1 unless Ron asks.
 - Do not substitute the approved BGM pack.
 - Do not let audio use or perturb gameplay RNG.
-- Do not put audio state into deterministic `MatchState` for this MVP.
+- Do not put audio control state into gameplay-critical `MatchState`.
+- Presentation `eventLog` may be serialized/synced, but stays excluded from gameplay checksum.
 - Do not weaken replay/checksum/authority tests to make presentation code pass.
 - CPU remains a QA bot, not final gameplay AI.
