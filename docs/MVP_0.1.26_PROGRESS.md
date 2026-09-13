@@ -1,6 +1,6 @@
 # MeMeMe MVP 0.1.26 — Turn Stakes & Money Drama
 
-Status: IN PROGRESS / CI PENDING
+Status: PLAYTEST PACKAGED / CI GREEN
 
 ## Scope
 
@@ -33,6 +33,18 @@ Status: IN PROGRESS / CI PENDING
 - Card/News/Reaction timing and queue rules.
 - Node-by-node movement, graphical dice, route parity.
 - Settings/BGM/SFX and face editor behavior.
+
+## Validation
+
+Validated GitHub Actions run: `34764306363` / run `#647`.
+
+Artifact: `mememe-playtest-0.1.26`
+
+Artifact digest: `sha256:208c864fb351d21f97813a5b22049faf9856f94f547ccf6fcf348bab4d4c2a35`
+
+Artifact size: ~8.50 MB.
+
+CI passed build/typecheck, replay, lockstep, host/client, authority, two-tab, CPU autoplay, presentation/flow, board movement/feel, Settings/audio, content, reaction/route, party mechanics, 200B economy, Turn Stakes, image and package checks.
 
 ## Hard constraints
 
