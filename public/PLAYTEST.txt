@@ -1,10 +1,19 @@
 MeMeMe MVP 0.1.16 — FIRST EXTERNAL PLAYTEST
 
-QUICK START
-1) Serve this folder with a static HTTP server. Do not rely on file://.
-2) Open index.html through localhost / your static host.
-3) SOLO / HOTSEAT is the fastest test path.
-4) HOST 2 TAB + JOIN 2 TAB works only in the same browser profile/origin for this PoC.
+QUICK START — WINDOWS
+1) Giai nen file ZIP playtest.
+2) DOUBLE-CLICK: START_PLAYTEST.bat
+3) Trinh duyet se tu mo http://127.0.0.1:4173/ (hoac cong gan do neu 4173 dang ban).
+4) GIU cua so terminal launcher mo trong luc choi. Nhan Ctrl+C de dung server khi choi xong.
+
+QUAN TRONG
+- KHONG double-click index.html truc tiep.
+- Neu thanh dia chi bat dau bang file:///C:/... thi game co the chi hien man hinh trang vi browser chan ES module/local asset khi chay bang file://.
+- START_PLAYTEST.bat duoc them de tranh loi nay va KHONG can cai Node/Python.
+
+PLAY MODES
+- SOLO / HOTSEAT: nhanh nhat de test tren mot may.
+- HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phai cung browser profile/origin.
 
 DEMO RULE
 - 4 players
@@ -20,7 +29,7 @@ CONTROLS
 - Choose a route when the branch picker appears
 - Use the ? CÁCH CHƠI button in-game for the quick guide
 
-LOCAL SERVER EXAMPLES
+MANUAL LOCAL SERVER (neu khong dung launcher)
 Node:   npx serve .
 Python: python -m http.server 4173
 
