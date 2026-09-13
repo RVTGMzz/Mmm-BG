@@ -37,7 +37,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.27', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.28', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -70,7 +70,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">VÀO DEMO MATCH 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.27: Kèo Hai Cửa cho người chơi chọn +25 B$ chắc chắn hoặc lấy 15% từ Top 1. Economy 200 B$ và Turn Stakes giữ nguyên.</p>
+      <p id="setup-status" class="setup-status">0.1.28: NPC lâu lâu có pha ngáo nhẹ; chat CPU ở góc màn hình giữ lâu gấp 2.5 lần. Tactical Choice, Economy 200 B$ và Turn Stakes giữ nguyên.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
