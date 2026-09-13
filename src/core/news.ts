@@ -13,7 +13,11 @@ export interface MoneyDeltaAllEffect {
   amount: number;
 }
 
-export type NewsEffect = MoneyDeltaSelfEffect | MoneyDeltaAllEffect;
+export interface NormalizeToAverageSelfEffect {
+  type: 'normalize_to_average_self';
+}
+
+export type NewsEffect = MoneyDeltaSelfEffect | MoneyDeltaAllEffect | NormalizeToAverageSelfEffect;
 
 export interface NewsDefinition {
   id: string;
@@ -96,6 +100,23 @@ export function applyNewsEffect(
         affectedPlayerIds: players.map((player) => player.id),
         deltas,
         summary: `Cả bàn ${verb} ${Math.abs(Math.floor(news.effect.amount))}B$ mỗi người (tổng ${total}B$).`,
+      };
+    }
+
+    case 'normalize_to_average_self': {
+      const average = players.length > 0
+        ? Math.floor(players.reduce((sum, player) => sum + player.money, 0) / players.length)
+        : subject.money;
+      const before = subject.money;
+      subject.money = Math.max(0, average);
+      const delta = subject.money - before;
+      return {
+        amount: Math.abs(delta),
+        affectedPlayerIds: [subject.id],
+        deltas: { [subject.id]: delta },
+        summary: delta === 0
+          ? `${subject.name} đã đúng mức B$ trung bình nên không thay đổi.`
+          : `${subject.name} được cân về mức trung bình ${subject.money}B$ (${delta > 0 ? '+' : ''}${delta}B$).`,
       };
     }
   }
