@@ -228,10 +228,20 @@ function buildPlayCardData(
     targetId = target.id;
   }
 
+  let choice: MatchEventValue = null;
+  if (card.effect.type === 'tactical_choice') {
+    const requested = String(intent.data.choice ?? '');
+    if (requested !== 'safe' && requested !== 'pressure') {
+      return { reason: `${cardId} requires tactical choice safe|pressure.` };
+    }
+    choice = requested;
+  }
+
   return {
     data: {
       cardId,
       targetId,
+      choice,
     },
   };
 }
