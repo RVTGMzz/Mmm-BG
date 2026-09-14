@@ -2,10 +2,42 @@
   {
     "id": "MINIGAME_SLOT_01",
     "kind": "minigame",
-    "title": "Mini Game",
+    "title": "Mini Game 1",
     "status": "rules_locked",
     "icon": "🎮",
-    "notes": "3+ người: Nhiều ra ít bị, sấp/ngửa và phe thiểu số bị loại. Còn đúng 1v1 tự chuyển sang Oẳn Tù Xì. Reward/penalty board-level chưa khóa."
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_02",
+    "kind": "minigame",
+    "title": "Mini Game 2",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_03",
+    "kind": "minigame",
+    "title": "Mini Game 3",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_04",
+    "kind": "minigame",
+    "title": "Mini Game 4",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_05",
+    "kind": "minigame",
+    "title": "Mini Game 5",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
   },
   {
     "id": "JOB_HUB_01",
