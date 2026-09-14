@@ -84,33 +84,35 @@ Adds node size classes, main/branch hierarchy, district art priorities, landmark
 ### Draft A3 — route + overview
 Completed in `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`.
 
-Adds:
-- main-route and side-route sign language;
-- five district boundary cues;
-- camera shot list for turn handoff, movement, landing, special locations and overview;
-- four-player overview marker behavior;
-- explicit full-map overview without making it permanent HUD.
+Adds main/branch sign language, district boundary cues, camera shot list, four-player overview behavior and explicit full-map overview.
 
-### Draft A4 — content pacing audit
-Completed in `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`.
+### Draft A4 — content pacing
+Completed and approved in `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`.
 
-Key finding:
-- 40 main-loop spaces require about **11.9 D6 rolls/player** on average to reach/cross one lap;
-- overall content density is healthy;
-- TIN TỨC, LÁ BÀI and money distribution are well spread;
-- Job Hub at M11 is a good early-lap position;
-- current Mini Game placement M21/M31 is uneven at a 10/30 split.
+Approved pacing assignments:
+- `M18` = Mini Game
+- `M21` = Money -
+- `M31` = Normal
+- `M38` = Mini Game
+- `M40` = TIN TỨC
 
-A4 proposes a balanced test candidate:
-- Mini Game at `M18` and `M38`;
-- move M18's Money - role to M21;
-- move M38's TIN TỨC role to M31;
-- category counts stay unchanged.
+Mini Game spacing is now exactly **20 / 20** around the 40-node main loop.
 
-This is only a proposal and has **not** changed architecture JSON or runtime.
+TIN TỨC is now:
+`M06, M14, M19, M25, M33, M40`
+with clockwise gaps `8, 5, 6, 8, 7, 6`.
 
-A4 also preserves a compact fallback if 40 main nodes later play too long:
-- **44 total = 36 main + 4 Hospital + 4 Jail**.
+LÁ BÀI remains:
+`M04, M09, M16, M22, M27, M35, M39`.
+
+Category totals remain unchanged.
+
+The canonical architecture JSON and A1/A2/A3 design documents have been synchronized to the approved M18/M38 Mini Game direction.
+
+A compact fallback remains available only if future runtime playtesting proves 40 main nodes too slow:
+- 44 total = 36 main + 4 Hospital + 4 Jail.
+
+It is not active. Draft A remains 48 total / 40 main.
 
 ## Final HUD / camera locks
 
@@ -130,11 +132,11 @@ Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
 
 Draft A through A4 are documentation/design only.
 
-Do not move the 48-node graph, coordinates or pacing proposals into `src/content/city/board_city_mvp.json` until a dedicated final-map implementation milestone is explicitly opened and validated.
+Do not move the 48-node graph, coordinates or approved pacing into `src/content/city/board_city_mvp.json` until a dedicated final-map implementation milestone is explicitly opened and validated.
 
 ## Next priority
 
-1. Decide whether to keep Mini Games at M21/M31 or test the balanced M18/M38 A4 candidate.
+1. Continue map design into **A5 district/landmark blueprint** using the approved M18/M38 pacing.
 2. Continue 0.1.49 effect audit without inventing missing legacy source material.
 3. Keep Hospital/Jail deeper gameplay semantics TBD until explicitly approved.
 4. Keep TIN TỨC / LÁ BÀI names.
