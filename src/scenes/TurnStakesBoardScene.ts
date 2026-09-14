@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import { demoMatchLapProgress } from '../core/demoMatch';
-import type { MatchState } from '../core/matchState';
+import type { MatchEvent, MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import {
   formatMoneyLeaderboardRow,
@@ -29,6 +29,14 @@ type TurnStakesInternals = {
   ): void;
 };
 
+function presentationOwnsMoneyCue(event: MatchEvent): boolean {
+  if (event.type === 'tile_land' && String(event.data.tileType ?? '') === 'money') return true;
+  if (event.type === 'ready_pass') return true;
+  if (event.type === 'news') return true;
+  if (event.type === 'card_play') return true;
+  return false;
+}
+
 export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
   private previousLeaderId?: number;
   private readonly transientMoneyFx = new Set<Phaser.GameObjects.Text>();
@@ -54,10 +62,16 @@ export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
         ...player,
         handCardIds: [...player.handCardIds],
       }));
+      const beforeEventSeq = internals.match.nextEventSeq;
+      const freshEvents = source === 'snapshot'
+        ? []
+        : state.eventLog.filter((event) => event.seq >= beforeEventSeq);
       const deltas = source === 'snapshot' ? [] : moneyDeltas(before, state.players);
+      const packetMoneyCue = !freshEvents.some(presentationOwnsMoneyCue);
+
       originalApplyNetworkState(state, commandSeq, checksum, source);
       this.refreshMoneyStakes(internals);
-      if (deltas.length > 0) this.showMoneyDeltas(deltas, internals.match.players);
+      if (deltas.length > 0) this.showMoneyDeltas(deltas, internals.match.players, packetMoneyCue);
     };
 
     this.refreshMoneyStakes(internals);
@@ -128,14 +142,19 @@ export class TurnStakesBoardScene extends PartyMechanicsBoardScene {
     }
   }
 
-  private showMoneyDeltas(deltas: MoneyDeltaEntry[], players: PlayerState[]): void {
+  private showMoneyDeltas(
+    deltas: MoneyDeltaEntry[],
+    players: PlayerState[],
+    playPacketCue = true,
+  ): void {
     const ranks = moneyRanks(players);
     const rowByPlayer = new Map(ranks.map((entry, index) => [entry.playerId, index]));
 
-    // One cue per money direction per authoritative state packet. Multi-target News
-    // can affect several wallets at once, but should not stack the same sound 3–4x.
-    if (deltas.some((delta) => delta.amount > 0)) sfxController.play('coin_gain');
-    if (deltas.some((delta) => delta.amount < 0)) sfxController.play('coin_loss');
+    // Tile/Card/News/READY packets already have an event-aligned presentation cue.
+    // Keep packet-level coin audio only for economy changes without a presentation
+    // owner, such as Mini Game payout. This prevents spoilers and double SFX.
+    if (playPacketCue && deltas.some((delta) => delta.amount > 0)) sfxController.play('coin_gain');
+    if (playPacketCue && deltas.some((delta) => delta.amount < 0)) sfxController.play('coin_loss');
 
     for (const delta of deltas) {
       const row = rowByPlayer.get(delta.playerId) ?? 0;
