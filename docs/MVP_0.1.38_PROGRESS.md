@@ -1,6 +1,6 @@
 # MVP 0.1.38 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -52,6 +52,28 @@ The old compatibility shell fields may remain serialized internally but are not 
 
 ## Regression
 
-New `tests/choice-sfx-038.ts` locks choice SFX coverage on the primary confirmation surfaces and asserts Setup/Lobby do not reintroduce obsolete three-round copy.
+`tests/choice-sfx-038.ts` locks choice SFX coverage on the primary confirmation surfaces and asserts Setup/Lobby do not reintroduce obsolete three-round copy.
 
-Final artifact metadata will be added after full CI/package validation is green.
+## Validated artifact
+
+GitHub Actions run: `34801348509` / run `#1107`
+
+Validated runtime/package SHA:
+`f1e5ffc7f3f3cb4ed5e7ee6f12819215c0bd8265`
+
+Artifact:
+`mememe-playtest-0.1.38`
+
+Artifact ID:
+`10331532723`
+
+Size:
+`8,557,943 bytes`
+
+Digest:
+`sha256:04ffc83d71c54a22f27b846ba4fa2a62c70e545536c0c6d69bc7b653becf1947`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34801348509`
+
+Full CI passed through artifact upload, including build/typecheck, deterministic replay, lockstep, host/client resync, authority, two-tab core, demo shell/rematch, CPU autoplay, presentation/board regressions, Settings/audio, economy/stakes/tactical/function tiles/direct dice, Job/Mini Game payout, Mini Game host-system ownership, the new choice-SFX/copy regression, image bounds, package verification, guide copy, and artifact upload.
