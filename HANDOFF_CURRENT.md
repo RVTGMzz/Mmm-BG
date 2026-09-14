@@ -5,26 +5,54 @@ PR: #1 (Draft/Open)
 
 Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Runtime checkpoint
+## Runtime checkpoints
 
-MVP 0.1.48 is **PASS** by Ron's explicit runtime acceptance on 2026-09-14.
+### MVP 0.1.48 — validated baseline
+0.1.48 is **PASS** by Ron's explicit runtime acceptance on 2026-09-14.
 
-Latest validated playable artifact remains:
+Latest validated baseline artifact remains:
 - `mememe-playtest-0.1.48`
 - run `#1441` / `34814789556`
 - runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-No newer runtime artifact is validated yet.
+### MVP 0.1.50 — Final Map Preview
+A dedicated **runtime preview milestone is now open** so Ron can test Draft C quickly.
 
-## Current milestone
+This preview does **not** replace the authoritative 0.1.48 gameplay chain yet.
 
-**MVP 0.1.49 — Legacy Effect Audit** remains active in parallel with final-map design.
+Read:
+- `docs/MVP_0.1.50_FINAL_MAP_PREVIEW.md`
+- `docs/PLAYTEST_0.1.50_FINAL_MAP_PREVIEW.md`
+
+Runtime preview files:
+- `src/content/city/board_city_final_050.json`
+- `src/core/finalMapPreview050.ts`
+- `src/scenes/FinalMapPreviewScene050.ts`
+- `tests/final-map-preview-050.ts`
+
+Launch:
+- package: `START_FINAL_MAP_PREVIEW.bat`
+- URL/dev: `?finalmap=1`
+
+Normal `START_PLAYTEST.bat` still opens the 0.1.48 gameplay flow.
+
+CI package name:
+- `mememe-playtest-0.1.50-final-map-preview`
+
+The full regression suite plus `test:final-map-preview` must remain green before sharing a candidate build.
+
+## Parallel milestone
+
+**MVP 0.1.49 — Legacy Effect Audit** remains active in parallel.
 
 Current names stay locked:
 - **TIN TỨC**
 - **LÁ BÀI**
+
+Legacy inventory:
+- `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
 ## Final map — Draft C current
 
@@ -38,15 +66,15 @@ Read first:
 7. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
 8. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_C2.md`
 
-Do not misclassify `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as HUD-only because of its filename. Its actual role is the approved visual reference for the city-board composition **and** four-corner HUD layout.
+Do not misclassify `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as HUD-only because of its filename. It is the approved visual reference for the city-board composition **and** four-corner HUD layout.
 
 ### Core topology
 - 44 main-loop spaces `M01..M44`
 - lap crossing `M44 -> M01`
 - one inner `JAIL` holding location
 - one inner `HOSPITAL` holding location
-- Jail exit route has exactly 3 spaces: `J1 -> J2 -> J3`
-- Hospital exit route has exactly 3 spaces: `H1 -> H2 -> H3`
+- Jail exit route exactly `J1 -> J2 -> J3 -> M13`
+- Hospital exit route exactly `H1 -> H2 -> H3 -> M35`
 
 ### Four locked anchors
 - `M01` READY
@@ -54,46 +82,52 @@ Do not misclassify `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as HUD-only bec
 - `M23` LOTTERY -> D6 × 20 B$
 - `M34` HOSPITAL_GATE -> HOSPITAL
 
-Current branch geometry:
-- `M12 -> JAIL -> J1 -> J2 -> J3 -> M13`
-- `M34 -> HOSPITAL -> H1 -> H2 -> H3 -> M35`
-
-The branch route spaces are not part of the 44-space main-loop count and do not create extra lap crossings.
+The six branch-route spaces are not part of the 44-space main-loop count and do not create extra lap crossings.
 
 ### Jail release — approved
-- roll D6 on the detained player's turn
+- roll D6 on detained player's turn
 - `1 / 3 / 5` = released
 - other result = remain and retry next turn
 
 ### Hospital release — approved
-- roll D6 on the hospitalized player's turn
+- roll D6 on hospitalized player's turn
 - exactly `2 / 4 / 5` = released
 - other result = remain and retry next turn
 
 ### Lottery — approved
-- landing on `M23` triggers HOST D6
+- landing on `M23` triggers D6
 - reward = `D6 × 20 B$`
 - payouts = `20 / 40 / 60 / 80 / 100 / 120 B$`
 
-## Visual direction — approved Draft C1
+## 0.1.50 preview boundary
 
-Use `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as the canonical visual reference for composition/mood:
-- bright stylized city/island viewed from above
-- readable pale circular route winding around the city
-- landmark-heavy environment
-- district signs for orientation
-- fixed P1/P2/P3/P4 HUDs in four screen corners
-- inner Jail/Hospital visibly connected to their gates
-- central city remains readable and spacious
+The preview scene currently implements the map visually/interactively with:
+- 44-space route;
+- four player tokens;
+- four fixed corner HUDs;
+- active-player camera pan;
+- Overview button;
+- Jail/Hospital transfers;
+- release face checks;
+- Lottery x20;
+- Money +/-;
+- placeholder feedback for TIN TỨC / LÁ BÀI / Job / Mini Game.
 
-AI image numbering/text is never authoritative.
+Important: after a successful Jail/Hospital release roll, preview code animates through all three exit spaces and rejoins the main loop **only so the branch can be visually tested**.
 
-Known AI error to correct:
-- Jail branch must be `J1 / J2 / J3`, not `J1 / J1 / J3 / J4`.
+That animation is not a final rule decision.
+
+## Remaining special-location timing decision
+
+Still intentionally TBD for authoritative integration:
+- does the successful release die also count as movement through `J1..J3` / `H1..H3`;
+- or does release end the turn;
+- or another explicitly approved timing rule.
+
+Do not infer this from the 0.1.50 preview animation.
 
 ## Current 44-space content pacing retained
 
-Draft B1 remains compatible:
 - Job Hub: `M08`
 - Mini Game: `M17 / M39` with `22 / 22` spacing
 - TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
@@ -111,23 +145,12 @@ Draft B1 remains compatible:
 - avatar + name + B$ minimum
 - active player highlighted
 - HUD fixed in screen space
-- normal camera close-follows active token
-- Jail/Hospital may get dedicated transfer/release framing
+- normal camera follows/pans to active token
 - full map is explicit overview only
 
-## Remaining special-location timing decision
+## Retained authoritative invariants from 0.1.48
 
-Topology is now clear, but one rule remains intentionally TBD:
-
-After a successful Jail/Hospital release roll, does the player:
-- move immediately onto/through `J1..J3` or `H1..H3` using that same roll;
-- enter `J1/H1` and end the turn;
-- or follow another explicitly approved timing rule?
-
-Do not infer this until Ron decides.
-
-## Retained runtime invariants from 0.1.48
-
+Do not regress these when Final Map moves into authoritative runtime:
 - Remote Roll For Order host-authoritative
 - Multiplayer Job Hub host-authoritative and spectator-safe
 - Job mapping `1–2 A / 3–4 B / 5–6 C`
@@ -141,22 +164,16 @@ Do not infer this until Ron decides.
 - final podium/result-input chain unchanged
 - CPU remains a QA bot
 
-## Runtime boundary
-
-Draft C/C1/C2 are design/docs only.
-
-Do not modify `src/content/city/board_city_mvp.json` or validated runtime until a dedicated final-map implementation milestone is explicitly opened.
-
-Latest validated playable runtime remains 0.1.48.
-
 ## Next priority
 
-1. Keep Draft C visual direction as current map design and use the existing PNG reference already in `docs/`.
-2. Decide the post-release movement timing through the 3-space Jail/Hospital exit routes.
-3. Continue 0.1.49 effect audit in parallel.
-4. Keep TIN TỨC / LÁ BÀI names.
-5. Do not merge PR #1.
+1. Ron playtests **0.1.50 Final Map Preview**.
+2. Collect feedback on route length, camera, HUD overlap, four anchors, Jail/Hospital branches and Lottery feel.
+3. Ron decides the final post-release movement timing.
+4. Only then integrate Draft C into HOST-authoritative replay/checksum runtime.
+5. Continue 0.1.49 Legacy Effect Audit in parallel.
+6. Keep TIN TỨC / LÁ BÀI names.
+7. Do not merge PR #1.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final map hiện là Draft C: 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE. JAIL nằm trong map và có lối ra J1->J2->J3->M13; HOSPITAL có H1->H2->H3->M35. Jail release 1/3/5; Hospital release exactly 2/4/5; failure retries next turn. Canonical visual reference đã có sẵn tại docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png và phải hiểu là combined map+HUD reference, không phải HUD-only. AI image numbering không authoritative; Jail branch chỉ đúng 3 ô J1/J2/J3. Post-release same-turn movement vẫn TBD. Continue 0.1.49 in parallel. Do not merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 vẫn là validated authoritative baseline. 0.1.50 Final Map Preview đã mở để playtest riêng qua START_FINAL_MAP_PREVIEW.bat / ?finalmap=1, dùng board_city_final_050.json và FinalMapPreviewScene050. Draft C = 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE; JAIL có J1->J2->J3->M13; HOSPITAL có H1->H2->H3->M35. Jail release 1/3/5; Hospital exactly 2/4/5. Canonical visual reference là docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png, combined map+HUD. Preview animation sau release chỉ để test hình học, không khóa final same-turn movement. 0.1.49 Legacy Effect Audit vẫn chạy song song. Do not merge PR #1.`
