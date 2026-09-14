@@ -1,6 +1,6 @@
 # MVP 0.1.42 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -56,7 +56,7 @@ No random coordinates, timing, gameplay RNG or winner recomputation is used. If 
 
 ## Regression
 
-New `tests/podium-face-reaction-042.ts` checks that:
+`tests/podium-face-reaction-042.ts` checks that:
 
 - rank 1 maps to happy;
 - ranks 2/3 map to neutral;
@@ -70,4 +70,26 @@ New `tests/podium-face-reaction-042.ts` checks that:
 - `src/main.ts` runs 0.1.42;
 - Lobby and Setup identify 0.1.42.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## Validated artifact
+
+GitHub Actions run: `34804709294` / run `#1241`
+
+Validated runtime/package SHA:
+`0b0fc74b0d1c8795f8af426371a8ccc0f0acd208`
+
+Artifact:
+`mememe-playtest-0.1.42`
+
+Artifact ID:
+`10332517930`
+
+Artifact size:
+`8,561,602 bytes`
+
+Digest:
+`sha256:c0d69e6119558892957df5cc95a3beb36bdae41f9e457800b9c88ceb1611eb65`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34804709294`
+
+Full CI passed through typecheck/build, deterministic/network/gameplay tests, authoritative podium regression, new face-reaction/spotlight regression, image bounds, package verification and artifact upload.
