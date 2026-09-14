@@ -9,7 +9,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene } from './scenes/TurnOrderScene';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene044 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene044';
+import { CareerMinigameBoardScene045 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene045';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
