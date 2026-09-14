@@ -1,6 +1,6 @@
 # MeMeMe — Final Map Architecture Track
 
-Status: **ACTIVE DESIGN TRACK / DRAFT A SELECTED / DOCUMENTATION ONLY**
+Status: **ACTIVE DESIGN TRACK / DRAFT A SELECTED / PACING APPROVED / DOCUMENTATION ONLY**
 
 This is the canonical final-board architecture tracker. MVP 0.1.48 has already passed runtime acceptance. The current runtime/content milestone is 0.1.49 Legacy Effect Audit, while this map track continues in parallel.
 
@@ -37,9 +37,9 @@ Working district labels are architectural anchors, not final localization copy.
 | --- | --- | --- | --- |
 | D1 | M01–M08 | Trung tâm / READY | READY plaza / opening city landmark |
 | D2 | M09–M16 | Sự nghiệp & Dịch vụ | Job Hub + Hospital side branch |
-| D3 | M17–M24 | Giải trí & Xã hội | Mini Game landmark |
-| D4 | M25–M32 | Drama & Dân sự | Jail side branch + Mini Game landmark |
-| D5 | M33–M40 | Đêm thành phố / Hồi vòng | return-to-READY skyline/landmark |
+| D3 | M17–M24 | Giải trí & Xã hội | Mini Game landmark at M18 |
+| D4 | M25–M32 | Drama & Dân sự | Jail side branch / civic landmark |
+| D5 | M33–M40 | Đêm thành phố / Hồi vòng | Mini Game at M38 + return-to-READY skyline |
 
 The purpose of districts is orientation under a zoomed camera. A player should recognize their area from nearby landmark art without needing permanent full-map view.
 
@@ -64,10 +64,10 @@ The purpose of districts is orientation under a zoomed camera. A player should r
 | M15 | Money + | economy positive |
 | M16 | LÁ BÀI | district exit |
 | M17 | Normal | district entry |
-| M18 | Money - | economy negative |
+| M18 | Mini Game | first balanced Mini Game anchor |
 | M19 | TIN TỨC | news node |
 | M20 | Normal | breathing node |
-| M21 | Mini Game | retained special-system landmark |
+| M21 | Money - | economy negative |
 | M22 | LÁ BÀI | card node |
 | M23 | Money + | economy positive |
 | M24 | Normal | district transition |
@@ -77,18 +77,39 @@ The purpose of districts is orientation under a zoomed camera. A player should r
 | M28 | Jail branch anchor | topology anchor only; entry rule TBD |
 | M29 | Jail branch rejoin | topology rejoin only |
 | M30 | Money - | economy negative |
-| M31 | Mini Game | second distributed Mini Game anchor |
+| M31 | Normal | breathing node |
 | M32 | Normal | district transition |
 | M33 | TIN TỨC | news node |
 | M34 | Money + | economy positive |
 | M35 | LÁ BÀI | card node |
 | M36 | Normal | breathing node |
 | M37 | Money - | economy negative |
-| M38 | TIN TỨC | news node |
+| M38 | Mini Game | second balanced Mini Game anchor |
 | M39 | LÁ BÀI | late-loop card node |
-| M40 | Normal | READY approach |
+| M40 | TIN TỨC | late-loop news / READY approach |
 
 Main-loop edge order is `M01 -> M02 -> ... -> M40 -> M01`.
+
+## Approved pacing rebalance
+
+Ron approved the balanced Mini Game direction on 2026-09-14.
+
+The earlier Mini Game placement at `M21 / M31` is superseded by `M18 / M38`.
+
+Clockwise Mini Game spacing is now exactly `20 / 20`.
+
+To preserve category totals and keep TIN TỨC well distributed:
+- M18 changes from Money - to Mini Game;
+- M21 changes from Mini Game to Money -;
+- M31 changes from Mini Game to Normal;
+- M38 changes from TIN TỨC to Mini Game;
+- M40 changes from Normal to TIN TỨC.
+
+TIN TỨC is now at:
+`M06, M14, M19, M25, M33, M40`
+
+Clockwise news gaps are:
+`8, 5, 6, 8, 7, 6`
 
 ## Hospital branch topology
 
@@ -187,12 +208,12 @@ Future runtime implementation should derive visual coordinates separately rather
 
 ## Draft A approval questions still open
 
-1. Does Ron approve **48** as the final target count rather than 44–47?
-2. Are 4 internal spaces per Hospital/Jail branch visually enough once close-follow camera is applied?
-3. Should both Mini Game anchors remain, or should one be replaced by another special landmark later?
-4. Are the five working districts the right thematic split for final art?
-5. What rule actually redirects a player into Hospital/Jail?
-6. Do branch internals count as ordinary movement distance, forced scripted movement, or a future location-state system? This remains explicitly undefined.
+1. Are 4 internal spaces per Hospital/Jail branch visually enough once close-follow camera is applied?
+2. Are the five working districts the right thematic split for final art?
+3. What rule actually redirects a player into Hospital/Jail?
+4. Do branch internals count as ordinary movement distance, forced scripted movement, or a future location-state system? This remains explicitly undefined.
+
+The 48-node total and M18/M38 Mini Game pacing are approved for Draft A.
 
 ## Runtime boundary
 
@@ -207,6 +228,10 @@ Do not copy the branch edges directly into `src/content/city/board_city_mvp.json
 ## Related references
 
 - `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
+- `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
+- `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
+- `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`
+- `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
 - `docs/UI_FINAL_PLAYER_HUD.md`
 - `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
 - `docs/GAME_DESIGN_CURRENT.md`
