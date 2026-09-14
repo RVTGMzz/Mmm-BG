@@ -47,125 +47,90 @@ jobs:
 
       - name: Deterministic replay fixture
         run: npm run test:replay
-
       - name: Lockstep peer simulator
         run: npm run test:lockstep
-
       - name: Host client queue and snapshot resync
         run: npm run test:host-client
-
       - name: Client intent host authority protocol
         run: npm run test:authority
-
       - name: Two-tab local browser session core
         run: npm run test:two-tab
-
       - name: Demo match shell and rematch
         run: npm run test:demo-shell
-
       - name: Simple CPU autoplay stress
         run: npm run test:bots
-
       - name: Tile Card News Reaction presentation parity
         run: npm run test:presentation
-
       - name: Presentation flow gate and parity routing
         run: npm run test:flow
-
       - name: Board flow movement and timing policy
         run: npm run test:board-flow
-
       - name: Board readability and turn feel
         run: npm run test:board-feel
-
       - name: Settings and early Menu BGM startup
         run: npm run test:settings
-
       - name: Content depth and tile identity
         run: npm run test:content
-
       - name: Card reaction personality and route feedback
         run: npm run test:reaction-route
-
       - name: Party mechanics deterministic rules
         run: npm run test:party
-
       - name: 200B economy scale
         run: npm run test:economy
-
       - name: Turn stakes money leaderboard
         run: npm run test:stakes
-
       - name: Tactical Choice and NPC Banter rules
         run: npm run test:tactical
-
       - name: Mini Game and Job tile foundation
         run: npm run test:function-tiles
-
       - name: Direct dice control
         run: npm run test:direct-dice
-
       - name: Job Dice salary Roll For Order Mini Games and payout
         run: npm run test:job-minigame
-
       - name: Mini Game host-system payout ownership
         run: npm run test:minigame-authority
-
       - name: Choice SFX coverage and one-lap copy
         run: npm run test:choice-sfx
-
       - name: Final result transition invariants
         run: npm run test:final-result
-
       - name: Lap-native legacy shell copy
         run: npm run test:legacy-shell-copy
-
       - name: Authoritative final podium and tie ranking
         run: npm run test:final-podium
-
       - name: Podium face reactions and winner spotlight
         run: npm run test:podium-reaction
-
       - name: Podium low-to-high reveal cadence
         run: npm run test:podium-reveal
-
       - name: Result controls unlock after podium reveal
         run: npm run test:podium-unlock
-
       - name: Remote Roll For Order host authority
         run: npm run test:remote-roll-order
-
       - name: Job Hub multiplayer authority and presentation
         run: npm run test:job-hub-multiplayer
-
       - name: Multiplayer presentation parity
         run: npm run test:presentation-parity
-
       - name: 0.1.48 audio dice BGM and token bugfix pass
         run: npm run test:bugfix-pass
-
       - name: 0.1.50 Final Map preview topology and rules
         run: npm run test:final-map-preview
-
       - name: 0.1.51 Draft D branches camera and retained rules
         run: npm run test:draft-d-preview
-
       - name: 0.1.52 fixed UI camera and persistent full-map review
         run: npm run test:draft-d-ui-fix
-
+      - name: 0.1.53 left-right forward branching and true full-map review
+        run: npm run test:branching-053
       - name: Face image transform bounds
         run: npm run test:image
-
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add Draft D UI fix guide to package
-        run: cp docs/PLAYTEST_0.1.52_DRAFT_D_UI_FIX.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.53 branching full-map guide to package
+        run: cp docs/PLAYTEST_0.1.53_BRANCHING_FULL_MAP.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.52 Draft D UI fix preview build
+      - name: Upload MVP 0.1.53 branching full-map preview build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.52-draft-d-ui-fix
+          name: mememe-playtest-0.1.53-branching-full-map
           path: dist
           if-no-files-found: error
           retention-days: 14
