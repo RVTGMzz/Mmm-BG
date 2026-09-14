@@ -1,6 +1,6 @@
 # MVP 0.1.44 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -22,7 +22,7 @@ The blocker:
 
 ## Deterministic completion helper
 
-`src/ui/podiumReveal.ts` now exports `podiumRevealCompleteMs()`, derived only from fixed reveal constants. No `Math.random`, gameplay RNG or result recomputation is involved.
+`src/ui/podiumReveal.ts` exports `podiumRevealCompleteMs()`, derived only from fixed reveal constants. No `Math.random`, gameplay RNG or result recomputation is involved.
 
 ## Retained behavior
 
@@ -41,7 +41,7 @@ The blocker:
 
 ## Regression
 
-New `tests/podium-result-gate-044.ts` checks that:
+`tests/podium-result-gate-044.ts` checks that:
 
 - unlock time extends beyond the final winner tween;
 - the gate arms only for a real ended result overlay;
@@ -51,4 +51,23 @@ New `tests/podium-result-gate-044.ts` checks that:
 - no gameplay/system command, wallet mutation or randomness is introduced;
 - `src/main.ts`, Lobby and Setup identify 0.1.44.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## Validated artifact
+
+GitHub Actions run: `34806052282` / run `#1303`
+
+Validated runtime/package SHA:
+`08fccea74a9399da289e86a057a0fce7be291292`
+
+Artifact:
+`mememe-playtest-0.1.44`
+
+Artifact ID:
+`10333470000`
+
+Artifact size:
+`8,560,852 bytes`
+
+Digest:
+`sha256:8776e38b812576f83ad5ee78a50bf1601476a6bf9f22efb59aa4c92192cc7bb8`
+
+Full CI passed through package validation and artifact upload, including the 0.1.44 result-control unlock regression.
