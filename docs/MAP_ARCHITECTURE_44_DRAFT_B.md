@@ -1,140 +1,154 @@
 # MeMeMe — Final Map Architecture Draft B
 
-Status: **CURRENT DESIGN SOURCE / DOCUMENTATION ONLY / NOT RUNTIME**
+Status: **CURRENT DESIGN SOURCE / B1–B5 BUILT / DOCUMENTATION ONLY / NOT RUNTIME**
 
-Draft B corrects the old multi-space Hospital/Jail misunderstanding and now follows Ron's physical-board reference more closely.
+Draft B corrects the old multi-space Hospital/Jail interpretation and follows Ron's physical-board reference.
 
 ## Core structure
 
-The final working board uses:
+- **44 spaces on the main loop**: `M01..M44`
+- one singleton `JAIL` / Police Station location inside/off the ordinary loop
+- one singleton `HOSPITAL` location inside/off the ordinary loop
+- canonical lap edge: `M44 -> M01`
+- READY remains the only lap-count / Job-salary crossing anchor
 
-- **44 spaces on the main loop** (`M01..M44`);
-- **1 Hospital location** outside the main loop: `HOSPITAL`;
-- **1 Jail / Police Station location** outside the main loop: `JAIL`.
+Hospital and Jail are not H1..H4 / J1..J4 chains.
 
-Hospital and Jail are singleton special locations. They are not `H1..H4` / `J1..J4` movement chains.
+## Four locked corners
 
-Canonical lap edge:
+The 44-space loop divides into four equal 11-edge quarters:
 
-`M44 -> M01`
+- `M01` = READY
+- `M12` = JAIL_GATE
+- `M23` = LOTTERY
+- `M34` = HOSPITAL_GATE
 
-READY remains the only lap-count / Job-salary crossing anchor.
+Landing on M12 sends the player directly to `JAIL`.
 
-## Four-corner structure
+Landing on M34 sends the player directly to `HOSPITAL`.
 
-The 44-space loop divides naturally into four 11-space quarters. Working corner assignments are now:
+TIN TỨC, LÁ BÀI, or another approved HOST-authoritative effect may also send a player directly to either singleton location.
 
-- `M01` = **READY**
-- `M12` = **JAIL_GATE**
-- `M23` = **LOTTERY**
-- `M34` = **HOSPITAL_GATE**
+## Jail release — approved
 
-These four corners are strong board-orientation anchors inspired by the physical reference.
+While in `JAIL`, on that player's turn roll one D6.
 
-### JAIL_GATE
-Landing on `M12` sends the player directly to the singleton `JAIL` location.
+Release faces:
+`1 / 3 / 5`
 
-### HOSPITAL_GATE
-Landing on `M34` sends the player directly to the singleton `HOSPITAL` location.
+Any other result means remain in Jail and retry next turn.
 
-### Other ways to enter
+## Hospital release — approved
 
-An approved authoritative effect may also send a player directly to `JAIL` or `HOSPITAL`, including effects from:
+While in `HOSPITAL`, on that player's turn roll one D6.
 
-- **TIN TỨC**;
-- **LÁ BÀI**;
-- other explicitly approved player-targeting effects.
+Release faces exactly:
+`2 / 4 / 5`
 
-All such relocation is HOST-authoritative. The client only presents the move.
+Any other result means remain in Hospital and retry next turn.
 
-## Jail release rule — APPROVED
+Do not normalize this to an even-number rule.
 
-While a player is in `JAIL`, on that player's turn they roll one D6.
+## Release behavior still TBD
 
-Successful release faces:
+For both singleton locations, do not infer:
+- exact main-loop re-entry node after release;
+- whether the successful release roll also becomes/provides normal movement that same turn.
 
-`1, 3, 5`
+These are the remaining special-location rule gates.
 
-If the roll is not one of those values, the player remains in Jail and tries again on their next turn.
+## Lottery — approved
 
-Release probability per attempt: `3/6 = 50%`.
+Landing on M23 triggers one HOST-authoritative D6.
 
-Still intentionally undefined:
-- whether a successful release roll also becomes that turn's normal movement roll;
-- whether the player moves normally after being released in the same turn;
-- bail / release cards / alternate release effects unless separately approved later.
+Reward:
+`D6 × 20 B$`
 
-Do not infer those details.
-
-## Hospital release rule — APPROVED
-
-While a player is in `HOSPITAL`, on that player's turn they roll one D6.
-
-Successful release faces:
-
-`2, 4, 5`
-
-If the roll is not one of those values, the player remains in Hospital and tries again on their next turn.
-
-Release probability per attempt: `3/6 = 50%`.
-
-Note: the approved set is exactly `2 / 4 / 5`. Do not normalize it to even numbers.
-
-Still intentionally undefined:
-- whether a successful release roll also becomes that turn's normal movement roll;
-- whether the player moves normally after being released in the same turn;
-- Hospital fees / healing / alternate release cards unless separately approved later.
-
-## Lottery corner — APPROVED
-
-Landing on `M23` triggers one D6 roll.
-
-Reward formula:
-
-`LotteryReward = D6 × 20 B$`
-
-Payout table:
-
-- 1 -> `20 B$`
-- 2 -> `40 B$`
-- 3 -> `60 B$`
-- 4 -> `80 B$`
-- 5 -> `100 B$`
-- 6 -> `120 B$`
+Payouts:
+`20 / 40 / 60 / 80 / 100 / 120 B$`
 
 Expected payout before later economy balancing: `70 B$`.
 
-The HOST owns the lottery RNG/result and the authoritative wallet mutation.
+## Design passes built
 
-## Special-location state contract
+### B1 — content pacing
+Source:
+- `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
+- `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
 
-`JAIL` and `HOSPITAL`:
+Working highlights:
+- Job Hub M08
+- Mini Game M17 / M39, exact 22/22 spacing
+- TIN TỨC M06 / M14 / M21 / M28 / M36 / M43
+- LÁ BÀI M04 / M10 / M16 / M22 / M27 / M32 / M41
+- Money+ M03 / M13 / M25 / M35
+- Money- M07 / M18 / M30 / M40
+- 16 Normal/breathing spaces
 
-- are outside the ordinary dice path;
+### B2 — spatial layout
+Source:
+- `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.md`
+- `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.json`
+
+Working orientation:
+- READY bottom-left
+- JAIL_GATE top-left
+- LOTTERY top-right
+- HOSPITAL_GATE bottom-right
+- inner Jail paired with M12
+- inner Hospital paired with M34
+
+Gate-to-location spurs are visual transfer connectors with no dice-counted nodes.
+
+### B3 — visual hierarchy
+Source:
+`docs/MAP_VISUAL_HIERARCHY_44_DRAFT_B3.md`
+
+Hierarchy:
+- V0 Normal
+- V1 Money / TIN TỨC / LÁ BÀI
+- V2 Job Hub / Mini Game
+- V3 four corner anchors
+
+### B4 — district / landmark blueprint
+Sources:
+- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.md`
+- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.json`
+
+Working labels only:
+- Q1 READY / Trung tâm & Sự nghiệp
+- Q2 Đồn cảnh sát / Giải trí & Drama
+- Q3 Trúng số / Mua sắm & Đời sống
+- Q4 Bệnh viện / Đêm thành phố & Hồi vòng
+
+### B5 — camera / mockup brief
+Source:
+`docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
+
+B5 defines the minimum overview, normal close-follow, four-corner, Jail/Hospital and Mini Game reference frames required before runtime implementation.
+
+## Special-location authority
+
+JAIL and HOSPITAL:
+- are outside ordinary dice movement;
 - do not count toward lap distance;
-- do not create alternate lap crossings;
-- may be reached from their main-loop gate or an approved effect;
-- are authoritative player-location states;
-- must be reflected by snapshot/replay/checksum once implemented;
-- may receive dedicated camera framing while occupied.
+- may be reached from their gate or an approved effect;
+- must become authoritative player-location state when implemented;
+- must be snapshot/replay/checksum-safe;
+- may receive dedicated camera framing.
 
 ## Draft A superseded
 
-The following are invalid final-topology assumptions:
+Invalid final assumptions:
+- `40 main + 4 Hospital + 4 Jail`
+- `M12 -> H1 -> H2 -> H3 -> H4 -> M13`
+- `M28 -> J1 -> J2 -> J3 -> J4 -> M29`
+- Hospital/Jail internal spaces counted as movement distance
 
-- `40 main + 4 Hospital + 4 Jail`;
-- `M12 -> H1 -> H2 -> H3 -> H4 -> M13`;
-- `M28 -> J1 -> J2 -> J3 -> J4 -> M29`;
-- treating Hospital/Jail as ordinary movement distance.
+Draft A/A1/A2/A3/A4/A5 remain design history only where they conflict with Draft B.
 
-Draft A/A1/A2/A3/A4/A5 may remain as design history, but Draft B wins wherever they conflict.
+## Runtime boundary
 
-## Next Draft B work
+Do not import Draft B/B1/B2/B3/B4/B5 into runtime until a dedicated final-map implementation milestone is explicitly opened.
 
-1. Rebuild content distribution around the four locked corners.
-2. Rebalance Mini Game / TIN TỨC / LÁ BÀI / money / Job Hub across the remaining 40 main-loop spaces.
-3. Rebuild spatial layout around one `JAIL` and one `HOSPITAL` singleton inside/outside the visual ring.
-4. Decide later what happens immediately after a successful release roll.
-5. Preserve current names **TIN TỨC / LÁ BÀI**.
-
-Do not import Draft B into runtime until a dedicated final-map implementation milestone is opened.
+Latest validated playable runtime remains MVP 0.1.48.
