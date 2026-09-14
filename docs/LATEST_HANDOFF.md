@@ -7,132 +7,122 @@ Root checkpoint for new chats: `HANDOFF_CURRENT.md`
 
 ## Current milestone
 
-**MVP 0.1.38 - Choice SFX + One-Lap Copy Polish (ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN)**
+**MVP 0.1.39 - Final B$ Lock + Result Clarity (ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN)**
 
-Latest validated artifact: `mememe-playtest-0.1.38`
+Latest validated artifact: `mememe-playtest-0.1.39`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Read first
 
 1. `HANDOFF_CURRENT.md`
-2. `docs/MVP_0.1.38_PROGRESS.md`
-3. `docs/PLAYTEST_0.1.38.md`
-4. `docs/MVP_0.1.37_PROGRESS.md`
-5. `src/scenes/CareerMinigameBoardScene037.ts`
-6. `src/scenes/CareerMinigameBoardScene.ts`
-7. `src/ui/MiniGameOverlay.ts`
-8. `src/audio/sfxController.ts`
+2. `docs/MVP_0.1.39_PROGRESS.md`
+3. `docs/PLAYTEST_0.1.39.md`
+4. `docs/MVP_0.1.38_PROGRESS.md`
+5. `src/scenes/CareerMinigameBoardScene039.ts`
+6. `src/scenes/CareerMinigameBoardScene037.ts`
+7. `src/scenes/CareerMinigameBoardScene.ts`
+8. `src/ui/MiniGameOverlay.ts`
 9. `src/core/twoTabSession.ts`
 10. `src/core/authority.ts`
-11. `tests/choice-sfx-038.ts`
-12. `tests/minigame-authority-037.ts`
+11. `tests/final-result-transition-039.ts`
+12. `tests/choice-sfx-038.ts`
+13. `tests/minigame-authority-037.ts`
 
-## What changed in 0.1.38
+## What changed in 0.1.39
 
-### Choice SFX coverage
+### Final B$ lock transition
 
-The supplied `choice.ogg` / `ui_confirm` cue now covers the primary confirmation surfaces that were still silent:
+The existing authoritative result overlay remains the only source of winner/ranking truth. 0.1.39 adds a short presentation beat only after that overlay is actually eligible to render:
 
-- Route / Branch picker.
-- Card hand picker, including `GIỮ LẠI`.
-- Target picker.
-- Tactical Choice / Kèo Hai Cửa, including cancel/back.
-- Setup → Roll For Order.
-- Settings open/close and BGM toggle.
+- queued movement/Card/News/reaction/Mini Game presentation must clear first;
+- pending Mini Game payout must already be committed;
+- the real result overlay is briefly hidden;
+- `4/4 HOÀN THÀNH` and `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` are shown;
+- a temporary blocker prevents clicks on hidden result buttons;
+- the transition fades away and the authoritative result overlay fades in.
 
-Existing choice feedback remains on Local Lobby actions, Job Dice, Mini Game human choices and Enter Match after Roll For Order.
+The transition does not recompute B$, rank, winner, lap state or payout. It submits no player/system command and introduces no random generation.
 
-Normal dice continues to use `dice.ogg`, not the choice cue.
-
-### Visible rule copy cleanup
-
-Setup and Local Lobby now identify the current 0.1.38 build and no longer advertise obsolete `MVP 0.1.31` / `demo 3 vòng` copy.
-
-The visible rule matches the authoritative match rule:
-
-- every player completes at least one physical board lap;
-- final B$ scoring waits until all players meet that target;
-- if the final lap lands on a Mini Game, pending payout resolves before result finalization.
+Victory SFX remains tied to the real result overlay and is not duplicated by the transition.
 
 ### New regression
 
-`tests/choice-sfx-038.ts` locks choice feedback coverage and prevents obsolete Setup/Lobby three-round copy from returning.
+`tests/final-result-transition-039.ts` locks the ended-only, queue-gated, presentation-only behavior and verifies `src/main.ts` runs the 0.1.39 scene.
 
-## Retained 0.1.37 Mini Game authority fix
+## Retained 0.1.38 polish
 
-Mini Game payout remains a single host-system path:
+- Choice SFX covers Route/Branch, Card hand, Target, Tactical Choice, Setup and Settings interactions.
+- Existing choice feedback remains on Lobby, Job Dice, Mini Game human choices and Enter Match.
+- Dice continues to use the dedicated dice cue.
+- Local Lobby and Setup show current one-lap copy rather than obsolete `demo 3 vòng` instructions.
 
-- overlay produces deterministic game type and complete ranking;
-- host commits through `submitSystemIntent('resolve_minigame')`;
-- obsolete player/seat submission is suppressed;
-- same source event cannot pay twice;
-- clients receive authoritative B$ through normal state sync.
+## Retained Mini Game / audio behavior
 
-## Retained audio / Mini Game behavior
-
-- Eight supplied SFX: victory, news, card, step, money loss, money gain, dice, choice.
-- Mini Game BGM is approved `03_City_Silly.ogg`.
-- No fifth BGM; `track 1.MP3` is not used.
-- Four approved BGM files remain checksum-locked and must not be re-encoded/substituted.
+- Mini Game payout is committed only through host-system authority and may apply once per source event.
 - Nhiều ra ít bị payout: `30 / 20 / 10 / 0 B$`.
 - Direct Oẳn Tù Xì payout: `25 / 15 / 5 / 0 B$`.
-- CPU vs CPU RPS still receives full duel presentation.
+- Mini Game BGM is approved checksum-locked `03_City_Silly.ogg`.
+- No fifth BGM and `track 1.MP3` is not used.
+- Eight supplied SFX remain packaged/checksum-verified: victory, news, card, step, money loss, money gain, dice, choice.
+- Four approved BGM assets must not be re-encoded/substituted.
 
-## Retained movement / score rules
+## Retained movement / scoring rules
 
 - Normal state packets do not own token coordinates during ordinary movement presentation.
 - Snapshot resync and rematch command #0 may hard-snap to authoritative nodes.
-- Human Job Hub has explicit token reconciliation to avoid the visual one-node-behind bug.
-- Crossing READY pays salary and increments lap exactly once.
-- Every player must complete one lap before final B$ scoring.
-- Result waits for pending presentation and Mini Game economy.
+- Human Job Hub has explicit token reconciliation to prevent one-node-behind visual state.
+- Every player must complete at least one physical board lap before final B$ scoring.
+- Crossing READY pays current Job salary and increments lap exactly once.
+- If the last required lap lands on a Mini Game, final result waits for its payout.
 
-## Determinism / authority invariants
+## Core invariants / deferred mechanics
 
+- Roll For Order: highest D6 acts first; only tied seats reroll.
+- Stable player ID, face, color and ownership do not move when play order changes.
+- Starting wallet `200 B$`.
+- Mandatory Job Hub, three unique A/B/C offers, Job D6 mapping `1-2 -> A`, `3-4 -> B`, `5-6 -> C`.
 - Presentation RNG must not perturb gameplay RNG.
 - `eventLog` remains presentation-only and checksum-excluded.
-- Gameplay-critical wallet, lap, playOrder and Job state remain authoritative/checksum-safe.
 - Snapshot resync must not replay stale presentation.
-- Dice presentation always displays authoritative gameplay dice results.
 - Original face files remain local and must not be silently uploaded/persisted.
-- CPU remains a QA bot, not final AI.
-- Jail skipped-turn / bail / escape mechanics remain intentionally undefined.
+- CPU remains a QA bot.
+- Thief may become `jailed`, but skipped-turn / bail / escape mechanics remain intentionally undefined.
 
 ## Validated artifact
 
-GitHub Actions run: `34801348509` / run `#1107`
+GitHub Actions run: `34801911635` / run `#1139`
 
 Validated runtime/package SHA:
-`f1e5ffc7f3f3cb4ed5e7ee6f12819215c0bd8265`
+`86764fa9aeda89067cb1abd29703985f5c993c04`
 
 Artifact:
-`mememe-playtest-0.1.38`
+`mememe-playtest-0.1.39`
 
 Artifact ID:
-`10331532723`
+`10330908906`
 
 Size:
-`8,557,943 bytes`
+`8,558,543 bytes`
 
 Digest:
-`sha256:04ffc83d71c54a22f27b846ba4fa2a62c70e545536c0c6d69bc7b653becf1947`
+`sha256:2c7332429a1432bfb278bc2fef7e306f4cd87bb566ff9884f875fff2dd2ba2d1`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34801348509`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34801911635`
 
-Full CI passed through artifact upload, including the 0.1.37 Mini Game host-system ownership regression and new 0.1.38 Choice-SFX/one-lap-copy regression.
+Full CI passed through artifact upload, including Mini Game host-system ownership, Choice-SFX/copy regression and final-result transition regression.
 
 ## Runtime test focus
 
-1. Exercise Route/Card/Target/Tactical/Setup/Settings and confirm choice SFX plays once per intentional confirmation.
-2. Confirm normal dice and Roll For Order still use the dedicated dice cue.
-3. Confirm Local Lobby and Setup display 0.1.38 and no obsolete three-round instruction.
-4. Confirm Mini Game reward changes B$ exactly once.
-5. Confirm P1 has no movement snap-back and Job Hub token reconcile remains correct.
-6. Confirm final score waits for pending Mini Game payout when applicable.
-7. Re-check all eight SFX and `03_City_Silly.ogg` in runtime.
+1. Finish a match and confirm all final presentation clears before the 4/4 lock banner.
+2. If final landing is Mini Game, confirm B$ payout commits before the lock banner/result.
+3. Confirm result buttons are blocked while visually hidden.
+4. Confirm displayed winner/rank/B$ are unchanged by the transition.
+5. Rematch and confirm one transition occurs again for the next completed match.
+6. Re-check P1 movement snap-back fix and Job Hub token reconcile.
+7. Re-check all eight SFX and `03_City_Silly.ogg`.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.38_PROGRESS.md và docs/PLAYTEST_0.1.38.md. Current validated artifact là mememe-playtest-0.1.38, run #1107, runtime SHA f1e5ffc7f3f3cb4ed5e7ee6f12819215c0bd8265. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.39_PROGRESS.md và docs/PLAYTEST_0.1.39.md. Current validated artifact là mememe-playtest-0.1.39, run #1139, runtime SHA 86764fa9aeda89067cb1abd29703985f5c993c04. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
