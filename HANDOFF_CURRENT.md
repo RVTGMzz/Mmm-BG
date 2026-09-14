@@ -5,12 +5,6 @@ PR: #1 (Draft/Open)
 
 Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Current milestone
-
-**MVP 0.1.49 — Legacy Effect Audit**
-
-Status: **ACTIVE / DESIGN + CONTENT AUDIT / NO NEW PLAYABLE ARTIFACT YET**
-
 ## Runtime checkpoint
 
 MVP 0.1.48 is **PASS** by Ron's explicit runtime acceptance on 2026-09-14.
@@ -22,136 +16,102 @@ Latest validated playable artifact remains:
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-0.1.49 has no validated playable artifact yet.
+No newer runtime artifact is validated yet.
 
-## Read first
+## Current milestone
 
-1. `docs/LATEST_HANDOFF.md`
-2. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
-3. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
-4. `docs/MAP_ARCHITECTURE_FINAL.md`
-5. `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
-6. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
-7. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.json`
-8. `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
-9. `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`
-10. `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
-11. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.md`
-12. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.json`
-13. `docs/UI_FINAL_PLAYER_HUD.md`
+**MVP 0.1.49 — Legacy Effect Audit** remains active in parallel with final-map design.
 
-## Track A — 0.1.49 Legacy Effect Audit
-
-Current names remain locked:
+Current system names stay locked:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-The first evidenced effect-family inventory is complete in `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`.
+Legacy inventory:
+`docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-Current adaptable directions:
-- authoritative movement effects;
-- held-card delivery model;
-- explicit timing metadata;
-- timed global effects once an authoritative duration/status layer exists.
+## Final-map correction — Draft B is current
 
-Undefined-system effects stay deferred. Do not invent missing legacy card text.
+Ron corrected the earlier map interpretation on 2026-09-14.
 
-## Track B — Final map design
+The final map reference has **one Hospital** and **one Jail** outside the main board. They are not four-node side branches.
 
-Working Draft A currently uses **48 total playable nodes**:
-- 40 main-loop nodes `M01..M40`;
-- 4 Hospital nodes `H1..H4`;
-- 4 Jail nodes `J1..J4`.
+Current topology source:
+- `docs/MAP_ARCHITECTURE_FINAL.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
 
-This is design work only, not runtime content.
+Draft B working structure:
+- **44 main-loop spaces** `M01..M44`;
+- **1 off-board Hospital location** `HOSPITAL`;
+- **1 off-board Jail location** `JAIL`;
+- canonical lap crossing `M44 -> M01`.
 
-### Draft A — architecture
-- five working districts;
-- Hospital and Jail are side-location pockets;
-- stable node IDs and adjacency are data-driven;
-- canonical lap crossing remains `M40 -> M01`.
+The main board itself therefore satisfies the requirement of more than 40 spaces.
 
-### Draft A1 — spatial layout
-Completed in:
-- `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
-- `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.json`
+Hospital/Jail are **not ordinary dice spaces**. A player is sent directly there by an approved authoritative effect such as TIN TỨC, LÁ BÀI, or another approved player-targeting effect.
 
-Adds irregular city-loop composition, design coordinates, landmarks, district framing, close-follow camera context and HUD-safe composition.
+Do not use the old Draft A chains:
+- `H1..H4`;
+- `J1..J4`;
+- Hospital/Jail detour movement.
 
-### Draft A2 — visual hierarchy
-Completed in `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`.
+Draft A through A5 are historical design material only where they conflict with Draft B.
 
-Adds node size classes, main/branch hierarchy, district art priorities, landmark tiers, token readability and overview/minimap visual language.
+## Hospital / Jail rules still undefined
 
-### Draft A3 — route + overview
-Completed in `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`.
+Entry source is now conceptually known: effect-driven.
 
-Adds main/branch sign language, district boundary cues, camera shot list, four-player overview behavior and explicit full-map overview.
+Still do **not** invent:
+- stay duration;
+- forced skipped turns;
+- Hospital fees/recovery;
+- Jail bail;
+- escape roll;
+- escape card;
+- release conditions.
 
-### Draft A4 — content pacing
-Completed and approved in `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`.
+Those need explicit approval later.
 
-Approved pacing assignments:
-- `M18` = Mini Game
-- `M21` = Money -
-- `M31` = Normal
-- `M38` = Mini Game
-- `M40` = TIN TỨC
-
-Mini Game spacing is exactly **20 / 20** around the 40-node main loop.
-
-TIN TỨC is now:
-`M06, M14, M19, M25, M33, M40`
-with clockwise gaps `8, 5, 6, 8, 7, 6`.
-
-LÁ BÀI remains:
-`M04, M09, M16, M22, M27, M35, M39`.
-
-Category totals remain unchanged.
-
-### Draft A5 — district / landmark blueprint
-Completed in:
-- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.md`
-- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.json`
-
-A5 locks the working local visual identity used by the close-follow camera:
-- D1: READY Plaza / city center;
-- D2: Job Hub Tower + Hospital area;
-- D3: Entertainment Dome around Mini Game M18;
-- D4: Civic/Jail Complex + Civic Square;
-- D5: Night Market Skyline + Mini Game M38 stage + READY return cue.
-
-A5 also defines district transitions, landmark priority tiers, HUD-safe landmark composition and concept-art handoff targets.
-
-A compact fallback remains available only if future runtime playtesting proves 40 main nodes too slow:
-- 44 total = 36 main + 4 Hospital + 4 Jail.
-
-It is not active. Draft A remains 48 total / 40 main.
-
-## Final HUD / camera locks
+## HUD / camera locks retained
 
 - P1 top-left
 - P2 top-right
 - P3 bottom-left
 - P4 bottom-right
-- avatar + name + B$ minimum per occupied HUD;
+- avatar + name + B$ minimum;
 - active player highlighted;
 - HUD fixed in screen space;
-- normal camera follows/zooms active token;
-- full-map is explicit overview only.
+- normal camera close-follows active player;
+- if an effect sends a player to Hospital/Jail, camera frames that singleton location;
+- full map is explicit overview only.
 
-Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
+Canonical UI contract:
+`docs/UI_FINAL_PLAYER_HUD.md`
 
-## Runtime boundary
+## Retained gameplay invariants from 0.1.48
 
-Draft A through A5 are documentation/design only.
-
-Do not move the 48-node graph, coordinates, pacing or landmark blueprint into `src/content/city/board_city_mvp.json` until a dedicated final-map implementation milestone is explicitly opened and validated.
+- Remote Roll For Order host-authoritative.
+- Multiplayer Job Hub host-authoritative and spectator-safe.
+- Job mapping `1–2 A / 3–4 B / 5–6 C`.
+- Starting wallet `200 B$`.
+- Each player completes one physical lap before final scoring.
+- READY pays current Job salary once per crossing and increments lap.
+- Mini Game payout host-system-owned and one-shot.
+- Nhiều ra ít bị payout `30 / 20 / 10 / 0 B$`.
+- Direct RPS payout `25 / 15 / 5 / 0 B$`.
+- Four approved BGM and eight supplied SFX remain checksum-protected.
+- Final podium/result-input chain unchanged.
+- CPU remains a QA bot.
 
 ## Next priority
 
-1. Continue 0.1.49 effect audit without inventing missing legacy source material.
-2. Next map pass can be **A6 art/mockup production brief** based on A5, or pause the design lane for visual review.
-3. Keep Hospital/Jail deeper gameplay semantics TBD until explicitly approved.
-4. Keep TIN TỨC / LÁ BÀI names.
-5. Do not merge PR #1.
+1. Rebuild Draft B content/pacing for the **44-space main loop**.
+2. Re-audit Mini Game positions for 44 spaces instead of carrying the old 40-space M18/M38 split blindly.
+3. Rebuild spatial layout/landmarks with one Hospital and one Jail outside the loop.
+4. Continue 0.1.49 effect audit in parallel.
+5. Keep TIN TỨC / LÁ BÀI names.
+6. Do not merge PR #1.
+
+## New-chat resume prompt
+
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Current map source đã chuyển sang Draft B: 44 ô main M01..M44 + đúng 1 HOSPITAL + đúng 1 JAIL nằm ngoài vòng chính. Hospital/Jail không phải branch nhiều ô và không đi bằng dice; player bị TIN TỨC/LÁ BÀI/effect authoritative gửi thẳng tới. Draft A H1..H4/J1..J4 đã superseded. Deep stay/exit rules vẫn TBD. HUD 4 góc và camera close-follow giữ nguyên. Tiếp tục 0.1.49 song song. Không merge PR #1.`
