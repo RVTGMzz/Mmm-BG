@@ -47,6 +47,7 @@
     "test:bugfix-pass": "tsx tests/bugfix-pass-048.ts",
     "test:final-map-preview": "tsx tests/final-map-preview-050.ts",
     "test:draft-d-preview": "tsx tests/final-map-preview-051.ts",
+    "test:draft-d-ui-fix": "tsx tests/final-map-preview-052.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
