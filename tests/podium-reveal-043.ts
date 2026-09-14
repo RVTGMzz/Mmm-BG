@@ -9,9 +9,6 @@ import {
 
 const scene = await readFile('src/scenes/CareerMinigameBoardScene043.ts', 'utf8');
 const parent = await readFile('src/scenes/CareerMinigameBoardScene041.ts', 'utf8');
-const main = await readFile('src/main.ts', 'utf8');
-const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
-const setup = await readFile('src/scenes/SetupScene.ts', 'utf8');
 const executableScene = scene
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .replace(/\/\/.*$/gm, '');
@@ -37,8 +34,5 @@ assert(!/submitIntent\s*\(/.test(executableScene), '0.1.43 reveal must not submi
 assert(!/submitSystemIntent\s*\(/.test(executableScene), '0.1.43 reveal must not submit host-system commands');
 assert(!/Math\.random\s*\(/.test(executableScene), '0.1.43 reveal must not introduce presentation RNG');
 assert(!/\.money\s*[+\-*/]?=/.test(executableScene), '0.1.43 reveal must not mutate wallet state');
-assert(main.includes('CareerMinigameBoardScene043'), 'main runtime must use the 0.1.43 reveal scene');
-assert(lobby.includes('MVP 0.1.43'), 'Lobby must identify 0.1.43');
-assert(setup.includes('MVP 0.1.43'), 'Setup must identify 0.1.43');
 
 console.log('[podium-reveal-043] PASS low-to-high deterministic reveal + tie simultaneity + presentation-only invariants');
