@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import { gameSession } from '../core/session';
 import type { PlayerState } from '../core/types';
 
@@ -41,6 +42,7 @@ export function showTargetPicker<T extends PlayerState>(
     const startX = -((candidates.length - 1) * spacing) / 2;
 
     const finish = (target: T): void => {
+      sfxController.play('ui_confirm');
       root.destroy(true);
       resolve(target);
     };
