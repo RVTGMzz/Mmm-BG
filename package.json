@@ -44,6 +44,7 @@
     "test:remote-roll-order": "tsx tests/remote-roll-order-045.ts",
     "test:job-hub-multiplayer": "tsx tests/job-hub-multiplayer-046.ts",
     "test:presentation-parity": "tsx tests/multiplayer-presentation-parity-047.ts",
+    "test:bugfix-pass": "tsx tests/bugfix-pass-048.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
