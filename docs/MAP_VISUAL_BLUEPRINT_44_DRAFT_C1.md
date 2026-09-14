@@ -2,6 +2,11 @@
 
 Status: **APPROVED VISUAL DIRECTION / DOCUMENTATION ONLY**
 
+Canonical approved visual reference already stored in this branch:
+`docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+
+Despite the filename emphasizing HUD, this PNG is the approved **combined board + four-player HUD visual reference** and must be treated as the primary visual reference for Draft C/C1.
+
 This blueprint follows the colorful city-board concept approved by Ron on 2026-09-14.
 
 ## Core look
@@ -100,6 +105,6 @@ Normal gameplay:
 
 ## Production note
 
-The approved concept image is a **visual reference, not a production sprite sheet**. It defines composition, mood, density, district readability and special-branch presentation.
+The approved concept image at `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` is a **visual reference, not a production sprite sheet**. It defines composition, mood, density, district readability, four-corner HUD composition and special-branch presentation.
 
 Stable IDs, topology and gameplay data come from Draft C documents, never from text/numbers rendered by an AI image.
