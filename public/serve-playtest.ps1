@@ -1,3 +1,7 @@
+param(
+  [switch]$FinalMapPreview
+)
+
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -41,7 +45,7 @@ if (-not $listener) {
   exit 1
 }
 
-$url = "http://127.0.0.1:$port/"
+$url = if ($FinalMapPreview) { "http://127.0.0.1:$port/?finalmap=1" } else { "http://127.0.0.1:$port/" }
 Write-Host "MeMeMe playtest dang chay tai $url" -ForegroundColor Green
 Write-Host 'Giu cua so nay mo trong luc choi. Nhan Ctrl+C de dung server.' -ForegroundColor Yellow
 Start-Process $url
@@ -77,6 +81,7 @@ try {
       $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $root $relative))
 
       if (-not $candidatePath.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $body = [System.IO.Path]::GetFullPath($root)
         $body = [System.Text.Encoding]::UTF8.GetBytes('403 Forbidden')
         $header = "HTTP/1.1 403 Forbidden`r`nContent-Type: text/plain; charset=utf-8`r`nContent-Length: $($body.Length)`r`nConnection: close`r`n`r`n"
         $stream.Write([System.Text.Encoding]::ASCII.GetBytes($header), 0, $header.Length)
