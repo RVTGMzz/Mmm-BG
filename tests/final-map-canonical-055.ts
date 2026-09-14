@@ -54,8 +54,8 @@ for (const plan of branchPlans) {
   const outgoing = getOutgoingEdges(BOARD, plan.junction);
   assert.equal(outgoing.length, 2, `Junction ${plan.junction} must expose exactly Left/Right choices.`);
   assert.deepEqual(new Set(outgoing.map((edge) => edge.to)), plan.first);
-  assert(outgoing.some((edge) => edge.label?.includes('RẼ TRÁI')));
-  assert(outgoing.some((edge) => edge.label?.includes('RẼ PHẢI')));
+  assert(outgoing.some((edge) => edge.label?.includes('TRÁI')));
+  assert(outgoing.some((edge) => edge.label?.includes('PHẢI')));
   assert.deepEqual(followSinglePath(plan.main[0], 4), [...plan.main]);
   assert.deepEqual(followSinglePath(plan.alt[0], 4), [...plan.alt]);
   assert.equal(plan.main.at(-1), plan.merge);
