@@ -40,7 +40,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.47', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.48', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -50,7 +50,7 @@ export class SetupScene extends Phaser.Scene {
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;
     const mode = config.mode === 'host'
-      ? `HOST LOCAL • ROOM ${config.roomCode} • Presentation Parity + Remote Control`
+      ? `HOST LOCAL • ROOM ${config.roomCode} • Remote Roll + Remote Job Dice`
       : cpuCount > 0
         ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
         : '4 người HOTSEAT → đặt tên → Roll For Order → mỗi người hoàn thành 1 vòng';
@@ -73,7 +73,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.47: Tiên Tri dùng form lá dọc, Phép Thuật dùng form lá ngang; HOST và CLIENT phải nhận cùng authoritative presentation event.</p>
+      <p id="setup-status" class="setup-status">0.1.48: giữ nguyên hệ TIN TỨC / LÁ BÀI; tập trung sửa âm tiền, mặt D6, nhạc Mini Game và token snap-back.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -197,7 +197,7 @@ export class SetupScene extends Phaser.Scene {
     if (expressionCount === 0) {
       this.setStatus(
         browserSession.current.mode === 'host'
-          ? 'Sẵn sàng. Host sẽ giữ authority; hai tab phải nhìn cùng Tiên Tri / Phép Thuật / Job / Mini Game từ cùng event stream.'
+          ? 'Sẵn sàng. Host sẽ chờ tab JOIN cho Remote Roll; trong trận, Job Hub cũng chuyển quyền bấm cho đúng ghế client.'
           : cpuCount > 0
             ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự đổ thứ tự và tự chơi. Có thể bỏ qua ảnh.`
             : 'Sẵn sàng. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.',
