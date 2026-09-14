@@ -23,15 +23,47 @@
 - Full-map chỉ là overview có chủ đích như intro, xem bản đồ, route inspection hoặc QA/debug.
 - Board ưu tiên một primary loop/path network dễ đọc ở góc nhìn gần.
 - **Hospital** là đúng **1 special location** nằm ngoài vòng chính.
-- **Jail** là đúng **1 special location** nằm ngoài vòng chính.
-- Hospital/Jail **không phải chuỗi nhiều ô và không đi vào bằng xúc xắc**.
-- Player bị đưa thẳng tới Hospital/Jail bởi effect authoritative từ **TIN TỨC**, **LÁ BÀI**, hoặc effect được duyệt khác.
-- Deep rules của Hospital/Jail vẫn phải được định nghĩa riêng; không tự suy diễn mất lượt, phí, bail, escape roll/card hay điều kiện release.
+- **Jail / Police Station** là đúng **1 special location** nằm ngoài vòng chính.
+- Hospital/Jail không phải chuỗi nhiều ô.
+- Player có thể bị đưa tới Hospital/Jail từ ô gateway trên main loop hoặc bởi effect authoritative từ **TIN TỨC**, **LÁ BÀI**, hay effect được duyệt khác.
 
 Current topology source:
 - `docs/MAP_ARCHITECTURE_FINAL.md`
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
+
+### Four-corner board anchors
+44 ô chia thành bốn quarter 11 ô:
+- `M01` = **READY**
+- `M12` = **JAIL_GATE**
+- `M23` = **LOTTERY**
+- `M34` = **HOSPITAL_GATE**
+
+Landing on `JAIL_GATE` sends the player to `JAIL`.
+
+Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
+
+### Jail release rule
+- Khi tới lượt player đang ở `JAIL`, roll 1 D6.
+- Ra **1 / 3 / 5** → được ra.
+- Ra số khác → vẫn ở Jail và chờ lượt sau roll lại.
+- Xác suất thoát mỗi lần thử: 50%.
+- Chưa chốt việc roll thoát thành công có đồng thời là roll di chuyển của lượt đó hay không.
+
+### Hospital release rule
+- Khi tới lượt player đang ở `HOSPITAL`, roll 1 D6.
+- Ra **2 / 4 / 5** → được ra.
+- Ra số khác → vẫn ở Hospital và chờ lượt sau roll lại.
+- Xác suất thoát mỗi lần thử: 50%.
+- Bộ số được duyệt là đúng `2 / 4 / 5`, không tự đổi thành rule số chẵn.
+- Chưa chốt việc roll thoát thành công có đồng thời là roll di chuyển của lượt đó hay không.
+
+### Lottery rule
+- `M23 LOTTERY` roll 1 D6.
+- Thưởng = **D6 × 20 B$**.
+- Payout: `20 / 40 / 60 / 80 / 100 / 120 B$`.
+- Expected payout hiện tại: `70 B$` trước khi cân economy sâu hơn.
+- RNG và wallet mutation phải HOST-authoritative khi implement.
 
 ### Final 4-player HUD direction
 - 4 player HUD cố định ở 4 góc màn hình, không di chuyển cùng board camera.
@@ -97,7 +129,7 @@ Cần test readability trên màn hình nhỏ.
 
 ### Detailed final board distribution / art coordinates
 Draft B đã chọn working topology **44 main spaces + 1 Hospital + 1 Jail**, nhưng vẫn chưa khóa runtime:
-- payload cuối cho từng M01..M44;
+- payload cuối cho các ô còn lại ngoài 4 corner anchors;
 - Mini Game spacing mới cho 44-space loop;
 - district boundaries cuối;
 - landmark placement cuối;
@@ -107,13 +139,11 @@ Draft B đã chọn working topology **44 main spaces + 1 Hospital + 1 Jail**, n
 
 Draft A cũ `40 + H1..H4 + J1..J4` đã superseded và không còn là thiết kế hiện tại.
 
-### Hospital / Jail stay and exit rules
-Entry concept đã rõ là effect-driven, nhưng chưa chốt:
-- ở bao lâu;
-- có mất lượt hay không;
-- Hospital có phí/recovery hay không;
-- Jail có bail/escape roll/card hay không;
-- release condition.
+### Post-release movement
+Jail/Hospital release faces đã chốt, nhưng vẫn chưa chốt:
+- roll thoát thành công có được dùng luôn làm bước di chuyển bình thường không;
+- hay thoát xong kết thúc lượt;
+- alternate release effect/card có tồn tại hay không.
 
 ### Dynamic board trigger
 Từng có ý tưởng “leader/queen hoàn thành một vòng thì board xáo lại”.
@@ -146,13 +176,14 @@ Một lượt thử nghiệm:
 2. Dice ra kết quả.
 3. Player token di chuyển trên main graph.
 4. Tile payload trigger.
-5. Nếu là `Lá Bài/Tin Tức`, loader chọn entry theo pool.
-6. Effect resolver thay đổi authoritative state.
-7. Một effect hợp lệ có thể gửi player trực tiếp tới `HOSPITAL` hoặc `JAIL`.
-8. Presentation layer xử lý card/news art, face slot, system log, reaction và camera movement.
-9. Turn manager chuyển người kế tiếp theo authoritative state.
+5. Nếu landing là `JAIL_GATE` hoặc `HOSPITAL_GATE`, HOST chuyển player tới singleton location tương ứng.
+6. Nếu landing là `LOTTERY`, HOST roll D6 và cộng `D6 × 20 B$`.
+7. Nếu là `Lá Bài/Tin Tức`, loader chọn entry theo pool.
+8. Effect resolver thay đổi authoritative state; effect hợp lệ cũng có thể gửi player tới `HOSPITAL` hoặc `JAIL`.
+9. Presentation layer xử lý card/news art, face slot, system log, reaction và camera movement.
+10. Turn manager chuyển người kế tiếp theo authoritative state.
 
-Hospital/Jail relocation là effect resolution, không phải normal dice path routing.
+Nếu player bắt đầu lượt tại Hospital/Jail, dùng release roll đã khóa trước khi xử lý phần tiếp theo của lượt. Phần hậu-release vẫn TBD.
 
 ## E. Face-card rendering model
 
