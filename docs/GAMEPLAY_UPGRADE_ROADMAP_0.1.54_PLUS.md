@@ -33,7 +33,8 @@ Required invariants:
 - use Draft D 44-space topology and three forward-only decision junctions;
 - real players choose **RẼ TRÁI / RẼ PHẢI**;
 - route choice is an authoritative player intent resolved by HOST;
-- no branch may create backward movement, cycles, dead ends or endless wandering.
+- no branch may create backward movement, cycles, dead ends or endless wandering;
+- Draft D contains **5 Mini Game spaces**, working positions `M09 / M17 / M26 / M35 / M44`.
 
 Success gate:
 
@@ -41,7 +42,7 @@ Success gate:
 
 must work without regressing 0.1.48 invariants.
 
-## Jail / Hospital release rule — now locked
+## Jail / Hospital release rule — locked
 
 When a detained/hospitalized player starts their turn:
 
@@ -50,11 +51,21 @@ When a detained/hospitalized player starts their turn:
 3. Hospital releases on exactly `2 / 4 / 5`;
 4. failed release ends that player's turn and they retry next turn;
 5. successful release moves through the visible 3-space exit path;
-6. after release, the player **continues the same turn with a fresh movement D6 roll**.
+6. after release, the player **must roll a fresh movement D6** to continue the same turn.
 
-The release die itself is **not** reused as movement distance.
+The release die is **only a release check** and is never reused as movement distance.
 
-This rule is chosen to avoid punishing the player with an extra dead turn after they already succeeded at escaping/recovering.
+## Mini Game eligibility — locked core rule
+
+Holding locations remove a player from the current Mini Game participant pool:
+
+- player in `JAIL` = not eligible;
+- player in `HOSPITAL` = not eligible;
+- `2+` eligible players = play normally;
+- exactly `1` eligible player = **auto rank #1**;
+- `0` eligible players = skip the Mini Game and pay nobody.
+
+Implementation dependency: authoritative enforcement lands when 0.1.57 introduces real Jail/Hospital holding state. 0.1.59 may deepen Mini Game types and pacing, but must not change this eligibility rule.
 
 ## 0.1.56 — Give branches gameplay identity
 
@@ -72,9 +83,12 @@ Working direction:
 
 - HOST-authoritative holding state;
 - locked release-face rules;
-- fresh movement roll after successful release;
+- release die only checks escape/recovery;
+- successful release opens a fresh movement roll in the same turn;
 - Lottery = `D6 × 20 B$`;
-- TIN TỨC / LÁ BÀI can send valid targets to Jail/Hospital through explicit effects.
+- TIN TỨC / LÁ BÀI can send valid targets to Jail/Hospital through explicit effects;
+- Mini Game participant list excludes Jail/Hospital players;
+- one eligible participant auto-wins rank #1; zero eligible participants skip with no payout.
 
 ## 0.1.58 — Upgrade TIN TỨC / LÁ BÀI interaction
 
@@ -94,9 +108,11 @@ Do not revive old Tiên Tri / Phép Thuật labels.
 ## 0.1.59 — Function-space depth
 
 - Job Hub identity and career consequences;
+- deepen the **5-space Mini Game system** with more game types/variety;
 - Mini Game pacing and payouts;
 - district/branch identity tied to Job, economy, events and party mechanics;
-- keep Mini Game payout host-system owned and one-shot.
+- keep Mini Game payout host-system owned and one-shot;
+- preserve the locked Jail/Hospital eligibility rule.
 
 ## 0.1.60 — Match pacing + economy playtest
 
@@ -107,7 +123,7 @@ Measure with the real integrated board before tuning:
 - Jail/Hospital downtime;
 - branch-choice frequency;
 - TIN TỨC / LÁ BÀI frequency;
-- Mini Game interruption frequency;
+- frequency of the **5 Mini Game spaces** in real play;
 - B$ inflation/deflation;
 - catch-up behavior.
 
