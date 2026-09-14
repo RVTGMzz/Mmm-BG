@@ -11,17 +11,13 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 **MVP 0.1.49 — Legacy Effect Audit**
 
-Status: **ACTIVE / DESIGN + CONTENT AUDIT / NO NEW PLAYABLE ARTIFACT YET**
+Status: **ACTIVE / FIRST INVENTORY BUILT / NO NEW PLAYABLE ARTIFACT YET**
 
-## 0.1.48 runtime gate
+## Runtime checkpoint
 
-**PASS** by Ron's explicit playtest acceptance on **2026-09-14**.
-
-Acceptance record:
-`docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md`
+MVP 0.1.48 is **PASS** by Ron's explicit runtime acceptance on 2026-09-14.
 
 Latest validated playable artifact remains:
-
 - `mememe-playtest-0.1.48`
 - run `#1441` / `34814789556`
 - runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
@@ -29,72 +25,74 @@ Latest validated playable artifact remains:
 - size `8,566,826 bytes`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-0.1.49 does not become the validated playable checkpoint until it gets its own package and explicit validation.
+0.1.49 is not yet a validated playable checkpoint.
 
 ## Read first
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
-3. `docs/MAP_ARCHITECTURE_FINAL.md`
-4. `docs/UI_FINAL_PLAYER_HUD.md`
-5. `docs/GAME_DESIGN_CURRENT.md`
-6. `docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md`
-7. `docs/MVP_0.1.48_PROGRESS.md`
-8. `docs/PLAYTEST_0.1.48.md`
+3. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
+4. `docs/MAP_ARCHITECTURE_FINAL.md`
+5. `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
+6. `docs/UI_FINAL_PLAYER_HUD.md`
+7. `docs/GAME_DESIGN_CURRENT.md`
+8. `docs/LEGACY_RULES_REFERENCE.md`
+9. `docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md`
 
-## Active Track A — 0.1.49 Legacy Effect Audit
+## Track A — 0.1.49 Legacy Effect Audit
 
-Audit legacy Tiên Tri / Phép Thuật effects as inspiration only.
+First-pass effect-family inventory is built in:
+`docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-Locked current names:
+The inventory only uses legacy concepts actually retained in the repo. No missing old card text was invented.
 
+Current names remain locked:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-For each legacy effect, classify and record:
+Current first-pass direction:
+- authoritative movement effects → adapt to LÁ BÀI;
+- held cards → keep as LÁ BÀI delivery model;
+- before-roll/special timing → data-driven timing metadata;
+- timed global effects → TIN TỨC candidate once timed-status authority exists;
+- Jail/Hospital release, skip-turn, off-turn reaction and board-node status placement → defer;
+- pet/shop mechanics → outside this milestone;
+- odd/even route selection → map track.
 
-- gameplay idea;
-- destination system;
-- target scope;
-- current wording;
-- impact/rarity recommendation;
-- dependencies;
-- multiplayer authority notes;
-- replay/determinism notes;
-- keep/adapt/reject/defer decision.
+## Track B — final map architecture
 
-Do not silently restore old naming or old assets.
+Draft A is now concrete.
 
-## Active Track B — Final map architecture
-
-Canonical tracker:
+Canonical spec:
 `docs/MAP_ARCHITECTURE_FINAL.md`
 
-Continue in parallel toward a detailed **44–48-space** final architecture:
+Canonical data draft:
+`docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
 
-- exact node count;
-- numbered main loop;
-- Hospital/Jail side branches;
-- branch entry/rejoin topology;
-- districts;
-- landmark anchors;
-- special-node distribution;
-- close-follow camera-safe spacing;
-- final adjacency graph.
+Draft A selects:
+- **48 total playable nodes**;
+- **40-node main loop**;
+- **4 Hospital nodes**;
+- **4 Jail nodes**;
+- five working districts;
+- canonical lap crossing `M40 -> M01`.
 
-Hospital/Jail are approved location concepts, but deep mechanics remain undefined.
+Hospital topology:
+`M12 -> H1 -> H2 -> H3 -> H4 -> M13`
 
-Do not invent skip-turn, bail, escape-roll, escape-card, or Hospital punishment/recovery rules.
+Jail topology:
+`M28 -> J1 -> J2 -> J3 -> J4 -> M29`
+
+The normal main edges remain until entry semantics are designed, so branch paths are topology-only. Do not infer optional/mandatory entry or any punishment/escape/recovery rules.
 
 ## Final HUD / camera locks
 
 - P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
 - Each occupied HUD shows at least avatar, player name and B$.
 - Active player is clearly highlighted.
-- Normal gameplay camera zooms/follows the active player.
-- Full-map is an explicit overview, not the permanent play view.
-- Canonical contract: `docs/UI_FINAL_PLAYER_HUD.md`.
-- Temporary reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
+- Normal gameplay camera zooms/follows active player.
+- Full-map is an explicit overview, not permanent play view.
+- Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
 
 ## Retained gameplay invariants
 
@@ -112,14 +110,14 @@ Do not invent skip-turn, bail, escape-roll, escape-card, or Hospital punishment/
 - Original face files remain local.
 - CPU remains a QA bot.
 
-## New-chat priority
+## Next priority
 
-1. Continue `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md` into a structured inventory of old effects.
-2. In parallel, continue `docs/MAP_ARCHITECTURE_FINAL.md` toward the exact 44–48-space numbered graph.
-3. Keep current names `TIN TỨC / LÁ BÀI`.
-4. Do not invent Jail/Hospital deep mechanics.
+1. Ron reviews/approves the KEEP/ADAPT families in the 0.1.49 inventory.
+2. Ron reviews/approves Draft A target of **48 nodes = 40 + 4 + 4**.
+3. If approved, continue map work into spatial layout and landmark framing without changing stable node IDs.
+4. Keep Hospital/Jail deep rules undefined until explicitly designed.
 5. Do not merge PR #1.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. 0.1.48 đã PASS runtime theo xác nhận của Ron ngày 2026-09-14; acceptance record ở docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md. Latest validated playable artifact vẫn là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Current milestone là 0.1.49 Legacy Effect Audit, giữ tên TIN TỨC / LÁ BÀI. Song song tiếp tục MAP_ARCHITECTURE_FINAL 44–48 ô, Hospital/Jail side branches, districts, landmarks, adjacency graph. Final camera close-follow và 4 HUD cố định ở 4 góc. Không tự invent Jail/Hospital mechanics. Không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. 0.1.48 đã PASS runtime; latest validated playable artifact vẫn là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Current milestone 0.1.49 đã có first effect inventory ở docs/LEGACY_EFFECT_INVENTORY_0.1.49.md. Map Draft A đã chọn 48 playable nodes = 40 main + 4 Hospital + 4 Jail; spec ở docs/MAP_ARCHITECTURE_FINAL.md và data draft ở docs/MAP_ARCHITECTURE_48_DRAFT_A.json. Giữ TIN TỨC / LÁ BÀI, Hospital/Jail topology-only, camera close-follow, 4 HUD cố định 4 góc. Không merge PR #1.`
