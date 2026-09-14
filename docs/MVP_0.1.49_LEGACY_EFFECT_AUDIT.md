@@ -6,22 +6,21 @@ Branch: `mememe-mvp-0.1-core`
 
 ## Entry gate
 
-MVP 0.1.48 is considered **runtime PASS by Ron's explicit playtest acceptance on 2026-09-14**.
+MVP 0.1.48 is runtime PASS by Ron's explicit playtest acceptance on 2026-09-14.
 
-The latest validated playable artifact remains:
-
-- Artifact: `mememe-playtest-0.1.48`
-- Run: `#1441` / `34814789556`
-- Runtime/package SHA: `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
-- SHA256: `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
+Latest validated playable artifact remains:
+- `mememe-playtest-0.1.48`
+- run `#1441` / `34814789556`
+- runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
+- SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
 0.1.49 does not become the validated playable checkpoint until it receives its own packaged artifact and explicit validation.
 
 ## Goal
 
-Audit useful effect ideas from the legacy Tiên Tri / Phép Thuật systems and translate only the sound concepts into the current MeMeMe systems.
+Audit useful effect ideas from legacy Tiên Tri / Phép Thuật and translate only sound concepts into current MeMeMe systems.
 
-Current names are locked:
+Current names stay locked:
 - **TIN TỨC**
 - **LÁ BÀI**
 
@@ -32,87 +31,74 @@ Legacy names are reference terminology only.
 Canonical first-pass inventory:
 `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-The retained repo does not contain a card-by-card transcription of the old screenshots, so the first pass is deliberately an **effect-family audit** based only on evidence preserved in `docs/LEGACY_RULES_REFERENCE.md`.
+The retained repo does not contain a card-by-card transcription of the old screenshots, so the first pass is an effect-family audit based only on evidence preserved in `docs/LEGACY_RULES_REFERENCE.md` plus Ron's newly confirmed current rules.
 
-Current audit families include:
-- player relocation;
-- held-until-use cards;
-- timed global news/status effects;
-- before-roll timing metadata;
-- future reaction/passive timing;
-- board-node status placement;
-- Jail/Hospital release references;
-- legacy pet/shop mechanics classified outside this milestone;
-- legacy odd/even branch routing moved to the map-design track.
-
-No missing old card text was invented.
-
-## First-pass decisions
+## Current effect directions
 
 ### Carry forward / adapt
 - authoritative movement effects → **LÁ BÀI**;
 - held-card delivery model → **LÁ BÀI**;
 - explicit timing metadata such as `before_roll` → **LÁ BÀI**;
-- timed global board events → **TIN TỨC**, once an authoritative duration/status layer exists.
+- timed global board events → **TIN TỨC**, once an authoritative duration/status layer exists;
+- approved effects may send a target directly to singleton `JAIL` or `HOSPITAL`.
+
+### Current Jail / Hospital dependency is now partially defined
+The locations are no longer undefined multi-space branches.
+
+Current map authority is Draft B:
+- 44 main-loop spaces;
+- `M12` JAIL_GATE -> `JAIL`;
+- `M34` HOSPITAL_GATE -> `HOSPITAL`;
+- TIN TỨC / LÁ BÀI / approved effects may also send players there.
+
+Approved release rolls:
+- `JAIL`: D6 `1 / 3 / 5` releases; failure retries next turn.
+- `HOSPITAL`: D6 exactly `2 / 4 / 5` releases; failure retries next turn.
+
+Still undefined:
+- whether the successful release roll also acts as normal movement that turn;
+- alternate release cards/effects;
+- bail / Hospital fees / recovery behavior unless separately approved.
+
+Therefore ordinary Jail/Hospital relocation effects can now be designed against stable destination IDs, while release-card effects should remain deferred until alternate-release semantics are explicitly chosen.
 
 ### Defer
-- Jail-release effects;
-- Hospital-release effects;
-- skip-turn effects;
 - off-turn reaction/passive cards;
-- board-node status placement.
-
-These remain blocked until their dependent systems are explicitly designed.
+- board-node status placement;
+- alternate Jail/Hospital release cards/effects;
+- any effect whose timing requires the still-TBD post-release movement rule.
 
 ### Outside 0.1.49
 - pet board entities;
 - magic-shop draw/trade flow;
-- odd/even route selection.
+- legacy odd/even route selection unless reintroduced in a later map milestone.
 
-They are retained as historical design references for later system/map milestones.
+## Draft B map relationship
 
-## Audit method for future concrete cards
+Canonical map tracker:
+`docs/MAP_ARCHITECTURE_FINAL.md`
 
-For every real legacy card/reference effect later supplied:
+Canonical Draft B sources:
+- `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
 
-1. Identify the core gameplay idea, not old wording/art.
-2. Classify it as suitable for `TIN TỨC`, `LÁ BÀI`, both, outside scope, or defer.
-3. Identify target scope.
-4. Identify host-authority requirements.
-5. Identify deterministic/replay requirements.
-6. Estimate impact level and possible rarity band (`N / R / SR / SSR`) without equating rarity 1:1 with damage.
-7. Rewrite in current MeMeMe vocabulary.
-8. Flag undefined dependencies instead of inventing rules.
+The old Draft A `H1..H4 / J1..J4` topology is superseded and must not be used by effects.
+
+Effects target stable singleton IDs:
+- `HOSPITAL`
+- `JAIL`
+
+HOST owns target validation, relocation, release RNG and any resulting authoritative state mutation.
 
 ## Hard constraints
 
 - Keep **TIN TỨC / LÁ BÀI** names.
 - Do not add old screenshots as runtime assets merely because they are being audited.
-- Do not invent Jail mechanics such as skipped turns, bail, escape roll or escape card.
-- Do not invent Hospital punishment/recovery mechanics.
-- Do not alter host authority, replay determinism, RNG ownership or checksum behavior without a separate explicit implementation decision.
+- Do not restore H1..H4/J1..J4.
+- Do not reinterpret Hospital success faces `2 / 4 / 5` as an even-number rule.
+- Do not invent post-release movement, bail, fees, healing, or release-card semantics.
+- Do not alter host authority, replay determinism, RNG ownership or checksum behavior without a separate implementation decision.
 - Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
-
-## Parallel map track — Draft A built
-
-Canonical tracker:
-`docs/MAP_ARCHITECTURE_FINAL.md`
-
-Canonical data draft:
-`docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
-
-Draft A currently selects:
-- **48 total playable nodes**;
-- **40-node main loop**;
-- **4-node Hospital detour**;
-- **4-node Jail detour**;
-- five working districts;
-- close-follow camera-safe architecture;
-- READY-compatible canonical lap edge.
-
-Hospital/Jail branch topology is documented, but entry rules and deep mechanics remain `TBD`.
-
-This map work remains documentation/design only and must not be silently copied into runtime until its own implementation milestone is approved.
 
 ## HUD / camera locks retained
 
@@ -120,13 +106,9 @@ This map work remains documentation/design only and must not be silently copied 
 - Occupied HUD shows at least avatar, player name and B$.
 - Active player receives clear visual emphasis.
 - Normal board camera follows/zooms to active player.
+- Camera may frame singleton Jail/Hospital when an effect sends a player there.
 - Full-map view is an explicit overview, not permanent normal gameplay.
-
-Canonical UI contract:
-`docs/UI_FINAL_PLAYER_HUD.md`.
 
 ## Next 0.1.49 decision gate
 
-Before any runtime implementation, Ron should review the inventory direction and decide which **ADAPT/KEEP** families are actually wanted for the first concrete MeMeMe content pass.
-
-If concrete old card screenshots/text are supplied later, extend the inventory with one row/entry per real card instead of guessing missing effects.
+Continue from the effect inventory, now using stable Draft B special-location IDs. Before runtime implementation, freeze the first concrete KEEP/ADAPT content set and specify any effects that interact with post-release timing.
