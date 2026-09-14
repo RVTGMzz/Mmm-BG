@@ -1,6 +1,6 @@
 # MVP 0.1.49 — Legacy Effect Audit
 
-Status: **ACTIVE / DESIGN + CONTENT AUDIT / NO NEW PLAYABLE ARTIFACT YET**
+Status: **ACTIVE / FIRST INVENTORY BUILT / NO NEW PLAYABLE ARTIFACT YET**
 
 Branch: `mememe-mvp-0.1-core`
 
@@ -19,75 +19,114 @@ The latest validated playable artifact remains:
 
 ## Goal
 
-Audit the useful effects from the legacy Tiên Tri / Phép Thuật card set and translate the good ideas into the current MeMeMe systems.
+Audit useful effect ideas from the legacy Tiên Tri / Phép Thuật systems and translate only the sound concepts into the current MeMeMe systems.
 
-Current system names are locked:
-
+Current names are locked:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-The legacy names are reference terminology only and must not replace the current names.
+Legacy names are reference terminology only.
 
-## Audit method
+## First deliverable — BUILT
 
-For every legacy effect/reference card:
+Canonical first-pass inventory:
+`docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-1. Identify the core gameplay idea, not the old visual wording.
-2. Classify it as suitable for `TIN TỨC`, `LÁ BÀI`, both, or reject.
-3. Identify target scope: self / one player / all players / board / economy / movement / hand / status.
-4. Identify authority requirements for multiplayer.
+The retained repo does not contain a card-by-card transcription of the old screenshots, so the first pass is deliberately an **effect-family audit** based only on evidence preserved in `docs/LEGACY_RULES_REFERENCE.md`.
+
+Current audit families include:
+- player relocation;
+- held-until-use cards;
+- timed global news/status effects;
+- before-roll timing metadata;
+- future reaction/passive timing;
+- board-node status placement;
+- Jail/Hospital release references;
+- legacy pet/shop mechanics classified outside this milestone;
+- legacy odd/even branch routing moved to the map-design track.
+
+No missing old card text was invented.
+
+## First-pass decisions
+
+### Carry forward / adapt
+- authoritative movement effects → **LÁ BÀI**;
+- held-card delivery model → **LÁ BÀI**;
+- explicit timing metadata such as `before_roll` → **LÁ BÀI**;
+- timed global board events → **TIN TỨC**, once an authoritative duration/status layer exists.
+
+### Defer
+- Jail-release effects;
+- Hospital-release effects;
+- skip-turn effects;
+- off-turn reaction/passive cards;
+- board-node status placement.
+
+These remain blocked until their dependent systems are explicitly designed.
+
+### Outside 0.1.49
+- pet board entities;
+- magic-shop draw/trade flow;
+- odd/even route selection.
+
+They are retained as historical design references for later system/map milestones.
+
+## Audit method for future concrete cards
+
+For every real legacy card/reference effect later supplied:
+
+1. Identify the core gameplay idea, not old wording/art.
+2. Classify it as suitable for `TIN TỨC`, `LÁ BÀI`, both, outside scope, or defer.
+3. Identify target scope.
+4. Identify host-authority requirements.
 5. Identify deterministic/replay requirements.
-6. Estimate impact level and suitable rarity band (`N / R / SR / SSR`) without equating rarity 1:1 with damage.
-7. Rewrite the effect in current MeMeMe vocabulary.
-8. Flag anything that depends on an undefined system instead of silently inventing rules.
+6. Estimate impact level and possible rarity band (`N / R / SR / SSR`) without equating rarity 1:1 with damage.
+7. Rewrite in current MeMeMe vocabulary.
+8. Flag undefined dependencies instead of inventing rules.
 
 ## Hard constraints
 
 - Keep **TIN TỨC / LÁ BÀI** names.
 - Do not add old screenshots as runtime assets merely because they are being audited.
-- Do not invent Jail mechanics such as skip-turn, bail, escape roll or escape card.
-- Do not invent Hospital punishment/recovery mechanics yet.
+- Do not invent Jail mechanics such as skipped turns, bail, escape roll or escape card.
+- Do not invent Hospital punishment/recovery mechanics.
 - Do not alter host authority, replay determinism, RNG ownership or checksum behavior without a separate explicit implementation decision.
 - Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Parallel design track
+## Parallel map track — Draft A built
 
-`docs/MAP_ARCHITECTURE_FINAL.md` remains active in parallel.
+Canonical tracker:
+`docs/MAP_ARCHITECTURE_FINAL.md`
 
-The final-map track must continue toward a detailed `44–48`-space architecture with:
+Canonical data draft:
+`docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
 
-- exact playable node count;
-- numbered main loop;
-- Hospital/Jail side branches;
-- branch entry and rejoin topology;
-- districts and landmarks;
-- special-node distribution;
-- close-follow camera-safe spacing;
-- final adjacency graph.
+Draft A currently selects:
+- **48 total playable nodes**;
+- **40-node main loop**;
+- **4-node Hospital detour**;
+- **4-node Jail detour**;
+- five working districts;
+- close-follow camera-safe architecture;
+- READY-compatible canonical lap edge.
 
-This design work may proceed during 0.1.49 because it is documentation/design work. Do not silently mix it into runtime until its own implementation milestone is approved.
+Hospital/Jail branch topology is documented, but entry rules and deep mechanics remain `TBD`.
+
+This map work remains documentation/design only and must not be silently copied into runtime until its own implementation milestone is approved.
 
 ## HUD / camera locks retained
 
-- Four persistent HUDs: P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
-- Each occupied HUD shows at minimum avatar, player name and B$.
+- P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
+- Occupied HUD shows at least avatar, player name and B$.
 - Active player receives clear visual emphasis.
-- Normal board camera follows/zooms to the active player.
-- Full-map view is an explicit overview, not the permanent normal gameplay view.
+- Normal board camera follows/zooms to active player.
+- Full-map view is an explicit overview, not permanent normal gameplay.
 
-Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
+Canonical UI contract:
+`docs/UI_FINAL_PLAYER_HUD.md`.
 
-## First deliverable
+## Next 0.1.49 decision gate
 
-Produce a structured legacy-effect inventory before implementing effects in runtime. Each candidate should record:
+Before any runtime implementation, Ron should review the inventory direction and decide which **ADAPT/KEEP** families are actually wanted for the first concrete MeMeMe content pass.
 
-- legacy reference/effect summary;
-- proposed current system (`TIN TỨC` or `LÁ BÀI`);
-- target scope;
-- current-language rewrite;
-- impact/rarity recommendation;
-- dependencies;
-- multiplayer/replay notes;
-- decision: keep / adapt / reject / defer.
-
-Only after that audit is approved should implementation scope be frozen.
+If concrete old card screenshots/text are supplied later, extend the inventory with one row/entry per real card instead of guessing missing effects.
