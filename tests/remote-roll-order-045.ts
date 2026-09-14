@@ -111,7 +111,7 @@ assert(protocolSource.includes('const value = this.nextD6();'), 'host must gener
 assert(sceneSource.includes('session.beginPrompt(id, depth, depth > 1)'), 'host scene must prompt each seat through the authority session');
 assert(sceneSource.includes('result = await handle.result!'), 'remote seat result must wait for the host-resolved promise');
 assert(sceneSource.includes('this.clientOrderSession.submitRoll(promptId)'), 'client button must submit a roll request rather than resolve localD6');
-assert(sceneSource.includes('session.announceTie(tied, value)'), 'tie rerolls must be broadcast by host authority');
+assert(sceneSource.includes('hostSession?.announceTie(tied, value)'), 'tie rerolls must be broadcast by host authority');
 assert(lobbySource.includes("this.scene.start('TurnOrderScene')"), 'JOIN flow must enter Remote Roll For Order before DemoBoardScene');
 assert(lobbySource.includes('MVP 0.1.45') && setupSource.includes('MVP 0.1.45'), 'entry surfaces must identify 0.1.45');
 assert(mainSource.includes('CareerMinigameBoardScene045'), 'packaged runtime must use the 0.1.45 build wrapper');
