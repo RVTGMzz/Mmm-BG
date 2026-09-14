@@ -5,106 +5,78 @@ PR: #1 (Draft/Open)
 
 Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Current milestone
-
-**MVP 0.1.49 — Legacy Effect Audit**
+## Runtime checkpoint
 
 0.1.48 is runtime **PASS** by Ron's explicit acceptance on 2026-09-14.
 
-Latest validated playable artifact remains:
+Latest validated playable artifact:
 - `mememe-playtest-0.1.48`
 - run `#1441` / `34814789556`
 - runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-0.1.49 has no validated playable package yet.
+## Current milestone
 
-## Track A — 0.1.49
+**MVP 0.1.49 — Legacy Effect Audit** remains active.
 
-Current names stay locked:
+Current names:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-First evidenced effect inventory:
-`docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
+## Map source-of-truth changed to Draft B
 
-Do not invent missing legacy card text or silently restore old system names.
+Ron corrected the final-map interpretation: the reference has **one Hospital** and **one Jail** outside the main route, not four internal spaces for each.
 
-## Track B — final map design
+Current files:
+1. `HANDOFF_CURRENT.md`
+2. `docs/MAP_ARCHITECTURE_FINAL.md`
+3. `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
+4. `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
+5. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
+6. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
+7. `docs/UI_FINAL_PLAYER_HUD.md`
 
-Working Draft A: **48 playable nodes = 40 main + 4 Hospital + 4 Jail**.
+Working Draft B:
+- **44 spaces on the main loop** `M01..M44`;
+- `HOSPITAL` = one singleton off-board location;
+- `JAIL` = one singleton off-board location;
+- lap crossing = `M44 -> M01`.
 
-Current map documents, in order:
-1. `docs/MAP_ARCHITECTURE_FINAL.md`
-2. `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
-3. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
-4. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.json`
-5. `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
-6. `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`
-7. `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
-8. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.md`
-9. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.json`
+Hospital/Jail do not consume ordinary dice movement. A player is sent there by authoritative TIN TỨC, LÁ BÀI, or another approved effect.
 
-### A1 complete
-Irregular city-loop layout, 48 design-space coordinates, district/landmark anchors, close-follow camera framing and HUD-safe composition.
+Old Draft A assumptions are superseded:
+- no `H1..H4`;
+- no `J1..J4`;
+- no Hospital/Jail detour chain.
 
-### A2 complete
-V0–V3 node hierarchy, main/branch route hierarchy, district art priorities, landmark tiers, token readability and overview visual language.
+Draft A through A5 may remain as historical design notes, but they are not authority where they conflict with Draft B.
 
-### A3 complete
-Route sign language, district transitions, standard camera shot list, explicit overview behavior and four-player overview markers.
+## Still TBD
 
-### A4 approved
-Approved affected nodes:
-- `M18` = Mini Game
-- `M21` = Money -
-- `M31` = Normal
-- `M38` = Mini Game
-- `M40` = TIN TỨC
+Do not invent:
+- Hospital/Jail stay duration;
+- skipped turns;
+- Hospital fee/recovery;
+- Jail bail;
+- escape roll/card;
+- release conditions.
 
-Mini Game spacing is exactly **20 / 20**.
+## HUD / camera retained
 
-TIN TỨC positions are `M06, M14, M19, M25, M33, M40`, with clockwise gaps `8, 5, 6, 8, 7, 6`.
+- P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right;
+- avatar + name + B$ minimum;
+- active HUD emphasized;
+- HUD stays fixed in screen space;
+- camera close-follows active token;
+- special-location effect can pan camera to Hospital/Jail;
+- full map is explicit overview only.
 
-Category totals remain unchanged. Architecture JSON and A1/A2/A3 are synchronized to the approved assignment.
+## Next priority
 
-### A5 complete
-District/landmark blueprint is now recorded in both prose and data form.
-
-Working identities:
-- D1: READY Plaza / city center
-- D2: Job Hub Tower + Hospital area
-- D3: Entertainment Dome / Mini Game M18
-- D4: Civic/Jail Complex + Civic Square
-- D5: Night Market Skyline / Mini Game M38 / READY return cue
-
-A5 also defines landmark tiers, district transitions, HUD-safe composition and concept-art handoff targets.
-
-40 main spaces still estimate to about **11.9 D6 rolls/player** per lap. Keep this for the first final-map runtime test.
-
-Compact fallback if future runtime playtest says 40 main nodes is too long:
-- **44 total = 36 main + 4 Hospital + 4 Jail**.
-
-The fallback is not active.
-
-## Final HUD / camera locks
-
-- P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
-- Each occupied HUD shows at least avatar, player name and B$.
-- Active player is highlighted.
-- Normal gameplay camera follows/zooms to active token.
-- Full-map is explicit overview only.
-- `docs/UI_FINAL_PLAYER_HUD.md` is the UI contract.
-
-## Runtime boundary
-
-Map Draft A through A5 are design-only. Current validated runtime remains 0.1.48.
-
-Do not import the final-map graph/coordinates/pacing/landmark blueprint into runtime until its own implementation milestone is explicitly opened and validated.
-
-## Next direction
-
-Continue 0.1.49 audit in parallel. The next map pass may be **A6 art/mockup production brief** based on A5, or the design lane may pause for visual review.
-
-Keep Hospital/Jail deeper gameplay rules TBD until explicitly approved.
+1. Rebuild 44-main-space content pacing from Draft B.
+2. Rebalance Mini Game positions for 44 spaces.
+3. Rebuild spatial/landmark plan with singleton Hospital/Jail.
+4. Continue 0.1.49 legacy-effect audit in parallel.
+5. Keep TIN TỨC / LÁ BÀI.
+6. Do not merge PR #1.
