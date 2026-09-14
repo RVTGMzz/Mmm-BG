@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.44', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.45', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, '1 vòng/người • Final Podium • Reveal Cascade • Safe Result Unlock.', {
+    this.add.text(228, 109, '1 vòng/người • Remote Roll For Order • Host-authoritative D6 • Safe Final Podium.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -71,7 +71,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card host-card">
           <div class="lobby-icon">📡</div>
           <h2>HOST 2 TAB</h2>
-          <p>Tab này làm host, setup 4 người và quyết định lúc bắt đầu/rematch.</p>
+          <p>Host setup tên/mặt. Sang Roll For Order, ghế remote sẽ tự bấm D6 trên tab của họ.</p>
           <label>ROOM CODE
             <input id="host-room" maxlength="8" value="${initialRoom}" />
           </label>
@@ -81,7 +81,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card join-card">
           <div class="lobby-icon">🛰️</div>
           <h2>JOIN 2 TAB</h2>
-          <p>Client bỏ qua face setup, chọn P2/P3/P4 rồi chờ host bấm bắt đầu.</p>
+          <p>Chọn P2/P3/P4. Client vào thẳng Remote Roll For Order và chờ host đồng bộ tên.</p>
           <label>ROOM CODE
             <input id="join-room" maxlength="8" placeholder="VD: ME12AB" />
           </label>
@@ -92,14 +92,14 @@ export class LocalLobbyScene extends Phaser.Scene {
               <option value="3">P4</option>
             </select>
           </label>
-          <button id="lobby-join" type="button" ${broadcastReady ? '' : 'disabled'}>JOIN DEMO</button>
+          <button id="lobby-join" type="button" ${broadcastReady ? '' : 'disabled'}>JOIN + REMOTE ROLL</button>
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🔒 0.1.44: nút CHƠI LẠI / VỀ LOBBY chỉ nhận click sau khi beat reveal 🥇 cuối cùng hoàn tất.
+        🎲 0.1.45: client chỉ gửi thao tác bấm roll; HOST mới sinh D6, xử lý tie-reroll và broadcast cùng kết quả cho mọi tab.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Safe Final Podium + 2-tab local sẵn sàng.'
+        ? '✅ Remote Roll For Order + Job Dice + Mini Games + Event Audio + Safe Final Podium + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
@@ -130,7 +130,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       const input = node.querySelector<HTMLInputElement>('#host-room');
       const room = normalizeRoomCode(input?.value ?? '') || generateRoomCode();
       browserSession.configureHost(room);
-      setStatus(`Host phòng ${room}. Client có thể mở tab khác và JOIN room này.`);
+      setStatus(`Host phòng ${room}. Mở tab client, JOIN room này rồi host vào Roll For Order.`);
       this.scene.start('SetupScene');
     });
 
@@ -152,7 +152,7 @@ export class LocalLobbyScene extends Phaser.Scene {
 
       try {
         browserSession.configureClient(room, seatId);
-        this.scene.start('DemoBoardScene');
+        this.scene.start('TurnOrderScene');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : String(error), true);
       }
