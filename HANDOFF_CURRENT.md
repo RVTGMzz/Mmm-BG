@@ -9,7 +9,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 **MVP 0.1.48 - Bugfix Pass**
 
-Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN / NEW-CHAT READY**
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
@@ -34,6 +34,8 @@ Digest:
 
 Run URL:
 `https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34814789556`
+
+Important: later handoff/documentation commits may advance branch HEAD. The runtime/package checkpoint above remains the validated rollback point until a newer artifact is explicitly validated.
 
 ## Read in this order
 
@@ -107,16 +109,19 @@ Therefore active 0.1.48 bypasses the 0.1.47 visual rename wrapper:
 - CPU remains a QA bot.
 - Jail deep mechanics remain intentionally undefined.
 
-## Runtime test focus
+## Next-chat priority
 
-1. Play at least two turns for the same player and verify no token snap-back after movement settles.
-2. Land on a money tile and confirm there is no early coin cue and only one cue on landing.
-3. Check several Roll For Order values/tie rerolls and confirm the settled glyph matches the authoritative number.
-4. Stay on the board across the old round-2 boundary and confirm `03_City_Silly.ogg` does not start.
-5. Enter a real Mini Game and confirm `03_City_Silly.ogg` starts there and restores afterward.
-6. Confirm board labels still say TIN TỨC / LÁ BÀI.
-7. Re-check Remote Roll, Job Hub, final Mini Game payout, podium and multiplayer presentation parity.
+1. Runtime-test 0.1.48 with the same player taking at least two turns. The main question is whether the old token sequence `arrive -> snap back -> next turn continues from authoritative destination` is gone.
+2. Re-check money landing audio for exactly one correctly timed cue.
+3. Re-check Roll For Order settled face against the authoritative number, including tie rerolls.
+4. Confirm `03_City_Silly.ogg` never starts from normal board progression and only starts in an actual Mini Game.
+5. Confirm visible board/system labels remain TIN TỨC / LÁ BÀI.
+6. Re-check Remote Roll, Job Hub, final Mini Game payout, podium and multiplayer presentation parity.
+
+If token snap-back still reproduces, use the in-game bug report and trace the exact event/state/presentation sequence. Do not add another blind hard-snap workaround.
+
+If 0.1.48 is clean in runtime, recommended next milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật cards as effect inspiration for the current TIN TỨC / LÁ BÀI systems. Keep the current names. Do not invent jail/skip-turn/bail/escape rules.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md và docs/PLAYTEST_0.1.48.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md và docs/PLAYTEST_0.1.48.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Ưu tiên runtime feedback của 0.1.48, đặc biệt bug token snap-back sau nhiều lượt. Nếu 0.1.48 ổn thì chuẩn bị 0.1.49 Legacy Effect Audit từ bộ bài cũ, nhưng giữ tên hiện tại TIN TỨC / LÁ BÀI. Không merge PR #1.`
