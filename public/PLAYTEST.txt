@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.47 — MULTIPLAYER PRESENTATION PARITY
+MeMeMe MVP 0.1.48 — BUGFIX PASS
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -11,41 +11,47 @@ QUAN TRỌNG
 - Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì game có thể chỉ hiện màn hình trắng vì browser chặn ES module/local asset khi chạy bằng file://.
 - START_PLAYTEST.bat dùng local server và KHÔNG cần cài Node/Python.
 
-0.1.47 FOCUS
-- TIÊN TRI thay cho cách gọi Tin Tức và dùng form lá dọc.
-- PHÉP THUẬT thay cho cách gọi Lá Bài / Thẻ Bài và dùng form lá ngang.
-- Tên kỹ thuật news/card_* vẫn giữ nguyên bên trong để bảo toàn replay + authority.
-- HOST và CLIENT phải sinh cùng presentation từ cùng authoritative event stream.
-- Snapshot resync không được phát lại presentation cũ.
-- State packet bình thường chỉ enqueue event mới hơn presentation cursor hiện tại.
+0.1.48 FOCUS
+- Ô TIN TỨC và LÁ BÀI giữ nguyên tên cũ.
+- Bộ Tiên Tri / Phép Thuật được cung cấp chỉ là reference content để audit/gợi ý effect, không đổi tên hệ thống hiện tại.
+- Money SFX: ô tiền chỉ phát cue khi presentation đáp ô, không phát sớm rồi lặp lần hai.
+- Roll For Order: frame cuối dùng đúng mặt ⚀–⚅ theo kết quả authoritative, không dùng emoji 🎲 cố định.
+- 03_City_Silly.ogg chỉ được dùng trong Mini Game thật; board round không được tự bật track này.
+- Token movement có stale-event guard: move_step tới trễ/duplicate không được kéo token từ vị trí mới quay về vị trí cũ.
 
-TEST 2 TAB
-1) Tab A HOST, Tab B JOIN cùng room.
-2) Hoàn tất Remote Roll For Order rồi vào trận.
-3) Khi xuất hiện Tiên Tri, cả hai tab phải thấy cùng nội dung/actor/event.
-4) Khi rút hoặc dùng Phép Thuật, cả hai tab phải thấy cùng lá/mục tiêu/effect.
-5) Tab spectator vẫn phải xem cùng presentation.
-6) Client không được tự tạo outcome khác HOST.
+TOKEN SNAP-BACK TEST
+1) Chơi ít nhất 2 vòng lượt của cùng một người chơi.
+2) Mỗi lần đổ D6, quan sát token đi từng node tới vị trí cuối.
+3) Sau khi dừng, token KHÔNG được nhảy ngược về node trước khi đổ.
+4) Lượt kế tiếp phải bắt đầu đúng từ nơi token đang đứng.
+5) Lặp lại với P1 và một CPU/remote seat nếu có thể.
 
-PHÉP THUẬT
-- Hand picker hiện các lá theo khung ngang.
-- Kích hoạt/rút bài vẫn dùng authority và event card_* cũ.
-- Không đổi effect, target rule hay gameplay RNG.
+MONEY SFX TEST
+1) Đi vào một ô thưởng/phạt tiền.
+2) Trước khi token đáp ô không được nghe coin cue spoil kết quả.
+3) Khi presentation ô tiền xuất hiện chỉ nghe coin gain/loss một lần.
+4) Mini Game payout vẫn được phép có money cue riêng vì không có tile landing presentation sở hữu cue đó.
 
-TIÊN TRI
-- Presentation News cũ được reshape thành lá dọc.
-- Không đổi effect hoặc event news bên trong.
+DICE TEST
+- Roll For Order phải kết thúc ở đúng glyph mặt xúc xắc: ⚀ ⚁ ⚂ ⚃ ⚄ ⚅.
+- Con số bên cạnh phải trùng mặt và trùng kết quả HOST authoritative.
+- Tie reroll cũng phải giữ quy tắc này.
+
+MINI GAME BGM TEST
+- Trên board bình thường không được nghe 03_City_Silly.ogg chỉ vì đã sang vòng/lượt sau.
+- Chỉ khi Mini Game overlay thật bắt đầu mới chuyển sang 03_City_Silly.ogg.
+- Khi Mini Game kết thúc phải quay lại track board trước đó.
+
+MULTIPLAYER PARITY RETAINED
+- HOST và CLIENT vẫn sinh cùng presentation từ cùng authoritative event stream.
+- Snapshot resync không phát lại presentation cũ.
+- Remote Roll For Order và Multiplayer Job Hub giữ nguyên authority.
 
 JOB HUB RETAINED
 - Cả hai tab thấy cùng 3 Job.
 - Chỉ tab sở hữu ghế hiện tại được bấm Job Dice.
 - HOST authoritative sinh D6.
 - 1–2 → A, 3–4 → B, 5–6 → C.
-
-REMOTE ROLL RETAINED
-- Remote seat tự bấm trên tab của họ.
-- HOST sinh D6 và xử lý tie-reroll.
-- HOST chốt final playOrder và release vào trận.
 
 MATCH RULES
 - Starting wallet = 200 B$.
@@ -63,8 +69,9 @@ FINAL RESULT
 
 AUDIO / PRIVACY
 - 4 BGM approved và 8 SFX supplied giữ nguyên checksum.
+- 03_City_Silly.ogg vẫn checksum-locked nhưng chỉ dùng cho Mini Game.
 - Ảnh mặt gốc vẫn local.
-- Ảnh reference Tiên Tri / Phép Thuật chỉ dùng làm visual direction trong 0.1.47, chưa được persist thành runtime asset.
+- Ảnh reference bộ bài không được persist thành runtime asset trong milestone này.
 
 KNOWN LIMITS
 - 2-tab hiện là BroadcastChannel local QA.
