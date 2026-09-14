@@ -81,7 +81,6 @@ try {
       $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $root $relative))
 
       if (-not $candidatePath.StartsWith($rootFull, [System.StringComparison]::OrdinalIgnoreCase)) {
-        $body = [System.IO.Path]::GetFullPath($root)
         $body = [System.Text.Encoding]::UTF8.GetBytes('403 Forbidden')
         $header = "HTTP/1.1 403 Forbidden`r`nContent-Type: text/plain; charset=utf-8`r`nContent-Length: $($body.Length)`r`nConnection: close`r`n`r`n"
         $stream.Write([System.Text.Encoding]::ASCII.GetBytes($header), 0, $header.Length)
