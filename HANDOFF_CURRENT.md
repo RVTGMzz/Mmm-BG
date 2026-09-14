@@ -43,14 +43,32 @@ Important: later handoff/documentation commits may advance branch HEAD. The runt
 2. `docs/LATEST_HANDOFF.md`
 3. `docs/MVP_0.1.48_PROGRESS.md`
 4. `docs/PLAYTEST_0.1.48.md`
-5. `src/scenes/CareerMinigameBoardScene048.ts`
-6. `src/ui/movementVisualPolicy.ts`
-7. `tests/bugfix-pass-048.ts`
-8. `src/scenes/TurnOrderScene048.ts`
-9. `src/scenes/TurnStakesBoardScene.ts`
-10. `src/audio/bgmController.ts`
-11. `src/scenes/CareerMinigameBoardScene046.ts`
-12. `tests/multiplayer-presentation-parity-047.ts`
+5. `docs/UI_FINAL_PLAYER_HUD.md`
+6. `docs/GAME_DESIGN_CURRENT.md`
+7. `src/scenes/CareerMinigameBoardScene048.ts`
+8. `src/ui/movementVisualPolicy.ts`
+9. `tests/bugfix-pass-048.ts`
+10. `src/scenes/TurnOrderScene048.ts`
+11. `src/scenes/TurnStakesBoardScene.ts`
+12. `src/audio/bgmController.ts`
+13. `src/scenes/CareerMinigameBoardScene046.ts`
+14. `tests/multiplayer-presentation-parity-047.ts`
+
+## Final-direction design decisions staged after 0.1.48 package
+
+These are documentation/design locks only. They do **not** alter the validated 0.1.48 runtime artifact.
+
+- Final board has **more than 40 playable spaces**; current working band is `44–48`.
+- Normal gameplay camera is close-follow: at turn change it focuses the active player and follows that token while moving.
+- Full-map view is an explicit overview, not the permanent gameplay view.
+- Four player HUDs stay fixed in screen space: P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
+- Each occupied HUD shows at minimum avatar, player name and B$; compact hand/Job/status information may be added.
+- Active player gets clear visual emphasis without changing authoritative state.
+- Hospital and Jail are approved as distinct side-branch/location concepts on the final board.
+- Hospital/Jail deep mechanics remain undefined and must not be invented implicitly.
+- Canonical HUD/camera contract: `docs/UI_FINAL_PLAYER_HUD.md`.
+- Temporary visual reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
+- The concept PNG may be removed later after the real runtime HUD is implemented, validated and documented.
 
 ## 0.1.48 bug fixes
 
@@ -122,6 +140,8 @@ If token snap-back still reproduces, use the in-game bug report and trace the ex
 
 If 0.1.48 is clean in runtime, recommended next milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật cards as effect inspiration for the current TIN TỨC / LÁ BÀI systems. Keep the current names. Do not invent jail/skip-turn/bail/escape rules.
 
+The newly locked final HUD/camera/40+ board direction is a future runtime lane and must not be silently mixed into the already validated 0.1.48 package.
+
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md và docs/PLAYTEST_0.1.48.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Ưu tiên runtime feedback của 0.1.48, đặc biệt bug token snap-back sau nhiều lượt. Nếu 0.1.48 ổn thì chuẩn bị 0.1.49 Legacy Effect Audit từ bộ bài cũ, nhưng giữ tên hiện tại TIN TỨC / LÁ BÀI. Không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md, docs/PLAYTEST_0.1.48.md và docs/UI_FINAL_PLAYER_HUD.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final direction đã khóa: board >40 spaces (working 44–48), close-follow camera, 4 HUD cố định ở 4 góc, Hospital/Jail side branches nhưng deep rules chưa định nghĩa. Ưu tiên runtime feedback của 0.1.48, đặc biệt bug token snap-back sau nhiều lượt. Nếu 0.1.48 ổn thì chuẩn bị 0.1.49 Legacy Effect Audit từ bộ bài cũ, nhưng giữ tên hiện tại TIN TỨC / LÁ BÀI. Không merge PR #1.`
