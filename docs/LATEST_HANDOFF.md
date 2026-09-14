@@ -53,24 +53,28 @@ V0–V3 node hierarchy, main/branch route hierarchy, district art priorities, la
 ### A3 complete
 Route sign language, district transitions, standard camera shot list, explicit overview behavior and four-player overview markers.
 
-### A4 complete
-Pacing audit found:
-- 40 main spaces ≈ **11.9 D6 rolls/player** per lap;
-- overall content density is healthy;
-- news/card/money spread is good;
-- Job Hub M11 is well positioned;
-- Mini Games at M21/M31 are uneven at a 10/30 spacing.
+### A4 approved
+Ron approved the pacing rebalance on 2026-09-14.
 
-Balanced A4 candidate for review:
-- Mini Games at `M18` and `M38`;
-- M21 inherits Money -;
-- M31 inherits TIN TỨC;
-- category totals stay unchanged.
+Approved affected nodes:
+- `M18` = Mini Game
+- `M21` = Money -
+- `M31` = Normal
+- `M38` = Mini Game
+- `M40` = TIN TỨC
 
-No architecture JSON or runtime data has been changed by this proposal.
+Mini Game spacing is exactly **20 / 20**.
 
-Compact fallback if future playtest says 40 main nodes is too long:
+TIN TỨC is now at `M06, M14, M19, M25, M33, M40`, with clockwise gaps `8, 5, 6, 8, 7, 6`.
+
+Category totals remain unchanged. Architecture JSON plus A1/A2/A3 have been synchronized to the approved assignment.
+
+40 main spaces still estimate to about **11.9 D6 rolls/player** per lap. Keep this for the first final-map runtime test.
+
+Compact fallback if future runtime playtest says 40 main nodes is too long:
 - **44 total = 36 main + 4 Hospital + 4 Jail**.
+
+The fallback is not active.
 
 ## Final HUD / camera locks
 
@@ -87,10 +91,8 @@ Map Draft A through A4 are design-only. Current validated runtime remains 0.1.48
 
 Do not import the final-map graph/coordinates into runtime until its own implementation milestone is explicitly opened and validated.
 
-## Next decision
+## Next map pass
 
-Primary map decision now:
-- keep Mini Games at M21/M31; or
-- test the balanced M18/M38 candidate.
+Proceed to **A5 district / landmark blueprint** using the approved M18/M38 Mini Game distribution.
 
 Continue 0.1.49 audit in parallel. Keep Hospital/Jail deeper gameplay rules TBD until explicitly approved.
