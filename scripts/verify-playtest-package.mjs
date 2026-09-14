@@ -32,13 +32,18 @@ const eventSfx = [
 await access('dist/index.html', constants.R_OK);
 await access('dist/PLAYTEST.txt', constants.R_OK);
 await access('dist/START_PLAYTEST.bat', constants.R_OK);
+await access('dist/START_DRAFT_D_PREVIEW.bat', constants.R_OK);
+await access('dist/START_DRAFT_D_FULL_MAP.bat', constants.R_OK);
 await access('dist/serve-playtest.ps1', constants.R_OK);
 
 const html = await readFile('dist/index.html', 'utf8');
 const quickstart = await readFile('dist/PLAYTEST.txt', 'utf8');
 const launcher = await readFile('dist/START_PLAYTEST.bat', 'utf8');
+const previewLauncher = await readFile('dist/START_DRAFT_D_PREVIEW.bat', 'utf8');
 const server = await readFile('dist/serve-playtest.ps1', 'utf8');
 const files = await readdir('dist/assets');
+const rootFiles = await readdir('dist');
+const launchers = rootFiles.filter((file) => /^START_.*\.bat$/i.test(file)).sort();
 
 assert(files.some((file) => file.endsWith('.js')), 'Playtest package has no JS bundle.');
 assert(files.some((file) => file.endsWith('.css')), 'Playtest package has no CSS bundle.');
@@ -48,11 +53,18 @@ assert(
   html.includes('./assets/') || html.includes('assets/'),
   'index.html does not reference relative assets for portable static hosting.',
 );
-assert(quickstart.includes('START_PLAYTEST.bat'), 'Quickstart does not point Windows testers to launcher.');
+assert(quickstart.includes('START_PLAYTEST.bat'), 'Quickstart does not point Windows testers to standard gameplay launcher.');
 assert(quickstart.toLowerCase().includes('file:///'), 'Quickstart does not warn about direct file:// launch.');
-assert(launcher.includes('serve-playtest.ps1'), 'Windows launcher does not call PowerShell server.');
+assert(launcher.includes('serve-playtest.ps1'), 'Windows gameplay launcher does not call PowerShell server.');
+assert(previewLauncher.includes('AUTO BRANCH'), 'Draft D sandbox launcher does not explain AUTO BRANCH mode.');
+assert(server.includes('finalmap=3&seed=5454&branch=auto'), 'Draft D sandbox must default to deterministic AUTO BRANCH.');
 assert(server.includes('TcpListener'), 'PowerShell launcher server is missing TcpListener implementation.');
 assert(server.includes('Start-Process $url'), 'PowerShell launcher does not open browser URL.');
+assert(!rootFiles.includes('START_FINAL_MAP_PREVIEW.bat'), 'Legacy 0.1.50 launcher must not ship in tester package.');
+assert(
+  JSON.stringify(launchers) === JSON.stringify(['START_DRAFT_D_FULL_MAP.bat', 'START_DRAFT_D_PREVIEW.bat', 'START_PLAYTEST.bat']),
+  `Unexpected tester launcher set: ${launchers.join(', ')}`,
+);
 
 for (const [file, expectedSha] of bgmTracks) {
   const path = `dist/audio/bgm/${file}`;
@@ -75,6 +87,6 @@ for (const [file, expectedSha] of eventSfx) {
 }
 
 console.log(
-  `[playtest-package-ci] PASS assets=${files.length} bgm=${bgmTracks.length}/4 bgmChecksums=PASS ` +
-    `sfx=${eventSfx.length}/8 sfxChecksums=PASS quickstart=PLAYTEST.txt launcher=START_PLAYTEST.bat relativePaths=PASS`,
+  `[playtest-package-ci] PASS assets=${files.length} launchers=${launchers.join('|')} bgm=${bgmTracks.length}/4 bgmChecksums=PASS ` +
+    `sfx=${eventSfx.length}/8 sfxChecksums=PASS standard=START_PLAYTEST.bat sandbox=AUTO_BRANCH fullMap=REVIEW relativePaths=PASS`,
 );
