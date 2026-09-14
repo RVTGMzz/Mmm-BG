@@ -1,174 +1,156 @@
-# MeMeMe - HANDOFF CURRENT
+# MeMeMe — HANDOFF CURRENT
 
 Branch: `mememe-mvp-0.1-core`
-PR: #1
+PR: #1 (Draft/Open)
 
-Source of truth: `docs/LATEST_HANDOFF.md`
+Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Current milestone
 
-**MVP 0.1.48 - Bugfix Pass**
+**MVP 0.1.49 — Legacy Effect Audit**
 
-Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN / NEW-CHAT READY**
+Status: **ACTIVE / DESIGN + CONTENT AUDIT / NO NEW PLAYABLE ARTIFACT YET**
 
-Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
+## Runtime gate status
 
-## Validated playable build
+**MVP 0.1.48 is PASS.**
 
-GitHub Actions run: `34814789556` / run `#1441`
+Ron explicitly accepted the 0.1.48 runtime gate on **2026-09-14**.
 
-Validated runtime/package SHA:
-`5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
+Acceptance record:
+`docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md`
 
-Artifact:
-`mememe-playtest-0.1.48`
+The latest validated playable artifact is still 0.1.48 until 0.1.49 gets its own package and validation.
 
-Artifact ID:
-`10336247664`
+### Latest validated playable checkpoint
 
-Artifact size:
-`8,566,826 bytes`
+- Artifact: `mememe-playtest-0.1.48`
+- GitHub Actions run: `#1441` / `34814789556`
+- Runtime/package SHA: `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
+- Artifact ID: `10336247664`
+- Size: `8,566,826 bytes`
+- SHA256: `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-Digest:
-`sha256:d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
-
-Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34814789556`
-
-Important: later handoff/documentation commits may advance branch HEAD. The runtime/package checkpoint above remains the validated rollback point until a newer artifact is explicitly validated.
+Later documentation commits may advance branch HEAD. The runtime/package SHA above remains the playable rollback/source-of-truth checkpoint until a newer artifact is explicitly validated.
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.48_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.48.md`
-5. `docs/MAP_ARCHITECTURE_FINAL.md`
-6. `docs/UI_FINAL_PLAYER_HUD.md`
-7. `docs/GAME_DESIGN_CURRENT.md`
-8. `src/scenes/CareerMinigameBoardScene048.ts`
-9. `src/ui/movementVisualPolicy.ts`
-10. `tests/bugfix-pass-048.ts`
-11. `src/scenes/TurnOrderScene048.ts`
-12. `src/scenes/TurnStakesBoardScene.ts`
-13. `src/audio/bgmController.ts`
-14. `src/scenes/CareerMinigameBoardScene046.ts`
-15. `tests/multiplayer-presentation-parity-047.ts`
+3. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
+4. `docs/MAP_ARCHITECTURE_FINAL.md`
+5. `docs/UI_FINAL_PLAYER_HUD.md`
+6. `docs/GAME_DESIGN_CURRENT.md`
+7. `docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md`
+8. `docs/MVP_0.1.48_PROGRESS.md`
+9. `docs/PLAYTEST_0.1.48.md`
 
-## Two-track flow: runtime gate + final-map design
+## Active flow
 
-These two tracks are both active, but they must not be conflated.
+Two tracks remain active in parallel.
 
-### Track A — runtime gate
+### Track A — MVP 0.1.49 Legacy Effect Audit
 
-1. Keep **MVP 0.1.48** as the current validated runtime checkpoint.
-2. Runtime-test the same player across repeated turns and verify the token never performs the old `arrive -> snap back -> next turn continues from authoritative destination` sequence.
-3. If snap-back still reproduces, capture the in-game bug report and trace the exact authoritative event/state/presentation sequence. Do not add another blind hard-snap workaround.
-4. Only after 0.1.48 is runtime-clean should a new runtime milestone be opened. Current recommendation remains **0.1.49 Legacy Effect Audit**.
+Audit the old Tiên Tri / Phép Thuật reference set for reusable gameplay ideas, then adapt useful effects into the current MeMeMe systems.
+
+Current names are locked:
+
+- **TIN TỨC**
+- **LÁ BÀI**
+
+The old Tiên Tri / Phép Thuật names are reference terminology only.
+
+For each legacy effect, record:
+
+- core gameplay idea;
+- destination system: `TIN TỨC`, `LÁ BÀI`, both, reject or defer;
+- target scope;
+- proposed current-language wording;
+- impact / rarity recommendation;
+- dependencies;
+- multiplayer authority notes;
+- deterministic/replay notes;
+- decision: keep / adapt / reject / defer.
+
+Do not implement effects that rely on undefined systems until those systems are explicitly designed.
 
 ### Track B — final 44–48-space map architecture
 
-This design/documentation track may continue **in parallel** while 0.1.48 is being validated because it does not modify the packaged runtime.
+Canonical tracker:
+`docs/MAP_ARCHITECTURE_FINAL.md`
 
-- Canonical map-design tracker: `docs/MAP_ARCHITECTURE_FINAL.md`.
-- The next map pass must become a detailed numbered architecture, not merely a moodboard.
-- Resolve exact total node count within `44–48`.
-- Split main-loop nodes from Hospital/Jail side-branch nodes.
-- Define branch entry/rejoin topology without inventing Jail/Hospital punishment mechanics.
-- Define districts, landmarks, node distribution and camera-safe spacing for close-follow play.
-- Produce a graph/adjacency view before final runtime implementation.
-- This track must remain visible in handoffs until its architecture is approved and receives its own runtime implementation milestone.
+Continue this design lane in parallel with 0.1.49.
 
-## Final-direction design decisions staged after 0.1.48 package
+Required final architecture work:
 
-These are documentation/design locks only. They do **not** alter the validated 0.1.48 runtime artifact.
+- choose exact playable node count in the `44–48` range;
+- define numbered main loop;
+- define Hospital and Jail side branches;
+- define branch entry/rejoin topology;
+- define districts and landmark anchors;
+- distribute special nodes;
+- ensure close-follow camera-safe spacing;
+- produce final adjacency graph before runtime implementation.
 
-- Final board has **more than 40 playable spaces**; current working band is `44–48`.
-- Normal gameplay camera is close-follow: at turn change it focuses the active player and follows that token while moving.
-- Full-map view is an explicit overview, not the permanent gameplay view.
-- Four player HUDs stay fixed in screen space: P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
-- Each occupied HUD shows at minimum avatar, player name and B$; compact hand/Job/status information may be added.
-- Active player gets clear visual emphasis without changing authoritative state.
-- Hospital and Jail are approved as distinct side-branch/location concepts on the final board.
-- Hospital/Jail deep mechanics remain undefined and must not be invented implicitly.
-- Canonical HUD/camera contract: `docs/UI_FINAL_PLAYER_HUD.md`.
-- Canonical final-map design track: `docs/MAP_ARCHITECTURE_FINAL.md`.
+This track must remain in handoffs until approved and promoted to its own runtime implementation milestone.
+
+## Final UI / camera direction already locked
+
+- Four persistent HUDs are fixed in screen space:
+  - P1 top-left
+  - P2 top-right
+  - P3 bottom-left
+  - P4 bottom-right
+- Each occupied HUD shows at minimum avatar, player name and B$.
+- Active player gets clear visual emphasis.
+- Normal board camera zooms/follows the active player rather than showing the full board permanently.
+- Full-map view is an explicit overview mode.
+- Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
 - Temporary visual reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
-- The concept PNG may be removed later after the real runtime HUD is implemented, validated and documented.
+- The concept PNG may be removed after the real HUD/camera is implemented, validated and documented.
 
-## 0.1.48 bug fixes
+## Hospital / Jail constraint
 
-### Money SFX
+Hospital and Jail are approved **location / side-branch concepts** only.
 
-- Packet-level coin audio is suppressed when a visible Card/News/READY/money-tile presentation owns that moment.
-- Money tile landing retains the event-aligned coin cue.
-- Prevents the old behavior where coin audio spoiled the result before movement finished and then played again on landing.
-- Mini Game payout can still use packet-level money audio because it has no money-tile landing owner.
+Do **not** invent deep rules such as:
 
-### Roll For Order die face
+- forced skip-turn;
+- bail;
+- escape roll;
+- escape card;
+- Hospital recovery/punishment rules.
 
-- The old settled frame used fixed Unicode emoji `🎲`, whose artwork did not reflect the authoritative D6 value.
-- `TurnOrderScene048` now settles with `⚀..⚅` plus the matching number.
-- Remote Roll authority, tie reroll and host-generated D6 remain unchanged.
+Those mechanics remain undefined until Ron designs or approves them.
 
-### Mini Game BGM
-
-- `03_City_Silly.ogg` is now reserved for actual Mini Game overlay playback.
-- Normal board round 2 no longer selects `city_silly`.
-- Mini Game still restores the previous board track after the overlay ends.
-
-### Token snap-back
-
-- `movementVisualPolicy.ts` rejects duplicate/stale `move_step` presentation.
-- A move step animates only when the visible token is still at that event's from-node.
-- If the token is already at the destination or has advanced beyond the event, that old visual step is ignored.
-- Authoritative node state, replay, RNG and checksum are untouched.
-
-## Corrected legacy-card interpretation
-
-The supplied vertical Tiên Tri / horizontal Phép Thuật images are reference content from the older game for feature/effect analysis. They are **not** a rename request.
-
-Therefore active 0.1.48 bypasses the 0.1.47 visual rename wrapper:
-
-- current board/system name remains **TIN TỨC**;
-- current board/system name remains **LÁ BÀI**;
-- Card hand UI is restored to the pre-0.1.47 wording/layout;
-- the useful 0.1.47 HOST/CLIENT presentation-parity audit remains as a regression only;
-- supplied reference images are not persisted as runtime assets.
-
-## Retained multiplayer/gameplay
+## Retained gameplay invariants from validated runtime
 
 - Remote Roll For Order remains host-authoritative.
 - Multiplayer Job Hub remains host-authoritative and spectator-safe.
-- Job mapping remains `1-2 A / 3-4 B / 5-6 C`.
+- Job mapping remains `1–2 A / 3–4 B / 5–6 C`.
 - Starting wallet remains `200 B$`.
 - Every player completes one physical lap before final scoring.
 - READY pays current Job salary once per crossing and increments lap.
 - Mini Game payout remains host-system owned and one-shot.
-- Nhiều ra ít bị payout: `30 / 20 / 10 / 0 B$`.
-- Direct RPS payout: `25 / 15 / 5 / 0 B$`.
+- Nhiều ra ít bị payout remains `30 / 20 / 10 / 0 B$`.
+- Direct RPS payout remains `25 / 15 / 5 / 0 B$`.
 - Four approved BGM files and eight supplied SFX remain checksum-protected.
 - Final podium/result-input chain remains unchanged.
 - Original face files remain local.
 - CPU remains a QA bot.
-- Jail deep mechanics remain intentionally undefined.
 
-## Next-chat priority
+## 0.1.48 closure note
 
-1. Runtime-test 0.1.48 with the same player taking at least two turns. The main question is whether the old token sequence `arrive -> snap back -> next turn continues from authoritative destination` is gone.
-2. In parallel, continue `docs/MAP_ARCHITECTURE_FINAL.md` into a detailed 44–48-space numbered map architecture so this design lane is not lost.
-3. Re-check money landing audio for exactly one correctly timed cue.
-4. Re-check Roll For Order settled face against the authoritative number, including tie rerolls.
-5. Confirm `03_City_Silly.ogg` never starts from normal board progression and only starts in an actual Mini Game.
-6. Confirm visible board/system labels remain TIN TỨC / LÁ BÀI.
-7. Re-check Remote Roll, Job Hub, final Mini Game payout, podium and multiplayer presentation parity.
+0.1.48 fixed/covered:
 
-If token snap-back still reproduces, use the in-game bug report and trace the exact event/state/presentation sequence. Do not add another blind hard-snap workaround.
+- money SFX ownership/timing;
+- Roll For Order D6 face presentation;
+- Mini Game BGM isolation;
+- token snap-back protection;
+- restored current visible names `TIN TỨC / LÁ BÀI` after the legacy-reference misunderstanding.
 
-If 0.1.48 is clean in runtime, recommended next runtime milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật cards as effect inspiration for the current TIN TỨC / LÁ BÀI systems. Keep the current names. Do not invent jail/skip-turn/bail/escape rules.
-
-The final HUD/camera/44–48-space board direction is a tracked future runtime lane and must not be silently mixed into the already validated 0.1.48 package.
+Ron has accepted 0.1.48 as runtime PASS. Do not reopen the snap-back gate unless new reproducible feedback appears.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md, docs/PLAYTEST_0.1.48.md, docs/MAP_ARCHITECTURE_FINAL.md và docs/UI_FINAL_PLAYER_HUD.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Có 2 track song song: (A) runtime-test 0.1.48, ưu tiên token snap-back sau nhiều lượt; chỉ khi runtime-clean mới mở runtime milestone mới, hiện đề xuất 0.1.49 Legacy Effect Audit. (B) tiếp tục thiết kế architecture map final thật chi tiết trong working range 44–48 ô, gồm main loop + Hospital/Jail side branches, districts, landmarks và adjacency graph, nhưng không tự invent deep Jail/Hospital mechanics. Final camera close-follow, 4 HUD cố định ở 4 góc. Giữ tên TIN TỨC / LÁ BÀI. Không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. 0.1.48 đã được Ron cho PASS runtime ngày 2026-09-14; acceptance record ở docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md. Latest validated playable artifact vẫn là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c cho tới khi có artifact mới. Current milestone là 0.1.49 Legacy Effect Audit: phân tích bộ Tiên Tri / Phép Thuật cũ để adapt effect vào TIN TỨC / LÁ BÀI, giữ nguyên tên hiện tại và không tự invent Jail/Hospital mechanics. Song song tiếp tục docs/MAP_ARCHITECTURE_FINAL.md thành architecture final 44–48 ô với main loop, Hospital/Jail side branches, districts, landmarks và adjacency graph. Final camera close-follow, 4 HUD cố định ở 4 góc. Không merge PR #1.`
