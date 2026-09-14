@@ -71,8 +71,9 @@ export class BgmController {
       return;
     }
 
-    // Presentation-only deterministic mapping. Audio never consumes gameplay RNG.
-    this.setTrack(round === 2 ? 'city_silly' : 'city_bubble');
+    // Board rounds never use 03_City_Silly. That checksum-locked track is reserved
+    // exclusively for the actual Mini Game overlay through playMiniGame().
+    this.setTrack('city_bubble');
   }
 
   /** Mini Games reuse the approved, checksum-locked 03_City_Silly track. */
