@@ -10,6 +10,7 @@ import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048'
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
 import { CareerMinigameBoardScene048 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene048';
+import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -17,7 +18,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene],
+  scene: [LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene, FinalMapPreviewScene050],
   dom: {
     createContainer: true,
   },
