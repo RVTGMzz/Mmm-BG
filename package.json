@@ -38,6 +38,7 @@
     "test:final-result": "tsx tests/final-result-transition-039.ts",
     "test:legacy-shell-copy": "tsx tests/legacy-shell-copy-040.ts",
     "test:final-podium": "tsx tests/final-podium-041.ts",
+    "test:podium-reaction": "tsx tests/podium-face-reaction-042.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
