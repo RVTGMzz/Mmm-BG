@@ -14,8 +14,11 @@ import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
 import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
+import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode054';
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
+if (finalMapMode === '3') installPreviewBranchMode054();
+
 const normalScenes = [
   LocalLobbyScene,
   SetupScene,
