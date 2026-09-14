@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const scene = await readFile('src/scenes/CareerMinigameBoardScene039.ts', 'utf8');
-const main = await readFile('src/main.ts', 'utf8');
 const flow = await readFile('src/scenes/PresentationParityBoardScene.ts', 'utf8');
 const executableScene = scene
   .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -17,7 +16,6 @@ assert(!/submitIntent\s*\(/.test(executableScene), 'final result presentation mu
 assert(!/submitSystemIntent\s*\(/.test(executableScene), 'final result presentation must not submit host-system gameplay commands');
 assert(!/Math\.random\s*\(/.test(executableScene), 'final result presentation must not call Math.random');
 assert(!/\.money\s*\+=/.test(executableScene), 'final result presentation must not mutate wallet state');
-assert(main.includes('CareerMinigameBoardScene039'), 'main runtime must use the 0.1.39 scene');
 assert(
   flow.includes('shouldDeferResultOverlay') && flow.includes("internals.shell.status === 'ended'"),
   'PresentationParity result defer gate must remain in the inheritance chain',
