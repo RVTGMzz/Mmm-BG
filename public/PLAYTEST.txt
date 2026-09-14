@@ -6,6 +6,11 @@ QUICK START — WINDOWS
 3) Trình duyệt sẽ tự mở local playtest server.
 4) GIỮ cửa sổ terminal launcher mở trong lúc chơi.
 
+QUAN TRỌNG
+- KHÔNG double-click index.html trực tiếp.
+- Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì game có thể chỉ hiện màn hình trắng vì browser chặn ES module/local asset khi chạy bằng file://.
+- START_PLAYTEST.bat dùng local server và KHÔNG cần cài Node/Python.
+
 0.1.47 FOCUS
 - TIÊN TRI thay cho cách gọi Tin Tức và dùng form lá dọc.
 - PHÉP THUẬT thay cho cách gọi Lá Bài / Thẻ Bài và dùng form lá ngang.
