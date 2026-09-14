@@ -7,7 +7,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 ## Current milestone
 
-**MVP 0.1.39 - Final B$ Lock + Result Clarity**
+**MVP 0.1.40 - Lap-Native Shell Cleanup**
 
 Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
@@ -15,67 +15,71 @@ Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Validated playable build
 
-GitHub Actions run: `34801911635` / run `#1139`
+GitHub Actions run: `34802821058` / run `#1169`
 
 Validated runtime/package SHA:
-`86764fa9aeda89067cb1abd29703985f5c993c04`
+`2544bfc1ee77bfd12fcfa1b5b08a75ccf4af41b4`
 
 Artifact:
-`mememe-playtest-0.1.39`
+`mememe-playtest-0.1.40`
 
 Artifact ID:
-`10330908906`
+`10331508499`
 
 Artifact size:
-`8,558,543 bytes`
+`8,560,179 bytes`
 
 Digest:
-`sha256:2c7332429a1432bfb278bc2fef7e306f4cd87bb566ff9884f875fff2dd2ba2d1`
+`sha256:003d6d9dde7bdafcd547a60e18483e5f5f068c988f719eb54e6291323063f07f`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34801911635`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34802821058`
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.39_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.39.md`
-5. `docs/MVP_0.1.38_PROGRESS.md`
+3. `docs/MVP_0.1.40_PROGRESS.md`
+4. `docs/PLAYTEST_0.1.40.md`
+5. `src/scenes/CareerMinigameBoardScene040.ts`
 6. `src/scenes/CareerMinigameBoardScene039.ts`
 7. `src/scenes/CareerMinigameBoardScene037.ts`
 8. `src/scenes/CareerMinigameBoardScene.ts`
 9. `src/ui/MiniGameOverlay.ts`
-10. `tests/final-result-transition-039.ts`
-11. `tests/choice-sfx-038.ts`
-12. `tests/minigame-authority-037.ts`
+10. `tests/legacy-shell-copy-040.ts`
+11. `tests/final-result-transition-039.ts`
+12. `tests/choice-sfx-038.ts`
+13. `tests/minigame-authority-037.ts`
 
-## 0.1.39 final result clarity
+## 0.1.40 lap-native shell cleanup
 
-- The authoritative result overlay is still the only source of winner/ranking truth.
-- PresentationParity continues to defer result rendering while presentation is blocking.
-- Pending Mini Game payout must resolve before the match may finalize.
-- Once the real result overlay is eligible, 0.1.39 briefly shows `4/4 HOÀN THÀNH` and `KHÓA BẢNG B$ • CHỐT THỨ HẠNG`.
-- Result buttons are input-blocked during the short reveal beat.
-- The existing authoritative result overlay then fades in.
-- Transition uses fixed presentation positions only, submits no gameplay command, mutates no wallet/ranking state and adds no RNG.
-- Victory SFX remains owned by the existing real-result hook and is not duplicated.
+- Runtime now uses `CareerMinigameBoardScene040`.
+- Inherited center HUD uses authoritative lap progress `🏁 x/4 ĐỦ VÒNG`, not `Vòng x/y`.
+- Inherited phase/debug copy includes lap progress + checksum rather than legacy turn-limit progress.
+- Waiting/result shell copy is normalized to the one-lap rule.
+- Shell logs no longer describe a fixed 3-round / 12-turn demo.
+- Legacy `rounds` / `turnLimit` fields remain serialized for compatibility/debug only and are not removed in this patch.
+- Visible progress derives from `demoMatchLapProgress(match)`.
+- No gameplay/system intents, RNG, payouts or authority state are added by the 0.1.40 wrapper.
 
-## Retained 0.1.38 choice polish
+## Retained 0.1.39 final result behavior
 
-- Choice SFX covers Route/Branch, Card, Target, Tactical Choice, Setup and Settings confirmations.
-- Existing choice feedback remains on Lobby, Job Dice, Mini Game human choices and Enter Match.
-- Dice actions keep the dedicated dice cue.
-- Lobby/Setup show the current build and no obsolete `demo 3 vòng` copy.
+- Final result stays deferred until queued presentation clears.
+- Pending final Mini Game payout must resolve before scoring.
+- The real result overlay remains the only winner/ranking truth.
+- `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` is presentation-only.
+- Hidden result buttons are input-blocked during the reveal beat.
+- Victory SFX is not duplicated.
 
-## Retained Mini Game authority/audio rules
+## Retained Mini Game/audio rules
 
-- Mini Game payout is host-system owned and applies once per source event.
-- Nhiều ra ít bị payout: `30 / 20 / 10 / 0 B$`.
-- Direct Oẳn Tù Xì payout: `25 / 15 / 5 / 0 B$`.
-- Mini Game BGM is exactly checksum-locked `03_City_Silly.ogg`.
-- Eight event SFX remain: victory, news, card, step, money loss, money gain, dice, choice.
-- Four approved BGM files must not be re-encoded or substituted.
+- Mini Game payout is host-system owned and single-commit per source event.
+- Nhiều ra ít bị: `30 / 20 / 10 / 0 B$`.
+- Direct Oẳn Tù Xì: `25 / 15 / 5 / 0 B$`.
+- RPS 1v1 animation still runs for CPU vs CPU.
+- Mini Game BGM remains checksum-locked `03_City_Silly.ogg`.
+- Four approved BGM files must not be re-encoded/substituted.
+- Eight supplied SFX remain: victory, news, card, step, money loss, money gain, dice, choice.
 
 ## Movement / scoring invariants
 
@@ -99,16 +103,20 @@ Run URL:
 - CPU remains a QA bot.
 - Thief `jailed` exists, but skipped-turn / bail / escape rules remain undefined. Do not invent them.
 
+## CI note
+
+The first 0.1.40 CI attempts exposed old presentation tests that hard-coded previous build numbers. Those tests were made version-agnostic; runtime/gameplay code was not the cause. Run #1169 is the fully validated checkpoint.
+
 ## Runtime test focus
 
-1. Finish a match and verify final movement/reaction/Mini Game presentation clears before the 4/4 B$ lock banner.
-2. Confirm result buttons cannot be clicked during the short lock banner.
-3. Confirm ranking and B$ are identical before/after the transition.
-4. Rematch and confirm the transition can occur once again in the new match.
-5. Re-test P1 movement + Card/News for no snap-back.
-6. Re-test Job Hub token reconcile.
-7. Re-check Mini Game payout once-only, eight SFX, choice coverage and `03_City_Silly.ogg`.
+1. SOLO: verify center HUD always shows lap progress rather than round/turn-limit progress.
+2. HOST + JOIN: verify both tabs show the same lap-native shell wording.
+3. Verify shell logs never surface `3 vòng / 12 lượt` as the active rule.
+4. Finish normally and verify the 0.1.39 final B$ transition still occurs once.
+5. Finish with final landing on Mini Game and verify payout arrives before result.
+6. Re-test P1 movement + Card/News no snap-back and Job Hub token reconcile.
+7. Re-check all eight SFX and `03_City_Silly.ogg`.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.39_PROGRESS.md và docs/PLAYTEST_0.1.39.md. Current validated artifact là mememe-playtest-0.1.39, run #1139, runtime SHA 86764fa9aeda89067cb1abd29703985f5c993c04. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.40_PROGRESS.md và docs/PLAYTEST_0.1.40.md. Current validated artifact là mememe-playtest-0.1.40, run #1169, runtime SHA 2544bfc1ee77bfd12fcfa1b5b08a75ccf4af41b4. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
