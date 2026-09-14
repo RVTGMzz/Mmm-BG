@@ -14,10 +14,10 @@ type PresentationRuntime047 = {
 /**
  * 0.1.47 presentation parity audit + legacy deck vocabulary.
  *
- * Technical gameplay protocol remains card_*/news. This layer only changes what a
- * player sees: old vertical prophecy cards become TIÊN TRI, old horizontal magic
- * cards become PHÉP THUẬT. The same authoritative event stream still drives both
- * HOST and CLIENT presentation queues.
+ * Technical gameplay protocol remains the existing card and news event family.
+ * This layer only changes what a player sees: old vertical prophecy cards become
+ * TIÊN TRI, old horizontal magic cards become PHÉP THUẬT. The same authoritative
+ * event stream still drives both HOST and CLIENT presentation queues.
  */
 export class CareerMinigameBoardScene047 extends CareerMinigameBoardScene046 {
   private readonly portraitized = new WeakSet<Phaser.GameObjects.Container>();
