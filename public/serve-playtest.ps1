@@ -1,5 +1,6 @@
 param(
-  [switch]$FinalMapPreview
+  [switch]$FinalMapPreview,
+  [switch]$DraftDPreview
 )
 
 $ErrorActionPreference = 'Stop'
@@ -45,7 +46,14 @@ if (-not $listener) {
   exit 1
 }
 
-$url = if ($FinalMapPreview) { "http://127.0.0.1:$port/?finalmap=1" } else { "http://127.0.0.1:$port/" }
+if ($DraftDPreview) {
+  $url = "http://127.0.0.1:$port/?finalmap=2"
+} elseif ($FinalMapPreview) {
+  $url = "http://127.0.0.1:$port/?finalmap=1"
+} else {
+  $url = "http://127.0.0.1:$port/"
+}
+
 Write-Host "MeMeMe playtest dang chay tai $url" -ForegroundColor Green
 Write-Host 'Giu cua so nay mo trong luc choi. Nhan Ctrl+C de dung server.' -ForegroundColor Yellow
 Start-Process $url
