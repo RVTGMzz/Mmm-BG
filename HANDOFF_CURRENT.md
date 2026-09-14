@@ -7,7 +7,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 ## Current milestone
 
-**MVP 0.1.41 - Authoritative Final Podium**
+**MVP 0.1.42 - Podium Face Reactions + Winner Spotlight**
 
 Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
@@ -15,65 +15,73 @@ Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Validated playable build
 
-GitHub Actions run: `34804272675` / run `#1209`
+GitHub Actions run: `34804709294` / run `#1241`
 
 Validated runtime/package SHA:
-`9c6bb6a4b0080d4d2599cc142bf27ec45c6fa92e`
+`0b0fc74b0d1c8795f8af426371a8ccc0f0acd208`
 
 Artifact:
-`mememe-playtest-0.1.41`
+`mememe-playtest-0.1.42`
 
 Artifact ID:
-`10332816906`
+`10332517930`
 
 Artifact size:
-`8,561,263 bytes`
+`8,561,602 bytes`
 
 Digest:
-`sha256:86170b85522a7b888b5e3a5864a753febb6a6e8328c19b14397a2fda9e0ff82b`
+`sha256:c0d69e6119558892957df5cc95a3beb36bdae41f9e457800b9c88ceb1611eb65`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34804272675`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34804709294`
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.41_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.41.md`
-5. `src/scenes/CareerMinigameBoardScene041.ts`
-6. `src/ui/podiumRanking.ts`
-7. `src/scenes/CareerMinigameBoardScene040.ts`
-8. `src/scenes/CareerMinigameBoardScene039.ts`
-9. `src/scenes/CareerMinigameBoardScene037.ts`
-10. `src/scenes/CareerMinigameBoardScene.ts`
-11. `src/ui/MiniGameOverlay.ts`
-12. `tests/final-podium-041.ts`
-13. `tests/legacy-shell-copy-040.ts`
-14. `tests/final-result-transition-039.ts`
+3. `docs/MVP_0.1.42_PROGRESS.md`
+4. `docs/PLAYTEST_0.1.42.md`
+5. `src/scenes/CareerMinigameBoardScene042.ts`
+6. `src/ui/podiumFaceReaction.ts`
+7. `src/scenes/CareerMinigameBoardScene041.ts`
+8. `src/ui/podiumRanking.ts`
+9. `src/scenes/CareerMinigameBoardScene040.ts`
+10. `src/scenes/CareerMinigameBoardScene039.ts`
+11. `src/scenes/CareerMinigameBoardScene037.ts`
+12. `src/scenes/CareerMinigameBoardScene.ts`
+13. `tests/podium-face-reaction-042.ts`
+14. `tests/final-podium-041.ts`
 15. `tests/minigame-authority-037.ts`
 
-## 0.1.41 authoritative final podium
+## 0.1.42 podium reactions
 
-- Runtime now uses `CareerMinigameBoardScene041`.
-- The podium replaces the old text-heavy final ranking only after the real authoritative result overlay is eligible.
-- Ranking and B$ come from `demoMatchResult(internals.match)`.
-- Player names come from authoritative `MatchState` players.
-- Face sticker is presentation-only: local neutral runtime face if present, otherwise P1/P2/P3/P4 fallback.
-- Equal B$ uses competition ranking and equal podium height.
-- `300 / 300 / 250 / 200` displays ranks `1 / 1 / 3 / 4`.
-- `300 / 250 / 250 / 200` displays ranks `1 / 2 / 2 / 4`.
-- Podium joins `shellOverlay` and inherits the hidden alpha from the 0.1.39 B$ lock beat, then fades in with the actual result overlay.
-- No gameplay/system intent, wallet mutation, result recomputation or RNG is added.
+- Runtime now uses `CareerMinigameBoardScene042`.
+- 0.1.42 extends the authoritative 0.1.41 podium and changes presentation only.
+- Displayed rank 1 prefers `happy` face.
+- Displayed ranks 2/3 use `neutral` face.
+- Displayed rank 4 prefers `angry` face.
+- `gameSession.getFace()` continues to fall back to neutral if the requested reaction sticker is missing.
+- Every displayed rank-1 entry receives fixed `👑` + two `✦` decorations.
+- First-place ties spotlight every tied winner equally because spotlight checks displayed rank, not array position.
+- No presentation randomness, gameplay/system intent, wallet mutation, result recomputation or winner mutation is added.
+
+## Retained 0.1.41 authoritative podium
+
+- Podium ranking and B$ come from `demoMatchResult(internals.match)`.
+- Display names come from authoritative `MatchState` players.
+- Equal B$ uses competition ranks and equal podium height.
+- `300 / 300 / 250 / 200` → `1 / 1 / 3 / 4`.
+- `300 / 250 / 250 / 200` → `1 / 2 / 2 / 4`.
+- Podium joins `shellOverlay` and inherits the 0.1.39 final-lock alpha/reveal timing.
 
 ## Retained final-result chain
 
-- 0.1.40 keeps inherited HUD/shell/log copy lap-native.
+- 0.1.40 keeps HUD/shell/log copy lap-native.
 - PresentationParity defers final result until queued presentation clears.
 - Pending final Mini Game payout must resolve before scoring.
 - 0.1.39 still shows `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` first.
-- Hidden result controls remain input-blocked during that reveal beat.
-- Victory SFX remains one-shot and is not duplicated by 0.1.41.
+- Hidden result controls remain input-blocked during the lock beat.
+- Victory SFX remains one-shot and is not duplicated.
 
 ## Retained Mini Game / audio rules
 
@@ -107,20 +115,16 @@ Run URL:
 - CPU remains a QA bot.
 - Thief `jailed` exists, but skipped-turn / bail / escape rules remain undefined. Do not invent them.
 
-## CI note
-
-The first 0.1.41 attempt failed only on a Phaser `Container.add()` TypeScript signature in new podium avatar code. It was corrected to array-form `add([...])`. Run #1209 is the fully validated checkpoint.
-
 ## Runtime test focus
 
-1. Finish a normal SOLO match and confirm all four podium entries show exact final B$.
-2. Verify configured neutral face stickers appear; missing faces use the P-number fallback.
-3. Create/observe a tie and verify equal medal + equal podium height.
-4. Finish with the last required lap on Mini Game and confirm payout lands before the lock beat and podium.
-5. Rematch and confirm a fresh podium builds from the new result.
-6. Re-test P1 movement + Card/News no snap-back and Job Hub token reconcile.
-7. Re-check all eight SFX and `03_City_Silly.ogg`.
+1. Setup all three face expressions for at least one player and finish at rank 1 or 4.
+2. Leave reaction faces missing for another player and confirm neutral fallback.
+3. Observe/create a first-place tie and verify every tied winner receives the same crown/sparks.
+4. Confirm reaction choice never changes B$, winner IDs, rank or podium height.
+5. Finish with final required lap on Mini Game and confirm payout commits before lock/podium reveal.
+6. Rematch and verify reactions rebuild from the new result.
+7. Re-check P1 movement, Job token reconcile, all eight SFX and `03_City_Silly.ogg`.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.41_PROGRESS.md và docs/PLAYTEST_0.1.41.md. Current validated artifact là mememe-playtest-0.1.41, run #1209, runtime SHA 9c6bb6a4b0080d4d2599cc142bf27ec45c6fa92e. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.42_PROGRESS.md và docs/PLAYTEST_0.1.42.md. Current validated artifact là mememe-playtest-0.1.42, run #1241, runtime SHA 0b0fc74b0d1c8795f8af426371a8ccc0f0acd208. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
