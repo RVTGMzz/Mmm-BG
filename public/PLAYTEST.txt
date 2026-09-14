@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.41 — AUTHORITATIVE FINAL PODIUM
+MeMeMe MVP 0.1.42 — PODIUM FACE REACTIONS + WINNER SPOTLIGHT
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,15 +18,15 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.41 FOCUS
-- Sau nhịp 4/4 HOÀN THÀNH → KHÓA BẢNG B$, kết quả cuối được reveal bằng bục xếp hạng 4 người.
-- Bục đọc ranking và B$ từ kết quả authoritative, KHÔNG tự tính lại winner/tiền.
-- Tên người chơi lấy từ MatchState authoritative.
-- Có sticker mặt trung tính nếu đã setup; nếu không có thì fallback P1/P2/P3/P4.
-- Đồng B$ = đồng hạng, cùng huy chương và cùng độ cao bục.
-- Ví dụ 300/300/250/200 → hạng 1/1/3/4.
-- Ví dụ 300/250/250/200 → hạng 1/2/2/4.
-- 0.1.40 lap-native HUD/shell/log và 0.1.39 final-result gate vẫn giữ nguyên.
+0.1.42 FOCUS
+- Giữ nguyên podium authoritative của 0.1.41.
+- Hạng 1 ưu tiên mặt 😆 happy/đắc ý.
+- Hạng 2 và 3 dùng mặt 😐 neutral.
+- Hạng 4 ưu tiên mặt 😡 angry/quạu.
+- Nếu thiếu ảnh happy/angry, game tự fallback về neutral như trước.
+- Mọi người có displayed rank 1 đều nhận crown 👑 + hai spark ✦ cố định.
+- Nếu đồng hạng nhất, tất cả người hạng 1 đều được spotlight như nhau.
+- Face reaction/spotlight chỉ là presentation, KHÔNG đổi B$, winner ID, rank authoritative hay RNG gameplay.
 
 EVENT AUDIO
 - victory: khi bảng kết quả thật xuất hiện.
@@ -56,6 +56,7 @@ FINAL RESULT
 - Khi người cuối cùng hoàn thành vòng và mọi presentation/payout cuối đã xong, game hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$ • CHỐT THỨ HẠNG.
 - Trong nhịp chốt B$, input result bị chặn để không bấm nhầm nút vô hình.
 - Sau đó podium authoritative fade vào cùng result overlay thật.
+- Đồng B$ dùng competition rank: 300/300/250/200 → 1/1/3/4; 300/250/250/200 → 1/2/2/4.
 - Victory SFX chỉ phát theo result overlay thật, không nhân đôi.
 
 RETAINED FEATURES / FIXES
