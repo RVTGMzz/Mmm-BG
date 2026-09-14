@@ -1,6 +1,6 @@
 # MeMeMe — Final Map Architecture Track
 
-Status: **ACTIVE DESIGN TRACK / DRAFT B CURRENT / B1–B4 BUILT / DOCUMENTATION ONLY**
+Status: **ACTIVE DESIGN TRACK / DRAFT B CURRENT / B1–B5 BUILT / DOCUMENTATION ONLY**
 
 Current source-of-truth:
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
@@ -12,6 +12,7 @@ Current source-of-truth:
 - `docs/MAP_VISUAL_HIERARCHY_44_DRAFT_B3.md`
 - `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.md`
 - `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.json`
+- `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
 
 Do **not** merge PR #1 unless Ron explicitly asks.
 
@@ -74,25 +75,20 @@ Expected payout before later balancing: `70 B$`.
 
 ## Draft B1 — content pacing
 
-Current working node distribution:
-
-- READY: 1
-- JAIL_GATE: 1
-- LOTTERY: 1
-- HOSPITAL_GATE: 1
-- Job Hub: 1 at `M08`
-- Mini Game: 2 at `M17 / M39`
-- TIN TỨC: 6 at `M06 / M14 / M21 / M28 / M36 / M43`
-- LÁ BÀI: 7 at `M04 / M10 / M16 / M22 / M27 / M32 / M41`
-- Money +: 4 at `M03 / M13 / M25 / M35`
-- Money -: 4 at `M07 / M18 / M30 / M40`
-- Normal/breathing: 16
+Current working distribution:
+- Job Hub: `M08`
+- Mini Game: `M17 / M39`
+- TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
+- LÁ BÀI: `M04 / M10 / M16 / M22 / M27 / M32 / M41`
+- Money +: `M03 / M13 / M25 / M35`
+- Money -: `M07 / M18 / M30 / M40`
+- Normal/breathing: 16 spaces
 
 Mini Game spacing is exactly `22 / 22`.
 
 TIN TỨC gaps are `8 / 7 / 7 / 8 / 7 / 7`.
 
-A fair D6 needs about **13.05 rolls/player** to reach/cross 44 spaces, so total match duration must still be validated in runtime later.
+A fair D6 needs about **13.05 rolls/player** to reach/cross 44 spaces, so total match duration must still be runtime-playtested later.
 
 ## Draft B2 — spatial layout
 
@@ -104,9 +100,9 @@ Working landscape composition:
 - inner Jail visually paired with M12;
 - inner Hospital visually paired with M34.
 
-Transfer connectors may be shown from gate to singleton location, but they contain **no movement nodes**.
+Transfer connectors from gate to singleton location contain **no movement nodes**.
 
-Coordinates in B2 are design anchors only, not runtime pixels or authoritative state.
+B2 coordinates are design anchors only, not runtime pixels or authoritative state.
 
 ## Draft B3 — visual hierarchy
 
@@ -139,6 +135,24 @@ Primary landmark hierarchy:
 - Mini Game M17
 - Mini Game M39
 
+## Draft B5 — camera / mockup production brief
+
+Required visual references before runtime implementation:
+- full board overview;
+- normal close-follow frame with all four HUDs;
+- READY corner;
+- JAIL_GATE transfer;
+- player turn while in JAIL;
+- LOTTERY corner;
+- HOSPITAL_GATE transfer;
+- player turn while in HOSPITAL;
+- Mini Game feature frame.
+
+Canonical brief:
+`docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
+
+Temporary concept images should use the naming convention in B5 and live under `docs/reference/map/` until runtime art/screenshots replace them.
+
 ## HUD / camera locks retained
 
 - P1 top-left
@@ -154,23 +168,18 @@ Primary landmark hierarchy:
 
 ## Runtime boundary
 
-Draft B through B4 are design/docs only.
+Draft B through B5 are design/docs only.
 
 Do not import the 44-node map, design coordinates, gate transfer connectors, or special-location rules into `src/content/city/board_city_mvp.json` until a dedicated final-map runtime milestone is explicitly opened.
 
 The latest validated playable runtime remains MVP 0.1.48.
 
-## Next design pass
+## Current remaining design gates
 
-**Draft B5 — camera shot + mockup production brief**.
+Before final-map runtime work, the two unresolved special-location rules are:
+1. where a released player re-enters the main loop;
+2. whether a successful release roll also grants normal movement that turn.
 
-B5 should specify the minimum reference/mockup frames needed before implementation:
-- full overview;
-- normal close-follow frame with four HUDs;
-- each of four corner landings;
-- Jail framing;
-- Hospital framing;
-- M17 Mini Game framing;
-- M39 Mini Game framing.
+Everything else in Draft B through B5 may continue as visual/mockup work without changing runtime.
 
-Continue MVP 0.1.49 Legacy Effect Audit in parallel.
+MVP 0.1.49 Legacy Effect Audit continues in parallel.
