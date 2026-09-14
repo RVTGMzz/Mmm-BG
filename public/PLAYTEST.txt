@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.39 — FINAL B$ LOCK + RESULT CLARITY
+MeMeMe MVP 0.1.40 — LAP-NATIVE SHELL CLEANUP
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,12 +18,14 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.39 FOCUS
-- Khi người cuối cùng hoàn thành vòng và mọi presentation/payout cuối đã xong, game hiện nhịp `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG`.
-- Trong nhịp chốt B$, input result bị chặn để không bấm nhầm nút vô hình.
-- Sau đó bảng hạng authoritative cũ fade vào; transition không tính lại tiền hay winner.
-- Victory SFX vẫn chỉ phát theo result overlay thật, không nhân đôi.
-- Lobby, Setup và board label chuyển sang 0.1.39.
+0.1.40 FOCUS
+- Toàn bộ runtime HUD/shell/log phải dùng tiến độ hoàn thành 1 vòng/người.
+- Center HUD hiển thị dạng 🏁 x/4 ĐỦ VÒNG, không còn Vòng x/y.
+- Màn chờ không được mô tả trận là 3 vòng/12 lượt.
+- Log shell không được nói Demo bắt đầu • 3 vòng • 12 lượt.
+- Kết quả dùng trạng thái cả bàn đủ vòng + B$ authoritative.
+- rounds/turnLimit cũ vẫn tồn tại trong shell để tương thích dữ liệu/network, nhưng KHÔNG điều khiển kết thúc trận và KHÔNG được dùng làm luật hiển thị.
+- 0.1.39 final B$ transition vẫn giữ nguyên.
 
 EVENT AUDIO
 - victory: khi bảng kết quả thật xuất hiện.
@@ -48,6 +50,12 @@ LUẬT CHỐT ĐIỂM HIỆN TẠI
 - Chỉ khi CẢ 4 người đều hoàn thành 1 vòng mới chốt bảng B$.
 - Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
 - Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
+
+FINAL RESULT
+- Khi người cuối cùng hoàn thành vòng và mọi presentation/payout cuối đã xong, game hiện `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG`.
+- Trong nhịp chốt B$, input result bị chặn để không bấm nhầm nút vô hình.
+- Sau đó bảng hạng authoritative fade vào; transition không tính lại tiền hay winner.
+- Victory SFX chỉ phát theo result overlay thật, không nhân đôi.
 
 RETAINED FEATURES / FIXES
 - Token Player 1 không được snap ngược khi Card/News/state cập nhật; Job Hub có reconcile riêng để không kẹt visual ở ô cũ.
