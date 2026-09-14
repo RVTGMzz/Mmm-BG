@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import {
   pickRichestOtherTarget,
   tacticalChoicePressureAmount,
@@ -42,6 +43,7 @@ export function showTacticalChoicePicker(
     const finish = (choice?: TacticalCardChoice): void => {
       if (settled) return;
       settled = true;
+      sfxController.play('ui_confirm');
       root.destroy(true);
       resolve(choice);
     };
