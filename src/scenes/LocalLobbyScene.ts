@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.43', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.44', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, '1 vòng/người • Final Podium • Face Reactions • Reveal Cascade.', {
+    this.add.text(228, 109, '1 vòng/người • Final Podium • Reveal Cascade • Safe Result Unlock.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🏆 0.1.43: podium reveal từ hạng thấp lên hạng cao; người đồng hạng xuất hiện cùng nhịp, 🥇/👑 được giữ lại cho beat cuối.
+        🔒 0.1.44: nút CHƠI LẠI / VỀ LOBBY chỉ nhận click sau khi beat reveal 🥇 cuối cùng hoàn tất.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Final Podium Reveal + 2-tab local sẵn sàng.'
+        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Safe Final Podium + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
