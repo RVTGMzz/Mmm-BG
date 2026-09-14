@@ -26,40 +26,36 @@ Current names stay locked:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-Legacy inventory:
-`docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
+## Final map — Draft C current
 
-## Final map — Draft B through B5 built
-
-Read in this order:
+Read first:
 1. `docs/MAP_ARCHITECTURE_FINAL.md`
-2. `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
-3. `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
-4. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
-5. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
-6. `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.md`
-7. `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.json`
-8. `docs/MAP_VISUAL_HIERARCHY_44_DRAFT_B3.md`
-9. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.md`
-10. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.json`
-11. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
+2. `docs/MAP_ARCHITECTURE_44_DRAFT_C.md`
+3. `docs/MAP_ARCHITECTURE_44_DRAFT_C.json`
+4. `docs/MAP_VISUAL_BLUEPRINT_44_DRAFT_C1.md`
+5. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
+6. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
+7. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
 
 ### Core topology
 - 44 main-loop spaces `M01..M44`
-- one singleton `JAIL`
-- one singleton `HOSPITAL`
 - lap crossing `M44 -> M01`
+- one inner `JAIL` holding location
+- one inner `HOSPITAL` holding location
+- Jail exit route has exactly 3 spaces: `J1 -> J2 -> J3`
+- Hospital exit route has exactly 3 spaces: `H1 -> H2 -> H3`
 
-Old Draft A `H1..H4 / J1..J4` chains are superseded.
-
-### Four locked corners
+### Four locked anchors
 - `M01` READY
 - `M12` JAIL_GATE -> JAIL
 - `M23` LOTTERY -> D6 × 20 B$
 - `M34` HOSPITAL_GATE -> HOSPITAL
 
-Lottery payouts:
-`20 / 40 / 60 / 80 / 100 / 120 B$`.
+Current branch geometry:
+- `M12 -> JAIL -> J1 -> J2 -> J3 -> M13`
+- `M34 -> HOSPITAL -> H1 -> H2 -> H3 -> M35`
+
+The branch route spaces are not part of the 44-space main-loop count and do not create extra lap crossings.
 
 ### Jail release — approved
 - roll D6 on the detained player's turn
@@ -71,72 +67,39 @@ Lottery payouts:
 - exactly `2 / 4 / 5` = released
 - other result = remain and retry next turn
 
-Still TBD for both:
-- exact main-loop re-entry node after release
-- whether a successful release roll also provides normal movement that same turn
+### Lottery — approved
+- landing on `M23` triggers HOST D6
+- reward = `D6 × 20 B$`
+- payouts = `20 / 40 / 60 / 80 / 100 / 120 B$`
 
-Do not infer these rules.
+## Visual direction — approved Draft C1
 
-## B1 — current 44-space content pacing
+Use the colorful city-board concept approved by Ron as composition/mood reference:
+- bright stylized city/island viewed from above
+- readable pale circular route winding around the city
+- landmark-heavy environment
+- district signs for orientation
+- fixed P1/P2/P3/P4 HUDs in four screen corners
+- inner Jail/Hospital visually connected to their gates
+- central city remains readable and spacious
 
+AI image numbering/text is never authoritative.
+
+Known AI error to correct:
+- Jail branch must be `J1 / J2 / J3`, not `J1 / J1 / J3 / J4`.
+
+## Current 44-space content pacing retained
+
+Draft B1 remains compatible:
 - Job Hub: `M08`
-- Mini Game: `M17 / M39` with exact `22 / 22` spacing
+- Mini Game: `M17 / M39` with `22 / 22` spacing
 - TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
 - LÁ BÀI: `M04 / M10 / M16 / M22 / M27 / M32 / M41`
 - Money +: `M03 / M13 / M25 / M35`
 - Money -: `M07 / M18 / M30 / M40`
 - Normal/breathing: 16 spaces
 
-Fair D6 expected lap length is about **13.05 rolls/player**. Match duration still needs future runtime playtest.
-
-## B2 — spatial layout
-
-Working board orientation:
-- READY bottom-left
-- JAIL_GATE top-left
-- LOTTERY top-right
-- HOSPITAL_GATE bottom-right
-- inner Jail paired with M12
-- inner Hospital paired with M34
-
-Gate-to-location spurs are presentation connectors only and contain no dice-counted nodes.
-
-## B3 — visual hierarchy
-
-- V0 Normal
-- V1 Money / TIN TỨC / LÁ BÀI
-- V2 Job Hub / Mini Game
-- V3 four corner anchors
-
-Jail/Hospital are building/location footprints, not ordinary route circles.
-
-## B4 — working district / landmark blueprint
-
-Provisional art-direction labels:
-- Q1 READY / Trung tâm & Sự nghiệp
-- Q2 Đồn cảnh sát / Giải trí & Drama
-- Q3 Trúng số / Mua sắm & Đời sống
-- Q4 Bệnh viện / Đêm thành phố & Hồi vòng
-
-Names are not final localization copy.
-
-## B5 — camera / mockup brief
-
-Required reference frames before map implementation:
-- full overview
-- normal close-follow with four HUDs
-- READY
-- JAIL_GATE transfer
-- JAIL turn
-- LOTTERY
-- HOSPITAL_GATE transfer
-- HOSPITAL turn
-- Mini Game frame
-
-Canonical brief:
-`docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
-
-## HUD / camera locks retained
+## HUD / camera locks
 
 - P1 top-left
 - P2 top-right
@@ -146,8 +109,19 @@ Canonical brief:
 - active player highlighted
 - HUD fixed in screen space
 - normal camera close-follows active token
-- turn handoff for player in Jail/Hospital goes directly to singleton location
+- Jail/Hospital may get dedicated transfer/release framing
 - full map is explicit overview only
+
+## Remaining special-location timing decision
+
+Topology is now clear, but one rule remains intentionally TBD:
+
+After a successful Jail/Hospital release roll, does the player:
+- move immediately onto/through `J1..J3` or `H1..H3` using that same roll;
+- enter `J1/H1` and end the turn;
+- or follow another explicitly approved timing rule?
+
+Do not infer this until Ron decides.
 
 ## Retained runtime invariants from 0.1.48
 
@@ -166,7 +140,7 @@ Canonical brief:
 
 ## Runtime boundary
 
-Draft B through B5 remain design/docs only.
+Draft C/C1 are design/docs only.
 
 Do not modify `src/content/city/board_city_mvp.json` or validated runtime until a dedicated final-map implementation milestone is explicitly opened.
 
@@ -174,12 +148,12 @@ Latest validated playable runtime remains 0.1.48.
 
 ## Next priority
 
-1. Create/approve the B5 mockup reference set when desired.
-2. Decide later the two remaining Jail/Hospital release details: re-entry node and same-turn movement.
+1. Keep Draft C visual direction as current map design.
+2. Decide the post-release movement timing through the 3-space Jail/Hospital exit routes.
 3. Continue 0.1.49 effect audit in parallel.
 4. Keep TIN TỨC / LÁ BÀI names.
 5. Do not merge PR #1.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final-map design hiện là Draft B through B5: 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE; exactly one inner JAIL and one inner HOSPITAL. Jail release 1/3/5; Hospital release exactly 2/4/5; failure retries next turn. B1 content pacing locked working, B2 spatial layout built, B3 visual hierarchy built, B4 district/landmark blueprint built, B5 mockup brief built. Re-entry node and same-turn movement after successful release are still TBD. Continue 0.1.49 in parallel. Do not merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final map hiện là Draft C: 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE. JAIL nằm trong map và có lối ra J1->J2->J3->M13; HOSPITAL có H1->H2->H3->M35. Jail release 1/3/5; Hospital release exactly 2/4/5; failure retries next turn. Approved visual direction là colorful stylized city/island board với HUD 4 góc; AI image numbering không authoritative; Jail branch chỉ đúng 3 ô J1/J2/J3. Post-release same-turn movement vẫn TBD. Continue 0.1.49 in parallel. Do not merge PR #1.`
