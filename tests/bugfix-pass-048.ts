@@ -27,7 +27,8 @@ const bgm = await readFile('src/audio/bgmController.ts', 'utf8');
 const money = await readFile('src/scenes/TurnStakesBoardScene.ts', 'utf8');
 const presentation = await readFile('src/ui/MatchPresentationLayer.ts', 'utf8');
 const dice = await readFile('src/scenes/TurnOrderScene048.ts', 'utf8');
-const board = await readFile('src/scenes/CareerMinigameBoardScene048.ts', 'utf8');
+const board048 = await readFile('src/scenes/CareerMinigameBoardScene048.ts', 'utf8');
+const board056 = await readFile('src/scenes/CareerMinigameBoardScene056.ts', 'utf8');
 const picker = await readFile('src/ui/CardHandPicker.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
@@ -44,15 +45,22 @@ assert(presentation.includes("model.kind === 'tile_land' && model.tileType === '
 assert(dice.includes("DICE_FACES") && dice.includes('`${face} ${result}`'), 'Roll For Order settled frame must show the real D6 face');
 assert(!dice.includes('`🎲 ${result}`'), '0.1.48 final D6 frame must not use the fixed dice emoji artwork');
 
-assert(board.includes("extends CareerMinigameBoardScene046"), '0.1.48 must bypass the misunderstood 0.1.47 visual rename while retaining 0.1.46 gameplay');
-assert(board.includes("disposition !== 'animate'"), '0.1.48 must reject duplicate/stale move_step presentation');
-assert(!board.includes('submitIntent('), 'bugfix wrapper must not submit gameplay/system intents');
-assert(!board.includes('Math.random'), 'bugfix wrapper must not introduce RNG');
+assert(board048.includes("extends CareerMinigameBoardScene046"), '0.1.48 must bypass the misunderstood 0.1.47 visual rename while retaining 0.1.46 gameplay');
+assert(board048.includes("disposition !== 'animate'"), '0.1.48 must reject duplicate/stale move_step presentation');
+assert(!board048.includes('submitIntent('), '0.1.48 bugfix wrapper must not submit gameplay/system intents');
+assert(!board048.includes('Math.random'), '0.1.48 bugfix wrapper must not introduce RNG');
+
+// Later presentation/content wrappers are allowed, but they must inherit the
+// validated 0.1.48 board scene rather than replacing its bugfix layer.
+assert(board056.includes('extends CareerMinigameBoardScene048'), '0.1.56 must inherit the validated 0.1.48 board bugfix scene');
+assert(!board056.includes('submitIntent('), '0.1.56 branch-identity wrapper must remain presentation-only');
+assert(!board056.includes('Math.random'), '0.1.56 branch-identity wrapper must not introduce RNG');
 
 assert(picker.includes('CHỌN LÁ BÀI') && picker.includes('DÙNG LÁ NÀY'), 'Card hand must restore the original visible vocabulary');
 assert(!picker.includes('CHỌN PHÉP THUẬT'), 'legacy reference names must not rename the current Card system');
-assert(main.includes('TurnOrderScene048') && main.includes('CareerMinigameBoardScene048'), 'packaged runtime must activate both 0.1.48 bugfix scenes');
-assert(lobby.includes('MVP 0.1.48') && setup.includes('MVP 0.1.48'), 'entry surfaces must identify 0.1.48');
+assert(main.includes('TurnOrderScene048'), 'packaged runtime must retain the 0.1.48 Roll For Order bugfix scene');
+assert(main.includes('CareerMinigameBoardScene056 as ActiveBoardScene'), 'packaged runtime must activate the 0.1.56 wrapper that inherits 0.1.48 fixes');
+assert(lobby.includes('MVP 0.1.48') && setup.includes('MVP 0.1.48'), 'entry surfaces must preserve the validated 0.1.48 baseline copy until intentionally superseded');
 assert(lobby.includes('TIN TỨC / LÁ BÀI giữ nguyên tên cũ'), 'Lobby must document the corrected legacy-card interpretation');
 
-console.log('[bugfix-pass-048] PASS money cue ownership + true D6 face + Mini Game BGM isolation + stale token guard + vocabulary restore');
+console.log('[bugfix-pass-048] PASS money cue ownership + true D6 face + Mini Game BGM isolation + stale token guard + vocabulary restore through 0.1.56 inheritance');
