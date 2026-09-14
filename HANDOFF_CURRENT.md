@@ -7,7 +7,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 ## Current milestone
 
-**MVP 0.1.40 - Lap-Native Shell Cleanup**
+**MVP 0.1.41 - Authoritative Final Podium**
 
 Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
@@ -15,63 +15,67 @@ Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Validated playable build
 
-GitHub Actions run: `34802821058` / run `#1169`
+GitHub Actions run: `34804272675` / run `#1209`
 
 Validated runtime/package SHA:
-`2544bfc1ee77bfd12fcfa1b5b08a75ccf4af41b4`
+`9c6bb6a4b0080d4d2599cc142bf27ec45c6fa92e`
 
 Artifact:
-`mememe-playtest-0.1.40`
+`mememe-playtest-0.1.41`
 
 Artifact ID:
-`10331508499`
+`10332816906`
 
 Artifact size:
-`8,560,179 bytes`
+`8,561,263 bytes`
 
 Digest:
-`sha256:003d6d9dde7bdafcd547a60e18483e5f5f068c988f719eb54e6291323063f07f`
+`sha256:86170b85522a7b888b5e3a5864a753febb6a6e8328c19b14397a2fda9e0ff82b`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34802821058`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34804272675`
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.40_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.40.md`
-5. `src/scenes/CareerMinigameBoardScene040.ts`
-6. `src/scenes/CareerMinigameBoardScene039.ts`
-7. `src/scenes/CareerMinigameBoardScene037.ts`
-8. `src/scenes/CareerMinigameBoardScene.ts`
-9. `src/ui/MiniGameOverlay.ts`
-10. `tests/legacy-shell-copy-040.ts`
-11. `tests/final-result-transition-039.ts`
-12. `tests/choice-sfx-038.ts`
-13. `tests/minigame-authority-037.ts`
+3. `docs/MVP_0.1.41_PROGRESS.md`
+4. `docs/PLAYTEST_0.1.41.md`
+5. `src/scenes/CareerMinigameBoardScene041.ts`
+6. `src/ui/podiumRanking.ts`
+7. `src/scenes/CareerMinigameBoardScene040.ts`
+8. `src/scenes/CareerMinigameBoardScene039.ts`
+9. `src/scenes/CareerMinigameBoardScene037.ts`
+10. `src/scenes/CareerMinigameBoardScene.ts`
+11. `src/ui/MiniGameOverlay.ts`
+12. `tests/final-podium-041.ts`
+13. `tests/legacy-shell-copy-040.ts`
+14. `tests/final-result-transition-039.ts`
+15. `tests/minigame-authority-037.ts`
 
-## 0.1.40 lap-native shell cleanup
+## 0.1.41 authoritative final podium
 
-- Runtime now uses `CareerMinigameBoardScene040`.
-- Inherited center HUD uses authoritative lap progress `🏁 x/4 ĐỦ VÒNG`, not `Vòng x/y`.
-- Inherited phase/debug copy includes lap progress + checksum rather than legacy turn-limit progress.
-- Waiting/result shell copy is normalized to the one-lap rule.
-- Shell logs no longer describe a fixed 3-round / 12-turn demo.
-- Legacy `rounds` / `turnLimit` fields remain serialized for compatibility/debug only and are not removed in this patch.
-- Visible progress derives from `demoMatchLapProgress(match)`.
-- No gameplay/system intents, RNG, payouts or authority state are added by the 0.1.40 wrapper.
+- Runtime now uses `CareerMinigameBoardScene041`.
+- The podium replaces the old text-heavy final ranking only after the real authoritative result overlay is eligible.
+- Ranking and B$ come from `demoMatchResult(internals.match)`.
+- Player names come from authoritative `MatchState` players.
+- Face sticker is presentation-only: local neutral runtime face if present, otherwise P1/P2/P3/P4 fallback.
+- Equal B$ uses competition ranking and equal podium height.
+- `300 / 300 / 250 / 200` displays ranks `1 / 1 / 3 / 4`.
+- `300 / 250 / 250 / 200` displays ranks `1 / 2 / 2 / 4`.
+- Podium joins `shellOverlay` and inherits the hidden alpha from the 0.1.39 B$ lock beat, then fades in with the actual result overlay.
+- No gameplay/system intent, wallet mutation, result recomputation or RNG is added.
 
-## Retained 0.1.39 final result behavior
+## Retained final-result chain
 
-- Final result stays deferred until queued presentation clears.
+- 0.1.40 keeps inherited HUD/shell/log copy lap-native.
+- PresentationParity defers final result until queued presentation clears.
 - Pending final Mini Game payout must resolve before scoring.
-- The real result overlay remains the only winner/ranking truth.
-- `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` is presentation-only.
-- Hidden result buttons are input-blocked during the reveal beat.
-- Victory SFX is not duplicated.
+- 0.1.39 still shows `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` first.
+- Hidden result controls remain input-blocked during that reveal beat.
+- Victory SFX remains one-shot and is not duplicated by 0.1.41.
 
-## Retained Mini Game/audio rules
+## Retained Mini Game / audio rules
 
 - Mini Game payout is host-system owned and single-commit per source event.
 - Nhiều ra ít bị: `30 / 20 / 10 / 0 B$`.
@@ -105,18 +109,18 @@ Run URL:
 
 ## CI note
 
-The first 0.1.40 CI attempts exposed old presentation tests that hard-coded previous build numbers. Those tests were made version-agnostic; runtime/gameplay code was not the cause. Run #1169 is the fully validated checkpoint.
+The first 0.1.41 attempt failed only on a Phaser `Container.add()` TypeScript signature in new podium avatar code. It was corrected to array-form `add([...])`. Run #1209 is the fully validated checkpoint.
 
 ## Runtime test focus
 
-1. SOLO: verify center HUD always shows lap progress rather than round/turn-limit progress.
-2. HOST + JOIN: verify both tabs show the same lap-native shell wording.
-3. Verify shell logs never surface `3 vòng / 12 lượt` as the active rule.
-4. Finish normally and verify the 0.1.39 final B$ transition still occurs once.
-5. Finish with final landing on Mini Game and verify payout arrives before result.
+1. Finish a normal SOLO match and confirm all four podium entries show exact final B$.
+2. Verify configured neutral face stickers appear; missing faces use the P-number fallback.
+3. Create/observe a tie and verify equal medal + equal podium height.
+4. Finish with the last required lap on Mini Game and confirm payout lands before the lock beat and podium.
+5. Rematch and confirm a fresh podium builds from the new result.
 6. Re-test P1 movement + Card/News no snap-back and Job Hub token reconcile.
 7. Re-check all eight SFX and `03_City_Silly.ogg`.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.40_PROGRESS.md và docs/PLAYTEST_0.1.40.md. Current validated artifact là mememe-playtest-0.1.40, run #1169, runtime SHA 2544bfc1ee77bfd12fcfa1b5b08a75ccf4af41b4. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.41_PROGRESS.md và docs/PLAYTEST_0.1.41.md. Current validated artifact là mememe-playtest-0.1.41, run #1209, runtime SHA 9c6bb6a4b0080d4d2599cc142bf27ec45c6fa92e. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
