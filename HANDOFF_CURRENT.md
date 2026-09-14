@@ -29,48 +29,51 @@ Current system names stay locked:
 Legacy inventory:
 `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-## Final-map correction — Draft B is current
-
-Ron corrected the earlier map interpretation on 2026-09-14.
-
-The final map reference has **one Hospital** and **one Jail** outside the main board. They are not four-node side branches.
+## Final map — Draft B current
 
 Current topology source:
 - `docs/MAP_ARCHITECTURE_FINAL.md`
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
 
-Draft B working structure:
+Working structure:
 - **44 main-loop spaces** `M01..M44`;
-- **1 off-board Hospital location** `HOSPITAL`;
-- **1 off-board Jail location** `JAIL`;
+- exactly one `HOSPITAL` singleton;
+- exactly one `JAIL` singleton;
 - canonical lap crossing `M44 -> M01`.
 
-The main board itself therefore satisfies the requirement of more than 40 spaces.
+### Four locked corners
+- `M01` = READY
+- `M12` = JAIL_GATE
+- `M23` = LOTTERY
+- `M34` = HOSPITAL_GATE
 
-Hospital/Jail are **not ordinary dice spaces**. A player is sent directly there by an approved authoritative effect such as TIN TỨC, LÁ BÀI, or another approved player-targeting effect.
+Landing on JAIL_GATE sends the player to `JAIL`.
 
-Do not use the old Draft A chains:
-- `H1..H4`;
-- `J1..J4`;
-- Hospital/Jail detour movement.
+Landing on HOSPITAL_GATE sends the player to `HOSPITAL`.
 
-Draft A through A5 are historical design material only where they conflict with Draft B.
+TIN TỨC / LÁ BÀI / another approved HOST-authoritative effect may also send a player directly to either special location.
 
-## Hospital / Jail rules still undefined
+### Jail release — approved
+- Start turn in `JAIL` -> roll D6.
+- `1 / 3 / 5` = released.
+- Any other value = remain in Jail and retry next turn.
+- Whether a successful release roll also gives normal movement that same turn is still TBD.
 
-Entry source is now conceptually known: effect-driven.
+### Hospital release — approved
+- Start turn in `HOSPITAL` -> roll D6.
+- `2 / 4 / 5` = released.
+- Any other value = remain in Hospital and retry next turn.
+- Approved set is exactly `2 / 4 / 5`; do not convert it to an even-number rule.
+- Whether a successful release roll also gives normal movement that same turn is still TBD.
 
-Still do **not** invent:
-- stay duration;
-- forced skipped turns;
-- Hospital fees/recovery;
-- Jail bail;
-- escape roll;
-- escape card;
-- release conditions.
+### Lottery — approved
+- Land on `M23 LOTTERY` -> HOST rolls one D6.
+- Reward = `D6 × 20 B$`.
+- Payouts: `20 / 40 / 60 / 80 / 100 / 120 B$`.
+- Current expected payout = `70 B$` before later economy balancing.
 
-Those need explicit approval later.
+Draft A's `H1..H4` / `J1..J4` chains are superseded and must never be restored as current topology.
 
 ## HUD / camera locks retained
 
@@ -82,7 +85,7 @@ Those need explicit approval later.
 - active player highlighted;
 - HUD fixed in screen space;
 - normal camera close-follows active player;
-- if an effect sends a player to Hospital/Jail, camera frames that singleton location;
+- camera may frame Jail/Hospital singleton locations;
 - full map is explicit overview only.
 
 Canonical UI contract:
@@ -105,13 +108,13 @@ Canonical UI contract:
 
 ## Next priority
 
-1. Rebuild Draft B content/pacing for the **44-space main loop**.
-2. Re-audit Mini Game positions for 44 spaces instead of carrying the old 40-space M18/M38 split blindly.
-3. Rebuild spatial layout/landmarks with one Hospital and one Jail outside the loop.
+1. Rebuild the remaining 44-space content/pacing around the four locked corner anchors.
+2. Rebalance Mini Game / TIN TỨC / LÁ BÀI / money / Job Hub positions.
+3. Rebuild spatial layout/landmarks around singleton Jail/Hospital.
 4. Continue 0.1.49 effect audit in parallel.
-5. Keep TIN TỨC / LÁ BÀI names.
+5. Decide later what a player does immediately after a successful Jail/Hospital release roll.
 6. Do not merge PR #1.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Current map source đã chuyển sang Draft B: 44 ô main M01..M44 + đúng 1 HOSPITAL + đúng 1 JAIL nằm ngoài vòng chính. Hospital/Jail không phải branch nhiều ô và không đi bằng dice; player bị TIN TỨC/LÁ BÀI/effect authoritative gửi thẳng tới. Draft A H1..H4/J1..J4 đã superseded. Deep stay/exit rules vẫn TBD. HUD 4 góc và camera close-follow giữ nguyên. Tiếp tục 0.1.49 song song. Không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Current map source là Draft B: 44 main spaces. Four corners locked: M01 READY, M12 JAIL_GATE -> JAIL, M23 LOTTERY = D6 x20 B$, M34 HOSPITAL_GATE -> HOSPITAL. JAIL release faces 1/3/5; HOSPITAL release faces exactly 2/4/5; failed release waits until next turn. Whether successful release also moves normally that turn is TBD. TIN TỨC/LÁ BÀI/approved effects can also send players directly to JAIL/HOSPITAL. Old H1..H4/J1..J4 is superseded. HUD 4 corners + close-follow camera retained. Do not merge PR #1.`
