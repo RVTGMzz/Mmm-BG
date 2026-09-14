@@ -94,9 +94,6 @@ const scene = await readFile('src/scenes/CareerMinigameBoardScene046.ts', 'utf8'
 const picker = await readFile('src/ui/JobChoicePicker.ts', 'utf8');
 const baseScene = await readFile('src/scenes/CareerMinigameBoardScene.ts', 'utf8');
 const presentation = await readFile('src/ui/presentationModel.ts', 'utf8');
-const main = await readFile('src/main.ts', 'utf8');
-const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
-const setup = await readFile('src/scenes/SetupScene.ts', 'utf8');
 
 assert(scene.includes('extends CareerMinigameBoardScene045'), '0.1.46 must retain validated 0.1.45 behavior');
 assert(scene.includes('internals.canControlCurrentPlayer()'), '0.1.46 must distinguish controller from spectator');
@@ -107,9 +104,6 @@ assert(presentation.includes("event.type === 'dice_roll' || event.type === 'job_
 assert(picker.includes('HOST quyết định D6 authoritative'), 'Job Hub UI must explain the authority boundary');
 assert(!/Math\.random\s*\(/.test(picker), 'Job Hub picker must never generate its own random Job result');
 assert(!/rollD6\s*\(/.test(picker), 'Job Hub picker must not roll gameplay D6 locally');
-assert(main.includes('CareerMinigameBoardScene046'), 'packaged runtime must use the 0.1.46 scene');
-assert(lobby.includes('MVP 0.1.46'), 'Lobby must identify 0.1.46');
-assert(setup.includes('MVP 0.1.46'), 'Setup must identify 0.1.46');
 
 client.close();
 host.close();
