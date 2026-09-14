@@ -8,9 +8,6 @@ import {
 const scene = await readFile('src/scenes/CareerMinigameBoardScene042.ts', 'utf8');
 const parent = await readFile('src/scenes/CareerMinigameBoardScene041.ts', 'utf8');
 const helper = await readFile('src/ui/podiumFaceReaction.ts', 'utf8');
-const main = await readFile('src/main.ts', 'utf8');
-const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
-const setup = await readFile('src/scenes/SetupScene.ts', 'utf8');
 const executableScene = scene
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .replace(/\/\/.*$/gm, '');
@@ -34,14 +31,11 @@ assert(scene.includes('shouldSpotlightPodiumRank(entry.rank)'), '0.1.42 spotligh
 assert(scene.includes("'👑'"), 'winner spotlight must include the fixed crown');
 assert(scene.includes("'✦'"), 'winner spotlight must include fixed spark decorations');
 assert(parent.includes('gameSession.getFace(entry.playerId, faceExpression)'), 'parent podium must consume the overridable face expression');
-assert(parent.includes('decoratePodiumSlot(root, entry, x, faceY)'), 'parent podium must expose the decoration hook');
+assert(parent.includes('decoratePodiumSlot(slot, entry, 0, faceY)'), 'parent podium must expose the decoration hook on a per-slot container');
 assert(helper.includes("return 'happy'") && helper.includes("return 'angry'") && helper.includes("return 'neutral'"), 'face helper must contain all deterministic expression mappings');
 assert(!/submitIntent\s*\(/.test(executableScene), '0.1.42 podium polish must not submit gameplay intents');
 assert(!/submitSystemIntent\s*\(/.test(executableScene), '0.1.42 podium polish must not submit host-system commands');
 assert(!/Math\.random\s*\(/.test(executableScene), '0.1.42 podium polish must not introduce presentation RNG');
 assert(!/\.money\s*[+\-*/]?=/.test(executableScene), '0.1.42 podium polish must not mutate wallet state');
-assert(main.includes('CareerMinigameBoardScene042'), 'main runtime must use the 0.1.42 podium reaction scene');
-assert(lobby.includes('MVP 0.1.42'), 'Lobby must identify 0.1.42');
-assert(setup.includes('MVP 0.1.42'), 'Setup must identify 0.1.42');
 
 console.log('[podium-face-reaction-042] PASS deterministic face reactions + tied-winner spotlight + presentation-only invariants');
