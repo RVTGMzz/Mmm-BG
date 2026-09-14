@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
+import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import { configureInitialPlayOrder } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
@@ -39,7 +40,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.31', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.38', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -52,7 +53,7 @@ export class SetupScene extends Phaser.Scene {
       ? `HOST LOCAL • ROOM ${config.roomCode}`
       : cpuCount > 0
         ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
-        : '4 người HOTSEAT → đặt tên → Roll For Order → vào demo 3 vòng';
+        : '4 người HOTSEAT → đặt tên → Roll For Order → mỗi người hoàn thành 1 vòng';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -72,7 +73,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.31: trước trận cả 4 người sẽ đổ xúc xắc xếp lượt. Job Hub dùng xúc xắc 1–2 / 3–4 / 5–6 thay cho chọn nghề trực tiếp.</p>
+      <p id="setup-status" class="setup-status">0.1.38: Roll For Order xếp lượt. Trận chỉ chốt B$ sau khi cả 4 người hoàn thành ít nhất 1 vòng.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -181,6 +182,7 @@ export class SetupScene extends Phaser.Scene {
       return;
     }
 
+    sfxController.play('ui_confirm');
     this.scene.start('TurnOrderScene');
   }
 
