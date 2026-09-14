@@ -16,92 +16,65 @@ Artifact:
 
 ## Current preview milestone
 
-**MVP 0.1.51 — Draft D Branching Map + Close Camera Preview**
+**MVP 0.1.52 — Draft D UI Fix / Close Camera / Persistent Full Map**
 
 Read first:
 1. `HANDOFF_CURRENT.md`
-2. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
-3. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
-4. `docs/MVP_0.1.51_DRAFT_D_PREVIEW.md`
-5. `docs/PLAYTEST_0.1.51_DRAFT_D_PREVIEW.md`
+2. `docs/MVP_0.1.52_DRAFT_D_UI_FIX.md`
+3. `docs/PLAYTEST_0.1.52_DRAFT_D_UI_FIX.md`
+4. `docs/MAP_DRAFT_D_PLAYTEST_FEEDBACK_0.1.51.md`
+5. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+6. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
 
-Runtime:
-- `src/content/city/board_city_final_051.json`
-- `src/core/finalMapPreview051.ts`
-- `src/scenes/FinalMapPreviewScene051.ts`
-- `tests/final-map-preview-051.ts`
+## Why 0.1.52 exists
 
-Launch:
+0.1.51 loaded the Draft D map but looked frozen because the zoomed world camera also transformed screen HUD/controls. The Roll Dice button and HUDs could end up outside the viewport.
+
+0.1.52 separates rendering:
+- world camera = map + tokens;
+- UI camera = four HUDs + Roll Dice + route chooser + toast + Full Map controls;
+- UI camera stays at zoom `1.0`.
+
+## Camera values
+- active-player follow `1.70x`
+- branch decision `1.25x`
+- persistent full-map review `0.50x`
+
+## Launch
+
+Close gameplay review:
 - `START_DRAFT_D_PREVIEW.bat`
-- query `?finalmap=2`
+- `?finalmap=3`
 
-0.1.50 remains available via `START_FINAL_MAP_PREVIEW.bat` / `?finalmap=1` for direct A/B comparison.
+Persistent full-map review:
+- `START_DRAFT_D_FULL_MAP.bat`
+- `?finalmap=3&overview=1`
 
-## Draft D direction locked from Ron's 0.1.50 feedback
+## CI candidate
 
-- keep 44 main spaces;
-- stop reading as a neat oval/circle;
-- use asymmetric winding city route;
-- increase space between nodes;
-- avoid long packed rows;
-- add 3 real route decisions;
-- normal camera much closer;
-- HUD cards smaller;
-- full map only through Overview;
-- ordinary preview nodes may be rectangular and branch nodes diamond-shaped instead of all circles.
+- artifact `mememe-playtest-0.1.52-draft-d-ui-fix`
+- run #1704 / `34896654009`
+- package SHA `cf7129a054d0b82c9a97cb9aa4a8b9dd21bd602d`
+- artifact ID `10368997808`
+- SHA256 `bdd64be273299aa400f75782da08bb84a29462f152d42499c3d17dbee9b36081`
 
-## Three route decisions
+## Draft D retained direction
+- 44 main spaces baseline;
+- asymmetric board, not a simple oval;
+- 3 real decision junctions;
+- more breathing room between spaces;
+- alternate lanes rejoin main route;
+- full map is review/overview, normal turn camera stays close.
 
-1. After M04:
-   - main M05 → M06 → M07 → M08
-   - alternate A1 → A2 → A3 → M08
-2. After M17:
-   - main M18 → M19 → M20 → M21
-   - alternate B1 → B2 → B3 → M21
-3. After M35:
-   - main M36 → M37 → M38 → M39
-   - alternate C1 → C2 → C3 → M39
-
-The two paths at each junction intentionally use equal step counts in the first preview. Shortcut/risk/reward balance is not yet locked.
-
-## Camera / HUD preview values
-
-- normal follow zoom `1.38`
-- branch decision zoom `1.10`
-- overview zoom `0.55`
-- P1/P2/P3/P4 fixed at four screen corners
-- compact avatar + name + B$ HUD
-- active HUD emphasized
-
-## Retained anchors and rules
-
+Locked special rules remain:
 - M01 READY
-- M12 JAIL_GATE
-- M23 LOTTERY, D6 × 20 B$
-- M34 HOSPITAL_GATE
-- Jail release 1/3/5
-- Hospital release exactly 2/4/5
-- Jail exit exactly J1 → J2 → J3 → M13
-- Hospital exit exactly H1 → H2 → H3 → M35
-- TIN TỨC / LÁ BÀI naming retained
+- M12 Jail Gate
+- M23 Lottery D6 × 20 B$
+- M34 Hospital Gate
+- Jail release `1/3/5`
+- Hospital release exactly `2/4/5`
+- exactly 3 visible exit spaces for each special location.
 
-Canonical combined map + HUD visual reference:
-`docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
-
-Post-release same-turn behavior remains TBD and must not be inferred from preview animation.
-
-## Parallel work
-
-0.1.49 Legacy Effect Audit continues in parallel.
-
-## Next gate
-
-Ron playtests 0.1.51 and compares against 0.1.50 for:
-- branch feel;
-- route spacing;
-- camera comfort;
-- HUD obstruction/readability;
-- tile-shape direction;
-- overview orientation.
-
-Only after approval should Draft D move into authoritative integration.
+Keep **TIN TỨC / LÁ BÀI** names.
+0.1.49 Legacy Effect Audit remains parallel.
+Do not merge PR #1.
