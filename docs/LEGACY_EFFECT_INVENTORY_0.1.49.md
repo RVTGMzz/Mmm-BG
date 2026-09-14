@@ -38,16 +38,16 @@ Current system names remain locked: **TIN TỨC** and **LÁ BÀI**.
 ### LFX-03 — Jail release card
 - Destination: **LÁ BÀI** candidate
 - Scope: self / special-location status
-- Current template: TBD
-- Needs: Jail stay/release rules, which are still undefined
-- Decision: **DEFER**
+- Base release rule is now defined: D6 `1 / 3 / 5` releases, failure retries next turn.
+- Alternate release-card semantics are not defined yet.
+- Decision: **DEFER alternate card**, not because Jail release is unknown, but because bypass/interaction semantics remain TBD.
 
 ### LFX-04 — Hospital release card
 - Destination: **LÁ BÀI** candidate
 - Scope: self / special-location status
-- Current template: TBD
-- Needs: Hospital stay/release rules, which are still undefined
-- Decision: **DEFER**
+- Base release rule is now defined: D6 exactly `2 / 4 / 5` releases, failure retries next turn.
+- Alternate release-card semantics are not defined yet.
+- Decision: **DEFER alternate card**, not because Hospital release is unknown, but because bypass/interaction semantics remain TBD.
 
 ### LFX-05 — Timed global event / weather / curse
 - Destination: **TIN TỨC**
@@ -101,11 +101,11 @@ Current system names remain locked: **TIN TỨC** and **LÁ BÀI**.
 - Authority: HOST validates exact window
 - Decision: **ADAPT** as metadata
 
-### LFX-12 — Skip-next-roll style penalty
-- Destination: not approved for current card/news set
+### LFX-12 — Generic skip-next-roll penalty
+- Destination: not approved as a generic card/news family
 - Scope: player / turn flow
-- Needs: explicit skip-turn rules
-- Decision: **DEFER**; do not implement implicitly
+- Note: failed Jail/Hospital release attempts naturally consume that attempt and retry next turn; this does not automatically approve a generic skip-turn card family.
+- Decision: **DEFER** generic skip-turn effects
 
 ### LFX-13 — Odd/even branch routing
 - Destination: historical map mechanic only
@@ -118,11 +118,19 @@ Current system names remain locked: **TIN TỨC** and **LÁ BÀI**.
 - Scope: one player / special-location state
 - Core idea: an effect directly sends the target to the singleton `HOSPITAL` or `JAIL` location.
 - Current template: `Đưa {TargetPlayer} đến {HOSPITAL|JAIL}.`
-- Map behavior: this is **not** normal dice movement and does not traverse H1..H4/J1..J4.
+- Map behavior: this is not normal dice movement and does not traverse H1..H4/J1..J4.
 - Authority: HOST validates target and destination, updates authoritative location state, then emits presentation events.
 - Replay: destination and affected player must be serialized deterministically.
-- Needs: entry can be modeled now, but stay/release consequences remain TBD.
-- Decision: **ADAPT as an effect family; DEFER detailed consequence implementation until special-location rules are approved**
+- Base release rules are now defined; post-release same-turn movement remains TBD.
+- Decision: **ADAPT**
+
+### LFX-15 — Lottery corner
+- Destination: map-special effect, not a card family
+- Scope: self / economy
+- Trigger: land on `M23 LOTTERY`
+- Resolution: HOST rolls D6 and awards `D6 × 20 B$`
+- Payout range: `20..120 B$`, expected value `70 B$`
+- Decision: **KEEP IN MAP TRACK / NOT A TIN TỨC OR LÁ BÀI EFFECT**
 
 ## First-pass conclusions
 
@@ -131,25 +139,33 @@ Safe to carry forward conceptually:
 2. Held cards in the current LÁ BÀI hand model.
 3. Timing metadata represented in data rather than hard-coded per card.
 4. Timed global events as a TIN TỨC family once an authoritative duration/status layer exists.
-5. Effect-driven send-to-Hospital/Jail as a destination family, with consequences still separate/TBD.
+5. Effect-driven send-to-Hospital/Jail using stable singleton destinations.
 
-Blocked for now:
-- Jail-release effects.
-- Hospital-release effects.
-- Skip-turn effects.
-- Board-node status placement.
-- Off-turn reaction/passive cards.
-- Exact Hospital/Jail stay/exit consequences.
+Now defined:
+- Jail base release: `1 / 3 / 5`.
+- Hospital base release: exactly `2 / 4 / 5`.
+- Failure retries on the player's next turn.
+
+Still deferred:
+- alternate release cards/effects;
+- post-release same-turn movement semantics;
+- board-node status placement;
+- off-turn reaction/passive cards.
 
 Belongs outside 0.1.49:
 - Pet mechanics.
 - Shop draw/trade flow.
 - Historical odd/even branch routing.
+- Lottery as a map-special rule rather than card/news content.
 
 ## Map correction note
 
 Current map authority is Draft B:
 - 44 main-loop spaces;
+- `M01 READY`;
+- `M12 JAIL_GATE`;
+- `M23 LOTTERY`;
+- `M34 HOSPITAL_GATE`;
 - one `HOSPITAL` location;
 - one `JAIL` location.
 
