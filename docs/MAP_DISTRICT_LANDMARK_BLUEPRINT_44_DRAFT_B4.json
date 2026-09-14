@@ -1,0 +1,43 @@
+{
+  "schema": "mememe-map-district-blueprint-v1",
+  "status": "DOCUMENTATION_ONLY_NOT_RUNTIME",
+  "draft": "B4",
+  "quarters": [
+    {
+      "id":"Q1",
+      "range":"M01..M11",
+      "workingLabel":"READY / Trung tâm & Sự nghiệp",
+      "primaryAnchors":["M01_READY","M08_JOB_HUB","M12_JAIL_GATE_APPROACH"]
+    },
+    {
+      "id":"Q2",
+      "range":"M12..M22",
+      "workingLabel":"Đồn cảnh sát / Giải trí & Drama",
+      "primaryAnchors":["M12_JAIL_GATE","JAIL","M17_MINIGAME","M23_LOTTERY_APPROACH"]
+    },
+    {
+      "id":"Q3",
+      "range":"M23..M33",
+      "workingLabel":"Trúng số / Mua sắm & Đời sống",
+      "primaryAnchors":["M23_LOTTERY","M34_HOSPITAL_GATE_APPROACH"]
+    },
+    {
+      "id":"Q4",
+      "range":"M34..M44",
+      "workingLabel":"Bệnh viện / Đêm thành phố & Hồi vòng",
+      "primaryAnchors":["M34_HOSPITAL_GATE","HOSPITAL","M39_MINIGAME","M01_READY_RETURN"]
+    }
+  ],
+  "landmarkPriority": {
+    "L1":["READY_PLAZA","JAIL_GATE_AND_JAIL","LOTTERY_LANDMARK","HOSPITAL_GATE_AND_HOSPITAL"],
+    "L2":["JOB_HUB_M08","MINIGAME_M17","MINIGAME_M39"],
+    "L3":["CITY_SKYLINE","SHOPPING_STRIP","PUBLIC_SQUARE","NIGHT_RETURN_SKYLINE"]
+  },
+  "innerLocations": {
+    "JAIL":{"kind":"singleton_location","fakeRouteNodes":false},
+    "HOSPITAL":{"kind":"singleton_location","fakeRouteNodes":false}
+  },
+  "styleRecommendation":"coherent_stylized_toy_collage_city",
+  "finalNamesLocked":false,
+  "runtimeImport":"PROHIBITED_UNTIL_FINAL_MAP_IMPLEMENTATION_MILESTONE"
+}
