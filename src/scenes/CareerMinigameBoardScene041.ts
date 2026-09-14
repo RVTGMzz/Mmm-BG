@@ -117,40 +117,41 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
       const medal = MEDAL_BY_RANK[rank] ?? `#${rank}`;
       const player = match.players.find((candidate) => candidate.id === entry.playerId);
       const name = player?.name ?? `P${entry.playerId + 1}`;
+      const slot = this.add.container(x, 0);
 
-      const shadow = this.add.rectangle(x + 4, baselineY - height / 2 + 5, 142, height, 0x000000, 0.24);
-      const pedestal = this.add.rectangle(x, baselineY - height / 2, 142, height, accent, 0.94)
+      const shadow = this.add.rectangle(4, baselineY - height / 2 + 5, 142, height, 0x000000, 0.24);
+      const pedestal = this.add.rectangle(0, baselineY - height / 2, 142, height, accent, 0.94)
         .setStrokeStyle(rank === 1 ? 4 : 3, rank === 1 ? 0xffd34d : 0xfffaf0, 1);
-      const rankText = this.add.text(x, top + 20, medal, {
+      const rankText = this.add.text(0, top + 20, medal, {
         fontSize: rank === 1 ? '28px' : '24px',
       }).setOrigin(0.5);
-      const nameText = this.add.text(x, top + 50, this.shortPodiumName(name), {
+      const nameText = this.add.text(0, top + 50, this.shortPodiumName(name), {
         fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
         fontSize: '13px',
         fontStyle: 'bold',
         color: '#ffffff',
         align: 'center',
       }).setOrigin(0.5);
-      const moneyText = this.add.text(x, top + 76, `${entry.money} B$`, {
+      const moneyText = this.add.text(0, top + 76, `${entry.money} B$`, {
         fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
         fontSize: rank === 1 ? '18px' : '16px',
         fontStyle: 'bold',
         color: '#ffffff',
       }).setOrigin(0.5);
 
-      root.add([shadow, pedestal, rankText, nameText, moneyText]);
+      slot.add([shadow, pedestal, rankText, nameText, moneyText]);
 
       const faceExpression = this.podiumFaceExpression(entry);
       const faceAsset = gameSession.getFace(entry.playerId, faceExpression);
       if (faceAsset && this.textures.exists(faceAsset.textureKey)) {
-        root.add([
-          this.add.rectangle(x, faceY, 62, 62, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
-          this.add.image(x, faceY, faceAsset.textureKey).setDisplaySize(54, 54),
+        slot.add([
+          this.add.rectangle(0, faceY, 62, 62, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
+          this.add.image(0, faceY, faceAsset.textureKey).setDisplaySize(54, 54),
         ]);
       } else {
-        root.add([
-          this.add.circle(x, faceY, 29, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
-          this.add.text(x, faceY, `P${entry.playerId + 1}`, {
+        slot.add([
+          this.add.circle(0, faceY, 29, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
+          this.add.text(0, faceY, `P${entry.playerId + 1}`, {
             fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
             fontSize: '16px',
             fontStyle: 'bold',
@@ -159,7 +160,8 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
         ]);
       }
 
-      this.decoratePodiumSlot(root, entry, x, faceY);
+      this.decoratePodiumSlot(slot, entry, 0, faceY);
+      root.add(slot);
     });
 
     return root;
@@ -170,7 +172,7 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
   }
 
   protected decoratePodiumSlot(
-    _root: Phaser.GameObjects.Container,
+    _slot: Phaser.GameObjects.Container,
     _entry: RankedPodiumEntry,
     _x: number,
     _faceY: number,
