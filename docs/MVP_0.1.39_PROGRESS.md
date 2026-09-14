@@ -1,6 +1,6 @@
 # MVP 0.1.39 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -23,7 +23,7 @@ No winner or B$ value is recomputed by the transition.
 
 ## Presentation determinism
 
-Spark positions are fixed constants. The transition does not call `Math.random`, gameplay RNG, `submitIntent`, or `submitSystemIntent`.
+Spark positions are fixed constants. The transition does not call gameplay/presentation random generation, gameplay RNG, `submitIntent`, or `submitSystemIntent`.
 
 Victory SFX remains owned by the existing result-overlay hook and is not duplicated by 0.1.39.
 
@@ -45,7 +45,7 @@ Local Lobby, Setup and board labels advance to 0.1.39. The one-lap rule remains 
 
 ## Regression
 
-New `tests/final-result-transition-039.ts` checks that the final transition:
+`tests/final-result-transition-039.ts` verifies that the final transition:
 
 - is ended-state only;
 - respects an empty/deferred result overlay;
@@ -58,4 +58,26 @@ New `tests/final-result-transition-039.ts` checks that the final transition:
 - is the scene wired by `src/main.ts`;
 - retains the PresentationParity defer gate in its inheritance chain.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## Validated artifact
+
+GitHub Actions run: `34801911635` / run `#1139`
+
+Validated runtime/package SHA:
+`86764fa9aeda89067cb1abd29703985f5c993c04`
+
+Artifact:
+`mememe-playtest-0.1.39`
+
+Artifact ID:
+`10330908906`
+
+Size:
+`8,558,543 bytes`
+
+Digest:
+`sha256:2c7332429a1432bfb278bc2fef7e306f4cd87bb566ff9884f875fff2dd2ba2d1`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34801911635`
+
+Full CI passed through artifact upload, including build/typecheck, replay, lockstep, host/client resync, authority, two-tab core, demo shell/rematch, CPU autoplay, presentation/board regressions, Settings/audio, content/economy/stakes/tactical/function tiles/direct dice, Job/Mini Game payout, Mini Game host-system ownership, Choice-SFX/copy regression, final-result transition regression, image bounds, package verification, guide copy and artifact upload.
