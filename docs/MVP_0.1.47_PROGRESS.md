@@ -1,6 +1,6 @@
 # MVP 0.1.47 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -34,14 +34,14 @@ New wrapper: `src/scenes/CareerMinigameBoardScene047.ts`, extends validated 0.1.
 
 ## Multiplayer parity audit
 
-New regression: `tests/multiplayer-presentation-parity-047.ts`.
+Regression: `tests/multiplayer-presentation-parity-047.ts`.
 
 It verifies:
 
 - one authoritative event stream derives the same visible presentation fingerprint in HOST and CLIENT modes;
 - Tiên Tri is portrait and Phép Thuật is landscape;
 - technical `news` / `card_*` event names remain unchanged;
-- snapshot resync is still excluded from presentation enqueue;
+- snapshot resync is excluded from presentation enqueue;
 - normal network state only enqueues eventSeq values newer than the local presentation cursor;
 - 0.1.47 extends the complete 0.1.46 runtime chain;
 - presentation wrapper does not submit gameplay/system intents or use random presentation values;
@@ -63,6 +63,35 @@ It verifies:
 - Jail deep mechanics remain undefined.
 - PR #1 remains unmerged.
 
-The supplied reference images are treated as visual direction only and are not persisted into the repository as runtime assets in this milestone.
+The supplied reference images are visual direction only and are not persisted into the repository as runtime assets in this milestone.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## CI notes
+
+- Run #1399 exposed only an older 0.1.46 regression that hardcoded the current packaged scene version. The regression was made version-agnostic without weakening Job Hub authority.
+- Run #1401 passed all runtime and 0.1.47 parity tests, then package verification correctly caught a missing `file://` launch warning in `public/PLAYTEST.txt`.
+- The quickstart warning was restored without runtime/gameplay changes.
+- Run #1403 is the official validated 0.1.47 checkpoint.
+
+## Validated artifact
+
+GitHub Actions run: `34811037552` / run `#1403`
+
+Validated runtime/package SHA:
+`2c8b853f39b45e2fedd53130caf8115a4f07e9aa`
+
+Artifact:
+`mememe-playtest-0.1.47`
+
+Artifact ID:
+`10334662721`
+
+Artifact size:
+`8,565,661 bytes`
+
+Digest:
+`sha256:c7b48367b32d181d8fbf8de162136302d25752ad90c90c5d0fa28f51643ba510`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34811037552`
+
+Full CI passed build/typecheck, deterministic replay, lockstep, host/client authority, two-tab sessions, all prior gameplay/presentation regressions, Remote Roll For Order, Multiplayer Job Hub, new presentation parity/deck-form regression, face image bounds, package verification, guide copy and artifact upload.
