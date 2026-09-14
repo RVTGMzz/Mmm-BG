@@ -13,6 +13,7 @@ import { CareerMinigameBoardScene048 as ActiveBoardScene } from './scenes/Career
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
+import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 const normalScenes = [
@@ -25,15 +26,18 @@ const normalScenes = [
   FinalMapPreviewScene050,
   FinalMapPreviewScene051,
   FinalMapPreviewScene052,
+  FullMapReviewScene053,
 ];
 
-const previewScenes = finalMapMode === '3'
-  ? [FinalMapPreviewScene052, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene052)]
-  : finalMapMode === '2'
-    ? [FinalMapPreviewScene051, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene051)]
-    : finalMapMode === '1'
-      ? [FinalMapPreviewScene050, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene050)]
-      : normalScenes;
+const previewScenes = finalMapMode === '4'
+  ? [FullMapReviewScene053, ...normalScenes.filter((scene) => scene !== FullMapReviewScene053)]
+  : finalMapMode === '3'
+    ? [FinalMapPreviewScene052, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene052)]
+    : finalMapMode === '2'
+      ? [FinalMapPreviewScene051, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene051)]
+      : finalMapMode === '1'
+        ? [FinalMapPreviewScene050, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene050)]
+        : normalScenes;
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
