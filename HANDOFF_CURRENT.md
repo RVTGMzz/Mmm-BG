@@ -36,7 +36,9 @@ Latest validated playable artifact remains:
 8. `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
 9. `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`
 10. `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
-11. `docs/UI_FINAL_PLAYER_HUD.md`
+11. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.md`
+12. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.json`
+13. `docs/UI_FINAL_PLAYER_HUD.md`
 
 ## Track A — 0.1.49 Legacy Effect Audit
 
@@ -96,7 +98,7 @@ Approved pacing assignments:
 - `M38` = Mini Game
 - `M40` = TIN TỨC
 
-Mini Game spacing is now exactly **20 / 20** around the 40-node main loop.
+Mini Game spacing is exactly **20 / 20** around the 40-node main loop.
 
 TIN TỨC is now:
 `M06, M14, M19, M25, M33, M40`
@@ -107,7 +109,19 @@ LÁ BÀI remains:
 
 Category totals remain unchanged.
 
-The canonical architecture JSON and A1/A2/A3 design documents have been synchronized to the approved M18/M38 Mini Game direction.
+### Draft A5 — district / landmark blueprint
+Completed in:
+- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.md`
+- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.json`
+
+A5 locks the working local visual identity used by the close-follow camera:
+- D1: READY Plaza / city center;
+- D2: Job Hub Tower + Hospital area;
+- D3: Entertainment Dome around Mini Game M18;
+- D4: Civic/Jail Complex + Civic Square;
+- D5: Night Market Skyline + Mini Game M38 stage + READY return cue.
+
+A5 also defines district transitions, landmark priority tiers, HUD-safe landmark composition and concept-art handoff targets.
 
 A compact fallback remains available only if future runtime playtesting proves 40 main nodes too slow:
 - 44 total = 36 main + 4 Hospital + 4 Jail.
@@ -130,14 +144,14 @@ Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
 
 ## Runtime boundary
 
-Draft A through A4 are documentation/design only.
+Draft A through A5 are documentation/design only.
 
-Do not move the 48-node graph, coordinates or approved pacing into `src/content/city/board_city_mvp.json` until a dedicated final-map implementation milestone is explicitly opened and validated.
+Do not move the 48-node graph, coordinates, pacing or landmark blueprint into `src/content/city/board_city_mvp.json` until a dedicated final-map implementation milestone is explicitly opened and validated.
 
 ## Next priority
 
-1. Continue map design into **A5 district/landmark blueprint** using the approved M18/M38 pacing.
-2. Continue 0.1.49 effect audit without inventing missing legacy source material.
+1. Continue 0.1.49 effect audit without inventing missing legacy source material.
+2. Next map pass can be **A6 art/mockup production brief** based on A5, or pause the design lane for visual review.
 3. Keep Hospital/Jail deeper gameplay semantics TBD until explicitly approved.
 4. Keep TIN TỨC / LÁ BÀI names.
 5. Do not merge PR #1.
