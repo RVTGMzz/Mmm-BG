@@ -6,10 +6,10 @@ import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
-import { TurnOrderScene } from './scenes/TurnOrderScene';
+import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene047 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene047';
+import { CareerMinigameBoardScene048 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene048';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
