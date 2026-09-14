@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.45 — REMOTE ROLL FOR ORDER
+MeMeMe MVP 0.1.46 — JOB HUB MULTIPLAYER POLISH
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,30 +18,36 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.45 FOCUS — REMOTE ROLL FOR ORDER
-- JOIN không còn nhảy thẳng vào board; client vào cùng màn Roll For Order với host.
-- Client chọn P2/P3/P4 và giữ đúng ghế đó trong ceremony.
-- Khi tới lượt ghế remote, nút D6 chỉ sáng trên tab client sở hữu ghế.
-- Client chỉ gửi thao tác bấm roll + prompt ID, KHÔNG gửi kết quả xúc xắc.
-- HOST kiểm tra đúng ghế/prompt rồi mới sinh D6 và broadcast kết quả authoritative cho các tab.
-- Unclaimed seats vẫn do HOST bấm.
-- Nhóm hòa chỉ reroll trong nhóm; remote seat hòa sẽ lại tự bấm trên tab remote.
-- HOST broadcast final playOrder và chỉ HOST được release mọi tab vào trận.
-- Player names sync từ HOST Setup; face files vẫn không được gửi qua mạng.
+0.1.46 FOCUS — JOB HUB MULTIPLAYER
+- Giữ nguyên Remote Roll For Order 0.1.45.
+- Khi ghế remote tới Job Hub, cả HOST và CLIENT đều thấy cùng 3 Job A/B/C authoritative.
+- Tab đang sở hữu ghế remote mới có quyền bấm ĐỔ XÚC XẮC JOB.
+- Tab không sở hữu ghế vẫn thấy Job Hub ở chế độ spectator và chờ người chơi thật bấm.
+- Client chỉ gửi choose_job intent rỗng; client KHÔNG gửi Job ID, D6 result hay offer index.
+- HOST gameplay authority mới tiêu thụ RNG, sinh Job D6 rồi áp luật 1–2 → A, 3–4 → B, 5–6 → C.
+- job_dice_roll authoritative được broadcast về mọi tab và dùng chung animation xúc xắc.
+- job_selected authoritative hiển thị nghề nhận được + lương Lv.1 cho mọi tab.
+- Khi Job được chốt, spectator Job Hub tự đóng và trận tiếp tục bình thường.
 
 TEST 2 TAB KHUYẾN NGHỊ
-1) Tab A → HOST 2 TAB → giữ room code → Setup → ROLL FOR ORDER.
-2) Tab B → JOIN 2 TAB → nhập room code → chọn P2/P3/P4.
-3) Host phải nhận remote seat rồi mới bắt đầu ceremony.
-4) Khi tới remote seat, bấm D6 trên tab B; cả hai tab phải hiện cùng kết quả.
-5) Nếu hòa, chỉ nhóm hòa đổ lại.
-6) Client chờ HOST bấm VÀO TRẬN rồi cả hai mới sang board.
+1) Tab A HOST, Tab B JOIN P2/P3/P4 và hoàn tất Remote Roll For Order.
+2) Chơi tới khi ghế remote dừng ở Job Hub.
+3) Cả hai tab phải thấy cùng 3 Job A/B/C.
+4) HOST phải hiện trạng thái chờ; nút Job Dice chỉ bấm được ở tab remote đang sở hữu ghế.
+5) Bấm Job Dice ở tab remote.
+6) Cả hai tab phải thấy cùng kết quả D6 authoritative, cùng nghề và cùng lương.
+7) Kiểm tra nghề đúng mapping: 1–2 A, 3–4 B, 5–6 C.
 
 AUTHORITY CHECK
-- Spam click remote roll không được sinh thêm D6 cho cùng prompt.
-- Remote P2 không được roll prompt của P1/P3/P4.
-- Late join sau khi ceremony khóa ghế phải bị reject rõ ràng.
-- Roll For Order pregame không tiêu thụ gameplay RNG state.
+- Client không thể tự chọn nghề bằng cách gửi Job ID/result/offer index.
+- D6 Job chỉ được tạo từ gameplay RNG authoritative của HOST.
+- Job Hub vẫn bắt buộc dừng dù xúc xắc di chuyển còn bước.
+- Player ID, playOrder, B$, one-lap scoring và Mini Game payout không đổi.
+
+REMOTE ROLL FOR ORDER RETAINED
+- Client chọn P2/P3/P4 và tự bấm D6 khi tới lượt.
+- HOST sinh D6, xử lý tie-reroll và broadcast kết quả.
+- Final playOrder do HOST chốt; client chờ HOST release vào trận.
 
 EVENT AUDIO
 - victory: khi bảng kết quả thật xuất hiện.
@@ -50,7 +56,7 @@ EVENT AUDIO
 - step: mỗi move_step authoritative.
 - -money: khi B$ giảm.
 - +money: khi B$ tăng.
-- dice: mọi lần đổ D6, gồm Roll For Order.
+- dice: mọi lần đổ D6, gồm Roll For Order và Job D6 authoritative.
 - choice: tác vụ chọn/xác nhận UI.
 
 MINI GAME
@@ -63,7 +69,7 @@ LUẬT CHỐT ĐIỂM HIỆN TẠI
 - Mỗi người phải hoàn thành đủ 1 vòng quanh bàn, tức đi qua READY ít nhất 1 lần.
 - Chỉ khi CẢ 4 người đều hoàn thành 1 vòng mới chốt bảng B$.
 - Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
-- Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
+- Qua READY nhận lương Job hiện tại; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
 
 FINAL RESULT RETAINED
 - Mọi presentation/payout cuối phải xong trước khi hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$.
@@ -73,10 +79,9 @@ FINAL RESULT RETAINED
 - Victory SFX chỉ phát theo result overlay thật.
 
 RETAINED FEATURES / FIXES
-- Token P1 không snap ngược khi Card/News/state update; Job Hub có reconcile riêng.
+- Token P1 không snap ngược khi Card/News/state update; Job Hub có reconcile riêng cho controller.
 - Snapshot/resync và rematch vẫn hard-snap token về state authoritative.
 - HUD/Bảng B$ hiển thị 🏁0/1 hoặc 🏁✓.
-- Job Hub bắt buộc dừng; Job D6 1–2 → A, 3–4 → B, 5–6 → C.
 - Starting wallet = 200 B$.
 
 KNOWN LIMITS
