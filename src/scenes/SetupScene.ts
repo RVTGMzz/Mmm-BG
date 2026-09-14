@@ -40,7 +40,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.38', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.39', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -73,7 +73,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.38: Roll For Order xếp lượt. Trận chỉ chốt B$ sau khi cả 4 người hoàn thành ít nhất 1 vòng.</p>
+      <p id="setup-status" class="setup-status">0.1.39: đủ 1 vòng/người → chờ presentation/payout cuối → KHÓA BẢNG B$ → reveal thứ hạng.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
