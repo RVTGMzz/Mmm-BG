@@ -123,18 +123,20 @@ jobs:
         run: npm run test:preview-branch-mode-054
       - name: 0.1.55 canonical Draft D topology and five Mini Games
         run: npm run test:canonical-draft-d-055
+      - name: 0.1.56 SAFE DRAMA MONEY branch identity
+        run: npm run test:branch-identity-056
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.55 canonical Draft D guide to package
-        run: cp docs/PLAYTEST_0.1.55_DRAFT_D_CANONICAL.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.56 branch identity guide to package
+        run: cp docs/PLAYTEST_0.1.56_BRANCH_IDENTITY.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.55 canonical Draft D build
+      - name: Upload MVP 0.1.56 branch identity build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.55-draft-d-canonical
+          name: mememe-playtest-0.1.56-branch-identity
           path: dist
           if-no-files-found: error
           retention-days: 14
