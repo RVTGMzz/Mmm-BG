@@ -147,19 +147,22 @@ jobs:
       - name: 0.1.50 Final Map preview topology and rules
         run: npm run test:final-map-preview
 
+      - name: 0.1.51 Draft D branches camera and retained rules
+        run: npm run test:draft-d-preview
+
       - name: Face image transform bounds
         run: npm run test:image
 
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add Final Map preview guide to package
-        run: cp docs/PLAYTEST_0.1.50_FINAL_MAP_PREVIEW.md dist/PLAYTEST_GUIDE.md
+      - name: Add Draft D preview guide to package
+        run: cp docs/PLAYTEST_0.1.51_DRAFT_D_PREVIEW.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.50 Final Map preview build
+      - name: Upload MVP 0.1.51 Draft D preview build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.50-final-map-preview
+          name: mememe-playtest-0.1.51-draft-d-preview
           path: dist
           if-no-files-found: error
           retention-days: 14
