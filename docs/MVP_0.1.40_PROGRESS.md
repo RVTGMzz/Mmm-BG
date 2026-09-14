@@ -1,6 +1,6 @@
 # MVP 0.1.40 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -63,4 +63,28 @@ New `tests/legacy-shell-copy-040.ts` checks that:
 - Lobby and Setup identify 0.1.40;
 - entry screens do not reintroduce `demo 3 vòng`.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+Older 0.1.38/0.1.39 presentation regressions were made version-agnostic so future wrapper scenes may inherit them without false failures.
+
+## Validated artifact
+
+GitHub Actions run: `34802821058` / run `#1169`
+
+Validated runtime/package SHA:
+`2544bfc1ee77bfd12fcfa1b5b08a75ccf4af41b4`
+
+Artifact:
+`mememe-playtest-0.1.40`
+
+Artifact ID:
+`10331508499`
+
+Artifact size:
+`8,560,179 bytes`
+
+Digest:
+`sha256:003d6d9dde7bdafcd547a60e18483e5f5f068c988f719eb54e6291323063f07f`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34802821058`
+
+Full CI passed through package validation and artifact upload.
