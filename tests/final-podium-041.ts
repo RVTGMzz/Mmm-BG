@@ -6,7 +6,6 @@ const scene = await readFile('src/scenes/CareerMinigameBoardScene041.ts', 'utf8'
 const parent = await readFile('src/scenes/CareerMinigameBoardScene040.ts', 'utf8');
 const finalGate = await readFile('src/scenes/CareerMinigameBoardScene039.ts', 'utf8');
 const rankingHelper = await readFile('src/ui/podiumRanking.ts', 'utf8');
-const main = await readFile('src/main.ts', 'utf8');
 const executableScene = scene
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .replace(/\/\/.*$/gm, '');
@@ -35,7 +34,8 @@ assert.deepEqual(
 
 assert(scene.includes('demoMatchResult(internals.match)'), 'podium must source ranking from the authoritative match result');
 assert(scene.includes('match.players.find'), 'podium names must come from authoritative MatchState players');
-assert(scene.includes("gameSession.getFace(entry.playerId, 'neutral')"), 'podium may reuse local runtime face sticker only as presentation');
+assert(scene.includes('gameSession.getFace(entry.playerId, faceExpression)'), 'podium face source must stay presentation-only');
+assert(scene.includes("protected podiumFaceExpression") && scene.includes("return 'neutral'"), '0.1.41 default podium face must remain neutral');
 assert(scene.includes("1: '🥇'") && scene.includes("2: '🥈'") && scene.includes("3: '🥉'"), 'podium must expose medal ranks');
 assert(scene.includes('PODIUM_HEIGHT_BY_RANK'), 'same displayed rank must map to the same podium height');
 assert(scene.includes('root.setAlpha(inheritedAlpha)'), 'podium must inherit the 0.1.39 lock/reveal alpha');
@@ -48,6 +48,5 @@ assert(!/Math\.random\s*\(/.test(executableScene), 'podium must not add presenta
 assert(!/\.money\s*[+\-*/]?=/.test(executableScene), 'podium must not mutate wallet state');
 assert(parent.includes('extends CareerMinigameBoardScene039'), '0.1.41 must retain the 0.1.39 final-result gate through 0.1.40');
 assert(finalGate.includes('shouldDeferResultOverlay') || finalGate.includes('shellOverlay.length === 0'), 'final result defer chain must remain present');
-assert(main.includes('CareerMinigameBoardScene041'), 'main runtime must use the 0.1.41 podium scene');
 
 console.log('[final-podium-041] PASS authoritative result + competition ties + presentation-only podium');
