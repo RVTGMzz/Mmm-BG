@@ -15,6 +15,25 @@
 - Mobile là điểm vào thực tế
 - **Landscape-first** để không phải đập UI khi đi PC/console
 
+### Final board / camera direction
+- Board final phải có **hơn 40 playable spaces**.
+- Working design band hiện tại: khoảng **44–48 spaces**; số chính xác chưa khóa.
+- Không dùng full-map view làm góc camera gameplay thường trực.
+- Tới lượt ai, camera chuyển/zoom về token của người đó và follow khi di chuyển, theo hướng digital party-board game.
+- Full-map chỉ là overview có chủ đích như intro, xem bản đồ, route inspection hoặc QA/debug.
+- Board ưu tiên một primary loop/path network dễ đọc ở góc nhìn gần.
+- **Hospital** và **Jail** được chốt là hai special side-branch/location của board final.
+- Deep rules của Hospital/Jail vẫn phải được định nghĩa riêng; không tự suy diễn luật Jail như mất lượt, bail, escape roll/card.
+
+### Final 4-player HUD direction
+- 4 player HUD cố định ở 4 góc màn hình, không di chuyển cùng board camera.
+- P1: top-left; P2: top-right; P3: bottom-left; P4: bottom-right.
+- Mỗi HUD tối thiểu có avatar, tên và B$.
+- Có thể thêm hand count, Job và status badge theo dạng compact.
+- Active player phải nổi bật rõ bằng border/glow/pulse/marker nhưng không làm thay đổi authoritative state.
+- Chi tiết contract nằm tại `docs/UI_FINAL_PLAYER_HUD.md`.
+- Visual reference hiện tại: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
+
 ### Content names
 - `Lá Bài` thay cho `Thần chú`
 - `Tin Tức` thay cho `Tiên tri`
@@ -68,17 +87,13 @@ Cần test readability trên màn hình nhỏ.
 
 ## C. Chưa chốt
 
-### Board topology
-Brainstorm từng có nhiều hướng:
-- giữ board legacy khoảng 45–48 node;
-- rút xuống khoảng 30–32 node;
-- route city-block/subway;
-- loop số 8;
-- shuffle tile;
-- shuffle toàn bộ effect tile;
-- chỉ shuffle tile thường.
-
-**Chưa có một phương án final.**
+### Exact final board count / detailed route graph
+Hướng final đã khóa ở mức **hơn 40 spaces**, camera close-follow và Hospital/Jail side branches, nhưng vẫn chưa khóa:
+- exact node count trong khoảng làm việc 44–48;
+- vị trí từng branch connector;
+- district count và landmark placement;
+- shortcut/alternate-route topology nếu có;
+- effect distribution trên từng khu.
 
 ### Dynamic board trigger
 Từng có ý tưởng “leader/queen hoàn thành một vòng thì board xáo lại”.
