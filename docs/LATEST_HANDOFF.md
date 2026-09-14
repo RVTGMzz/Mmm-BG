@@ -7,129 +7,101 @@ Root checkpoint for new chats: `HANDOFF_CURRENT.md`
 
 ## Current milestone
 
-**MVP 0.1.43 - Podium Low → High Reveal (ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN)**
+**MVP 0.1.44 - Result Controls Unlock After Podium (ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN)**
 
-Latest validated artifact: `mememe-playtest-0.1.43`
+Latest validated artifact: `mememe-playtest-0.1.44`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Read first
 
 1. `HANDOFF_CURRENT.md`
-2. `docs/MVP_0.1.43_PROGRESS.md`
-3. `docs/PLAYTEST_0.1.43.md`
-4. `src/scenes/CareerMinigameBoardScene043.ts`
-5. `src/ui/podiumReveal.ts`
-6. `src/scenes/CareerMinigameBoardScene042.ts`
-7. `src/ui/podiumFaceReaction.ts`
+2. `docs/MVP_0.1.44_PROGRESS.md`
+3. `docs/PLAYTEST_0.1.44.md`
+4. `src/scenes/CareerMinigameBoardScene044.ts`
+5. `src/scenes/CareerMinigameBoardScene043.ts`
+6. `src/ui/podiumReveal.ts`
+7. `src/scenes/CareerMinigameBoardScene042.ts`
 8. `src/scenes/CareerMinigameBoardScene041.ts`
-9. `src/ui/podiumRanking.ts`
-10. `src/scenes/CareerMinigameBoardScene040.ts`
-11. `src/scenes/CareerMinigameBoardScene039.ts`
-12. `tests/podium-reveal-043.ts`
-13. `tests/podium-face-reaction-042.ts`
-14. `tests/final-podium-041.ts`
-15. `tests/minigame-authority-037.ts`
+9. `tests/podium-result-gate-044.ts`
+10. `tests/podium-reveal-043.ts`
+11. `tests/podium-face-reaction-042.ts`
+12. `tests/final-podium-041.ts`
 
-## What changed in 0.1.43
+## What changed in 0.1.44
 
-### Podium reveal cadence
+0.1.44 adds a presentation-only input blocker that stays active through the tail of the 0.1.43 podium cascade. `CHƠI LẠI` / `VỀ LOBBY` cannot be activated until the final rank-1 reveal tween has finished plus a small fixed release pad.
 
-`CareerMinigameBoardScene043` extends 0.1.42 and changes presentation only.
+The release time is calculated by `podiumRevealCompleteMs()` from fixed constants only. The blocker arms only for a real ended-state result overlay, sits above result controls and below the 0.1.39 lock blocker, and resets on rematch/non-ended state or shutdown.
 
-- displayed rank 4 reveals first;
-- rank 3 follows;
-- rank 2 follows;
-- rank 1 reveals last;
-- equal displayed ranks use the same deterministic delay and therefore reveal together;
-- each slot starts hidden with a fixed 14px vertical offset and uses a fixed `Back.easeOut` tween.
+No gameplay/system command, wallet mutation, result recomputation, winner mutation or randomness is added.
 
-The rank-to-delay mapping lives in `src/ui/podiumReveal.ts`. It uses fixed constants only. There is no `Math.random`, gameplay RNG, result recomputation, wallet mutation, player/system intent or authority change.
+## Retained result chain
 
-### Podium slot structure
-
-0.1.41 now builds each player podium entry inside its own presentation container while preserving the same authoritative ranking/B$ source. This gives 0.1.43 a safe animation target without moving gameplay data into the presentation layer.
-
-0.1.42 reaction faces and winner spotlight remain inherited. Its regression is version-agnostic so later wrappers can preserve the behavior without false version failures.
-
-## Retained final result behavior
-
-- Podium B$ and ranking still come from `demoMatchResult(internals.match)`.
-- Display names still come from authoritative `MatchState`.
-- Equal B$ still uses competition ranking and equal podium height.
-- Rank 1 prefers happy face; rank 4 prefers angry; middle ranks neutral; missing reactions fall back to neutral.
-- All tied first-place entries receive the same crown/sparks.
-- 0.1.40 HUD/shell/log copy remains lap-native.
-- PresentationParity defers final result while queued presentation blocks.
+- 0.1.43 reveals podium displayed rank `4 → 3 → 2 → 1`; equal ranks share the exact same delay.
+- 0.1.42 reaction faces and tied-winner spotlight remain intact.
+- 0.1.41 authoritative B$/ranking and competition-rank display remain intact.
+- 0.1.40 lap-native HUD/shell/log copy remains intact.
+- PresentationParity still defers final result until queued presentation clears.
 - Pending final Mini Game payout resolves before scoring.
-- 0.1.39 still shows `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` before podium reveal.
+- 0.1.39 still runs `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG` first.
 - Victory SFX remains one-shot.
 
-## Retained Mini Game / audio behavior
+## Retained gameplay/audio invariants
 
-- Mini Game payout is host-system owned and one-shot per source event.
+- Starting wallet `200 B$`.
+- Every player completes one physical lap before final scoring.
+- Crossing READY pays current Job salary exactly once and increments lap.
+- Final Mini Game payout resolves before result.
+- Mini Game payout is host-system owned and single-commit.
 - Nhiều ra ít bị payout: `30 / 20 / 10 / 0 B$`.
 - Direct Oẳn Tù Xì payout: `25 / 15 / 5 / 0 B$`.
-- Mini Game BGM is approved checksum-locked `03_City_Silly.ogg`.
-- Four approved BGM assets must not be re-encoded/substituted.
-- Eight supplied SFX remain packaged/checksum-verified: victory, news, card, step, money loss, money gain, dice, choice.
-
-## Retained movement / scoring rules
-
-- Normal state packets do not own token coordinates during ordinary movement presentation.
-- Snapshot resync and rematch command #0 may hard-snap to authoritative nodes.
-- Human Job Hub explicitly reconciles token position.
-- Every player must complete at least one physical lap before final B$ scoring.
-- Crossing READY pays current Job salary and increments lap exactly once.
-- If the last required lap lands on a Mini Game, final result waits for its payout.
-
-## Core invariants / deferred mechanics
-
-- Roll For Order: highest D6 acts first; only tied seats reroll.
-- Stable player ID, face, color and ownership do not move with play order.
-- Starting wallet `200 B$`.
-- Mandatory Job Hub, three unique A/B/C offers, Job D6 `1-2 -> A`, `3-4 -> B`, `5-6 -> C`.
+- Mini Game BGM is checksum-locked `03_City_Silly.ogg`.
+- Four approved BGM files must not be re-encoded/substituted.
+- Eight supplied SFX remain checksum-verified.
+- Roll For Order: highest D6 first; only tied seats reroll.
+- Mandatory Job Hub uses Job D6 `1-2 -> A`, `3-4 -> B`, `5-6 -> C`.
+- Normal state packets do not own token coordinates during queued movement presentation.
+- Snapshot/rematch may hard-snap tokens; Job Hub reconciles the human token.
 - Presentation RNG must not perturb gameplay RNG.
 - `eventLog` remains presentation-only and checksum-excluded.
-- Snapshot resync must not replay stale presentation.
-- Original face files remain local and must not be silently uploaded/persisted.
+- Original face files remain local.
 - CPU remains a QA bot.
-- Thief may become `jailed`, but skipped-turn / bail / escape mechanics remain intentionally undefined.
+- Jail deep mechanics remain intentionally undefined.
 
 ## Validated artifact
 
-GitHub Actions run: `34805635514` / run `#1273`
+GitHub Actions run: `34806052282` / run `#1303`
 
 Validated runtime/package SHA:
-`ef63cd6deeddbd59a8c7eaaf2e6e1840aa518314`
+`08fccea74a9399da289e86a057a0fce7be291292`
 
 Artifact:
-`mememe-playtest-0.1.43`
+`mememe-playtest-0.1.44`
 
 Artifact ID:
-`10332634348`
+`10333470000`
 
 Size:
-`8,560,703 bytes`
+`8,560,852 bytes`
 
 Digest:
-`sha256:28b19183809fa5174eb89f63a66b613c26ce1d30b92256734d6f9ff999ddac27`
+`sha256:8776e38b812576f83ad5ee78a50bf1601476a6bf9f22efb59aa4c92192cc7bb8`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34805635514`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34806052282`
 
-Full CI passed through package validation and artifact upload, including the new deterministic podium reveal regression.
+Full CI passed through package validation and artifact upload, including the new result-control unlock regression.
 
 ## Runtime test focus
 
-1. Finish a normal match and verify low-to-high reveal ordering.
-2. Observe/create a tie and verify tied slots appear simultaneously.
-3. Confirm the winner/crown remains the final reveal beat.
-4. Confirm rank-based face reactions remain correct.
-5. Finish with a final Mini Game and verify payout commits before B$ lock/podium reveal.
-6. Rematch and verify a fresh reveal runs from the new result.
-7. Re-check P1 movement snap-back fix, Job token reconcile, all eight SFX and `03_City_Silly.ogg`.
+1. Spam result buttons during podium reveal and confirm they do nothing until the final winner beat finishes.
+2. Confirm buttons work after the reveal completes.
+3. Rematch and confirm the gate arms again.
+4. Verify tied slots still reveal together.
+5. Finish with a final Mini Game and verify payout commits before lock/podium.
+6. Re-check P1 movement, Job token reconcile, all eight SFX and `03_City_Silly.ogg`.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.43_PROGRESS.md và docs/PLAYTEST_0.1.43.md. Current validated artifact là mememe-playtest-0.1.43, run #1273, runtime SHA ef63cd6deeddbd59a8c7eaaf2e6e1840aa518314. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.44_PROGRESS.md và docs/PLAYTEST_0.1.44.md. Current validated artifact là mememe-playtest-0.1.44, run #1303, runtime SHA 08fccea74a9399da289e86a057a0fce7be291292. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
