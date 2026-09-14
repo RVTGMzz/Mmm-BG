@@ -74,8 +74,8 @@ Mỗi lối ra có đúng **3 ô**. Sáu ô exit không tính vào 44 ô main lo
 - Ra số khác → vẫn ở Jail, **lượt kết thúc**, lượt sau roll lại.
 - Xác suất thoát mỗi lần thử: 50%.
 - Khi thoát thành công, token đi qua `J1 -> J2 -> J3 -> M13`.
-- Sau đó player **tiếp tục cùng lượt bằng một movement D6 mới**.
-- Release die **không** được tái sử dụng làm movement distance.
+- Sau đó player **phải đổ một movement D6 mới** để đi tiếp trong cùng lượt.
+- Release die **chỉ dùng để xét thoát**, tuyệt đối không được tái sử dụng làm movement distance.
 
 ### Hospital release rule
 - Khi tới lượt player đang ở `HOSPITAL`, roll 1 D6 release check.
@@ -84,8 +84,16 @@ Mỗi lối ra có đúng **3 ô**. Sáu ô exit không tính vào 44 ô main lo
 - Xác suất thoát mỗi lần thử: 50%.
 - Bộ số là đúng `2 / 4 / 5`, không đổi thành rule số chẵn.
 - Khi thoát thành công, token đi qua `H1 -> H2 -> H3 -> M35`.
-- Sau đó player **tiếp tục cùng lượt bằng một movement D6 mới**.
-- Release die **không** được tái sử dụng làm movement distance.
+- Sau đó player **phải đổ một movement D6 mới** để đi tiếp trong cùng lượt.
+- Release die **chỉ dùng để xét thoát**, tuyệt đối không được tái sử dụng làm movement distance.
+
+### Mini Game eligibility rule
+- Player đang ở **JAIL hoặc HOSPITAL không được tham gia Mini Game**.
+- Participant list phải được xác định từ authoritative holding state tại thời điểm Mini Game bắt đầu.
+- Nếu còn **2+ người hợp lệ** → chạy Mini Game bình thường.
+- Nếu còn đúng **1 người hợp lệ** → người đó **auto hạng 1**; không mở gameplay Mini Game giả tạo chỉ có một người.
+- Nếu còn **0 người hợp lệ** → Mini Game **skip, không payout**.
+- Rule eligibility này là luật core và không được thay đổi khi 0.1.59 mở rộng thêm loại Mini Game.
 
 ### Lottery rule
 - `M23 LOTTERY` roll 1 D6.
@@ -94,17 +102,19 @@ Mỗi lối ra có đúng **3 ô**. Sáu ô exit không tính vào 44 ô main lo
 - Expected payout hiện tại: `70 B$` trước khi cân economy sâu hơn.
 - RNG và wallet mutation phải HOST-authoritative khi implement.
 
-### Working 44-space content distribution
-Draft B1 content distribution vẫn là working baseline trên Draft D:
+### Working 44-space content distribution — 5 Mini Game spaces locked
+Draft D phải có **5 ô Mini Game** để hệ thống này còn đủ đất phát triển sâu hơn về sau.
+
+Working distribution:
 - Job Hub: `M08`
-- Mini Game: `M17 / M39`
+- Mini Game: **`M09 / M17 / M26 / M35 / M44`**
 - TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
 - LÁ BÀI: `M04 / M10 / M16 / M22 / M27 / M32 / M41`
-- Money +: `M03 / M13 / M25 / M35`
+- Money +: `M03 / M13 / M25 / M39`
 - Money -: `M07 / M18 / M30 / M40`
-- Normal/breathing: 16 ô
+- các ô còn lại = Normal/breathing
 
-Mini Game spacing = `22 / 22`.
+Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tránh dồn toàn bộ Mini Game về một nửa bản đồ.
 
 ### Approved visual direction
 - Thành phố/island board rực rỡ nhìn từ trên cao.
@@ -197,17 +207,18 @@ Không coi framework/protocol cụ thể là tech decision final nếu chưa đ�
 ## D. Core gameplay hypothesis
 
 1. Active player bắt đầu lượt.
-2. Nếu đang Jail/Hospital: HOST resolve release D6.
-3. Fail release → kết thúc lượt; success → chạy exit route và nhận **fresh movement D6** trong cùng lượt.
+2. Nếu đang Jail/Hospital: HOST resolve **release D6 chỉ để xét thoát**.
+3. Fail release → kết thúc lượt; success → chạy exit route và phải **roll movement D6 mới** trong cùng lượt.
 4. HOST xác nhận movement dice.
 5. Token di chuyển trên authoritative Draft D route.
 6. Tại junction, active human gửi intent **RẼ TRÁI / RẼ PHẢI**, HOST resolve route.
 7. Tile payload trigger.
 8. `JAIL_GATE/HOSPITAL_GATE` chuyển player vào holding location tương ứng.
 9. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
-10. LÁ BÀI / TIN TỨC dùng current pool/effect resolver; effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
-11. Presentation layer xử lý camera, art, reaction, audio.
-12. Turn manager chuyển người tiếp theo.
+10. Mini Game lấy participant list sau khi loại mọi player đang ở Jail/Hospital; 1 người hợp lệ = auto hạng 1; 0 người = skip.
+11. LÁ BÀI / TIN TỨC dùng current pool/effect resolver; effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
+12. Presentation layer xử lý camera, art, reaction, audio.
+13. Turn manager chuyển người tiếp theo.
 
 ## E. Face-card rendering model
 
