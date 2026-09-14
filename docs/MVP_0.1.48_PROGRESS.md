@@ -1,6 +1,6 @@
 # MVP 0.1.48 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -97,4 +97,26 @@ New `tests/bugfix-pass-048.ts` validates:
 - Jail deep mechanics remain undefined.
 - PR #1 remains unmerged.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## Validated checkpoint
+
+GitHub Actions run: `34814789556` / run `#1441`
+
+Validated runtime/package SHA:
+`5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
+
+Artifact:
+`mememe-playtest-0.1.48`
+
+Artifact ID:
+`10336247664`
+
+Artifact size:
+`8,566,826 bytes`
+
+Digest:
+`sha256:d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34814789556`
+
+Full CI passed build/typecheck, deterministic replay/lockstep, host-client/two-tab authority, all retained gameplay/presentation regressions, Remote Roll, Multiplayer Job Hub, presentation parity, the new 0.1.48 bugfix regression, image bounds, package verification, guide copy and artifact upload.
