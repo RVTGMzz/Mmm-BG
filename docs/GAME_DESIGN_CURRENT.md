@@ -15,20 +15,37 @@
 - Mobile là điểm vào thực tế
 - **Landscape-first** để không phải đập UI khi đi PC/console
 
-### Final board / camera direction — Draft C current
-- Board final có **44 ô trên main loop**: `M01..M44`.
+### Final board / camera direction — Draft D current
+- Board final working topology có **44 ô trên main loop**: `M01..M44`.
 - `M44 -> M01` là lap/salary crossing duy nhất.
+- Map không còn là một oval/loop đơn giản; Draft D dùng silhouette bất đối xứng và **3 junction rẽ nhánh thật**.
+- Mỗi junction có `RẼ TRÁI / RẼ PHẢI`, cả hai hướng đều tiến về phía trước và nhập lại trước section kế tiếp.
+- Current working branch distance giữa split và merge là bằng nhau để lựa chọn thay đổi content exposure, không giấu lợi thế khoảng cách.
 - Không dùng full-map view làm camera gameplay thường trực.
 - Tới lượt ai, camera chuyển/zoom về token người đó và follow khi di chuyển.
-- Full-map chỉ là overview có chủ đích.
-- Map dùng một primary loop dễ đọc, uốn quanh thành phố thay vì khung chữ nhật cứng.
+- Full-map là review/overview có chủ đích.
 
-Current source:
-- `docs/MAP_ARCHITECTURE_FINAL.md`
-- `docs/MAP_ARCHITECTURE_44_DRAFT_C.md`
-- `docs/MAP_ARCHITECTURE_44_DRAFT_C.json`
-- `docs/MAP_VISUAL_BLUEPRINT_44_DRAFT_C1.md`
-- `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
+Current sources:
+- `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+- `docs/MAP_BRANCHING_RULE_D2.md`
+- `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+- `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
+- `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+
+### Branching rule
+Canonical gameplay khi Draft D được tích hợp vào `START_PLAYTEST.bat`:
+- human active player tự chọn **RẼ TRÁI / RẼ PHẢI**;
+- route choice phải HOST-authoritative;
+- không đi ngược;
+- không cycle;
+- không dead-end;
+- luôn merge phía trước và tiếp tục hướng về READY.
+
+Preview QA:
+- `START_DRAFT_D_PREVIEW.bat` mặc định **AUTO BRANCH**;
+- cùng seed cho cùng branch sequence;
+- có toggle **AUTO / THỦ CÔNG**;
+- AUTO chỉ là QA convenience, không phải luật người chơi final.
 
 ### Four anchors
 - `M01` = **READY**
@@ -49,20 +66,26 @@ Jail exit route:
 Hospital exit route:
 `HOSPITAL -> H1 -> H2 -> H3 -> M35`
 
-Mỗi lối ra có đúng **3 ô**. Sáu ô branch không tính vào 44 ô main loop và không tạo lap crossing mới.
+Mỗi lối ra có đúng **3 ô**. Sáu ô exit không tính vào 44 ô main loop và không tạo lap crossing mới.
 
 ### Jail release rule
-- Khi tới lượt player đang ở `JAIL`, roll 1 D6.
+- Khi tới lượt player đang ở `JAIL`, roll 1 D6 release check.
 - Ra **1 / 3 / 5** → được ra.
-- Ra số khác → vẫn ở Jail và chờ lượt sau roll lại.
+- Ra số khác → vẫn ở Jail, **lượt kết thúc**, lượt sau roll lại.
 - Xác suất thoát mỗi lần thử: 50%.
+- Khi thoát thành công, token đi qua `J1 -> J2 -> J3 -> M13`.
+- Sau đó player **tiếp tục cùng lượt bằng một movement D6 mới**.
+- Release die **không** được tái sử dụng làm movement distance.
 
 ### Hospital release rule
-- Khi tới lượt player đang ở `HOSPITAL`, roll 1 D6.
+- Khi tới lượt player đang ở `HOSPITAL`, roll 1 D6 release check.
 - Ra **2 / 4 / 5** → được ra.
-- Ra số khác → vẫn ở Hospital và chờ lượt sau roll lại.
+- Ra số khác → vẫn ở Hospital, **lượt kết thúc**, lượt sau roll lại.
 - Xác suất thoát mỗi lần thử: 50%.
 - Bộ số là đúng `2 / 4 / 5`, không đổi thành rule số chẵn.
+- Khi thoát thành công, token đi qua `H1 -> H2 -> H3 -> M35`.
+- Sau đó player **tiếp tục cùng lượt bằng một movement D6 mới**.
+- Release die **không** được tái sử dụng làm movement distance.
 
 ### Lottery rule
 - `M23 LOTTERY` roll 1 D6.
@@ -72,7 +95,7 @@ Mỗi lối ra có đúng **3 ô**. Sáu ô branch không tính vào 44 ô main 
 - RNG và wallet mutation phải HOST-authoritative khi implement.
 
 ### Working 44-space content distribution
-Draft B1 vẫn dùng được vì main loop không đổi:
+Draft B1 content distribution vẫn là working baseline trên Draft D:
 - Job Hub: `M08`
 - Mini Game: `M17 / M39`
 - TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
@@ -83,15 +106,16 @@ Draft B1 vẫn dùng được vì main loop không đổi:
 
 Mini Game spacing = `22 / 22`.
 
-### Approved visual direction — Draft C1
+### Approved visual direction
 - Thành phố/island board rực rỡ nhìn từ trên cao.
-- Đường chính là chuỗi ô tròn sáng, uốn tự nhiên qua thành phố.
+- Đường board uốn tự nhiên qua thành phố, không cần toàn bộ ô cùng một hình tròn.
+- Có khoảng thở giữa các ô; tránh dày đặc và tránh hàng thẳng dài.
 - Landmark lớn giúp định hướng khi camera zoom gần.
 - District sign dùng như mốc thị giác.
-- Jail/Hospital nằm phía trong, nối bằng branch ngắn với main route.
+- Jail/Hospital nằm phía trong, có exit route 3 ô.
 - Trung tâm thành phố phải còn khoảng thở, không phủ kín bằng ô.
 - Ảnh concept AI chỉ định hướng bố cục/mood; numbering và text AI không authoritative.
-- Lỗi concept Jail `J1 / J1 / J3 / J4` phải sửa thành **`J1 / J2 / J3`**.
+- Canonical combined visual reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
 
 ### Final 4-player HUD direction
 - P1 top-left
@@ -100,8 +124,14 @@ Mini Game spacing = `22 / 22`.
 - P4 bottom-right
 - mỗi HUD tối thiểu avatar + tên + B$
 - active player nổi bật
-- HUD cố định screen-space, không di chuyển theo board camera
+- HUD cố định screen-space, không di chuyển/zoom theo board camera
 - chi tiết contract: `docs/UI_FINAL_PLAYER_HUD.md`
+
+### Launcher roles
+- `START_PLAYTEST.bat` = gameplay chuẩn / integration target.
+- `START_DRAFT_D_PREVIEW.bat` = sandbox map/camera; 0.1.54 mặc định AUTO BRANCH seed `5454`, có MANUAL toggle.
+- `START_DRAFT_D_FULL_MAP.bat` = full topology review.
+- Legacy `START_FINAL_MAP_PREVIEW.bat` không còn ship trong tester package từ 0.1.54.
 
 ### Content names
 - **LÁ BÀI** thay cho tên legacy
@@ -137,21 +167,20 @@ Effect resolve và reaction presentation tách nhau. Cần test readability trê
 
 ## C. Chưa chốt
 
-### Final map runtime lock / art implementation
-Draft C/C1 đã khóa topology + visual direction nhưng chưa khóa runtime:
-- final art coordinates
-- final district names
-- final landmark sprites
-- final palette/materials
-- actual camera tween values
-- actual match duration sau 44-space runtime playtest
-- payload positions có cần rebalance sau playtest hay không
+### Draft D authoritative integration / final art
+Preview topology đã chạy, nhưng standard gameplay integration vẫn cần 0.1.55:
+- authoritative route-choice intent + HOST resolution;
+- replay/checksum coverage cho branches;
+- multiplayer presentation parity trên Draft D;
+- final art coordinates;
+- final district names;
+- final landmark sprites;
+- final palette/materials;
+- actual match duration sau integrated runtime playtest;
+- payload positions có cần rebalance sau playtest hay không.
 
-### Post-release behavior
-Route hình học đã chốt nhưng timing sau khi roll thoát thành công vẫn chưa chốt:
-- dùng luôn số roll đó để di chuyển qua `J1..J3` / `H1..H3`;
-- vào `J1/H1` rồi hết lượt;
-- hay rule khác được duyệt sau.
+### Branch gameplay identity
+Topology đã chốt working rule nhưng safe/drama/money identity của từng route vẫn cần playtest ở 0.1.56+.
 
 ### Dynamic board trigger
 Ý tưởng board thay đổi sau một mốc vòng vẫn chưa khóa.
@@ -167,18 +196,18 @@ Không coi framework/protocol cụ thể là tech decision final nếu chưa đ�
 
 ## D. Core gameplay hypothesis
 
-1. Active player Roll.
-2. HOST xác nhận dice.
-3. Token di chuyển trên authoritative route.
-4. Tile payload trigger.
-5. `JAIL_GATE/HOSPITAL_GATE` chuyển player vào holding location tương ứng.
-6. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
-7. LÁ BÀI / TIN TỨC dùng current pool/effect resolver.
-8. Effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
-9. Presentation layer xử lý camera, art, reaction, audio.
-10. Turn manager chuyển người tiếp theo.
-
-Player bắt đầu lượt ở Jail/Hospital dùng release roll đã khóa. Hậu-release timing vẫn TBD.
+1. Active player bắt đầu lượt.
+2. Nếu đang Jail/Hospital: HOST resolve release D6.
+3. Fail release → kết thúc lượt; success → chạy exit route và nhận **fresh movement D6** trong cùng lượt.
+4. HOST xác nhận movement dice.
+5. Token di chuyển trên authoritative Draft D route.
+6. Tại junction, active human gửi intent **RẼ TRÁI / RẼ PHẢI**, HOST resolve route.
+7. Tile payload trigger.
+8. `JAIL_GATE/HOSPITAL_GATE` chuyển player vào holding location tương ứng.
+9. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
+10. LÁ BÀI / TIN TỨC dùng current pool/effect resolver; effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
+11. Presentation layer xử lý camera, art, reaction, audio.
+12. Turn manager chuyển người tiếp theo.
 
 ## E. Face-card rendering model
 
