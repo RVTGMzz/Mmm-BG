@@ -41,6 +41,7 @@
     "test:podium-reaction": "tsx tests/podium-face-reaction-042.ts",
     "test:podium-reveal": "tsx tests/podium-reveal-043.ts",
     "test:podium-unlock": "tsx tests/podium-result-gate-044.ts",
+    "test:remote-roll-order": "tsx tests/remote-roll-order-045.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
