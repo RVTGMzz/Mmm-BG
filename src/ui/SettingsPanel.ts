@@ -80,8 +80,14 @@ export function installSettingsPanel(): void {
     trigger.setAttribute('aria-label', open ? 'Đóng cài đặt' : 'Mở cài đặt');
   };
 
-  trigger?.addEventListener('click', () => setOpen(panel?.hidden ?? true));
-  close?.addEventListener('click', () => setOpen(false));
+  trigger?.addEventListener('click', () => {
+    sfxController.play('ui_confirm');
+    setOpen(panel?.hidden ?? true);
+  });
+  close?.addEventListener('click', () => {
+    sfxController.play('ui_confirm');
+    setOpen(false);
+  });
   root.addEventListener('pointerdown', (event) => event.stopPropagation());
   root.addEventListener('click', (event) => event.stopPropagation());
 
@@ -94,7 +100,10 @@ export function installSettingsPanel(): void {
     if (event.key === 'Escape') setOpen(false);
   });
 
-  bgmToggle?.addEventListener('click', () => bgmController.toggleMuted());
+  bgmToggle?.addEventListener('click', () => {
+    sfxController.play('ui_confirm');
+    bgmController.toggleMuted();
+  });
   bgmVolume?.addEventListener('input', () => {
     bgmController.setVolume(Number(bgmVolume.value) / 100);
   });
