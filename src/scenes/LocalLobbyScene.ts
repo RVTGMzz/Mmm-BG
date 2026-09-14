@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.46', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.47', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Remote Roll For Order • Remote Job Dice • Host-authoritative outcomes • 1 vòng/người.', {
+    this.add.text(228, 109, 'Presentation Parity • Tiên Tri dọc • Phép Thuật ngang • HOST/CLIENT cùng event.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -71,7 +71,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card host-card">
           <div class="lobby-icon">📡</div>
           <h2>HOST 2 TAB</h2>
-          <p>Host setup tên/mặt. Remote Roll và Job Hub đều để đúng ghế client tự bấm trên tab của họ.</p>
+          <p>Host authoritative. Tiên Tri, Phép Thuật, Job Dice và các presentation phải kể cùng một sự kiện trên cả hai tab.</p>
           <label>ROOM CODE
             <input id="host-room" maxlength="8" value="${initialRoom}" />
           </label>
@@ -81,7 +81,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card join-card">
           <div class="lobby-icon">🛰️</div>
           <h2>JOIN 2 TAB</h2>
-          <p>Chọn P2/P3/P4. Client tự Roll For Order và tự bấm Job Dice khi ghế của mình tới Job Hub.</p>
+          <p>Chọn P2/P3/P4. Client nhận cùng authoritative event stream, không tự tạo kết quả presentation/gameplay.</p>
           <label>ROOM CODE
             <input id="join-room" maxlength="8" placeholder="VD: ME12AB" />
           </label>
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        💼🎲 0.1.46: mọi tab thấy cùng 3 Job; đúng tab sở hữu ghế mới bấm Job Dice. HOST authoritative sinh D6 và broadcast nghề + lương.
+        🔮✨ 0.1.47: lá dọc = TIÊN TRI (thay Tin Tức) • lá ngang = PHÉP THUẬT (thay Lá Bài). Tên protocol news/card_* giữ nguyên bên trong để bảo toàn replay/authority.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Remote Roll For Order + Multiplayer Job Hub + Mini Games + Event Audio + Safe Final Podium sẵn sàng.'
+        ? '✅ Multiplayer Presentation Parity + Remote Roll + Multiplayer Job Hub + Safe Final Podium sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
