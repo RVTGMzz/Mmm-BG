@@ -12,12 +12,12 @@ import {
 const BOARD = boardJson as BoardDefinition;
 
 // Draft D canonical gameplay uses a real manual Left/Right junction after M04.
-// Legacy odd/even routing at node 4 is intentionally superseded.
+// 0.1.56 may append route flavor to those labels; direction remains the invariant.
 const branchEdges = getOutgoingEdges(BOARD, 3);
 assert.equal(branchEdges.length, 2);
 assert.deepEqual(new Set(branchEdges.map((edge) => edge.to)), new Set([4, 200]));
-assert(branchEdges.some((edge) => edge.label?.includes('RẼ PHẢI')));
-assert(branchEdges.some((edge) => edge.label?.includes('RẼ TRÁI')));
+assert(branchEdges.some((edge) => edge.label?.includes('PHẢI')));
+assert(branchEdges.some((edge) => edge.label?.includes('TRÁI')));
 
 assert.equal(shouldAutoAdvancePresentation([0, 1, 2, 3]), true);
 assert.equal(shouldAutoAdvancePresentation([1, 2, 3]), false);
