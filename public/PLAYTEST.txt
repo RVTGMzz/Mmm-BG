@@ -1,96 +1,67 @@
-MeMeMe MVP 0.1.46 — JOB HUB MULTIPLAYER POLISH
+MeMeMe MVP 0.1.47 — MULTIPLAYER PRESENTATION PARITY
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
 2) DOUBLE-CLICK: START_PLAYTEST.bat
-3) Trình duyệt sẽ tự mở http://127.0.0.1:4173/ (hoặc cổng gần đó nếu 4173 đang bận).
-4) GIỮ cửa sổ terminal launcher mở trong lúc chơi. Nhấn Ctrl+C để dừng server khi chơi xong.
+3) Trình duyệt sẽ tự mở local playtest server.
+4) GIỮ cửa sổ terminal launcher mở trong lúc chơi.
 
-QUAN TRỌNG
-- KHÔNG double-click index.html trực tiếp.
-- Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì game có thể chỉ hiện màn hình trắng vì browser chặn ES module/local asset khi chạy bằng file://.
-- START_PLAYTEST.bat dùng local server và KHÔNG cần cài Node/Python.
+0.1.47 FOCUS
+- TIÊN TRI thay cho cách gọi Tin Tức và dùng form lá dọc.
+- PHÉP THUẬT thay cho cách gọi Lá Bài / Thẻ Bài và dùng form lá ngang.
+- Tên kỹ thuật news/card_* vẫn giữ nguyên bên trong để bảo toàn replay + authority.
+- HOST và CLIENT phải sinh cùng presentation từ cùng authoritative event stream.
+- Snapshot resync không được phát lại presentation cũ.
+- State packet bình thường chỉ enqueue event mới hơn presentation cursor hiện tại.
 
-PLAY MODES
-- 1 HUMAN + 3 CPU: khuyến nghị để test một mình.
-- 2 HUMAN + 2 CPU: test với một người bạn.
-- 4 HUMAN HOTSEAT: 4 người tự điều khiển.
-- 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
-- HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
+TEST 2 TAB
+1) Tab A HOST, Tab B JOIN cùng room.
+2) Hoàn tất Remote Roll For Order rồi vào trận.
+3) Khi xuất hiện Tiên Tri, cả hai tab phải thấy cùng nội dung/actor/event.
+4) Khi rút hoặc dùng Phép Thuật, cả hai tab phải thấy cùng lá/mục tiêu/effect.
+5) Tab spectator vẫn phải xem cùng presentation.
+6) Client không được tự tạo outcome khác HOST.
 
-0.1.46 FOCUS — JOB HUB MULTIPLAYER
-- Giữ nguyên Remote Roll For Order 0.1.45.
-- Khi ghế remote tới Job Hub, cả HOST và CLIENT đều thấy cùng 3 Job A/B/C authoritative.
-- Tab đang sở hữu ghế remote mới có quyền bấm ĐỔ XÚC XẮC JOB.
-- Tab không sở hữu ghế vẫn thấy Job Hub ở chế độ spectator và chờ người chơi thật bấm.
-- Client chỉ gửi choose_job intent rỗng; client KHÔNG gửi Job ID, D6 result hay offer index.
-- HOST gameplay authority mới tiêu thụ RNG, sinh Job D6 rồi áp luật 1–2 → A, 3–4 → B, 5–6 → C.
-- job_dice_roll authoritative được broadcast về mọi tab và dùng chung animation xúc xắc.
-- job_selected authoritative hiển thị nghề nhận được + lương Lv.1 cho mọi tab.
-- Khi Job được chốt, spectator Job Hub tự đóng và trận tiếp tục bình thường.
+PHÉP THUẬT
+- Hand picker hiện các lá theo khung ngang.
+- Kích hoạt/rút bài vẫn dùng authority và event card_* cũ.
+- Không đổi effect, target rule hay gameplay RNG.
 
-TEST 2 TAB KHUYẾN NGHỊ
-1) Tab A HOST, Tab B JOIN P2/P3/P4 và hoàn tất Remote Roll For Order.
-2) Chơi tới khi ghế remote dừng ở Job Hub.
-3) Cả hai tab phải thấy cùng 3 Job A/B/C.
-4) HOST phải hiện trạng thái chờ; nút Job Dice chỉ bấm được ở tab remote đang sở hữu ghế.
-5) Bấm Job Dice ở tab remote.
-6) Cả hai tab phải thấy cùng kết quả D6 authoritative, cùng nghề và cùng lương.
-7) Kiểm tra nghề đúng mapping: 1–2 A, 3–4 B, 5–6 C.
+TIÊN TRI
+- Presentation News cũ được reshape thành lá dọc.
+- Không đổi effect hoặc event news bên trong.
 
-AUTHORITY CHECK
-- Client không thể tự chọn nghề bằng cách gửi Job ID/result/offer index.
-- D6 Job chỉ được tạo từ gameplay RNG authoritative của HOST.
-- Job Hub vẫn bắt buộc dừng dù xúc xắc di chuyển còn bước.
-- Player ID, playOrder, B$, one-lap scoring và Mini Game payout không đổi.
+JOB HUB RETAINED
+- Cả hai tab thấy cùng 3 Job.
+- Chỉ tab sở hữu ghế hiện tại được bấm Job Dice.
+- HOST authoritative sinh D6.
+- 1–2 → A, 3–4 → B, 5–6 → C.
 
-REMOTE ROLL FOR ORDER RETAINED
-- Client chọn P2/P3/P4 và tự bấm D6 khi tới lượt.
-- HOST sinh D6, xử lý tie-reroll và broadcast kết quả.
-- Final playOrder do HOST chốt; client chờ HOST release vào trận.
+REMOTE ROLL RETAINED
+- Remote seat tự bấm trên tab của họ.
+- HOST sinh D6 và xử lý tie-reroll.
+- HOST chốt final playOrder và release vào trận.
 
-EVENT AUDIO
-- victory: khi bảng kết quả thật xuất hiện.
-- news: khi vào Tin Tức.
-- card: khi nhận Card.
-- step: mỗi move_step authoritative.
-- -money: khi B$ giảm.
-- +money: khi B$ tăng.
-- dice: mọi lần đổ D6, gồm Roll For Order và Job D6 authoritative.
-- choice: tác vụ chọn/xác nhận UI.
-
-MINI GAME
-- BGM Mini Game = 03_City_Silly.ogg đã khóa checksum.
+MATCH RULES
+- Starting wallet = 200 B$.
+- Mỗi người hoàn thành 1 vòng trước khi chốt B$.
+- Qua READY nhận lương Job hiện tại.
 - NHIỀU RA ÍT BỊ: 30 / 20 / 10 / 0 B$.
 - OẲN TÙ XÌ trực tiếp: 25 / 15 / 5 / 0 B$.
-- Nếu người cuối hoàn thành vòng tại ô Mini Game, kết quả trận phải chờ payout Mini Game xong mới chốt B$.
+- Final Mini Game payout phải commit trước khi chốt kết quả.
 
-LUẬT CHỐT ĐIỂM HIỆN TẠI
-- Mỗi người phải hoàn thành đủ 1 vòng quanh bàn, tức đi qua READY ít nhất 1 lần.
-- Chỉ khi CẢ 4 người đều hoàn thành 1 vòng mới chốt bảng B$.
-- Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
-- Qua READY nhận lương Job hiện tại; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
+FINAL RESULT
+- Presentation queue phải sạch trước result.
+- B$ lock chạy trước podium.
+- Podium reveal 4 → 3 → 2 → 1; đồng hạng cùng nhịp.
+- Result controls chỉ unlock sau winner reveal.
 
-FINAL RESULT RETAINED
-- Mọi presentation/payout cuối phải xong trước khi hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$.
-- Podium authoritative reveal hạng 4 → 3 → 2 → 1; đồng hạng xuất hiện cùng nhịp.
-- Hạng 1 ưu tiên 😆, hạng 4 ưu tiên 😡, giữa dùng 😐; thiếu ảnh reaction thì fallback neutral.
-- Result controls chỉ unlock sau khi final winner reveal kết thúc.
-- Victory SFX chỉ phát theo result overlay thật.
-
-RETAINED FEATURES / FIXES
-- Token P1 không snap ngược khi Card/News/state update; Job Hub có reconcile riêng cho controller.
-- Snapshot/resync và rematch vẫn hard-snap token về state authoritative.
-- HUD/Bảng B$ hiển thị 🏁0/1 hoặc 🏁✓.
-- Starting wallet = 200 B$.
+AUDIO / PRIVACY
+- 4 BGM approved và 8 SFX supplied giữ nguyên checksum.
+- Ảnh mặt gốc vẫn local.
+- Ảnh reference Tiên Tri / Phép Thuật chỉ dùng làm visual direction trong 0.1.47, chưa được persist thành runtime asset.
 
 KNOWN LIMITS
-- Đây vẫn là local BroadcastChannel QA, chưa phải internet multiplayer production.
-- Chưa có reconnect/seat reclaim production.
-- Client chưa nhận face textures từ host.
-- CPU chỉ là QA bot.
-- Thief có thể jailed nhưng chưa có luật bỏ lượt/bail/escape.
-
-MANUAL LOCAL SERVER
-Node:   npx serve .
-Python: python -m http.server 4173
+- 2-tab hiện là BroadcastChannel local QA.
+- CPU là QA bot.
+- Jail deep mechanics chưa định nghĩa.
