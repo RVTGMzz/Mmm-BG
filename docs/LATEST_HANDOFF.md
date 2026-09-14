@@ -24,43 +24,51 @@ Current names:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-## Map source-of-truth changed to Draft B
-
-Ron corrected the final-map interpretation: the reference has **one Hospital** and **one Jail** outside the main route, not four internal spaces for each.
+## Map source-of-truth — Draft B
 
 Current files:
 1. `HANDOFF_CURRENT.md`
 2. `docs/MAP_ARCHITECTURE_FINAL.md`
 3. `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
 4. `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
-5. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
-6. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
-7. `docs/UI_FINAL_PLAYER_HUD.md`
+5. `docs/GAME_DESIGN_CURRENT.md`
+6. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
+7. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
+8. `docs/UI_FINAL_PLAYER_HUD.md`
 
 Working Draft B:
 - **44 spaces on the main loop** `M01..M44`;
-- `HOSPITAL` = one singleton off-board location;
-- `JAIL` = one singleton off-board location;
+- `HOSPITAL` = one singleton special location;
+- `JAIL` = one singleton special location;
 - lap crossing = `M44 -> M01`.
 
-Hospital/Jail do not consume ordinary dice movement. A player is sent there by authoritative TIN TỨC, LÁ BÀI, or another approved effect.
+### Four locked corner anchors
+- `M01` READY
+- `M12` JAIL_GATE -> `JAIL`
+- `M23` LOTTERY -> D6 × 20 B$
+- `M34` HOSPITAL_GATE -> `HOSPITAL`
+
+Lottery payouts: `20 / 40 / 60 / 80 / 100 / 120 B$`.
+
+### Approved release rules
+JAIL:
+- roll D6 on the detained player's turn;
+- `1 / 3 / 5` releases;
+- failure stays in Jail and retries next turn.
+
+HOSPITAL:
+- roll D6 on the hospitalized player's turn;
+- exactly `2 / 4 / 5` releases;
+- failure stays in Hospital and retries next turn.
+
+Still TBD: whether a successful release roll also supplies normal movement on the same turn.
+
+TIN TỨC, LÁ BÀI, or another approved HOST-authoritative effect may also send a player directly to Jail/Hospital.
 
 Old Draft A assumptions are superseded:
 - no `H1..H4`;
 - no `J1..J4`;
-- no Hospital/Jail detour chain.
-
-Draft A through A5 may remain as historical design notes, but they are not authority where they conflict with Draft B.
-
-## Still TBD
-
-Do not invent:
-- Hospital/Jail stay duration;
-- skipped turns;
-- Hospital fee/recovery;
-- Jail bail;
-- escape roll/card;
-- release conditions.
+- no Hospital/Jail movement chain.
 
 ## HUD / camera retained
 
@@ -69,14 +77,14 @@ Do not invent:
 - active HUD emphasized;
 - HUD stays fixed in screen space;
 - camera close-follows active token;
-- special-location effect can pan camera to Hospital/Jail;
+- special-location camera may frame singleton Jail/Hospital;
 - full map is explicit overview only.
 
 ## Next priority
 
-1. Rebuild 44-main-space content pacing from Draft B.
-2. Rebalance Mini Game positions for 44 spaces.
+1. Rebuild 44-space content pacing around four locked corner anchors.
+2. Rebalance Mini Game / TIN TỨC / LÁ BÀI / money / Job Hub.
 3. Rebuild spatial/landmark plan with singleton Hospital/Jail.
 4. Continue 0.1.49 legacy-effect audit in parallel.
-5. Keep TIN TỨC / LÁ BÀI.
+5. Decide post-release same-turn movement later.
 6. Do not merge PR #1.
