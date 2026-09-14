@@ -1,6 +1,6 @@
 # MVP 0.1.45 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -51,7 +51,7 @@ Flow:
 
 ## Regression
 
-New `tests/remote-roll-order-045.ts` validates:
+`tests/remote-roll-order-045.ts` validates:
 
 - P2 remote seat claim;
 - host-to-client profile-name sync;
@@ -64,4 +64,28 @@ New `tests/remote-roll-order-045.ts` validates:
 - JOIN enters TurnOrderScene before DemoBoardScene;
 - 0.1.45 keeps 0.1.44 board behavior in the inheritance chain.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+The first 0.1.45 CI attempt (#1335) failed only because the new static regression searched for the literal `session.announceTie(...)` while the real scene uses `hostSession?.announceTie(...)`. Dynamic protocol checks had already passed. The assertion was corrected; runtime architecture was not relaxed.
+
+## Validated artifact
+
+GitHub Actions run: `34807583109` / run `#1337`
+
+Validated runtime/package SHA:
+`4842257bafbdffbdf4fab929d49582aa7b52671d`
+
+Artifact:
+`mememe-playtest-0.1.45`
+
+Artifact ID:
+`10333851442`
+
+Artifact size:
+`8,565,566 bytes`
+
+Digest:
+`sha256:747411d7d031fea47ab36edfc367894d22ed35abf05b858498129631560eb67f`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34807583109`
+
+Full CI passed through build/typecheck, all existing gameplay/network/presentation regressions, new Remote Roll For Order authority regression, package verification, guide copy, and artifact upload.
