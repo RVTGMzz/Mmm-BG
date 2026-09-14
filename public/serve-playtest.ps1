@@ -1,6 +1,7 @@
 param(
   [switch]$FinalMapPreview,
-  [switch]$DraftDPreview
+  [switch]$DraftDPreview,
+  [switch]$DraftDFullMap
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,8 +47,10 @@ if (-not $listener) {
   exit 1
 }
 
-if ($DraftDPreview) {
-  $url = "http://127.0.0.1:$port/?finalmap=2"
+if ($DraftDFullMap) {
+  $url = "http://127.0.0.1:$port/?finalmap=3&overview=1"
+} elseif ($DraftDPreview) {
+  $url = "http://127.0.0.1:$port/?finalmap=3"
 } elseif ($FinalMapPreview) {
   $url = "http://127.0.0.1:$port/?finalmap=1"
 } else {
