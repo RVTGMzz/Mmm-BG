@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { demoMatchResult } from '../core/demoMatch';
 import type { MatchState } from '../core/matchState';
-import { gameSession } from '../core/session';
+import { gameSession, type FaceExpression } from '../core/session';
 import { withCompetitionRanks, type RankedPodiumEntry } from '../ui/podiumRanking';
 import { CareerMinigameBoardScene040 } from './CareerMinigameBoardScene040';
 
@@ -140,7 +140,8 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
 
       root.add([shadow, pedestal, rankText, nameText, moneyText]);
 
-      const faceAsset = gameSession.getFace(entry.playerId, 'neutral');
+      const faceExpression = this.podiumFaceExpression(entry);
+      const faceAsset = gameSession.getFace(entry.playerId, faceExpression);
       if (faceAsset && this.textures.exists(faceAsset.textureKey)) {
         root.add([
           this.add.rectangle(x, faceY, 62, 62, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
@@ -157,9 +158,24 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
           }).setOrigin(0.5),
         ]);
       }
+
+      this.decoratePodiumSlot(root, entry, x, faceY);
     });
 
     return root;
+  }
+
+  protected podiumFaceExpression(_entry: RankedPodiumEntry): FaceExpression {
+    return 'neutral';
+  }
+
+  protected decoratePodiumSlot(
+    _root: Phaser.GameObjects.Container,
+    _entry: RankedPodiumEntry,
+    _x: number,
+    _faceY: number,
+  ): void {
+    // Extension hook for later presentation-only podium polish.
   }
 
   private overlayAlpha(objects: Phaser.GameObjects.GameObject[]): number {
