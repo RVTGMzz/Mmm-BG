@@ -22,15 +22,20 @@
 - Tới lượt ai, camera chuyển/zoom về token của người đó và follow khi di chuyển.
 - Full-map chỉ là overview có chủ đích như intro, xem bản đồ, route inspection hoặc QA/debug.
 - Board ưu tiên một primary loop/path network dễ đọc ở góc nhìn gần.
-- **Hospital** là đúng **1 special location** nằm ngoài vòng chính.
-- **Jail / Police Station** là đúng **1 special location** nằm ngoài vòng chính.
+- **Hospital** là đúng **1 special location** nằm ngoài vòng ordinary path.
+- **Jail / Police Station** là đúng **1 special location** nằm ngoài vòng ordinary path.
 - Hospital/Jail không phải chuỗi nhiều ô.
 - Player có thể bị đưa tới Hospital/Jail từ ô gateway trên main loop hoặc bởi effect authoritative từ **TIN TỨC**, **LÁ BÀI**, hay effect được duyệt khác.
 
-Current topology source:
+Current map source:
 - `docs/MAP_ARCHITECTURE_FINAL.md`
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
 - `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
+- `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
+- `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.md`
+- `docs/MAP_VISUAL_HIERARCHY_44_DRAFT_B3.md`
+- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.md`
+- `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
 
 ### Four-corner board anchors
 44 ô chia thành bốn quarter 11 ô:
@@ -48,7 +53,6 @@ Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
 - Ra **1 / 3 / 5** → được ra.
 - Ra số khác → vẫn ở Jail và chờ lượt sau roll lại.
 - Xác suất thoát mỗi lần thử: 50%.
-- Chưa chốt việc roll thoát thành công có đồng thời là roll di chuyển của lượt đó hay không.
 
 ### Hospital release rule
 - Khi tới lượt player đang ở `HOSPITAL`, roll 1 D6.
@@ -56,7 +60,6 @@ Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
 - Ra số khác → vẫn ở Hospital và chờ lượt sau roll lại.
 - Xác suất thoát mỗi lần thử: 50%.
 - Bộ số được duyệt là đúng `2 / 4 / 5`, không tự đổi thành rule số chẵn.
-- Chưa chốt việc roll thoát thành công có đồng thời là roll di chuyển của lượt đó hay không.
 
 ### Lottery rule
 - `M23 LOTTERY` roll 1 D6.
@@ -64,6 +67,20 @@ Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
 - Payout: `20 / 40 / 60 / 80 / 100 / 120 B$`.
 - Expected payout hiện tại: `70 B$` trước khi cân economy sâu hơn.
 - RNG và wallet mutation phải HOST-authoritative khi implement.
+
+### Working 44-space content distribution
+Draft B1 hiện dùng:
+- Job Hub: `M08`
+- Mini Game: `M17 / M39`
+- TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
+- LÁ BÀI: `M04 / M10 / M16 / M22 / M27 / M32 / M41`
+- Money +: `M03 / M13 / M25 / M35`
+- Money -: `M07 / M18 / M30 / M40`
+- Normal/breathing: 16 ô
+
+Mini Game spacing hiện là đúng `22 / 22`.
+
+Đây là working design source, chưa phải runtime lock.
 
 ### Final 4-player HUD direction
 - 4 player HUD cố định ở 4 góc màn hình, không di chuyển cùng board camera.
@@ -117,6 +134,8 @@ Hướng phù hợp nhất với concept:
 - các điểm nhấn đỏ, vàng, xanh, tím theo brand;
 - body vẽ 2D, face thật cố ý hơi “lệch pha” để tạo hài.
 
+Draft B4 hiện khuyên ưu tiên một **stylized toy/collage city thống nhất**, nhưng đây chưa phải art-style lock cuối.
+
 ### Async reaction
 Gameplay logic và presentation tách nhau:
 - effect resolve ngay;
@@ -127,20 +146,21 @@ Cần test readability trên màn hình nhỏ.
 
 ## C. Chưa chốt
 
-### Detailed final board distribution / art coordinates
-Draft B đã chọn working topology **44 main spaces + 1 Hospital + 1 Jail**, nhưng vẫn chưa khóa runtime:
-- payload cuối cho các ô còn lại ngoài 4 corner anchors;
-- Mini Game spacing mới cho 44-space loop;
-- district boundaries cuối;
-- landmark placement cuối;
-- world/art coordinates cuối;
-- shortcut/alternate-route topology nếu sau này có;
-- effect distribution cuối.
+### Final map runtime lock / art implementation
+Draft B/B1/B2/B3/B4/B5 đã có working design khá đầy đủ, nhưng vẫn chưa khóa runtime:
+- final art coordinates;
+- final district names;
+- final landmark sprites;
+- final palette/materials;
+- actual camera tween values;
+- actual total match duration after 44-space runtime playtest;
+- whether working node payload positions need rebalance after playtest.
 
 Draft A cũ `40 + H1..H4 + J1..J4` đã superseded và không còn là thiết kế hiện tại.
 
-### Post-release movement
+### Post-release behavior
 Jail/Hospital release faces đã chốt, nhưng vẫn chưa chốt:
+- player re-enter main loop tại node nào sau khi thoát;
 - roll thoát thành công có được dùng luôn làm bước di chuyển bình thường không;
 - hay thoát xong kết thúc lượt;
 - alternate release effect/card có tồn tại hay không.
