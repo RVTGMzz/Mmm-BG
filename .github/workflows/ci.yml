@@ -61,7 +61,7 @@ jobs:
         run: npm run test:bots
       - name: Tile Card News Reaction presentation parity
         run: npm run test:presentation
-      - name: Presentation flow gate and parity routing
+      - name: Presentation flow gate and Draft D manual routing
         run: npm run test:flow
       - name: Board flow movement and timing policy
         run: npm run test:board-flow
@@ -121,18 +121,20 @@ jobs:
         run: npm run test:branching-053
       - name: 0.1.54 deterministic AUTO MANUAL branch sandbox
         run: npm run test:preview-branch-mode-054
+      - name: 0.1.55 canonical Draft D topology and five Mini Games
+        run: npm run test:canonical-draft-d-055
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.54 AUTO branch sandbox guide to package
-        run: cp docs/PLAYTEST_0.1.54_AUTO_BRANCH_SANDBOX.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.55 canonical Draft D guide to package
+        run: cp docs/PLAYTEST_0.1.55_DRAFT_D_CANONICAL.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.54 AUTO branch sandbox build
+      - name: Upload MVP 0.1.55 canonical Draft D build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.54-auto-branch-sandbox
+          name: mememe-playtest-0.1.55-draft-d-canonical
           path: dist
           if-no-files-found: error
           retention-days: 14
