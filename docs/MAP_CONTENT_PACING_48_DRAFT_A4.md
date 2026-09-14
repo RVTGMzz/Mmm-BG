@@ -1,6 +1,6 @@
 # MeMeMe — Map Content Pacing 48 Draft A4
 
-Status: **DESIGN AUDIT / DOCUMENTATION ONLY / NOT RUNTIME**
+Status: **APPROVED DESIGN AUDIT / DOCUMENTATION ONLY / NOT RUNTIME**
 
 ## Main-loop travel estimate
 
@@ -8,7 +8,7 @@ Draft A uses 40 main-loop nodes plus 8 side-location nodes, for 48 total playabl
 
 With a fair D6, the exact expected number of rolls to reach/cross 40 spaces is about **11.9 rolls per player**. For four players, one lap each therefore means roughly **47–48 player turns** before extra presentation time or side-location travel is counted.
 
-This is viable, but match length must be playtested before 40 main nodes are final-locked.
+This is viable, but match length must be playtested before 40 main nodes are final-locked for runtime.
 
 Comparison:
 
@@ -34,15 +34,17 @@ Main loop:
 - Money -: 4
 - Normal / breathing / topology nodes: 15
 
-High-attention nodes are `25/40 = 62.5%`. This is a healthy party-board density for a prototype.
+High-attention node density remains unchanged by the pacing rebalance.
 
 ## TIN TỨC spacing
 
-Positions: `M06, M14, M19, M25, M33, M38`
+Approved positions: `M06, M14, M19, M25, M33, M40`
 
-Clockwise gaps: `8, 5, 6, 8, 5, 8`
+Clockwise gaps: `8, 5, 6, 8, 7, 6`
 
-Verdict: **GOOD**.
+Verdict: **VERY GOOD**.
+
+The displaced M38 TIN TỨC role moves to M40 rather than M31 so news does not cluster around M31/M33.
 
 ## LÁ BÀI spacing
 
@@ -58,11 +60,13 @@ Money + positions: `M03, M15, M23, M34`
 
 Gaps: `12, 8, 11, 9`
 
-Money - positions: `M07, M18, M30, M37`
+Money - positions: `M07, M21, M30, M37`
 
-Gaps: `11, 12, 7, 10`
+Gaps: `14, 9, 7, 10`
 
-Verdict: **ACCEPTABLE / WELL SPREAD**.
+Verdict: **ACCEPTABLE**.
+
+The negative-money rhythm is slightly less even than the original draft, but the trade is worthwhile because Mini Game pacing becomes exact 20/20 while category totals stay unchanged.
 
 ## Job Hub position
 
@@ -72,40 +76,28 @@ That is roughly three average D6 rolls into the first lap, which is a good onboa
 
 Verdict: **GOOD**.
 
-## Mini Game spacing risk
+## Mini Game spacing — approved
 
-Current positions: `M21, M31`
+Approved positions: `M18, M38`
 
 Clockwise gaps:
-- M21 -> M31 = 10 nodes
-- M31 -> next M21 = 30 nodes
+- M18 -> M38 = 20 nodes
+- M38 -> next M18 = 20 nodes
 
-Verdict: **CURRENT CLEAREST PACING ISSUE**.
+Verdict: **EXCELLENT / APPROVED FOR DRAFT A**.
 
-The two Mini Game anchors are concentrated in one half of the route.
+Ron approved this direction on 2026-09-14.
 
-### Balanced candidate
+The earlier `M21 / M31` Mini Game placement is superseded.
 
-A clean 20/20 candidate is:
-- Mini Game A: `M18`
-- Mini Game B: `M38`
-
-To preserve category counts:
-- move M18's current Money - role to `M21`;
-- move M38's current TIN TỨC role to `M31`;
-- M18 becomes Mini Game;
-- M38 becomes Mini Game.
+Affected-role rebalance:
+- M18: Money - -> Mini Game
+- M21: Mini Game -> Money -
+- M31: Mini Game -> Normal
+- M38: TIN TỨC -> Mini Game
+- M40: Normal -> TIN TỨC
 
 All category totals remain unchanged.
-
-Why this candidate is useful:
-- exact 20/20 spacing;
-- first Mini Game occurs after the early Job Hub section;
-- one sits in the entertainment half;
-- one sits in the late-lap/night district;
-- avoids packing another major feature into the Job Hub/Hospital area.
-
-This is a proposal only. Do not mutate architecture data until approved.
 
 ## Side-location pacing note
 
@@ -121,24 +113,21 @@ Keep a fallback for playtest comparison:
 
 Expected main-lap travel becomes about **10.8 rolls/player** while still satisfying the requirement of more than 40 playable spaces overall.
 
-This is not a change request yet, only a prepared alternative.
+This is not an active change. Draft A remains 48 total / 40 main for the first final-map runtime test.
 
-## A4 provisional verdict
+## A4 approved verdict
 
-- 48 total playable spaces: **viable**.
-- 40-node main loop: **viable but match-length sensitive**.
+- 48 total playable spaces: **approved Draft A target**.
+- 40-node main loop: **keep for first runtime map test; match-length sensitive**.
 - Overall content density: **good**.
-- TIN TỨC distribution: **good**.
+- TIN TỨC distribution: **very good**.
 - LÁ BÀI distribution: **good**.
-- Money distribution: **good enough for prototype**.
+- Money distribution: **acceptable**.
 - Job Hub timing: **good**.
-- Mini Game spacing: **needs review before final lock**.
+- Mini Game spacing at M18/M38: **approved / 20–20**.
 
-## Next decision
+## Runtime boundary
 
-Before Draft A is final-locked, choose whether to:
-1. keep Mini Games at M21/M31;
-2. test the balanced M18/M38 candidate;
-3. nominate another two-node split after final landmark art review.
+A4 changes design source-of-truth only.
 
-No runtime board file changes in A4.
+No runtime board file changes are authorized by this document. Current validated playable runtime remains 0.1.48 until a dedicated final-map implementation milestone is opened and validated.
