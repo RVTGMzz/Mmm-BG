@@ -40,7 +40,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.43', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.44', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -73,7 +73,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.43: podium reveal hạng thấp trước, hạng cao sau; người đồng hạng xuất hiện cùng nhịp, reaction face của 0.1.42 vẫn giữ nguyên.</p>
+      <p id="setup-status" class="setup-status">0.1.44: kết quả chỉ nhận click sau khi podium reveal hạng 4 → 3 → 2 → 1 hoàn tất; không thể bấm rematch/lobby sớm.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
