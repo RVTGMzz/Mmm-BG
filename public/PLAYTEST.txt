@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.43 — PODIUM LOW → HIGH REVEAL
+MeMeMe MVP 0.1.44 — RESULT CONTROLS UNLOCK AFTER PODIUM
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,13 +18,12 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.43 FOCUS
-- Giữ nguyên podium authoritative + face reactions của 0.1.41/0.1.42.
-- Podium không hiện cả 4 slot cùng lúc nữa.
-- Reveal theo displayed rank từ thấp lên cao: hạng 4 → 3 → 2 → 1.
-- Người đồng hạng có cùng displayed rank sẽ dùng cùng delay và xuất hiện cùng nhịp.
-- 🥇/👑 hạng 1 được giữ lại cho beat cuối.
-- Mỗi slot dùng fixed fade + nhích lên nhẹ; timing là hằng số presentation, không dùng gameplay RNG.
+0.1.44 FOCUS
+- Giữ nguyên podium authoritative + face reactions + reveal cascade của 0.1.41–0.1.43.
+- Result buttons bị khóa trong suốt podium reveal.
+- Reveal vẫn theo displayed rank 4 → 3 → 2 → 1; người đồng hạng xuất hiện cùng nhịp.
+- CHƠI LẠI / VỀ LOBBY chỉ nhận click sau khi tween 🥇 cuối cùng hoàn tất, cộng một pad presentation ngắn.
+- Gate dùng scene clock + fixed timing; không dùng gameplay RNG.
 - Không đổi B$, winner ID, ranking authoritative, payout hay authority.
 
 EVENT AUDIO
@@ -41,7 +40,6 @@ MINI GAME
 - BGM Mini Game = 03_City_Silly.ogg đã khóa checksum.
 - NHIỀU RA ÍT BỊ: hạng 1 = 30 B$ • hạng 2 = 20 B$ • hạng 3 = 10 B$ • hạng 4 = 0 B$.
 - OẲN TÙ XÌ trực tiếp: hạng 1 = 25 B$ • hạng 2 = 15 B$ • hạng 3 = 5 B$ • hạng 4 = 0 B$.
-- Oẳn Tù Xì 1v1 diễn animation đầy đủ kể cả CPU vs CPU.
 - Nếu người cuối hoàn thành vòng tại ô Mini Game, kết quả trận phải chờ payout Mini Game xong mới chốt B$.
 
 LUẬT CHỐT ĐIỂM HIỆN TẠI
@@ -52,9 +50,10 @@ LUẬT CHỐT ĐIỂM HIỆN TẠI
 
 FINAL RESULT
 - Mọi presentation/payout cuối phải xong trước khi game hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$ • CHỐT THỨ HẠNG.
-- Sau nhịp khóa B$, podium authoritative fade vào và các slot reveal theo hạng thấp → cao.
+- Podium authoritative reveal hạng thấp → cao.
 - Hạng 1 ưu tiên mặt 😆; hạng 4 ưu tiên 😡; giữa dùng 😐. Thiếu ảnh reaction thì fallback neutral.
 - Đồng B$ dùng competition rank: 300/300/250/200 → 1/1/3/4; 300/250/250/200 → 1/2/2/4.
+- Result controls chỉ unlock sau khi final winner reveal kết thúc.
 - Victory SFX chỉ phát theo result overlay thật, không nhân đôi.
 
 RETAINED FEATURES / FIXES
@@ -65,15 +64,7 @@ RETAINED FEATURES / FIXES
 - Job Hub bắt buộc dừng; 3 nghề A/B/C; 1–2 → A, 3–4 → B, 5–6 → C.
 - Choice SFX phủ Route/Card/Target/Tactical/Setup/Settings cùng các điểm đã có từ trước.
 
-CONTROLS
-- Khi tới lượt người chơi, click trực tiếp xúc xắc giữa bàn để roll.
-- Có thể dùng Lá Bài trước khi roll nếu đang có bài hợp lệ.
-- Card/News/function tiles tự kích hoạt theo luồng trận.
-- Chọn route khi bộ chọn nhánh xuất hiện.
-- Settings chứa BGM mute/volume và FX mute.
-
 CPU TEST BOT
-- CPU tự dùng Lá Bài hợp lệ nếu đang có bài.
 - CPU tự roll và tự xử lý prompt QA.
 - CPU chỉ là QA bot đơn giản, KHÔNG phải AI gameplay final.
 
