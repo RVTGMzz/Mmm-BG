@@ -11,9 +11,25 @@ import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
 import { CareerMinigameBoardScene048 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene048';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
+import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 
-const finalMapPreview = new URLSearchParams(window.location.search).get('finalmap') === '1';
-const normalScenes = [LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene, FinalMapPreviewScene050];
+const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
+const normalScenes = [
+  LocalLobbyScene,
+  SetupScene,
+  TurnOrderScene,
+  ActiveBoardScene,
+  BoardScene,
+  NetworkBoardScene,
+  FinalMapPreviewScene050,
+  FinalMapPreviewScene051,
+];
+
+const previewScenes = finalMapMode === '2'
+  ? [FinalMapPreviewScene051, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene051)]
+  : finalMapMode === '1'
+    ? [FinalMapPreviewScene050, ...normalScenes.filter((scene) => scene !== FinalMapPreviewScene050)]
+    : normalScenes;
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -21,9 +37,7 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: finalMapPreview
-    ? [FinalMapPreviewScene050, LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene]
-    : normalScenes,
+  scene: previewScenes,
   dom: {
     createContainer: true,
   },
