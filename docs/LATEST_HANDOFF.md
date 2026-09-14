@@ -7,66 +7,64 @@ Root checkpoint for new chats: `HANDOFF_CURRENT.md`
 
 ## Current milestone
 
-**MVP 0.1.46 - Job Hub Multiplayer Polish (ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN)**
+**MVP 0.1.47 - Multiplayer Presentation Parity + Tiên Tri / Phép Thuật (ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN)**
 
-Latest validated artifact: `mememe-playtest-0.1.46`
+Latest validated artifact: `mememe-playtest-0.1.47`
 
 Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Read first
 
 1. `HANDOFF_CURRENT.md`
-2. `docs/MVP_0.1.46_PROGRESS.md`
-3. `docs/PLAYTEST_0.1.46.md`
-4. `src/scenes/CareerMinigameBoardScene046.ts`
-5. `src/ui/JobChoicePicker.ts`
-6. `tests/job-hub-multiplayer-046.ts`
-7. `src/core/twoTabSession.ts`
-8. `src/core/authority.ts`
-9. `src/core/replay.ts`
-10. `src/scenes/CareerMinigameBoardScene045.ts`
-11. `src/core/turnOrderSession.ts`
-12. `src/scenes/TurnOrderScene.ts`
-13. `tests/remote-roll-order-045.ts`
+2. `docs/MVP_0.1.47_PROGRESS.md`
+3. `docs/PLAYTEST_0.1.47.md`
+4. `src/scenes/CareerMinigameBoardScene047.ts`
+5. `src/ui/legacyDeckPresentation.ts`
+6. `tests/multiplayer-presentation-parity-047.ts`
+7. `src/ui/CardHandPicker.ts`
+8. `src/scenes/PresentationParityBoardScene.ts`
+9. `src/scenes/CareerMinigameBoardScene046.ts`
+10. `tests/job-hub-multiplayer-046.ts`
+11. `src/scenes/CareerMinigameBoardScene045.ts`
+12. `tests/remote-roll-order-045.ts`
 
-## What changed in 0.1.46
+## What changed in 0.1.47
 
-### Multiplayer Job Hub presentation
+### Old deck language restored at presentation layer
 
-`CareerMinigameBoardScene046` extends the validated 0.1.45 runtime and adds spectator presentation for remote-owned Job Hub turns.
+- Visible `Tin Tức` becomes **TIÊN TRI**.
+- Tiên Tri uses portrait/vertical presentation inspired by the old reference deck.
+- Visible `Lá Bài / Thẻ Bài` becomes **PHÉP THUẬT**.
+- Phép Thuật uses landscape/horizontal presentation.
+- `CardHandPicker` now displays the player's hand using horizontal Phép Thuật cards.
+- User-supplied reference images are visual direction only; they are not committed as runtime assets.
 
-- The controlling peer still receives the interactive Job Hub.
-- Other network peers now see the same three authoritative A/B/C offers instead of only waiting on the board.
-- Spectator Job Hub has no interactive Job Dice control.
-- When authority resolves the Job, spectator overlay closes automatically.
-- Existing `job_dice_roll` event drives the same dice presentation on every peer.
-- Existing `job_selected` event shows the same Job title and Lv.1 salary on every peer.
+### Protocol stays compatible
 
-### Authority remains unchanged
+The display rename is deliberately separated from gameplay terminology.
 
-0.1.46 intentionally adds no new gameplay command. Remote Job Hub still uses `choose_job`.
+- `news`, `card_draw`, `card_play`, `play_card` and other technical event/command names remain unchanged.
+- Replay, checksum and host-authority streams require no migration.
+- `legacyDeckPresentation.ts` maps technical event kind to visible family/form and builds a deterministic presentation fingerprint.
 
-Client-provided fields such as `jobId`, `result`, or `offerIndex` are discarded by host authority. The accepted `choose_job` command contains empty data. Replay consumes host gameplay RNG, produces one authoritative Job D6, and maps it with the existing rule `1–2 A / 3–4 B / 5–6 C`.
+### Multiplayer presentation parity
 
-### Regression
+`tests/multiplayer-presentation-parity-047.ts` builds the same authoritative event stream under HOST and CLIENT modes and requires the same visible fingerprint.
 
-`tests/job-hub-multiplayer-046.ts` runs a real in-memory P2 remote-seat flow through TwoTab sessions and checks:
+It also protects:
 
-- mandatory Job Hub stop;
-- three host-authoritative offers;
-- forged client result/Job fields discarded;
-- host/client agree on Job D6 and assigned Job;
-- shared dice presentation ends on authoritative D6;
-- assigned Job presentation contains Job and Lv.1 salary;
-- spectator UI cannot roll locally;
-- Job picker contains no `Math.random` or local `rollD6`.
+- Tiên Tri -> portrait;
+- Phép Thuật -> landscape;
+- stale presentation not replayed on snapshot;
+- only fresh eventSeq values enqueued for normal network state;
+- no new gameplay/system intent or RNG in 0.1.47 wrapper;
+- complete inheritance of validated 0.1.46 behavior.
 
-The old 0.1.45 Remote Roll test was made version-agnostic after the first 0.1.46 run exposed its hardcoded Lobby/Setup version assertion.
-
-## Retained gameplay/result behavior
+## Retained multiplayer/gameplay
 
 - 0.1.45 Remote Roll For Order remains host-authoritative.
-- Mandatory Job Hub stop and Job D6 mapping remain unchanged.
+- 0.1.46 Multiplayer Job Hub remains host-authoritative and spectator-safe.
+- Job mapping remains `1-2 A / 3-4 B / 5-6 C`.
 - Starting wallet remains `200 B$`.
 - Every player completes one physical lap before final scoring.
 - READY pays current Job salary once per crossing and increments lap.
@@ -83,41 +81,42 @@ The old 0.1.45 Remote Roll test was made version-agnostic after the first 0.1.46
 
 ## Validated artifact
 
-GitHub Actions run: `34809081463` / run `#1367`
+GitHub Actions run: `34811037552` / run `#1403`
 
 Validated runtime/package SHA:
-`6d59583f8e1896fb2b0cbb12e438cc85b0b6fb7a`
+`2c8b853f39b45e2fedd53130caf8115a4f07e9aa`
 
 Artifact:
-`mememe-playtest-0.1.46`
+`mememe-playtest-0.1.47`
 
 Artifact ID:
-`10334430551`
+`10334662721`
 
 Size:
-`8,565,865 bytes`
+`8,565,661 bytes`
 
 Digest:
-`sha256:2b7b66df3863721f12fd07ff56dc7a43ed55a5d4850af554b02f86f5f04a0bf4`
+`sha256:c7b48367b32d181d8fbf8de162136302d25752ad90c90c5d0fa28f51643ba510`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34809081463`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34811037552`
 
-Full CI passed build/typecheck, replay/lockstep, host-client/two-tab authority, all gameplay/presentation regressions, Remote Roll authority, Job Hub multiplayer authority/presentation, package verification, guide copy and artifact upload.
+Full CI passed build/typecheck, replay/lockstep, host-client/two-tab authority, all existing gameplay/presentation regressions, Remote Roll authority, Job Hub multiplayer, new Tiên Tri/Phép Thuật parity regression, image bounds, package verification, guide copy and artifact upload.
 
-## CI note
+## CI notes
 
-Run #1365 failed only because `tests/remote-roll-order-045.ts` still required the current entry surfaces to literally display `0.1.45`. The runtime and all preceding regressions were green. That test now protects only 0.1.45 Remote Roll behavior instead of owning the current build number.
+- Run #1399 failed only because the older Job Hub regression hardcoded the current packaged scene version. The invariant checks remain intact and the test is now version-agnostic.
+- Run #1401 proved the new 0.1.47 runtime/parity regression green, but package verification found the playtest quickstart had lost its direct `file://` launch warning.
+- The warning was restored. Run #1403 is the official green checkpoint.
 
 ## Runtime test focus
 
-1. Reach Job Hub with a remote-owned seat and verify both tabs display the same three offers.
-2. Confirm only the remote owner can press Job Dice.
-3. Confirm both peers reveal the exact same D6, assigned Job and salary.
-4. Verify the spectator overlay clears after authority resolves the Job.
-5. Repeat Job Hub later in the match to catch stale overlay state.
-6. Re-check Remote Roll For Order, full-match Mini Game payout, final podium, P1 movement, all eight SFX and `03_City_Silly.ogg`.
+1. In HOST + JOIN, observe Tiên Tri on both tabs and verify identical content with portrait form.
+2. Observe draw/use Phép Thuật on both tabs and verify identical spell, target and effect with landscape form.
+3. Confirm a spectator peer sees the same presentation while another seat acts.
+4. Force snapshot/resync and ensure old presentation does not replay.
+5. Re-check Remote Roll, Job Hub, final Mini Game payout, podium, P1 movement, all eight SFX and `03_City_Silly.ogg`.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.46_PROGRESS.md và docs/PLAYTEST_0.1.46.md. Current validated artifact là mememe-playtest-0.1.46, run #1367, runtime SHA 6d59583f8e1896fb2b0cbb12e438cc85b0b6fb7a. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.47_PROGRESS.md và docs/PLAYTEST_0.1.47.md. Current validated artifact là mememe-playtest-0.1.47, run #1403, runtime SHA 2c8b853f39b45e2fedd53130caf8115a4f07e9aa. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
