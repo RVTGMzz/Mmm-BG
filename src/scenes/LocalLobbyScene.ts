@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.45', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.46', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, '1 vòng/người • Remote Roll For Order • Host-authoritative D6 • Safe Final Podium.', {
+    this.add.text(228, 109, 'Remote Roll For Order • Remote Job Dice • Host-authoritative outcomes • 1 vòng/người.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -71,7 +71,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card host-card">
           <div class="lobby-icon">📡</div>
           <h2>HOST 2 TAB</h2>
-          <p>Host setup tên/mặt. Sang Roll For Order, ghế remote sẽ tự bấm D6 trên tab của họ.</p>
+          <p>Host setup tên/mặt. Remote Roll và Job Hub đều để đúng ghế client tự bấm trên tab của họ.</p>
           <label>ROOM CODE
             <input id="host-room" maxlength="8" value="${initialRoom}" />
           </label>
@@ -81,7 +81,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card join-card">
           <div class="lobby-icon">🛰️</div>
           <h2>JOIN 2 TAB</h2>
-          <p>Chọn P2/P3/P4. Client vào thẳng Remote Roll For Order và chờ host đồng bộ tên.</p>
+          <p>Chọn P2/P3/P4. Client tự Roll For Order và tự bấm Job Dice khi ghế của mình tới Job Hub.</p>
           <label>ROOM CODE
             <input id="join-room" maxlength="8" placeholder="VD: ME12AB" />
           </label>
@@ -92,14 +92,14 @@ export class LocalLobbyScene extends Phaser.Scene {
               <option value="3">P4</option>
             </select>
           </label>
-          <button id="lobby-join" type="button" ${broadcastReady ? '' : 'disabled'}>JOIN + REMOTE ROLL</button>
+          <button id="lobby-join" type="button" ${broadcastReady ? '' : 'disabled'}>JOIN + REMOTE PLAY</button>
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🎲 0.1.45: client chỉ gửi thao tác bấm roll; HOST mới sinh D6, xử lý tie-reroll và broadcast cùng kết quả cho mọi tab.
+        💼🎲 0.1.46: mọi tab thấy cùng 3 Job; đúng tab sở hữu ghế mới bấm Job Dice. HOST authoritative sinh D6 và broadcast nghề + lương.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Remote Roll For Order + Job Dice + Mini Games + Event Audio + Safe Final Podium + 2-tab local sẵn sàng.'
+        ? '✅ Remote Roll For Order + Multiplayer Job Hub + Mini Games + Event Audio + Safe Final Podium sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
