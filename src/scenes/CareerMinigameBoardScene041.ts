@@ -27,11 +27,24 @@ type PodiumInternals = {
   renderShellOverlay(): void;
 };
 
-type RankedEntry = {
+export type RankedPodiumEntry = {
   playerId: number;
   money: number;
   rank: number;
 };
+
+/** Competition ranking for display only: 1,1,3,4 rather than 1,2,3,4 on a first-place tie. */
+export function withCompetitionRanks(
+  ranking: Array<{ playerId: number; money: number }>,
+): RankedPodiumEntry[] {
+  const ranked: RankedPodiumEntry[] = [];
+  ranking.forEach((entry, index) => {
+    const previous = ranked[index - 1];
+    const rank = previous && previous.money === entry.money ? previous.rank : index + 1;
+    ranked.push({ ...entry, rank });
+  });
+  return ranked;
+}
 
 /**
  * 0.1.41 presentation-only final podium.
@@ -77,27 +90,15 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
     }
     internals.shellOverlay.splice(0, internals.shellOverlay.length, ...retained);
 
-    const ranking = this.withCompetitionRanks(result.ranking);
+    const ranking = withCompetitionRanks(result.ranking);
     const root = this.buildPodium(internals.match, ranking, result.winnerIds.length > 1);
     root.setAlpha(inheritedAlpha);
     internals.shellOverlay.push(root);
   }
 
-  private withCompetitionRanks(
-    ranking: Array<{ playerId: number; money: number }>,
-  ): RankedEntry[] {
-    const ranked: RankedEntry[] = [];
-    ranking.forEach((entry, index) => {
-      const previous = ranked[index - 1];
-      const rank = previous && previous.money === entry.money ? previous.rank : index + 1;
-      ranked.push({ ...entry, rank });
-    });
-    return ranked;
-  }
-
   private buildPodium(
     match: MatchState,
-    ranking: RankedEntry[],
+    ranking: RankedPodiumEntry[],
     hasFirstPlaceTie: boolean,
   ): Phaser.GameObjects.Container {
     const root = this.add.container(0, 0).setDepth(701);
