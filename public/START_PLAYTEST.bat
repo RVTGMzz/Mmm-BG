@@ -1,13 +1,14 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title MeMeMe Playtest Launcher
+title MeMeMe Standard Gameplay Playtest
 echo.
 echo ========================================
-echo   MeMeMe MVP 0.1.16 - PLAYTEST LAUNCHER
+echo   MeMeMe STANDARD GAMEPLAY PLAYTEST
 echo ========================================
 echo.
-echo Dang mo local web server...
+echo Day la gameplay chuan / integration target cua MeMeMe.
+echo Draft D preview va Full Map la cong cu QA rieng, khong thay the file nay.
 echo KHONG mo index.html truc tiep bang file:// nhe.
 echo.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0serve-playtest.ps1"
