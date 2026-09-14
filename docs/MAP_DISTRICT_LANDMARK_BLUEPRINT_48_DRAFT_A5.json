@@ -1,0 +1,69 @@
+{
+  "schema": "mememe-map-district-landmark-draft-v1",
+  "status": "DOCUMENTATION_ONLY_NOT_RUNTIME",
+  "draft": "A5",
+  "sourceArchitecture": "MAP_ARCHITECTURE_48_DRAFT_A",
+  "districts": [
+    {
+      "id": "D1",
+      "nodes": ["M01","M02","M03","M04","M05","M06","M07","M08"],
+      "identity": "city_center_ready",
+      "primaryLandmark": "READY_PLAZA",
+      "transitionOut": ["M07","M08","M09"],
+      "cameraPriority": "home_base_orientation"
+    },
+    {
+      "id": "D2",
+      "nodes": ["M09","M10","M11","M12","M13","M14","M15","M16"],
+      "identity": "career_services",
+      "primaryLandmark": "JOB_HUB_TOWER",
+      "secondaryLandmarks": ["HOSPITAL_COMPLEX"],
+      "transitionOut": ["M15","M16","M17"],
+      "cameraPriority": "job_hub_plus_side_location"
+    },
+    {
+      "id": "D3",
+      "nodes": ["M17","M18","M19","M20","M21","M22","M23","M24"],
+      "identity": "entertainment_social",
+      "primaryLandmark": "ENTERTAINMENT_DOME",
+      "featureNode": "M18",
+      "transitionOut": ["M23","M24","M25"],
+      "cameraPriority": "first_minigame_anchor"
+    },
+    {
+      "id": "D4",
+      "nodes": ["M25","M26","M27","M28","M29","M30","M31","M32"],
+      "identity": "drama_civic",
+      "primaryLandmark": "CIVIC_JAIL_COMPLEX",
+      "secondaryLandmarks": ["CIVIC_SQUARE"],
+      "transitionOut": ["M31","M32","M33"],
+      "cameraPriority": "civic_branch_plus_breathing_space"
+    },
+    {
+      "id": "D5",
+      "nodes": ["M33","M34","M35","M36","M37","M38","M39","M40"],
+      "identity": "night_return",
+      "primaryLandmark": "NIGHT_MARKET_SKYLINE",
+      "secondaryLandmarks": ["NIGHT_MINIGAME_STAGE"],
+      "featureNode": "M38",
+      "transitionOut": ["M39","M40","M01"],
+      "cameraPriority": "late_minigame_plus_ready_return"
+    }
+  ],
+  "landmarks": [
+    {"id":"READY_PLAZA","tier":"L1","district":"D1","anchorNode":"M01"},
+    {"id":"JOB_HUB_TOWER","tier":"L2","district":"D2","anchorNode":"M11"},
+    {"id":"HOSPITAL_COMPLEX","tier":"L3","district":"HOSPITAL","anchorNode":"H2"},
+    {"id":"ENTERTAINMENT_DOME","tier":"L2","district":"D3","anchorNode":"M18"},
+    {"id":"CIVIC_JAIL_COMPLEX","tier":"L2","district":"JAIL","anchorNode":"J2"},
+    {"id":"CIVIC_SQUARE","tier":"L3","district":"D4","anchorNode":"M31"},
+    {"id":"NIGHT_MARKET_SKYLINE","tier":"L2","district":"D5","anchorNode":"M36"},
+    {"id":"NIGHT_MINIGAME_STAGE","tier":"L3","district":"D5","anchorNode":"M38"}
+  ],
+  "globalRules": {
+    "oneDominantL1OrL2PerCloseFrame": true,
+    "criticalRouteInfoAvoidsHudCorners": true,
+    "districtTransitionSpanNodes": "1-2",
+    "landmarkLifecycle": ["appears_ahead","readable_near_center","pass_alongside","falls_behind"]
+  }
+}
