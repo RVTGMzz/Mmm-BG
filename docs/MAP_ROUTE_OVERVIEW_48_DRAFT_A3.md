@@ -138,7 +138,7 @@ The explicit overview surface should show:
 - all 48 nodes as simplified dots/markers;
 - READY icon;
 - Job Hub icon;
-- Mini Game icons;
+- Mini Game icons at M18 and M38;
 - Hospital icon;
 - Jail icon;
 - four player markers using their seat/avatar identity;
@@ -206,9 +206,9 @@ At close camera scale, every district should have at least one recognizable orie
 Working anchors:
 - D1: READY Plaza
 - D2: Job Hub Tower / Hospital Complex
-- D3: Entertainment Dome
-- D4: Civic/Jail Complex / East Mini Game Stage
-- D5: Night Market Skyline
+- D3: Entertainment Dome around Mini Game M18
+- D4: Civic/Jail Complex / Civic Square
+- D5: Night Market Skyline / Mini Game M38 stage
 
 The landmark does not need to be fully visible in every frame. A partial silhouette/sign is enough if it remains distinctive.
 
@@ -250,15 +250,9 @@ These are now documented in this file.
 
 ## Next map pass
 
-Recommended next pass: **A4 board-content pacing audit**.
+A4 board-content pacing has now been completed and approved.
 
-A4 should review the 40-node main-loop distribution against travel pacing:
-- distance between TIN TỨC nodes;
-- distance between LÁ BÀI nodes;
-- positive/negative money rhythm;
-- Mini Game spacing;
-- Job Hub position relative to READY;
-- breathing-node density by district;
-- whether 48 total spaces makes one lap feel too long or appropriately party-game sized.
+Approved pacing source:
+`docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
 
-A4 is still design analysis and must not change runtime until explicitly approved.
+The current Mini Game anchors are M18 and M38 with exact 20/20 spacing. This remains design analysis and must not change runtime until a dedicated implementation milestone is explicitly opened.
