@@ -33,6 +33,7 @@
     "test:function-tiles": "tsx tests/function-tiles-029.ts",
     "test:direct-dice": "tsx tests/direct-dice-030.ts",
     "test:job-minigame": "tsx tests/job-minigame-031.ts",
+    "test:minigame-authority": "tsx tests/minigame-authority-037.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
