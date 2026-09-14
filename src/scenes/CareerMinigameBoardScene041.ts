@@ -78,7 +78,7 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
     internals.shellOverlay.splice(0, internals.shellOverlay.length, ...retained);
 
     const ranking = this.withCompetitionRanks(result.ranking);
-    const root = this.buildPodium(ranking, result.winnerIds.length > 1);
+    const root = this.buildPodium(internals.match, ranking, result.winnerIds.length > 1);
     root.setAlpha(inheritedAlpha);
     internals.shellOverlay.push(root);
   }
@@ -95,7 +95,11 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
     return ranked;
   }
 
-  private buildPodium(ranking: RankedEntry[], hasFirstPlaceTie: boolean): Phaser.GameObjects.Container {
+  private buildPodium(
+    match: MatchState,
+    ranking: RankedEntry[],
+    hasFirstPlaceTie: boolean,
+  ): Phaser.GameObjects.Container {
     const root = this.add.container(0, 0).setDepth(701);
 
     root.add(
@@ -128,7 +132,7 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
       const top = baselineY - height;
       const faceY = top - 37;
       const medal = MEDAL_BY_RANK[rank] ?? `#${rank}`;
-      const player = internalsafePlayer(internalsafeMatchPlayer(ranking, entry.playerId), entry.playerId);
+      const player = match.players.find((candidate) => candidate.id === entry.playerId);
       const name = player?.name ?? `P${entry.playerId + 1}`;
 
       const shadow = this.add.rectangle(x + 4, baselineY - height / 2 + 5, 142, height, 0x000000, 0.24);
@@ -196,18 +200,4 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
       }
     }
   }
-}
-
-// Tiny presentation-only helpers keep the podium builder explicit without reaching into
-// gameplay mutators. The authoritative MatchState passed to the wrapper remains untouched.
-function internalsafeMatchPlayer(
-  ranking: RankedEntry[],
-  playerId: number,
-): RankedEntry | undefined {
-  return ranking.find((entry) => entry.playerId === playerId);
-}
-
-function internalsafePlayer(entry: RankedEntry | undefined, playerId: number): { name: string } | undefined {
-  if (!entry) return undefined;
-  return { name: gameSession.players[playerId]?.name ?? `P${playerId + 1}` };
 }
