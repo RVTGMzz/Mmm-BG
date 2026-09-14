@@ -43,16 +43,41 @@ Important: later handoff/documentation commits may advance branch HEAD. The runt
 2. `docs/LATEST_HANDOFF.md`
 3. `docs/MVP_0.1.48_PROGRESS.md`
 4. `docs/PLAYTEST_0.1.48.md`
-5. `docs/UI_FINAL_PLAYER_HUD.md`
-6. `docs/GAME_DESIGN_CURRENT.md`
-7. `src/scenes/CareerMinigameBoardScene048.ts`
-8. `src/ui/movementVisualPolicy.ts`
-9. `tests/bugfix-pass-048.ts`
-10. `src/scenes/TurnOrderScene048.ts`
-11. `src/scenes/TurnStakesBoardScene.ts`
-12. `src/audio/bgmController.ts`
-13. `src/scenes/CareerMinigameBoardScene046.ts`
-14. `tests/multiplayer-presentation-parity-047.ts`
+5. `docs/MAP_ARCHITECTURE_FINAL.md`
+6. `docs/UI_FINAL_PLAYER_HUD.md`
+7. `docs/GAME_DESIGN_CURRENT.md`
+8. `src/scenes/CareerMinigameBoardScene048.ts`
+9. `src/ui/movementVisualPolicy.ts`
+10. `tests/bugfix-pass-048.ts`
+11. `src/scenes/TurnOrderScene048.ts`
+12. `src/scenes/TurnStakesBoardScene.ts`
+13. `src/audio/bgmController.ts`
+14. `src/scenes/CareerMinigameBoardScene046.ts`
+15. `tests/multiplayer-presentation-parity-047.ts`
+
+## Two-track flow: runtime gate + final-map design
+
+These two tracks are both active, but they must not be conflated.
+
+### Track A — runtime gate
+
+1. Keep **MVP 0.1.48** as the current validated runtime checkpoint.
+2. Runtime-test the same player across repeated turns and verify the token never performs the old `arrive -> snap back -> next turn continues from authoritative destination` sequence.
+3. If snap-back still reproduces, capture the in-game bug report and trace the exact authoritative event/state/presentation sequence. Do not add another blind hard-snap workaround.
+4. Only after 0.1.48 is runtime-clean should a new runtime milestone be opened. Current recommendation remains **0.1.49 Legacy Effect Audit**.
+
+### Track B — final 44–48-space map architecture
+
+This design/documentation track may continue **in parallel** while 0.1.48 is being validated because it does not modify the packaged runtime.
+
+- Canonical map-design tracker: `docs/MAP_ARCHITECTURE_FINAL.md`.
+- The next map pass must become a detailed numbered architecture, not merely a moodboard.
+- Resolve exact total node count within `44–48`.
+- Split main-loop nodes from Hospital/Jail side-branch nodes.
+- Define branch entry/rejoin topology without inventing Jail/Hospital punishment mechanics.
+- Define districts, landmarks, node distribution and camera-safe spacing for close-follow play.
+- Produce a graph/adjacency view before final runtime implementation.
+- This track must remain visible in handoffs until its architecture is approved and receives its own runtime implementation milestone.
 
 ## Final-direction design decisions staged after 0.1.48 package
 
@@ -67,6 +92,7 @@ These are documentation/design locks only. They do **not** alter the validated 0
 - Hospital and Jail are approved as distinct side-branch/location concepts on the final board.
 - Hospital/Jail deep mechanics remain undefined and must not be invented implicitly.
 - Canonical HUD/camera contract: `docs/UI_FINAL_PLAYER_HUD.md`.
+- Canonical final-map design track: `docs/MAP_ARCHITECTURE_FINAL.md`.
 - Temporary visual reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
 - The concept PNG may be removed later after the real runtime HUD is implemented, validated and documented.
 
@@ -130,18 +156,19 @@ Therefore active 0.1.48 bypasses the 0.1.47 visual rename wrapper:
 ## Next-chat priority
 
 1. Runtime-test 0.1.48 with the same player taking at least two turns. The main question is whether the old token sequence `arrive -> snap back -> next turn continues from authoritative destination` is gone.
-2. Re-check money landing audio for exactly one correctly timed cue.
-3. Re-check Roll For Order settled face against the authoritative number, including tie rerolls.
-4. Confirm `03_City_Silly.ogg` never starts from normal board progression and only starts in an actual Mini Game.
-5. Confirm visible board/system labels remain TIN TỨC / LÁ BÀI.
-6. Re-check Remote Roll, Job Hub, final Mini Game payout, podium and multiplayer presentation parity.
+2. In parallel, continue `docs/MAP_ARCHITECTURE_FINAL.md` into a detailed 44–48-space numbered map architecture so this design lane is not lost.
+3. Re-check money landing audio for exactly one correctly timed cue.
+4. Re-check Roll For Order settled face against the authoritative number, including tie rerolls.
+5. Confirm `03_City_Silly.ogg` never starts from normal board progression and only starts in an actual Mini Game.
+6. Confirm visible board/system labels remain TIN TỨC / LÁ BÀI.
+7. Re-check Remote Roll, Job Hub, final Mini Game payout, podium and multiplayer presentation parity.
 
 If token snap-back still reproduces, use the in-game bug report and trace the exact event/state/presentation sequence. Do not add another blind hard-snap workaround.
 
-If 0.1.48 is clean in runtime, recommended next milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật cards as effect inspiration for the current TIN TỨC / LÁ BÀI systems. Keep the current names. Do not invent jail/skip-turn/bail/escape rules.
+If 0.1.48 is clean in runtime, recommended next runtime milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật cards as effect inspiration for the current TIN TỨC / LÁ BÀI systems. Keep the current names. Do not invent jail/skip-turn/bail/escape rules.
 
-The newly locked final HUD/camera/40+ board direction is a future runtime lane and must not be silently mixed into the already validated 0.1.48 package.
+The final HUD/camera/44–48-space board direction is a tracked future runtime lane and must not be silently mixed into the already validated 0.1.48 package.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md, docs/PLAYTEST_0.1.48.md và docs/UI_FINAL_PLAYER_HUD.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final direction đã khóa: board >40 spaces (working 44–48), close-follow camera, 4 HUD cố định ở 4 góc, Hospital/Jail side branches nhưng deep rules chưa định nghĩa. Ưu tiên runtime feedback của 0.1.48, đặc biệt bug token snap-back sau nhiều lượt. Nếu 0.1.48 ổn thì chuẩn bị 0.1.49 Legacy Effect Audit từ bộ bài cũ, nhưng giữ tên hiện tại TIN TỨC / LÁ BÀI. Không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.48_PROGRESS.md, docs/PLAYTEST_0.1.48.md, docs/MAP_ARCHITECTURE_FINAL.md và docs/UI_FINAL_PLAYER_HUD.md. Current validated artifact là mememe-playtest-0.1.48, run #1441, runtime SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Có 2 track song song: (A) runtime-test 0.1.48, ưu tiên token snap-back sau nhiều lượt; chỉ khi runtime-clean mới mở runtime milestone mới, hiện đề xuất 0.1.49 Legacy Effect Audit. (B) tiếp tục thiết kế architecture map final thật chi tiết trong working range 44–48 ô, gồm main loop + Hospital/Jail side branches, districts, landmarks và adjacency graph, nhưng không tự invent deep Jail/Hospital mechanics. Final camera close-follow, 4 HUD cố định ở 4 góc. Giữ tên TIN TỨC / LÁ BÀI. Không merge PR #1.`
