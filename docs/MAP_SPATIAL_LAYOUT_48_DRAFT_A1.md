@@ -78,7 +78,7 @@ Primary landmark: **Entertainment Dome / Mini Game district**.
 
 Camera intent:
 - brighter/sign-heavy environment language can identify this district;
-- M21 Mini Game should read as a destination landmark at close range;
+- approved Mini Game node `M18` should read as a destination landmark at close range;
 - the route bends around the east side so movement feels like entering a distinct entertainment quarter.
 
 ### D4 — Drama & Dân sự
@@ -86,21 +86,23 @@ Camera intent:
 Route: `M25..M32`
 
 Primary landmark: **Civic / Jail Complex**.
-Secondary anchor: **East Mini Game Stage** near M31.
+Secondary anchor: **Civic Square** near M31.
 
 Camera intent:
 - Jail branch should visibly peel inward from the M28/M29 segment;
 - its return path must not visually imply a shortcut;
-- M31 retains a separate secondary landmark so Jail does not dominate the whole district identity.
+- M31 is now a breathing/civic node rather than a Mini Game anchor, giving the district room around the Jail landmark.
 
 ### D5 — Đêm thành phố / Hồi vòng
 
 Route: `M33..M40`
 
 Primary landmark: **Night Market / Skyline return strip**.
+Secondary landmark: **Night Mini Game Stage** near M38.
 
 Camera intent:
 - long lower route gives the player a sense of approaching the end of the lap;
+- approved Mini Game node `M38` becomes the late-lap party landmark;
 - environmental cues should gradually point back toward READY;
 - full READY should not need to be visible yet for the player to understand direction.
 
@@ -204,9 +206,10 @@ The working landmarks in A1 are **orientation anchors**, not gameplay systems:
 - READY Plaza;
 - Job Hub Tower;
 - Hospital Complex;
-- Entertainment Dome;
+- Entertainment Dome near M18;
 - Civic/Jail Complex;
-- East Mini Game Stage;
+- Civic Square near M31;
+- Night Mini Game Stage near M38;
 - Night Market / Skyline.
 
 Their names/art can change later without changing node IDs or topology.
