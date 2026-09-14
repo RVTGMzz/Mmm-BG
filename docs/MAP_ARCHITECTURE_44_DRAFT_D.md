@@ -1,8 +1,8 @@
 # MeMeMe — Final Map Architecture Draft D
 
-Status: **CURRENT DESIGN DIRECTION / USER FEEDBACK LOCKED / CANONICAL INTEGRATION IN PROGRESS**
+Status: **CURRENT / CANONICAL DRAFT D TOPOLOGY + 0.1.56 BRANCH IDENTITY**
 
-Draft D follows Ron's playtest feedback: keep the map readable, but avoid a single circular rail, add meaningful route decisions, space nodes out, and keep the gameplay camera closer to the active player.
+Draft D follows Ron's playtest feedback: keep the map readable, avoid a single circular rail, add meaningful route decisions, space nodes out, and keep the gameplay camera close to the active player.
 
 ## Design goals locked from playtest
 
@@ -26,7 +26,7 @@ Draft D follows Ron's playtest feedback: keep the map readable, but avoid a sing
 - `M34` HOSPITAL_GATE.
 - READY remains the lap crossing.
 - TIN TỨC / LÁ BÀI naming remains locked.
-- Draft D contains **5 Mini Game spaces** at working positions `M09 / M17 / M26 / M35 / M44`.
+- Draft D contains **5 Mini Game spaces** at `M09 / M17 / M26 / M35 / M44`.
 
 The five Mini Game positions are distributed roughly every 8–9 main-loop spaces so the system has enough presence to gain more depth later without clustering into one district.
 
@@ -76,22 +76,39 @@ Release rule:
 
 Draft D introduces three normal map route decisions in addition to Jail/Hospital.
 
-### Branch A
-- decision after `M04`
-- right/main path reaches `M08` through `M05 -> M06 -> M07`
-- left/alternate path reaches `M08` through `A1 -> A2 -> A3`
+### Branch A — AN TOÀN 🛡️
+- decision after `M04`;
+- right/main path reaches `M08` through `M05 -> M06 -> M07`;
+- left/alternate path reaches `M08` through `A1 -> A2 -> A3`;
+- `A1 / A2 / A3` are all Normal;
+- purpose: lowest immediate volatility, no direct money/TIN TỨC/LÁ BÀI landing inside the corridor.
 
-### Branch B
-- decision after `M17`
-- left/main path reaches `M21` through `M18 -> M19 -> M20`
-- right/alternate path reaches `M21` through `B1 -> B2 -> B3`
+### Branch B — DRAMA 🎭
+- decision after `M17`;
+- left/main path reaches `M21` through `M18 -> M19 -> M20`;
+- right/alternate path reaches `M21` through `B1 -> B2 -> B3`;
+- `B1 = TIN TỨC`, `B2 = LÁ BÀI`, `B3 = TIN TỨC`;
+- purpose: high content interaction and board-state volatility.
 
-### Branch C
-- decision after `M35`
-- right/main path reaches `M39` through `M36 -> M37 -> M38`
-- left/alternate path reaches `M39` through `C1 -> C2 -> C3`
+### Branch C — TIỀN 💰
+- decision after `M35`;
+- right/main path reaches `M39` through `M36 -> M37 -> M38`;
+- left/alternate path reaches `M39` through `C1 -> C2 -> C3`;
+- `C1 = +25 B$`, `C2 = -20 B$`, `C3 = +25 B$`;
+- purpose: every possible stop in the corridor directly touches the wallet.
 
-Each alternate route has the **same step count** as the corresponding main segment in the current working design. This avoids hiding a distance advantage inside route choice before branch identity is tuned in 0.1.56.
+Each alternate route has the **same step count** as the corresponding PHỐ CHÍNH segment. 0.1.56 deliberately creates identity through content exposure, not hidden shortcut distance.
+
+## Route-choice presentation
+
+At a junction, the player-facing picker must show:
+- TRÁI / PHẢI direction;
+- **PHỐ CHÍNH** or the alternate flavor name;
+- first landing tile type;
+- short corridor summary;
+- a risk label.
+
+Technical node IDs and legacy odd/even parity hints are not player-facing copy in 0.1.56.
 
 ## Spatial rule
 
@@ -147,16 +164,20 @@ Draft D supersedes Draft C for:
 - ordinary route spacing;
 - normal route branching;
 - default camera distance;
-- HUD compactness.
+- HUD compactness;
+- branch content identity from 0.1.56 onward.
 
 Draft C remains historical support for the four anchor identities and early Jail/Hospital visual concept. Current gameplay rules live in `docs/GAME_DESIGN_CURRENT.md`.
 
-## Runtime target
+## Runtime roadmap
 
 - 0.1.54 sandbox: complete.
-- **0.1.55:** integrate Draft D topology into `START_PLAYTEST.bat` / HOST-authoritative standard gameplay.
-- 0.1.56: branch identity.
+- 0.1.55 canonical Draft D topology in `START_PLAYTEST.bat`: complete candidate.
+- **0.1.56 branch identity:** AN TOÀN / DRAMA / TIỀN.
 - 0.1.57: authoritative Jail/Hospital/Lottery + holding-state Mini Game eligibility.
+- 0.1.58: TIN TỨC / LÁ BÀI depth.
+- 0.1.59: Job / Mini Game depth.
+- 0.1.60: pacing + economy balance.
 
-0.1.48 remains the rollback/validated authoritative baseline until 0.1.55 passes its own gate.
+0.1.48 remains the rollback validated authoritative baseline until the newer integrated candidate is user-validated.
 Do not merge PR #1 unless Ron explicitly asks.
