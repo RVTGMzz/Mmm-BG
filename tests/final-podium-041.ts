@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { withCompetitionRanks } from '../src/scenes/CareerMinigameBoardScene041';
+import { withCompetitionRanks } from '../src/ui/podiumRanking';
 
 const scene = await readFile('src/scenes/CareerMinigameBoardScene041.ts', 'utf8');
 const parent = await readFile('src/scenes/CareerMinigameBoardScene040.ts', 'utf8');
 const finalGate = await readFile('src/scenes/CareerMinigameBoardScene039.ts', 'utf8');
+const rankingHelper = await readFile('src/ui/podiumRanking.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const executableScene = scene
   .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -40,6 +41,7 @@ assert(scene.includes('PODIUM_HEIGHT_BY_RANK'), 'same displayed rank must map to
 assert(scene.includes('root.setAlpha(inheritedAlpha)'), 'podium must inherit the 0.1.39 lock/reveal alpha');
 assert(scene.includes('internals.shellOverlay.push(root)'), 'podium must join the real result overlay reveal list');
 assert(scene.includes("internals.shell.status !== 'ended'"), 'podium must only decorate ended matches');
+assert(rankingHelper.includes('previous.money === entry.money ? previous.rank : index + 1'), 'tie ranking helper must preserve competition ranking');
 assert(!/submitIntent\s*\(/.test(executableScene), 'podium must not submit gameplay intents');
 assert(!/submitSystemIntent\s*\(/.test(executableScene), 'podium must not submit host-system gameplay commands');
 assert(!/Math\.random\s*\(/.test(executableScene), 'podium must not add presentation randomness');
