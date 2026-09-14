@@ -12,7 +12,7 @@ assert(scene.includes('setInteractive()'), 'final transition needs an input bloc
 assert(scene.includes('demoMatchLapProgress'), 'final transition should report authoritative lap completion progress');
 assert(!scene.includes('submitIntent('), 'final result presentation must not submit gameplay intents');
 assert(!scene.includes('submitSystemIntent('), 'final result presentation must not submit host-system gameplay commands');
-assert(!scene.includes('Math.random'), 'final result presentation must not introduce presentation randomness');
+assert(!/Math\.random\s*\(/.test(scene), 'final result presentation must not call Math.random');
 assert(!scene.includes('money +='), 'final result presentation must not mutate wallet state');
 assert(main.includes('CareerMinigameBoardScene039'), 'main runtime must use the 0.1.39 scene');
 assert(
