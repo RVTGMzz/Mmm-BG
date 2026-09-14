@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.37 — MINI GAME AUTHORITY CLEANUP PLAYTEST
+MeMeMe MVP 0.1.38 — CHOICE SFX + ONE-LAP COPY POLISH
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,35 +18,34 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.37 FOCUS
-- Mini Game payout chỉ còn MỘT đường authoritative: host-system commit.
-- Scene không còn gửi thêm resolve_minigame dưới dạng player/seat intent sau khi Mini Game kết thúc.
-- Loại bỏ receipt rejected thừa và tránh mơ hồ về ownership trong host/client flow.
-- Test mới khóa ba điều: player intent không được trả thưởng, host-system trả đúng một lần, gửi lại cùng Mini Game không được cộng tiền lần hai.
-- Toàn bộ Event Audio 0.1.36 vẫn giữ nguyên và 8 SFX vẫn được package/checksum kiểm tra.
-- Mini Game vẫn dùng BGM 03_City_Silly.ogg, không có BGM thứ 5.
+0.1.38 FOCUS
+- Phủ SFX choice cho các thao tác xác nhận còn thiếu: Setup, route, Lá Bài, target, Tactical Choice và Settings.
+- Local Lobby / Job Dice / Mini Game choice / Vào Trận giữ choice SFX như trước.
+- Dice vẫn dùng SFX dice riêng, không đổi thành choice.
+- Setup và Lobby không còn quảng bá luật demo 3 vòng cũ; build copy chuyển sang 0.1.38 + luật 1 vòng/người.
+- Mini Game payout vẫn host-system authoritative và không được cộng hai lần.
 
-EVENT AUDIO RETAINED
-- victory: khi kết thúc game và màn kết quả thực sự hiện ra.
-- news: khi mở Tin Tức.
+EVENT AUDIO
+- victory: khi bảng kết quả thật xuất hiện.
+- news: khi vào Tin Tức.
 - card: khi nhận Card.
-- step: mỗi move_step.
-- -money / +money: theo wallet delta authoritative.
-- dice: đổ D6, gồm Roll For Order.
-- choice: menu/picker/Job và các lựa chọn UI.
+- step: mỗi move_step authoritative.
+- -money: khi B$ giảm.
+- +money: khi B$ tăng.
+- dice: mọi lần đổ D6, gồm Roll For Order.
+- choice: tác vụ chọn/xác nhận UI.
 
-MINI GAME PAYOUT TẠM THỜI
+MINI GAME
+- BGM Mini Game = 03_City_Silly.ogg đã khóa checksum.
 - NHIỀU RA ÍT BỊ: hạng 1 = 30 B$ • hạng 2 = 20 B$ • hạng 3 = 10 B$ • hạng 4 = 0 B$.
-- OẲN TÙ XÌ: hạng 1 = 25 B$ • hạng 2 = 15 B$ • hạng 3 = 5 B$ • hạng 4 = 0 B$.
-- Với Mini Game 4 người hiện tại, mode bắt đầu bằng Nhiều ra ít bị rồi chuyển sang RPS khi còn 1v1; toàn bộ bảng xếp hạng dùng payout Nhiều ra ít bị 30/20/10/0.
-- Bảng 25/15/5/0 dành cho mode Oẳn Tù Xì trực tiếp.
-- Oẳn Tù Xì 1v1 vẫn diễn animation đầy đủ kể cả CPU vs CPU.
+- OẲN TÙ XÌ trực tiếp: hạng 1 = 25 B$ • hạng 2 = 15 B$ • hạng 3 = 5 B$ • hạng 4 = 0 B$.
+- Oẳn Tù Xì 1v1 diễn animation đầy đủ kể cả CPU vs CPU.
+- Nếu người cuối hoàn thành vòng tại ô Mini Game, kết quả trận phải chờ payout Mini Game xong mới chốt B$.
 
 LUẬT CHỐT ĐIỂM HIỆN TẠI
 - KHÔNG kết thúc theo 3 vòng/12 lượt cũ.
 - Mỗi người phải hoàn thành đủ 1 vòng quanh bàn, tức đi qua READY ít nhất 1 lần.
 - Chỉ khi CẢ 4 người đều hoàn thành 1 vòng mới chốt bảng B$.
-- Nếu người cuối hoàn thành vòng tại Mini Game, kết quả phải chờ payout Mini Game commit xong rồi mới chốt B$.
 - Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
 - Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
 
@@ -54,7 +53,7 @@ RETAINED FEATURES / FIXES
 - Token Player 1 không được snap ngược khi Card/News/state cập nhật; Job Hub có reconcile riêng để không kẹt visual ở ô cũ.
 - Snapshot/resync và rematch vẫn hard-snap token về state authoritative.
 - HUD/Bảng B$ hiển thị tiến độ 🏁0/1 hoặc 🏁✓.
-- Roll For Order: từng người có animation D6; điểm cao đi trước, hòa thì chỉ nhóm hòa đổ lại; player ID/face/màu không đổi.
+- Roll For Order: điểm D6 cao đi trước, hòa thì chỉ nhóm hòa đổ lại; player ID/face/màu không đổi.
 - Job Hub bắt buộc dừng; 3 nghề A/B/C; 1–2 → A, 3–4 → B, 5–6 → C.
 - Job được quyết định bằng XÚC XẮC JOB, không click chọn nghề trực tiếp.
 
