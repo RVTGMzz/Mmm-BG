@@ -3,132 +3,105 @@
 Branch: `mememe-mvp-0.1-core`
 PR: #1 (Draft/Open)
 
-Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
+Do **not** merge PR #1 unless Ron explicitly asks.
 
 ## Runtime baseline
 
-0.1.48 is runtime **PASS** by Ron's explicit acceptance on 2026-09-14.
+0.1.48 remains the validated HOST-authoritative baseline accepted by Ron.
 
-Validated baseline artifact:
+Artifact:
 - `mememe-playtest-0.1.48`
-- run `#1441` / `34814789556`
-- runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
-- artifact ID `10336247664`
-- SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
+- run #1441 / `34814789556`
+- SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 
-## Current runtime preview milestone
+## Current preview milestone
 
-**MVP 0.1.50 — Final Map Preview** is open for Ron's playtest.
+**MVP 0.1.51 — Draft D Branching Map + Close Camera Preview**
 
-Read:
-- `docs/MVP_0.1.50_FINAL_MAP_PREVIEW.md`
-- `docs/PLAYTEST_0.1.50_FINAL_MAP_PREVIEW.md`
-
-Runtime preview files:
-- `src/content/city/board_city_final_050.json`
-- `src/core/finalMapPreview050.ts`
-- `src/scenes/FinalMapPreviewScene050.ts`
-- `tests/final-map-preview-050.ts`
-
-Launch preview:
-- `START_FINAL_MAP_PREVIEW.bat`
-- or `?finalmap=1`
-
-Normal `START_PLAYTEST.bat` still opens the validated gameplay flow.
-
-CI artifact family:
-- `mememe-playtest-0.1.50-final-map-preview`
-
-## Parallel milestone
-
-**MVP 0.1.49 — Legacy Effect Audit** remains active in parallel.
-
-Current names stay locked:
-- **TIN TỨC**
-- **LÁ BÀI**
-
-## Final map source-of-truth — Draft C
-
-Read:
+Read first:
 1. `HANDOFF_CURRENT.md`
-2. `docs/MAP_ARCHITECTURE_FINAL.md`
-3. `docs/MAP_ARCHITECTURE_44_DRAFT_C.md`
-4. `docs/MAP_ARCHITECTURE_44_DRAFT_C.json`
-5. `docs/MAP_VISUAL_BLUEPRINT_44_DRAFT_C1.md`
-6. `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` — canonical combined map + HUD reference
-7. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
-8. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_C2.md`
+2. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+3. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+4. `docs/MVP_0.1.51_DRAFT_D_PREVIEW.md`
+5. `docs/PLAYTEST_0.1.51_DRAFT_D_PREVIEW.md`
 
-## Current locked structure
+Runtime:
+- `src/content/city/board_city_final_051.json`
+- `src/core/finalMapPreview051.ts`
+- `src/scenes/FinalMapPreviewScene051.ts`
+- `tests/final-map-preview-051.ts`
 
-- 44 main-loop spaces `M01..M44`
-- `M01 READY`
-- `M12 JAIL_GATE -> JAIL`
-- `M23 LOTTERY -> D6 × 20 B$`
-- `M34 HOSPITAL_GATE -> HOSPITAL`
-- Jail exit: `J1 -> J2 -> J3 -> M13`
-- Hospital exit: `H1 -> H2 -> H3 -> M35`
+Launch:
+- `START_DRAFT_D_PREVIEW.bat`
+- query `?finalmap=2`
 
-Jail release:
-- `1 / 3 / 5` = released
-- failure retries next turn
+0.1.50 remains available via `START_FINAL_MAP_PREVIEW.bat` / `?finalmap=1` for direct A/B comparison.
 
-Hospital release:
-- exactly `2 / 4 / 5` = released
-- failure retries next turn
+## Draft D direction locked from Ron's 0.1.50 feedback
 
-Lottery payouts:
-- `20 / 40 / 60 / 80 / 100 / 120 B$`
+- keep 44 main spaces;
+- stop reading as a neat oval/circle;
+- use asymmetric winding city route;
+- increase space between nodes;
+- avoid long packed rows;
+- add 3 real route decisions;
+- normal camera much closer;
+- HUD cards smaller;
+- full map only through Overview;
+- ordinary preview nodes may be rectangular and branch nodes diamond-shaped instead of all circles.
 
-## 0.1.50 preview implementation
+## Three route decisions
 
-Preview currently supports:
-- 44-space route;
-- 4 fixed corner HUDs;
-- 4 local player tokens;
-- active-player camera pan;
-- overview mode;
-- Jail/Hospital gate transfers;
-- Jail/Hospital release-face checks;
-- exactly 3 visible exit-route spaces per special location;
-- Lottery x20;
-- Money +/-;
-- placeholder feedback for TIN TỨC / LÁ BÀI / Job / Mini Game.
+1. After M04:
+   - main M05 → M06 → M07 → M08
+   - alternate A1 → A2 → A3 → M08
+2. After M17:
+   - main M18 → M19 → M20 → M21
+   - alternate B1 → B2 → B3 → M21
+3. After M35:
+   - main M36 → M37 → M38 → M39
+   - alternate C1 → C2 → C3 → M39
 
-The preview animation after a successful Jail/Hospital release intentionally travels through all three exit spaces so Ron can inspect the branch visually.
+The two paths at each junction intentionally use equal step counts in the first preview. Shortcut/risk/reward balance is not yet locked.
 
-That animation is **not** the final authoritative timing rule.
+## Camera / HUD preview values
 
-Still TBD:
-- whether release roll also becomes movement;
-- whether release ends the turn;
-- final authoritative event/replay sequence for branch exit.
+- normal follow zoom `1.38`
+- branch decision zoom `1.10`
+- overview zoom `0.55`
+- P1/P2/P3/P4 fixed at four screen corners
+- compact avatar + name + B$ HUD
+- active HUD emphasized
 
-## Current 44-space content pacing
+## Retained anchors and rules
 
-- Job Hub `M08`
-- Mini Game `M17 / M39`, exact `22 / 22`
-- TIN TỨC `M06 / M14 / M21 / M28 / M36 / M43`
-- LÁ BÀI `M04 / M10 / M16 / M22 / M27 / M32 / M41`
-- Money+ `M03 / M13 / M25 / M35`
-- Money- `M07 / M18 / M30 / M40`
-- 16 Normal spaces
+- M01 READY
+- M12 JAIL_GATE
+- M23 LOTTERY, D6 × 20 B$
+- M34 HOSPITAL_GATE
+- Jail release 1/3/5
+- Hospital release exactly 2/4/5
+- Jail exit exactly J1 → J2 → J3 → M13
+- Hospital exit exactly H1 → H2 → H3 → M35
+- TIN TỨC / LÁ BÀI naming retained
 
-## Approved visual direction
+Canonical combined map + HUD visual reference:
+`docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
 
-Canonical image already exists at:
-- `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+Post-release same-turn behavior remains TBD and must not be inferred from preview animation.
 
-Treat it as combined **map + HUD** reference, not HUD-only.
+## Parallel work
 
-Known AI correction:
-- Jail exit is exactly `J1 / J2 / J3`, never `J1 / J1 / J3 / J4`.
+0.1.49 Legacy Effect Audit continues in parallel.
 
-## Next priority
+## Next gate
 
-1. Ron tests 0.1.50 Final Map Preview.
-2. Gather feedback on map length, HUD overlap, camera, anchors, branch readability and Lottery.
-3. Ron locks final post-release timing.
-4. Then integrate Draft C into HOST-authoritative replay/checksum runtime.
-5. Continue 0.1.49 effect audit.
-6. Do not merge PR #1.
+Ron playtests 0.1.51 and compares against 0.1.50 for:
+- branch feel;
+- route spacing;
+- camera comfort;
+- HUD obstruction/readability;
+- tile-shape direction;
+- overview orientation.
+
+Only after approval should Draft D move into authoritative integration.
