@@ -21,13 +21,24 @@ const match = createInitialMatchState({
 assert.equal(match.startingMoney, 200, 'New matches must default to 200B$.');
 assert.deepEqual(match.players.map((player) => player.money), [200, 200, 200, 200]);
 
-const moneyTiles = board.nodes
+// 0.1.55 Draft D intentionally replaces the old compact-board money pattern.
+// Protect the approved 200B$ scale without forcing +15/+50 tiles to survive a map redesign.
+const mainMoneyTiles = board.nodes
+  .filter((node) => node.id >= 0 && node.id < 44 && node.type === 'money')
+  .map((node) => node.value ?? 0)
+  .sort((a, b) => a - b);
+assert.deepEqual(
+  mainMoneyTiles,
+  [-20, -20, -20, -20, 25, 25, 25, 25],
+  'Draft D main loop must keep four -20B$ and four +25B$ money spaces.',
+);
+
+const allMoneyTiles = board.nodes
   .filter((node) => node.type === 'money')
   .map((node) => node.value ?? 0);
-assert.deepEqual(
-  [...moneyTiles].sort((a, b) => a - b),
-  [-20, 15, 25, 50],
-  'Money tiles must preserve the 0.1.25 200B$ scale even if function tiles move.',
+assert(
+  allMoneyTiles.every((amount) => amount === -20 || amount === 25),
+  'Draft D money tiles must stay on the approved compact -20/+25 scale before 0.1.60 economy tuning.',
 );
 
 const selfNewsAmounts = news
@@ -56,4 +67,4 @@ assert(richTax && richTax.effect.type === 'rich_tax' && richTax.effect.percent =
 const groupLoss = cards.filter((card) => card.effect.type === 'percent_loss_all_others');
 assert(groupLoss.every((card) => card.effect.type === 'percent_loss_all_others' && card.effect.percent === 0.3));
 
-console.log('[economy-scale-025] PASS start=200B$ tiles/news/catch-up rescaled; relative Cards preserved');
+console.log('[economy-scale-025] PASS start=200B$ + Draft D -20/+25 tiles + News/Card economy scale');
