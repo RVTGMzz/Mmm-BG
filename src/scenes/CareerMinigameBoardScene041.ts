@@ -142,12 +142,12 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
 
       const faceAsset = gameSession.getFace(entry.playerId, 'neutral');
       if (faceAsset && this.textures.exists(faceAsset.textureKey)) {
-        root.add(
+        root.add([
           this.add.rectangle(x, faceY, 62, 62, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
           this.add.image(x, faceY, faceAsset.textureKey).setDisplaySize(54, 54),
-        );
+        ]);
       } else {
-        root.add(
+        root.add([
           this.add.circle(x, faceY, 29, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
           this.add.text(x, faceY, `P${entry.playerId + 1}`, {
             fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
@@ -155,7 +155,7 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
             fontStyle: 'bold',
             color: '#202020',
           }).setOrigin(0.5),
-        );
+        ]);
       }
     });
 
