@@ -40,7 +40,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.44', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.45', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -50,7 +50,7 @@ export class SetupScene extends Phaser.Scene {
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;
     const mode = config.mode === 'host'
-      ? `HOST LOCAL • ROOM ${config.roomCode}`
+      ? `HOST LOCAL • ROOM ${config.roomCode} • tiếp theo Remote Roll For Order`
       : cpuCount > 0
         ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
         : '4 người HOTSEAT → đặt tên → Roll For Order → mỗi người hoàn thành 1 vòng';
@@ -73,7 +73,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.44: kết quả chỉ nhận click sau khi podium reveal hạng 4 → 3 → 2 → 1 hoàn tất; không thể bấm rematch/lobby sớm.</p>
+      <p id="setup-status" class="setup-status">0.1.45: HOST setup tên/mặt; tab JOIN chọn P2/P3/P4 và tự bấm D6 khi tới lượt. Kết quả D6 luôn do HOST sinh.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -196,9 +196,11 @@ export class SetupScene extends Phaser.Scene {
 
     if (expressionCount === 0) {
       this.setStatus(
-        cpuCount > 0
-          ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự đổ thứ tự và tự chơi. Có thể bỏ qua ảnh.`
-          : 'Sẵn sàng. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.',
+        browserSession.current.mode === 'host'
+          ? 'Sẵn sàng. Sau khi bấm ROLL FOR ORDER, host sẽ chờ ít nhất 1 tab JOIN kết nối Remote Roll.'
+          : cpuCount > 0
+            ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự đổ thứ tự và tự chơi. Có thể bỏ qua ảnh.`
+            : 'Sẵn sàng. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.',
         false,
       );
       return;
