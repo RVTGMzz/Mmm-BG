@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import boardJson from '../src/content/city/board_city_mvp.json';
-import { getOutgoingEdges, pickParityEdge } from '../src/core/board';
+import { getOutgoingEdges } from '../src/core/board';
 import { createInitialMatchState, type MatchEvent } from '../src/core/matchState';
 import type { BoardDefinition } from '../src/core/types';
 import {
@@ -11,12 +11,13 @@ import {
 
 const BOARD = boardJson as BoardDefinition;
 
-const branchEdges = getOutgoingEdges(BOARD, 4);
+// Draft D canonical gameplay uses a real manual Left/Right junction after M04.
+// Legacy odd/even routing at node 4 is intentionally superseded.
+const branchEdges = getOutgoingEdges(BOARD, 3);
 assert.equal(branchEdges.length, 2);
-assert.equal(pickParityEdge(branchEdges, 1)?.to, 5);
-assert.equal(pickParityEdge(branchEdges, 3)?.to, 5);
-assert.equal(pickParityEdge(branchEdges, 2)?.to, 18);
-assert.equal(pickParityEdge(branchEdges, 6)?.to, 18);
+assert.deepEqual(new Set(branchEdges.map((edge) => edge.to)), new Set([4, 200]));
+assert(branchEdges.some((edge) => edge.label?.includes('RẼ PHẢI')));
+assert(branchEdges.some((edge) => edge.label?.includes('RẼ TRÁI')));
 
 assert.equal(shouldAutoAdvancePresentation([0, 1, 2, 3]), true);
 assert.equal(shouldAutoAdvancePresentation([1, 2, 3]), false);
@@ -72,4 +73,4 @@ assert.equal(
   0,
 );
 
-console.log('[flow-fix] PASS manual acknowledge, result deferral, and parity routing');
+console.log('[flow-fix] PASS manual acknowledge, result deferral, and Draft D manual branch routing');
