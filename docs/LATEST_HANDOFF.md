@@ -18,73 +18,119 @@ Latest validated playable artifact:
 
 ## Current milestone
 
-**MVP 0.1.49 — Legacy Effect Audit** remains active.
+**MVP 0.1.49 — Legacy Effect Audit** remains active in parallel with final-map design.
 
-Current names:
+Current names remain:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-## Map source-of-truth — Draft B
+## Final map source-of-truth
 
-Current files:
+Draft B through B5 are now built.
+
+Read:
 1. `HANDOFF_CURRENT.md`
 2. `docs/MAP_ARCHITECTURE_FINAL.md`
 3. `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
-4. `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
-5. `docs/GAME_DESIGN_CURRENT.md`
-6. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
-7. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
-8. `docs/UI_FINAL_PLAYER_HUD.md`
+4. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
+5. `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.md`
+6. `docs/MAP_VISUAL_HIERARCHY_44_DRAFT_B3.md`
+7. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.md`
+8. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
+9. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
+10. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-Working Draft B:
-- **44 spaces on the main loop** `M01..M44`;
-- `HOSPITAL` = one singleton special location;
-- `JAIL` = one singleton special location;
-- lap crossing = `M44 -> M01`.
+## Current locked structure
 
-### Four locked corner anchors
-- `M01` READY
-- `M12` JAIL_GATE -> `JAIL`
-- `M23` LOTTERY -> D6 × 20 B$
-- `M34` HOSPITAL_GATE -> `HOSPITAL`
+- 44 main-loop spaces `M01..M44`
+- exactly one `JAIL`
+- exactly one `HOSPITAL`
+- lap crossing `M44 -> M01`
 
-Lottery payouts: `20 / 40 / 60 / 80 / 100 / 120 B$`.
+Four corners:
+- M01 READY
+- M12 JAIL_GATE -> JAIL
+- M23 LOTTERY -> D6 × 20 B$
+- M34 HOSPITAL_GATE -> HOSPITAL
 
-### Approved release rules
-JAIL:
-- roll D6 on the detained player's turn;
-- `1 / 3 / 5` releases;
-- failure stays in Jail and retries next turn.
+Lottery payouts:
+`20 / 40 / 60 / 80 / 100 / 120 B$`.
 
-HOSPITAL:
-- roll D6 on the hospitalized player's turn;
-- exactly `2 / 4 / 5` releases;
-- failure stays in Hospital and retries next turn.
+Jail release:
+- D6 `1 / 3 / 5` = release
+- failure = remain and retry next turn
 
-Still TBD: whether a successful release roll also supplies normal movement on the same turn.
+Hospital release:
+- D6 exactly `2 / 4 / 5` = release
+- failure = remain and retry next turn
 
-TIN TỨC, LÁ BÀI, or another approved HOST-authoritative effect may also send a player directly to Jail/Hospital.
+Still TBD:
+- main-loop re-entry node after successful release
+- whether successful release also grants normal movement that turn
 
-Old Draft A assumptions are superseded:
-- no `H1..H4`;
-- no `J1..J4`;
-- no Hospital/Jail movement chain.
+## B1 content pacing
 
-## HUD / camera retained
+- Job Hub M08
+- Mini Game M17 / M39, exact 22/22 split
+- TIN TỨC M06 / M14 / M21 / M28 / M36 / M43
+- LÁ BÀI M04 / M10 / M16 / M22 / M27 / M32 / M41
+- Money+ M03 / M13 / M25 / M35
+- Money- M07 / M18 / M30 / M40
+- 16 Normal spaces
 
-- P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right;
-- avatar + name + B$ minimum;
-- active HUD emphasized;
-- HUD stays fixed in screen space;
-- camera close-follows active token;
-- special-location camera may frame singleton Jail/Hospital;
-- full map is explicit overview only.
+Expected fair-D6 lap length: about 13.05 rolls/player.
+
+## B2 spatial layout
+
+Working landscape orientation:
+- READY bottom-left
+- JAIL_GATE top-left
+- LOTTERY top-right
+- HOSPITAL_GATE bottom-right
+- inner Jail paired with M12
+- inner Hospital paired with M34
+
+Gate transfer spurs contain no movement nodes.
+
+## B3 visual hierarchy
+
+- V0 Normal
+- V1 Money / TIN TỨC / LÁ BÀI
+- V2 Job Hub / Mini Game
+- V3 four corners
+
+## B4 working quarter themes
+
+- Q1 READY / Trung tâm & Sự nghiệp
+- Q2 Đồn cảnh sát / Giải trí & Drama
+- Q3 Trúng số / Mua sắm & Đời sống
+- Q4 Bệnh viện / Đêm thành phố & Hồi vòng
+
+These are provisional art labels, not final names.
+
+## B5 mockup brief
+
+Minimum references:
+- overview
+- normal close-follow + four HUDs
+- READY
+- JAIL_GATE transfer
+- JAIL turn
+- LOTTERY
+- HOSPITAL_GATE transfer
+- HOSPITAL turn
+- Mini Game feature frame
+
+## Runtime boundary
+
+Draft B through B5 are still design/docs only.
+
+Current playable runtime remains 0.1.48. Do not import final-map data into runtime until its own explicit implementation milestone is opened.
 
 ## Next priority
 
-1. Rebuild 44-space content pacing around four locked corner anchors.
-2. Rebalance Mini Game / TIN TỨC / LÁ BÀI / money / Job Hub.
-3. Rebuild spatial/landmark plan with singleton Hospital/Jail.
-4. Continue 0.1.49 legacy-effect audit in parallel.
-5. Decide post-release same-turn movement later.
-6. Do not merge PR #1.
+1. Build/approve B5 visual mockups when desired.
+2. Decide the two remaining release rules later.
+3. Continue 0.1.49 effect audit.
+4. Keep TIN TỨC / LÁ BÀI.
+5. Do not merge PR #1.
