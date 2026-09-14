@@ -14,7 +14,7 @@ At the three route junctions, the alternate path now has a clear gameplay identi
 
 1. **AN TOÀN 🛡️** — A1/A2/A3 are all Normal spaces.
 2. **DRAMA 🎭** — B1/B2/B3 are TIN TỨC / LÁ BÀI / TIN TỨC.
-3. **TIỀN 💰** — C1/B2/C3-equivalent corridor values are +25 / -20 / +25 B$ on C1/C2/C3.
+3. **TIỀN 💰** — C1/C2/C3 are +25 / -20 / +25 B$.
 
 The other option is shown as **PHỐ CHÍNH** with mixed content.
 
