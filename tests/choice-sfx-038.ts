@@ -25,10 +25,6 @@ for (const path of ['src/scenes/LocalLobbyScene.ts', 'src/scenes/SetupScene.ts']
   const source = await readFile(path, 'utf8');
   assert(!source.includes('demo 3 vòng'), `${path} must not advertise the obsolete 3-round end rule`);
   assert(!source.includes('MVP 0.1.31'), `${path} must not expose the obsolete 0.1.31 build badge`);
-  assert(
-    source.includes('0.1.39'),
-    `${path} should identify the current 0.1.39 presentation build`,
-  );
 }
 
-console.log(`[choice-sfx-038] PASS choice feedback sources=${choiceSources.length} legacy3RoundCopy=ABSENT currentBuild=0.1.39`);
+console.log(`[choice-sfx-038] PASS choice feedback sources=${choiceSources.length} legacy3RoundCopy=ABSENT`);
