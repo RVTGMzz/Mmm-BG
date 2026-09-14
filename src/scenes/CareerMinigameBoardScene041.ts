@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { demoMatchResult } from '../core/demoMatch';
 import type { MatchState } from '../core/matchState';
 import { gameSession } from '../core/session';
+import { withCompetitionRanks, type RankedPodiumEntry } from '../ui/podiumRanking';
 import { CareerMinigameBoardScene040 } from './CareerMinigameBoardScene040';
 
 const PLAYER_ACCENTS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
@@ -26,25 +27,6 @@ type PodiumInternals = {
   shellOverlay: Phaser.GameObjects.GameObject[];
   renderShellOverlay(): void;
 };
-
-export type RankedPodiumEntry = {
-  playerId: number;
-  money: number;
-  rank: number;
-};
-
-/** Competition ranking for display only: 1,1,3,4 rather than 1,2,3,4 on a first-place tie. */
-export function withCompetitionRanks(
-  ranking: Array<{ playerId: number; money: number }>,
-): RankedPodiumEntry[] {
-  const ranked: RankedPodiumEntry[] = [];
-  ranking.forEach((entry, index) => {
-    const previous = ranked[index - 1];
-    const rank = previous && previous.money === entry.money ? previous.rank : index + 1;
-    ranked.push({ ...entry, rank });
-  });
-  return ranked;
-}
 
 /**
  * 0.1.41 presentation-only final podium.
