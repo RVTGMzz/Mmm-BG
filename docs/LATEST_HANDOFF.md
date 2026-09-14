@@ -43,6 +43,8 @@ Current map documents, in order:
 5. `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
 6. `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`
 7. `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
+8. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.md`
+9. `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_48_DRAFT_A5.json`
 
 ### A1 complete
 Irregular city-loop layout, 48 design-space coordinates, district/landmark anchors, close-follow camera framing and HUD-safe composition.
@@ -54,8 +56,6 @@ V0–V3 node hierarchy, main/branch route hierarchy, district art priorities, la
 Route sign language, district transitions, standard camera shot list, explicit overview behavior and four-player overview markers.
 
 ### A4 approved
-Ron approved the pacing rebalance on 2026-09-14.
-
 Approved affected nodes:
 - `M18` = Mini Game
 - `M21` = Money -
@@ -65,9 +65,21 @@ Approved affected nodes:
 
 Mini Game spacing is exactly **20 / 20**.
 
-TIN TỨC is now at `M06, M14, M19, M25, M33, M40`, with clockwise gaps `8, 5, 6, 8, 7, 6`.
+TIN TỨC positions are `M06, M14, M19, M25, M33, M40`, with clockwise gaps `8, 5, 6, 8, 7, 6`.
 
-Category totals remain unchanged. Architecture JSON plus A1/A2/A3 have been synchronized to the approved assignment.
+Category totals remain unchanged. Architecture JSON and A1/A2/A3 are synchronized to the approved assignment.
+
+### A5 complete
+District/landmark blueprint is now recorded in both prose and data form.
+
+Working identities:
+- D1: READY Plaza / city center
+- D2: Job Hub Tower + Hospital area
+- D3: Entertainment Dome / Mini Game M18
+- D4: Civic/Jail Complex + Civic Square
+- D5: Night Market Skyline / Mini Game M38 / READY return cue
+
+A5 also defines landmark tiers, district transitions, HUD-safe composition and concept-art handoff targets.
 
 40 main spaces still estimate to about **11.9 D6 rolls/player** per lap. Keep this for the first final-map runtime test.
 
@@ -87,12 +99,12 @@ The fallback is not active.
 
 ## Runtime boundary
 
-Map Draft A through A4 are design-only. Current validated runtime remains 0.1.48.
+Map Draft A through A5 are design-only. Current validated runtime remains 0.1.48.
 
-Do not import the final-map graph/coordinates into runtime until its own implementation milestone is explicitly opened and validated.
+Do not import the final-map graph/coordinates/pacing/landmark blueprint into runtime until its own implementation milestone is explicitly opened and validated.
 
-## Next map pass
+## Next direction
 
-Proceed to **A5 district / landmark blueprint** using the approved M18/M38 Mini Game distribution.
+Continue 0.1.49 audit in parallel. The next map pass may be **A6 art/mockup production brief** based on A5, or the design lane may pause for visual review.
 
-Continue 0.1.49 audit in parallel. Keep Hospital/Jail deeper gameplay rules TBD until explicitly approved.
+Keep Hospital/Jail deeper gameplay rules TBD until explicitly approved.
