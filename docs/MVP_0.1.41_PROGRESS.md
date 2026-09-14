@@ -1,6 +1,6 @@
 # MVP 0.1.41 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -38,6 +38,8 @@ The podium uses competition ranking for display only:
 
 This does not mutate `demoMatchResult`, winner IDs, player money, or shell result state.
 
+The tie helper lives in `src/ui/podiumRanking.ts` so CI can test it without importing Phaser/browser runtime.
+
 ## Result transition compatibility
 
 0.1.41 inherits from 0.1.40 → 0.1.39. The podium joins `shellOverlay` and inherits the existing overlay alpha, so it remains hidden during the B$ lock beat and fades in with the real result overlay.
@@ -60,7 +62,7 @@ Victory SFX remains owned by the existing real-result hook and is not duplicated
 
 ## Regression
 
-New `tests/final-podium-041.ts` checks that:
+`tests/final-podium-041.ts` checks that:
 
 - podium ranking comes from `demoMatchResult(internals.match)`;
 - displayed player names come from authoritative `MatchState`;
@@ -73,4 +75,28 @@ New `tests/final-podium-041.ts` checks that:
 - the 0.1.39 final result gate remains in the inheritance chain;
 - `src/main.ts` runs the 0.1.41 scene.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## Validated artifact
+
+GitHub Actions run: `34804272675` / run `#1209`
+
+Validated runtime/package SHA:
+`9c6bb6a4b0080d4d2599cc142bf27ec45c6fa92e`
+
+Artifact:
+`mememe-playtest-0.1.41`
+
+Artifact ID:
+`10332816906`
+
+Artifact size:
+`8,561,263 bytes`
+
+Digest:
+`sha256:86170b85522a7b888b5e3a5864a753febb6a6e8328c19b14397a2fda9e0ff82b`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34804272675`
+
+Full CI passed through typecheck/build, deterministic/network/gameplay regressions, the new podium/tie regression, package verification and artifact upload.
+
+The first 0.1.41 attempt failed only on a Phaser `Container.add()` TypeScript signature in the new avatar presentation code. It was corrected to array-form `add([...])`; no gameplay logic was involved.
