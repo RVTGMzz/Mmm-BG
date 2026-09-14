@@ -48,7 +48,7 @@ if (-not $listener) {
 }
 
 if ($DraftDFullMap) {
-  $url = "http://127.0.0.1:$port/?finalmap=3&overview=1"
+  $url = "http://127.0.0.1:$port/?finalmap=4"
 } elseif ($DraftDPreview) {
   $url = "http://127.0.0.1:$port/?finalmap=3"
 } elseif ($FinalMapPreview) {
