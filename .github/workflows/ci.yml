@@ -123,6 +123,9 @@ jobs:
       - name: Authoritative final podium and tie ranking
         run: npm run test:final-podium
 
+      - name: Podium face reactions and winner spotlight
+        run: npm run test:podium-reaction
+
       - name: Face image transform bounds
         run: npm run test:image
 
@@ -130,12 +133,12 @@ jobs:
         run: npm run test:package
 
       - name: Add full playtest guide to package
-        run: cp docs/PLAYTEST_0.1.41.md dist/PLAYTEST_GUIDE.md
+        run: cp docs/PLAYTEST_0.1.42.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.41 external playtest build
+      - name: Upload MVP 0.1.42 external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.41
+          name: mememe-playtest-0.1.42
           path: dist
           if-no-files-found: error
           retention-days: 14
