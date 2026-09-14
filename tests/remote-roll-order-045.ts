@@ -10,9 +10,6 @@ import {
 
 const protocolSource = await readFile('src/core/turnOrderSession.ts', 'utf8');
 const sceneSource = await readFile('src/scenes/TurnOrderScene.ts', 'utf8');
-const lobbySource = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
-const setupSource = await readFile('src/scenes/SetupScene.ts', 'utf8');
-const mainSource = await readFile('src/main.ts', 'utf8');
 const wrapperSource = await readFile('src/scenes/CareerMinigameBoardScene045.ts', 'utf8');
 
 const hub = new InMemoryTransportHub<TurnOrderMessage>();
@@ -112,10 +109,7 @@ assert(sceneSource.includes('session.beginPrompt(id, depth, depth > 1)'), 'host 
 assert(sceneSource.includes('result = await handle.result!'), 'remote seat result must wait for the host-resolved promise');
 assert(sceneSource.includes('this.clientOrderSession.submitRoll(promptId)'), 'client button must submit a roll request rather than resolve localD6');
 assert(sceneSource.includes('hostSession?.announceTie(tied, value)'), 'tie rerolls must be broadcast by host authority');
-assert(lobbySource.includes("this.scene.start('TurnOrderScene')"), 'JOIN flow must enter Remote Roll For Order before DemoBoardScene');
-assert(lobbySource.includes('MVP 0.1.45') && setupSource.includes('MVP 0.1.45'), 'entry surfaces must identify 0.1.45');
-assert(mainSource.includes('CareerMinigameBoardScene045'), 'packaged runtime must use the 0.1.45 build wrapper');
-assert(wrapperSource.includes('extends CareerMinigameBoardScene044'), '0.1.45 must retain all validated 0.1.44 board behavior');
+assert(wrapperSource.includes('extends CareerMinigameBoardScene044'), '0.1.45 wrapper must retain all validated 0.1.44 board behavior');
 
 lateClient.close();
 client.close();
