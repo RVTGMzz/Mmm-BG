@@ -150,19 +150,22 @@ jobs:
       - name: 0.1.51 Draft D branches camera and retained rules
         run: npm run test:draft-d-preview
 
+      - name: 0.1.52 fixed UI camera and persistent full-map review
+        run: npm run test:draft-d-ui-fix
+
       - name: Face image transform bounds
         run: npm run test:image
 
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add Draft D preview guide to package
-        run: cp docs/PLAYTEST_0.1.51_DRAFT_D_PREVIEW.md dist/PLAYTEST_GUIDE.md
+      - name: Add Draft D UI fix guide to package
+        run: cp docs/PLAYTEST_0.1.52_DRAFT_D_UI_FIX.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.51 Draft D preview build
+      - name: Upload MVP 0.1.52 Draft D UI fix preview build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.51-draft-d-preview
+          name: mememe-playtest-0.1.52-draft-d-ui-fix
           path: dist
           if-no-files-found: error
           retention-days: 14
