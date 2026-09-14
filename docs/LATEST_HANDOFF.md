@@ -9,11 +9,7 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 **MVP 0.1.49 — Legacy Effect Audit**
 
-Status: **ACTIVE / FIRST INVENTORY BUILT / NO NEW PLAYABLE ARTIFACT YET**
-
-## Runtime checkpoint
-
-MVP 0.1.48 is **PASS** by Ron's explicit runtime acceptance on 2026-09-14.
+0.1.48 is runtime **PASS** by Ron's explicit acceptance on 2026-09-14.
 
 Latest validated playable artifact remains:
 - `mememe-playtest-0.1.48`
@@ -22,99 +18,79 @@ Latest validated playable artifact remains:
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-0.1.49 is not yet a validated playable checkpoint.
+0.1.49 has no validated playable package yet.
 
-## Read first
+## Track A — 0.1.49
 
-1. `HANDOFF_CURRENT.md`
-2. `docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
-3. `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
-4. `docs/MAP_ARCHITECTURE_FINAL.md`
-5. `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
-6. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
-7. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.json`
-8. `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
-9. `docs/UI_FINAL_PLAYER_HUD.md`
-10. `docs/GAME_DESIGN_CURRENT.md`
-
-## Track A — 0.1.49 Legacy Effect Audit
-
-First-pass effect-family inventory exists in `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`.
-
-Current names remain locked:
+Current names stay locked:
 - **TIN TỨC**
 - **LÁ BÀI**
 
-Safe/adaptable directions so far:
-- authoritative movement effects;
-- held-card delivery model;
-- explicit timing metadata;
-- timed global TIN TỨC effects once a deterministic duration layer exists.
+First evidenced effect inventory:
+`docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
 
-Undefined-system effects remain deferred. Do not reconstruct missing legacy cards from memory or invent new old-card text.
+Do not invent missing legacy card text or silently restore old system names.
 
 ## Track B — final map design
 
-Working Draft A selects **48 playable nodes**:
-- 40 main loop;
-- 4 Hospital branch nodes;
-- 4 Jail branch nodes.
+Working Draft A: **48 playable nodes = 40 main + 4 Hospital + 4 Jail**.
 
-Architecture:
-- `docs/MAP_ARCHITECTURE_FINAL.md`
-- `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
+Current map documents, in order:
+1. `docs/MAP_ARCHITECTURE_FINAL.md`
+2. `docs/MAP_ARCHITECTURE_48_DRAFT_A.json`
+3. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
+4. `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.json`
+5. `docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
+6. `docs/MAP_ROUTE_OVERVIEW_48_DRAFT_A3.md`
+7. `docs/MAP_CONTENT_PACING_48_DRAFT_A4.md`
 
-### Spatial Draft A1 — completed
+### A1 complete
+Irregular city-loop layout, 48 design-space coordinates, district/landmark anchors, close-follow camera framing and HUD-safe composition.
 
-Files:
-- `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.md`
-- `docs/MAP_SPATIAL_LAYOUT_48_DRAFT_A1.json`
+### A2 complete
+V0–V3 node hierarchy, main/branch route hierarchy, district art priorities, landmark tiers, token readability and overview visual language.
 
-A1 adds:
-- irregular clockwise city-loop composition;
-- logical design-space coordinates for all 48 nodes;
-- district and landmark anchors;
-- close-follow camera framing guidance;
-- Hospital/Jail detour-pocket geometry;
-- HUD-safe composition guidance.
+### A3 complete
+Route sign language, district transitions, standard camera shot list, explicit overview behavior and four-player overview markers.
 
-Coordinates are design anchors only, not runtime pixels.
+### A4 complete
+Pacing audit found:
+- 40 main spaces ≈ **11.9 D6 rolls/player** per lap;
+- overall content density is healthy;
+- news/card/money spread is good;
+- Job Hub M11 is well positioned;
+- Mini Games at M21/M31 are uneven at a 10/30 spacing.
 
-### Visual Draft A2 — completed
+Balanced A4 candidate for review:
+- Mini Games at `M18` and `M38`;
+- M21 inherits Money -;
+- M31 inherits TIN TỨC;
+- category totals stay unchanged.
 
-File:
-`docs/MAP_VISUAL_HIERARCHY_48_DRAFT_A2.md`
+No architecture JSON or runtime data has been changed by this proposal.
 
-A2 adds:
-- V0/V1/V2/V3 node importance classes;
-- main-route vs side-branch visual hierarchy;
-- district art-direction hierarchy;
-- landmark priority tiers;
-- token readability rules;
-- simplified overview/minimap language;
-- camera-transition guidance.
-
-Next map pass: **A3 route/overview prototype spec**.
+Compact fallback if future playtest says 40 main nodes is too long:
+- **44 total = 36 main + 4 Hospital + 4 Jail**.
 
 ## Final HUD / camera locks
 
 - P1 top-left, P2 top-right, P3 bottom-left, P4 bottom-right.
 - Each occupied HUD shows at least avatar, player name and B$.
-- Active player is clearly highlighted.
-- Normal gameplay camera zooms/follows active player.
-- Full-map is an explicit overview, not permanent play view.
-- Canonical UI contract: `docs/UI_FINAL_PLAYER_HUD.md`.
+- Active player is highlighted.
+- Normal gameplay camera follows/zooms to active token.
+- Full-map is explicit overview only.
+- `docs/UI_FINAL_PLAYER_HUD.md` is the UI contract.
 
 ## Runtime boundary
 
-Draft A/A1/A2 are design only. Do not copy the 48-node graph or coordinates into runtime board data yet.
+Map Draft A through A4 are design-only. Current validated runtime remains 0.1.48.
 
-The current validated runtime remains 0.1.48 until a dedicated later implementation milestone is opened and validated.
+Do not import the final-map graph/coordinates into runtime until its own implementation milestone is explicitly opened and validated.
 
-## Next priority
+## Next decision
 
-1. Continue 0.1.49 effect audit without inventing missing legacy cards.
-2. Continue map design with A3 route/overview prototype spec.
-3. Keep Hospital/Jail deep mechanics explicitly undefined until approved.
-4. Keep TIN TỨC / LÁ BÀI names.
-5. Do not merge PR #1.
+Primary map decision now:
+- keep Mini Games at M21/M31; or
+- test the balanced M18/M38 candidate.
+
+Continue 0.1.49 audit in parallel. Keep Hospital/Jail deeper gameplay rules TBD until explicitly approved.
