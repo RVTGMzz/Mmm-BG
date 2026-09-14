@@ -1,6 +1,6 @@
 # MeMeMe — Playtest Launcher & Branch Policy
 
-Status: **APPROVED PROJECT RULE**
+Status: **APPROVED PROJECT RULE / IMPLEMENTED IN 0.1.54**
 
 This document defines the role of each Windows launcher and the branch-choice behavior expected in preview versus canonical gameplay.
 
@@ -8,87 +8,85 @@ This document defines the role of each Windows launcher and the branch-choice be
 
 ### `START_PLAYTEST.bat` — canonical gameplay target
 
-`START_PLAYTEST.bat` is the standard gameplay path MeMeMe is ultimately building toward.
+`START_PLAYTEST.bat` is the standard gameplay path MeMeMe is building toward.
 
 Rules:
 - Treat it as the canonical gameplay shell and integration target.
-- New map/camera/UI mechanics may be prototyped elsewhere first, but they are not considered part of standard gameplay until intentionally integrated into this path.
+- New map/camera/UI mechanics may be prototyped elsewhere first, but they are not standard gameplay until intentionally integrated here.
 - Do not replace this launcher with a map preview launcher.
-- Keep the validated HOST-authoritative gameplay invariants when integrating Draft D features.
+- Keep the validated 0.1.48 HOST-authoritative invariants when integrating Draft D.
 
 ### `START_DRAFT_D_PREVIEW.bat` — map/camera sandbox
 
-This launcher is a development and QA sandbox for testing Draft D map topology, spacing, camera framing, branch presentation, Jail/Hospital geometry and other board-specific work.
+This launcher is development/QA only.
 
-Rules:
-- It is **not** the canonical gameplay mode.
-- Preview-only shortcuts are allowed when they reduce repetitive QA work.
-- By default, branch choices should use **AUTO BRANCH** so a tester can repeatedly roll and inspect flow without answering Left/Right at every junction.
-- AUTO BRANCH must use the preview's deterministic seeded RNG so the same seed reproduces the same route decisions.
-- The preview should expose an optional **AUTO / MANUAL** branch-choice toggle.
-- MANUAL mode exists for targeted branch testing and should show the normal **RẼ TRÁI / RẼ PHẢI** decision UI.
-- Preview convenience behavior must not silently redefine final gameplay rules.
+0.1.54 behavior:
+- default = **AUTO BRANCH**;
+- default reproducible seed = `5454`;
+- branch RNG uses a deterministic stream derived from that seed;
+- same seed reproduces the same branch-choice sequence;
+- fixed HUD toggle switches **AUTO / THỦ CÔNG**;
+- MANUAL shows the normal **RẼ TRÁI / RẼ PHẢI** decision UI.
+
+AUTO is a QA convenience so testers can repeatedly roll without answering every junction. It must never redefine final human gameplay.
 
 ### `START_DRAFT_D_FULL_MAP.bat` — topology review
 
-This launcher exists only to review the whole current map.
+This launcher exists only to inspect the whole Draft D graph.
 
 Rules:
-- Fit the complete current Draft D topology into one viewport.
-- No normal turn follow camera.
-- No Roll Dice interaction.
-- No four-player gameplay HUD is required.
-- Make junctions, alternate corridors, merge points, Jail/Hospital and major anchors easy to inspect.
-- Always review the current Draft D graph, never an older circular/oval map.
+- fit the full current topology into one viewport;
+- no normal follow camera;
+- no Roll Dice interaction;
+- no normal four-player gameplay HUD requirement;
+- show junctions, alternate corridors, merge points, Jail/Hospital and anchors clearly.
 
-### `START_FINAL_MAP_PREVIEW.bat` — legacy launcher
+### Legacy 0.1.50 launcher
 
-This is an older 0.1.50-era preview launcher.
+`START_FINAL_MAP_PREVIEW.bat` is legacy.
 
-Rules:
-- Keep it only when historical A/B comparison is explicitly useful.
-- It should not be presented as a normal tester choice in future clean packages.
-- Future tester packages should prefer the three roles above: canonical gameplay, Draft D sandbox, and Full Map review.
+As of 0.1.54:
+- it is removed from `public/`;
+- it must not ship in tester packages;
+- historical code/routes can remain in Git history for regression/A-B reference.
 
 ## Branch-choice policy
 
 ### Canonical gameplay
 
-When Draft D branching is eventually integrated into `START_PLAYTEST.bat`:
-- a human active player chooses **RẼ TRÁI** or **RẼ PHẢI** at a real junction;
-- both routes must progress forward;
-- both routes must rejoin ahead;
-- routes must not create infinite loops, backward traps or dead ends;
-- the choice should matter through different spaces/content exposure rather than confusing navigation.
-
-The current working Draft D uses equal step count to the merge so route choice does not secretly change lap distance.
+When Draft D is integrated into `START_PLAYTEST.bat`:
+- the active human chooses **RẼ TRÁI** or **RẼ PHẢI** at a real junction;
+- both routes progress forward;
+- both routes rejoin ahead;
+- no route creates an infinite loop, backward trap or dead end;
+- route identity comes from content/exposure, not confusing navigation;
+- current working topology keeps equal step count between split and merge.
 
 ### Preview gameplay
 
-Default preview behavior is **AUTO BRANCH**.
-
 AUTO BRANCH:
-- chooses Left/Right automatically using deterministic seeded RNG;
-- avoids stopping the tester at every junction;
+- chooses Left/Right automatically with deterministic seeded RNG;
+- avoids repetitive QA clicks;
 - remains reproducible for bug reports;
-- must still obey the same forward-only / merge-ahead topology contract.
+- obeys the same forward-only / merge-ahead topology contract.
 
 MANUAL BRANCH:
-- can be enabled for targeted QA;
-- shows the Left/Right chooser;
+- is available from the fixed preview HUD toggle;
+- shows the normal Left/Right chooser;
 - does not change topology or movement rules.
 
-## Packaging direction
+## Clean tester package rule
 
-Future clean external playtest packages should make roles obvious instead of presenting many similarly named launchers.
+The expected visible launcher set is exactly:
 
-Preferred visible launcher set:
 1. `START_PLAYTEST.bat` — standard gameplay
 2. `START_DRAFT_D_PREVIEW.bat` — current map sandbox
 3. `START_DRAFT_D_FULL_MAP.bat` — full-map review
 
-Supporting scripts such as `serve-playtest.ps1` are implementation plumbing and should not be treated as player-facing game modes.
+`serve-playtest.ps1` is support plumbing, not a player-facing mode.
+
+CI/package validation should fail if the old `START_FINAL_MAP_PREVIEW.bat` reappears.
 
 ## Guardrail
 
-Preview implementation is allowed to be faster and more automated than canonical gameplay. However, preview-only QA conveniences must never be mistaken for final MeMeMe rules when integrating into HOST-authoritative gameplay.
+Preview implementation may be faster and more automated than canonical gameplay. Preview-only QA conveniences must never be mistaken for final MeMeMe rules when Draft D is integrated into HOST-authoritative gameplay.
