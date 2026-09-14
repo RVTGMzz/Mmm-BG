@@ -7,9 +7,7 @@ import {
 } from '../src/ui/podiumReveal';
 
 const scene = await readFile('src/scenes/CareerMinigameBoardScene044.ts', 'utf8');
-const main = await readFile('src/main.ts', 'utf8');
-const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
-const setup = await readFile('src/scenes/SetupScene.ts', 'utf8');
+const nextWrapper = await readFile('src/scenes/CareerMinigameBoardScene045.ts', 'utf8');
 const executableScene = scene
   .replace(/\/\*[\s\S]*?\*\//g, '')
   .replace(/\/\/.*$/gm, '');
@@ -29,8 +27,6 @@ assert(!/submitIntent\s*\(/.test(executableScene), '0.1.44 result gate must not 
 assert(!/submitSystemIntent\s*\(/.test(executableScene), '0.1.44 result gate must not submit host-system commands');
 assert(!/Math\.random\s*\(/.test(executableScene), '0.1.44 result gate must not add randomness');
 assert(!/\.money\s*[+\-*/]?=/.test(executableScene), '0.1.44 result gate must not mutate wallet state');
-assert(main.includes('CareerMinigameBoardScene044'), 'main runtime must use the 0.1.44 result-gate scene');
-assert(lobby.includes('MVP 0.1.44'), 'Lobby must identify 0.1.44');
-assert(setup.includes('MVP 0.1.44'), 'Setup must identify 0.1.44');
+assert(nextWrapper.includes('extends CareerMinigameBoardScene044'), 'later builds must retain the 0.1.44 result gate in the inheritance chain');
 
 console.log('[podium-result-gate-044] PASS controls unlock only after final podium reveal completes');
