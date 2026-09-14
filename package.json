@@ -35,6 +35,7 @@
     "test:job-minigame": "tsx tests/job-minigame-031.ts",
     "test:minigame-authority": "tsx tests/minigame-authority-037.ts",
     "test:choice-sfx": "tsx tests/choice-sfx-038.ts",
+    "test:final-result": "tsx tests/final-result-transition-039.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
