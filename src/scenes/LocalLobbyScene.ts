@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.38', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.39', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, '1 vòng/người • Event Audio • Mini Game payout authoritative • Choice SFX polish.', {
+    this.add.text(228, 109, '1 vòng/người • Event Audio • Mini Game payout • Final B$ reveal.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🏁 0.1.38: trước trận Roll For Order để xếp lượt. Trận chỉ chốt B$ sau khi cả 4 người hoàn thành ít nhất 1 vòng. Mini Game thưởng authoritative và dùng 03_City_Silly.
+        🏁 0.1.39: khi cả 4 người hoàn thành vòng và presentation cuối đã xong, game báo KHÓA BẢNG B$ rồi mới reveal bảng hạng authoritative.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Settings + 2-tab local sẵn sàng.'
+        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Final Result + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
