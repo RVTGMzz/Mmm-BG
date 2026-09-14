@@ -30,10 +30,11 @@ Current sources:
 - `docs/MAP_BRANCHING_RULE_D2.md`
 - `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
 - `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
+- `docs/MVP_0.1.56_BRANCH_IDENTITY.md`
 - `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
 
 ### Branching rule
-Canonical gameplay khi Draft D được tích hợp vào `START_PLAYTEST.bat`:
+Canonical gameplay trong `START_PLAYTEST.bat`:
 - human active player tự chọn **RẼ TRÁI / RẼ PHẢI**;
 - route choice phải HOST-authoritative;
 - không đi ngược;
@@ -46,6 +47,15 @@ Preview QA:
 - cùng seed cho cùng branch sequence;
 - có toggle **AUTO / THỦ CÔNG**;
 - AUTO chỉ là QA convenience, không phải luật người chơi final.
+
+### Branch gameplay identity — 0.1.56 locked
+Ba alternate corridor có bản sắc rõ ràng, còn lựa chọn kia tại mỗi junction là **PHỐ CHÍNH** với nhịp mixed.
+
+- **Branch A — AN TOÀN 🛡️**: `A1 / A2 / A3` đều là Normal. Không có money swing, TIN TỨC hay LÁ BÀI trực tiếp trong corridor.
+- **Branch B — DRAMA 🎭**: `B1 = TIN TỨC`, `B2 = LÁ BÀI`, `B3 = TIN TỨC`. Đây là corridor biến động/content interaction cao.
+- **Branch C — TIỀN 💰**: `C1 = +25 B$`, `C2 = -20 B$`, `C3 = +25 B$`. Mọi điểm dừng trong corridor đều tác động trực tiếp tới ví.
+- Cả ba alternate corridor vẫn có cùng step count tới merge như PHỐ CHÍNH. 0.1.56 không dùng shortcut để tạo lợi thế ẩn.
+- Branch picker phải hiển thị tên flavor + mô tả rủi ro để người chơi hiểu lựa chọn mà không cần mở full map.
 
 ### Four anchors
 - `M01` = **READY**
@@ -138,7 +148,7 @@ Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tr
 - chi tiết contract: `docs/UI_FINAL_PLAYER_HUD.md`
 
 ### Launcher roles
-- `START_PLAYTEST.bat` = gameplay chuẩn / integration target.
+- `START_PLAYTEST.bat` = gameplay chuẩn / canonical Draft D integration.
 - `START_DRAFT_D_PREVIEW.bat` = sandbox map/camera; 0.1.54 mặc định AUTO BRANCH seed `5454`, có MANUAL toggle.
 - `START_DRAFT_D_FULL_MAP.bat` = full topology review.
 - Legacy `START_FINAL_MAP_PREVIEW.bat` không còn ship trong tester package từ 0.1.54.
@@ -177,20 +187,17 @@ Effect resolve và reaction presentation tách nhau. Cần test readability trê
 
 ## C. Chưa chốt
 
-### Draft D authoritative integration / final art
-Preview topology đã chạy, nhưng standard gameplay integration vẫn cần 0.1.55:
-- authoritative route-choice intent + HOST resolution;
-- replay/checksum coverage cho branches;
-- multiplayer presentation parity trên Draft D;
+### Draft D final art / pacing follow-up
+Canonical Draft D gameplay integration đã có từ 0.1.55. Những phần còn cần playtest/tuning:
 - final art coordinates;
 - final district names;
 - final landmark sprites;
 - final palette/materials;
-- actual match duration sau integrated runtime playtest;
+- actual match duration;
 - payload positions có cần rebalance sau playtest hay không.
 
-### Branch gameplay identity
-Topology đã chốt working rule nhưng safe/drama/money identity của từng route vẫn cần playtest ở 0.1.56+.
+### Branch balance
+Bản sắc AN TOÀN / DRAMA / TIỀN đã chốt ở 0.1.56, nhưng **độ mạnh tương đối** giữa ba flavor chưa phải final. Giá trị reward/risk sẽ được cân sâu ở 0.1.60 sau khi có runtime playtest thực tế.
 
 ### Dynamic board trigger
 Ý tưởng board thay đổi sau một mốc vòng vẫn chưa khóa.
@@ -211,7 +218,7 @@ Không coi framework/protocol cụ thể là tech decision final nếu chưa đ�
 3. Fail release → kết thúc lượt; success → chạy exit route và phải **roll movement D6 mới** trong cùng lượt.
 4. HOST xác nhận movement dice.
 5. Token di chuyển trên authoritative Draft D route.
-6. Tại junction, active human gửi intent **RẼ TRÁI / RẼ PHẢI**, HOST resolve route.
+6. Tại junction, active human gửi intent **RẼ TRÁI / RẼ PHẢI**, HOST resolve route; branch picker cho biết PHỐ CHÍNH hoặc flavor AN TOÀN / DRAMA / TIỀN.
 7. Tile payload trigger.
 8. `JAIL_GATE/HOSPITAL_GATE` chuyển player vào holding location tương ứng.
 9. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
