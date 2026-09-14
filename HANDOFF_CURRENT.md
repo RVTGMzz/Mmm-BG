@@ -33,9 +33,12 @@ Read first:
 2. `docs/MAP_ARCHITECTURE_44_DRAFT_C.md`
 3. `docs/MAP_ARCHITECTURE_44_DRAFT_C.json`
 4. `docs/MAP_VISUAL_BLUEPRINT_44_DRAFT_C1.md`
-5. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
-6. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
-7. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
+5. `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` — canonical approved combined **map + four-player HUD visual reference**
+6. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
+7. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
+8. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_C2.md`
+
+Do not misclassify `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as HUD-only because of its filename. Its actual role is the approved visual reference for the city-board composition **and** four-corner HUD layout.
 
 ### Core topology
 - 44 main-loop spaces `M01..M44`
@@ -74,13 +77,13 @@ The branch route spaces are not part of the 44-space main-loop count and do not 
 
 ## Visual direction — approved Draft C1
 
-Use the colorful city-board concept approved by Ron as composition/mood reference:
+Use `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as the canonical visual reference for composition/mood:
 - bright stylized city/island viewed from above
 - readable pale circular route winding around the city
 - landmark-heavy environment
 - district signs for orientation
 - fixed P1/P2/P3/P4 HUDs in four screen corners
-- inner Jail/Hospital visually connected to their gates
+- inner Jail/Hospital visibly connected to their gates
 - central city remains readable and spacious
 
 AI image numbering/text is never authoritative.
@@ -140,7 +143,7 @@ Do not infer this until Ron decides.
 
 ## Runtime boundary
 
-Draft C/C1 are design/docs only.
+Draft C/C1/C2 are design/docs only.
 
 Do not modify `src/content/city/board_city_mvp.json` or validated runtime until a dedicated final-map implementation milestone is explicitly opened.
 
@@ -148,7 +151,7 @@ Latest validated playable runtime remains 0.1.48.
 
 ## Next priority
 
-1. Keep Draft C visual direction as current map design.
+1. Keep Draft C visual direction as current map design and use the existing PNG reference already in `docs/`.
 2. Decide the post-release movement timing through the 3-space Jail/Hospital exit routes.
 3. Continue 0.1.49 effect audit in parallel.
 4. Keep TIN TỨC / LÁ BÀI names.
@@ -156,4 +159,4 @@ Latest validated playable runtime remains 0.1.48.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final map hiện là Draft C: 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE. JAIL nằm trong map và có lối ra J1->J2->J3->M13; HOSPITAL có H1->H2->H3->M35. Jail release 1/3/5; Hospital release exactly 2/4/5; failure retries next turn. Approved visual direction là colorful stylized city/island board với HUD 4 góc; AI image numbering không authoritative; Jail branch chỉ đúng 3 ô J1/J2/J3. Post-release same-turn movement vẫn TBD. Continue 0.1.49 in parallel. Do not merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 đã PASS runtime; latest validated artifact vẫn là mememe-playtest-0.1.48 run #1441 SHA 5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c. Final map hiện là Draft C: 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE. JAIL nằm trong map và có lối ra J1->J2->J3->M13; HOSPITAL có H1->H2->H3->M35. Jail release 1/3/5; Hospital release exactly 2/4/5; failure retries next turn. Canonical visual reference đã có sẵn tại docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png và phải hiểu là combined map+HUD reference, không phải HUD-only. AI image numbering không authoritative; Jail branch chỉ đúng 3 ô J1/J2/J3. Post-release same-turn movement vẫn TBD. Continue 0.1.49 in parallel. Do not merge PR #1.`
