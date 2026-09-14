@@ -154,7 +154,7 @@ export class FinalMapPreviewScene051 extends Phaser.Scene {
       const from = getBoardNode(BOARD, edge.from);
       const to = getBoardNode(BOARD, edge.to);
       const specialExit = edge.from === 100 || edge.from === 101 || edge.from === 102 || edge.from === 103 || edge.from === 110 || edge.from === 111 || edge.from === 112 || edge.from === 113;
-      const optionalBranch = isDraftDBranchNode(edge.from) || isDraftDBranchNode(edge.to) || [3, 16, 34].includes(edge.from) && edge.route === 'branch';
+      const optionalBranch = isDraftDBranchNode(edge.from) || isDraftDBranchNode(edge.to) || ([3, 16, 34].includes(edge.from) && edge.route === 'branch');
       const line = this.add.graphics().setDepth(0);
       if (specialExit) line.lineStyle(10, 0xf3a43b, 0.92);
       else if (optionalBranch) line.lineStyle(9, 0x66d0cc, 0.95);
@@ -244,12 +244,12 @@ export class FinalMapPreviewScene051 extends Phaser.Scene {
       const root = this.add.container(pos.x, pos.y).setScrollFactor(0).setDepth(300);
       const border = this.add.rectangle(0, 0, 238, 82, 0xfffbf3, 0.95)
         .setStrokeStyle(4, PLAYER_COLORS[player.id] ?? 0x333333, 1);
+      root.add(border);
 
       const profile = gameSession.players[player.id];
       const face = profile?.faces.neutral;
       if (face && this.textures.exists(face.textureKey)) {
-        const avatar = this.add.image(-91, 0, face.textureKey).setDisplaySize(54, 54);
-        root.add(avatar);
+        root.add(this.add.image(-91, 0, face.textureKey).setDisplaySize(54, 54));
       } else {
         root.add(this.add.circle(-91, 0, 27, PLAYER_COLORS[player.id] ?? 0x777777, 1));
       }
@@ -263,8 +263,7 @@ export class FinalMapPreviewScene051 extends Phaser.Scene {
       const status = this.add.text(-55, 22, '', {
         fontFamily: 'Arial, sans-serif', fontSize: '9px', fontStyle: 'bold', color: '#6d655b', fixedWidth: 160,
       }).setOrigin(0, 0.5);
-      root.add([border, name, stats, status]);
-      border.moveTo(0);
+      root.add([name, stats, status]);
       this.hud.set(player.id, { root, name, stats, status, border });
     }
   }
