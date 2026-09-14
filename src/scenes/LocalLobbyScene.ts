@@ -34,14 +34,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.40', {
+    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.41', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, '1 vòng/người • Event Audio • Mini Game payout • Lap-native shell.', {
+    this.add.text(228, 109, '1 vòng/người • Event Audio • Mini Game payout • Final Podium.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +96,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🏁 0.1.40: mọi HUD, shell và log runtime đều hiển thị tiến độ 1 vòng/người; metadata 3 vòng cũ chỉ còn để tương thích dữ liệu.
+        🏆 0.1.41: sau nhịp khóa B$, game reveal bục xếp hạng 4 người từ kết quả authoritative; bằng B$ thì cùng hạng và cùng huy chương.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Final Result + 2-tab local sẵn sàng.'
+        ? '✅ Roll For Order + Job Dice + Salary + Mini Games + Event Audio + Final Podium + 2-tab local sẵn sàng.'
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
