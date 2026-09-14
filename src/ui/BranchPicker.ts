@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import type { BoardEdge, BoardNode, PlayerState } from '../core/types';
 
 export interface BranchOption {
@@ -114,6 +115,7 @@ export function showBranchPicker<T extends PlayerState>(
       button.on('pointerover', () => button.setFillStyle(0xffe3b5, 1));
       button.on('pointerout', () => button.setFillStyle(0xfff4de, 1));
       button.on('pointerdown', () => {
+        sfxController.play('ui_confirm');
         root.destroy(true);
         resolve(option.edge);
       });
