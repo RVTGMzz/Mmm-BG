@@ -16,22 +16,32 @@ const catalog = functionTilesJson as Array<{
 }>;
 
 const featureNodes = BOARD.nodes.filter((node) => node.feature);
-assert.equal(featureNodes.length, 2, 'board should expose exactly two function nodes');
-const miniNode = featureNodes.find((node) => node.feature === 'minigame');
-const jobNode = featureNodes.find((node) => node.feature === 'job');
+const miniNodes = featureNodes.filter((node) => node.feature === 'minigame');
+const jobNodes = featureNodes.filter((node) => node.feature === 'job');
+assert.equal(featureNodes.length, 6, 'Draft D should expose five Mini Games plus one Job Hub.');
+assert.equal(miniNodes.length, 5, 'Draft D must expose exactly five Mini Game spaces.');
+assert.equal(jobNodes.length, 1, 'Draft D must keep exactly one Job Hub.');
+assert.deepEqual(miniNodes.map((node) => node.id), [8, 16, 25, 34, 43]);
+assert.deepEqual(
+  miniNodes.map((node) => node.contentId),
+  ['MINIGAME_SLOT_01', 'MINIGAME_SLOT_02', 'MINIGAME_SLOT_03', 'MINIGAME_SLOT_04', 'MINIGAME_SLOT_05'],
+);
+const miniNode = miniNodes[0];
+const jobNode = jobNodes[0];
 assert(miniNode, 'Mini Game node missing');
 assert(jobNode, 'Job node missing');
-assert.equal(miniNode.contentId, 'MINIGAME_SLOT_01');
 assert.equal(jobNode.contentId, 'JOB_HUB_01');
-assert.equal(jobNode.id, 7, 'Job Hub must sit at the main/shortcut convergence');
+assert.equal(jobNode.id, 7, 'Job Hub must sit at the first Draft D branch convergence.');
 
 const catalogIds = new Set(catalog.map((entry) => entry.id));
 assert.equal(catalogIds.size, catalog.length, 'function tile content IDs must stay unique');
 for (const node of featureNodes) {
   assert(node.contentId && catalogIds.has(node.contentId), `board node ${node.id} references missing function content`);
 }
+assert.equal(catalog.filter((entry) => entry.kind === 'job').length, 1);
+assert.equal(catalog.filter((entry) => entry.kind === 'minigame').length, 5);
+assert(catalog.filter((entry) => entry.kind === 'minigame').every((entry) => entry.status === 'rules_locked'));
 assert.equal(catalog.find((entry) => entry.kind === 'job')?.status, 'playable');
-assert.equal(catalog.find((entry) => entry.kind === 'minigame')?.status, 'rules_locked');
 
 const probe = createInitialMatchState({
   boardId: BOARD.id,
@@ -40,8 +50,10 @@ const probe = createInitialMatchState({
   seed: 129,
 });
 const player = probe.players[0]!;
-const miniResolution = resolveFunctionTileFoundation(miniNode, player);
-assert.equal(miniResolution?.eventType, 'minigame_tile');
+for (const node of miniNodes) {
+  const miniResolution = resolveFunctionTileFoundation(node, player);
+  assert.equal(miniResolution?.eventType, 'minigame_tile', `Mini Game node ${node.id} must resolve through the shared MVP Mini Game system.`);
+}
 
 function presentationEvent(type: string, actorId: number, data: MatchEvent['data']): MatchEvent {
   return {
@@ -140,4 +152,4 @@ const receipt = submitClientIntent(authority, {
 assert.equal(receipt.status, 'accepted');
 assert.equal(authority.state.turn.phase, 'PRE_ROLL_ACTION');
 
-console.log('[function-tiles-029] PASS function schema + Mini Game presentation/replay + playable Job hook');
+console.log('[function-tiles-029] PASS 5 Mini Game slots + shared MVP presentation/replay + playable Job hook');
