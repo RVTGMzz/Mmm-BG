@@ -7,39 +7,52 @@ Do **not** merge PR #1 unless Ron explicitly asks.
 
 ## Runtime baseline
 
-0.1.48 remains the validated HOST-authoritative rollback baseline until 0.1.55 is user-playtested and accepted.
+0.1.48 remains the user-validated HOST-authoritative rollback baseline.
 
 `START_PLAYTEST.bat` is the canonical gameplay launcher.
 
 ## Current canonical candidate
 
-**MVP 0.1.55 — Draft D Canonical Integration**
+**MVP 0.1.56 — Branch Identity**
 
 Status: **CI GREEN / USER PLAYTEST PENDING**
 
+Ron asked to continue 0.1.56 while preparing to sleep, so the milestone was built and CI-validated without waiting for manual runtime feedback. Do not call it user-accepted yet.
+
 Artifact:
-- `mememe-playtest-0.1.55-draft-d-canonical`
-- run #1808 / `34906952458`
-- runtime/package SHA `3bd6d1b91058957dedabeed450ad2a7f83aad7e7`
-- artifact ID `10373250775`
-- size `8,578,183 bytes`
-- SHA256 `8c09e81fc85a78cef3f0718085662f0a3e0cf710575be8221c2ad11531b44d8e`
+- `mememe-playtest-0.1.56-branch-identity`
+- run #1846 / `34908302700`
+- runtime/package SHA `dfa391e50666802dfc91ae2e3c585da39837bac1`
+- artifact ID `10373547363`
+- size `8,578,336 bytes`
+- SHA256 `8f3f47d169118766edd47b5f8e8e64665ee0547db9b969b960db09a5191f8d44`
 
-All CI gates are green.
+All CI gates are green, including the 0.1.48 inherited bugfix gate and the new 0.1.56 branch-identity regression.
 
-## What 0.1.55 integrates
+## What 0.1.56 adds
 
-- `START_PLAYTEST.bat` now uses Draft D canonical board data.
-- 44 main spaces `M01..M44`.
-- 3 real Left/Right junctions, forward-only and equal-step to merge.
-- 5 Mini Game spaces: `M09 / M17 / M26 / M35 / M44`.
-- Five distinct `MINIGAME_SLOT_01..05` content IDs currently share the same MVP Mini Game rules so 0.1.59 can later deepen them independently.
-- Existing HOST authority, replay/checksum, Job, Mini Game payout ownership, multiplayer parity, audio and final-result regressions all pass.
+Draft D topology from 0.1.55 is retained:
+- 44 main spaces `M01..M44`;
+- 3 forward-only equal-step Left/Right junctions;
+- 5 Mini Game spaces `M09 / M17 / M26 / M35 / M44`;
+- existing HOST authority/replay/checksum/Job/Mini Game/audio/final-result chain remains guarded.
 
-Junctions:
-- M04 -> A1 or M05 -> merge M08
-- M17 -> M18 or B1 -> merge M21
-- M35 -> C1 or M36 -> merge M39
+Branch identities are now explicit:
+- **AN TOÀN 🛡️**: `A1 / A2 / A3 = Normal / Normal / Normal`;
+- **DRAMA 🎭**: `B1 / B2 / B3 = TIN TỨC / LÁ BÀI / TIN TỨC`;
+- **TIỀN 💰**: `C1 / C2 / C3 = +25 / -20 / +25 B$`;
+- the comparison route is **PHỐ CHÍNH** with mixed content.
+
+The branch picker now shows:
+- TRÁI / PHẢI direction;
+- route flavor;
+- first landing tile;
+- corridor summary;
+- risk label.
+
+Technical Node IDs and legacy odd/even parity hints are no longer player-facing branch-choice copy.
+
+Important: equal split-to-merge movement distance is unchanged. Relative strength of the three route flavors is provisional until 0.1.60 economy/pacing tests.
 
 ## Locked special rules
 
@@ -50,46 +63,44 @@ Anchors:
 - M34 Hospital Gate
 
 Jail:
-- release `1 / 3 / 5`
-- fail = stay and turn ends
-- exit `J1 -> J2 -> J3 -> M13`
+- release `1 / 3 / 5`;
+- fail = stay and turn ends;
+- success traverses `J1 -> J2 -> J3 -> M13`;
+- then take a **fresh movement D6 in the same turn**.
 
 Hospital:
-- release exactly `2 / 4 / 5`
-- fail = stay and turn ends
-- exit `H1 -> H2 -> H3 -> M35`
+- release exactly `2 / 4 / 5`;
+- fail = stay and turn ends;
+- success traverses `H1 -> H2 -> H3 -> M35`;
+- then take a **fresh movement D6 in the same turn**.
 
-For both:
-- release D6 is only a release check;
-- success traverses three exit spaces;
-- then player takes a **fresh movement D6 in the same turn**.
+The release die is only a release check and is never reused as movement distance.
 
-Mini Game eligibility once holding state lands in 0.1.57:
+Mini Game eligibility once 0.1.57 adds real holding state:
 - Jail/Hospital players are excluded;
 - 2+ eligible = normal Mini Game;
 - exactly 1 eligible = auto rank #1;
 - 0 eligible = skip / no payout.
 
-Important: 0.1.55 contains the topology and special-location geometry, but full HOST-authoritative Jail/Hospital/Lottery state is still scheduled for **0.1.57**.
+Important: 0.1.56 still does **not** claim authoritative Jail/Hospital/Lottery state. That is the next milestone.
 
 ## User test gate
 
-Run **`START_PLAYTEST.bat`** from the 0.1.55 package and verify the standard flow on Draft D:
-- Roll For Order / Job;
-- Left/Right branch choice and merge;
-- five Mini Game positions;
-- TIN TỨC / LÁ BÀI / money;
-- READY lap/salary;
-- final result.
+When Ron is available, run **`START_PLAYTEST.bat`** from the 0.1.56 package and mainly judge:
+- branch picker readability;
+- whether AN TOÀN / DRAMA / TIỀN communicate their purpose immediately;
+- whether TRÁI / PHẢI remains obvious;
+- branch merge behavior;
+- no regressions in standard Roll For Order / Job / Mini Game / TIN TỨC / LÁ BÀI / READY / final-result flow.
 
-Do not use Jail/Hospital holding behavior as the 0.1.55 gate.
+Do not require Jail/Hospital holding behavior for 0.1.56 acceptance.
 
 ## Roadmap
 
 - 0.1.54 sandbox AUTO/MANUAL — done
-- 0.1.55 canonical Draft D — CI green, user test next
-- 0.1.56 branch identity
-- 0.1.57 authoritative Jail/Hospital/Lottery + Mini Game eligibility
+- 0.1.55 canonical Draft D — CI green previous candidate
+- 0.1.56 branch identity — **CI green, user test pending**
+- 0.1.57 authoritative Jail/Hospital/Lottery + Mini Game eligibility — **next**
 - 0.1.58 TIN TỨC / LÁ BÀI depth
 - 0.1.59 Job + five-space Mini Game depth
 - 0.1.60 pacing/economy
