@@ -1,4 +1,4 @@
-# MeMeMe — HANDOFF CURRENT
+# MeMeMe - HANDOFF CURRENT
 
 Branch: `mememe-mvp-0.1-core`
 PR: #1
@@ -7,7 +7,7 @@ Source of truth: `docs/LATEST_HANDOFF.md`
 
 ## Current milestone
 
-**MVP 0.1.34 — One-Lap Clarity + Ready Celebration**
+**MVP 0.1.37 - Mini Game Authority Cleanup**
 
 Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
@@ -15,151 +15,125 @@ Do not merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Validated playable build
 
-GitHub Actions run: `34772895816` / run `#956`
+GitHub Actions run: `34798951707` / run `#1073`
 
 Validated runtime head SHA:
-`f6431f8523bdb10cd438e84ca103a7a7d449009d`
+`be7dc3246a4ded76f3913cca5d61b9ee3f2f4acb`
 
 Artifact:
-`mememe-playtest-0.1.34`
+`mememe-playtest-0.1.37`
 
 Artifact ID:
-`10321679066`
+`10330458664`
 
 Artifact size:
-`8,518,701 bytes`
+`8,558,316 bytes`
 
 Digest:
-`sha256:3aa3513b6ea14757026b520340aa52cca46f16b7886830a2956a52d4accd1f29`
+`sha256:da51a8277f3280ecc32954dabf0a1739327226874b2a181484cc864d5b5dd712`
 
 Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34772895816`
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34798951707`
 
 ## Read in this order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/MVP_0.1.34_PROGRESS.md`
-4. `docs/PLAYTEST_0.1.34.md`
-5. `docs/MVP_0.1.33_PROGRESS.md`
-6. `docs/PLAYTEST_0.1.33.md`
+3. `docs/MVP_0.1.37_PROGRESS.md`
+4. `docs/PLAYTEST_0.1.37.md`
+5. `docs/MVP_0.1.36_PROGRESS.md`
+6. `src/scenes/CareerMinigameBoardScene037.ts`
 7. `src/scenes/CareerMinigameBoardScene.ts`
-8. `src/scenes/TurnStakesBoardScene.ts`
-9. `src/scenes/PresentationParityBoardScene.ts`
-10. `src/core/demoMatch.ts`
-11. `src/core/replay.ts`
-12. `src/core/matchState.ts`
-13. `src/core/checksum.ts`
-14. `src/core/types.ts`
-15. `tests/demo-match-shell.ts`
-16. `tests/replay-determinism.ts`
+8. `src/ui/MiniGameOverlay.ts`
+9. `src/core/twoTabSession.ts`
+10. `src/core/authority.ts`
+11. `tests/minigame-authority-037.ts`
+12. `tests/job-minigame-031.ts`
 
-## 0.1.34 polish
+## 0.1.37 fix
 
-### Lap-native HUD / leaderboard
-- Compact HUD reads authoritative lap progress directly: `HOÀN THÀNH 1 VÒNG • X/4`.
-- No active board-first HUD logic needs to derive old `Vòng 1/3`, `2/3`, `3/3` progress anymore.
-- Every B$ leaderboard row shows lap state:
-  - `🏁0/1` before the required lap is complete;
-  - `🏁✓` after the player completes lap 1.
-- Money ranking still depends only on B$, not lap status.
+Mini Game reward ownership is now explicitly single-path:
 
-### READY completion banner
-- First required READY crossing shows `🏁 <PLAYER> HOÀN THÀNH 1 VÒNG!`.
-- Detail line shows table progress such as `2/4 người đã đủ vòng`.
-- Banner is presentation-only and does not perturb gameplay RNG or checksum.
-- Snapshot/resync does not replay already-consumed lap completion feedback.
+- `MiniGameOverlay` produces the deterministic ranking;
+- host commits payout only through `submitSystemIntent('resolve_minigame')`;
+- the old redundant scene-level player/seat submission is suppressed;
+- player/local `resolve_minigame` remains rejected by design;
+- same Mini Game source event cannot pay twice.
 
-### Build label
-- Current scene recognizes inherited 0.1.30 / 0.1.31 / 0.1.33 labels and promotes them to the visible 0.1.34 badge.
+New regression test `tests/minigame-authority-037.ts` locks this behavior and passed in full CI.
 
-## 0.1.33 fixes retained
+## 0.1.36 features retained
 
-### Token snap-back / fly-forward
-- Normal host/state packets do not own token coordinates during normal play.
-- Queued `move_step` presentation owns visual movement.
-- Card/News/state updates must not snap P1 back to an older node.
-- Snapshot resync and rematch command #0 retain hard-snap authority.
+- 8 event SFX: victory, news, card, step, money loss, money gain, dice, choice.
+- Roll For Order shows each player's D6; CPU seats also animate; tied seats reroll only.
+- Mini Game BGM is approved `03_City_Silly.ogg`.
+- No `track 1.MP3` and no fifth BGM.
+- Four approved BGM assets remain checksum-locked and must not be re-encoded/substituted.
+- Nhiều ra ít bị payout: `30 / 20 / 10 / 0 B$`.
+- Direct Oẳn Tù Xì payout: `25 / 15 / 5 / 0 B$`.
+- Oẳn Tù Xì 1v1 animation still runs for CPU vs CPU.
 
-### One full lap before scoring
-Current playtest rule:
-1. every player starts with `lapsCompleted = 0`;
-2. crossing Ready/start increments that player's lap count;
-3. game continues until **all players have completed at least one full board lap**;
-4. only then is the B$ leaderboard finalized;
-5. highest B$ wins; tied B$ remains shared win.
+## Movement / score rules retained
 
-`lapsCompleted` remains authoritative, replay-safe and checksum-covered.
+- Normal network state packets must not steal token coordinates from queued movement presentation.
+- Snapshot/rematch may hard-snap tokens to authoritative nodes.
+- Job Hub explicitly reconciles the human token so it does not stay visually one node behind.
+- Every player must complete at least one physical lap before final scoring.
+- Old 3-round / 12-turn metadata does not end the match.
+- If the last required lap ends on a Mini Game, final result waits until payout is committed.
+- Crossing READY increments lap and pays current Job salary exactly once.
 
-The old shell `rounds` / `turnLimit` fields remain for compatibility only and do not end the match.
+## Core rules retained
 
-## Existing gameplay retained
-
-- Roll For Order before match; higher D6 acts first, tied group rerolls only;
-- mandatory Job Hub stop;
-- 3 unique Job offers A/B/C;
-- authoritative Job D6: `1–2 → A`, `3–4 → B`, `5–6 → C`;
-- no direct Job-card selection;
-- starting wallet `200 B$`;
-- crossing Ready pays current Job salary; unemployed gets `0 B$` salary but still completes the lap;
-- promotion / steady / demotion / fired and Thief `jailed` state retained;
-- Mini Game `Nhiều ra ít bị`, switching to RPS at 1v1;
-- direct clickable dice;
-- node-by-node movement;
-- automatic parity route logic;
-- Tactical Choice / Kèo Hai Cửa;
-- rare deterministic CPU `bấm trượt tay` quirk;
-- side reaction chat remains left/right;
-- Settings BGM / volume / FX;
-- approved BGM remains checksum-locked and must not be re-encoded/substituted.
-
-Do **not** invent jail skipped-turn/bail/escape rules or Mini Game B$ payout until Bửu Bối explicitly defines them.
+- Starting wallet `200 B$`.
+- Mandatory Job Hub with three unique A/B/C offers.
+- Job D6: `1-2 -> A`, `3-4 -> B`, `5-6 -> C`.
+- Career promotion / steady / demotion / fired retained.
+- Thief `jailed` status exists, but skipped-turn / bail / escape rules remain undefined. Do not invent them.
+- CPU remains a QA bot.
 
 ## Determinism / networking invariants
 
-- no presentation RNG may perturb gameplay RNG;
+- presentation RNG must not perturb gameplay RNG;
 - `eventLog` remains presentation-only and checksum-excluded;
-- `playOrder`, Job state/pending offers and `lapsCompleted` are checksum-covered;
-- replay determinism, lockstep, authority, host/client resync and two-tab tests are green;
+- gameplay-critical wallet, lap, playOrder and Job state remain authoritative/checksum-safe;
 - snapshot resync must not replay stale presentation;
-- result/ranking waits until final presentation clears;
+- result/ranking waits for final presentation and pending Mini Game economy;
 - dice presentation must show authoritative results;
-- original face files remain local and are not silently uploaded/persisted;
-- CPU remains a QA bot, not final gameplay AI.
+- original face files remain local and must not be silently uploaded/persisted.
 
 ## Full CI state
 
-Run #956 passed through artifact upload:
+Run #1073 passed:
 - build/typecheck;
 - deterministic replay;
 - lockstep;
 - host/client queue + snapshot resync;
 - authority protocol;
 - two-tab core;
-- one-lap demo shell + rematch;
+- demo shell + rematch;
 - CPU autoplay;
-- presentation / flow / board regressions;
+- presentation / flow / board checks;
 - Settings/audio;
 - content/reaction/party/economy/stakes/tactical;
 - function tiles;
 - direct dice;
-- Job Dice / Salary / Roll For Order / Mini Games;
+- Job Dice / Salary / Roll For Order / Mini Game payout;
+- Mini Game host-system ownership regression;
 - package validation;
-- 0.1.34 guide copy;
+- 0.1.37 guide copy;
 - artifact upload.
 
-## Recommended next step
+## Recommended next runtime checks
 
-Runtime-test `mememe-playtest-0.1.34`.
-
-Priority checks:
-1. B$ rows change from `🏁0/1` to `🏁✓` exactly when each player first crosses Ready;
-2. lap-complete banner appears once and does not block flow;
-3. snapshot/resync does not replay the banner;
-4. P1 still never snaps backward after movement + Card/News;
-5. final B$ score waits for the last unfinished player to complete lap 1;
-6. salary and lap count happen together exactly once per Ready crossing.
+1. Mini Game B$ changes exactly once.
+2. HOST + JOIN with a joined seat entering Mini Game still receives host-authoritative payout state.
+3. No second money jump or rejected payout noise after overlay closes.
+4. P1 movement + Card/News still has no snap-back.
+5. Job Hub still leaves the human token on the correct node.
+6. Final score waits for pending Mini Game payout when applicable.
+7. All eight SFX and `03_City_Silly.ogg` still trigger in the correct contexts.
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.34_PROGRESS.md và docs/PLAYTEST_0.1.34.md. Current validated artifact là mememe-playtest-0.1.34, run #956, runtime SHA f6431f8523bdb10cd438e84ca103a7a7d449009d. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core của repo ronvotri/MeMeMe-BoardGame. Đọc docs/LATEST_HANDOFF.md, docs/MVP_0.1.37_PROGRESS.md và docs/PLAYTEST_0.1.37.md. Current validated artifact là mememe-playtest-0.1.37, run #1073, runtime SHA be7dc3246a4ded76f3913cca5d61b9ee3f2f4acb. Tiếp tục từ runtime feedback/build tiếp, không merge PR #1.`
