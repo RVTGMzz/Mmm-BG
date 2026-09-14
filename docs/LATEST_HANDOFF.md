@@ -7,73 +7,71 @@ Do **not** merge PR #1 unless Ron explicitly asks.
 
 ## Runtime baseline
 
-0.1.48 remains the validated HOST-authoritative baseline accepted by Ron.
+0.1.48 remains the validated HOST-authoritative gameplay baseline.
 
-Artifact:
-- `mememe-playtest-0.1.48`
-- run #1441 / `34814789556`
-- SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
+`START_PLAYTEST.bat` remains the **canonical gameplay target**. Preview launchers are sandboxes/review tools only.
 
 ## Current preview milestone
 
-**MVP 0.1.52 — Draft D UI Fix / Close Camera / Persistent Full Map**
+**MVP 0.1.53 — Left/Right Branching + True Full Map**
 
 Read first:
 1. `HANDOFF_CURRENT.md`
-2. `docs/MVP_0.1.52_DRAFT_D_UI_FIX.md`
-3. `docs/PLAYTEST_0.1.52_DRAFT_D_UI_FIX.md`
-4. `docs/MAP_DRAFT_D_PLAYTEST_FEEDBACK_0.1.51.md`
-5. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
-6. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+2. `docs/PLAYTEST_LAUNCHER_BRANCH_POLICY.md`
+3. `docs/MAP_BRANCHING_RULE_D2.md`
+4. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+5. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
 
-## Why 0.1.52 exists
+## Launcher roles
 
-0.1.51 loaded the Draft D map but looked frozen because the zoomed world camera also transformed screen HUD/controls. The Roll Dice button and HUDs could end up outside the viewport.
+- `START_PLAYTEST.bat` = standard/canonical gameplay path.
+- `START_DRAFT_D_PREVIEW.bat` = Draft D QA sandbox.
+- `START_DRAFT_D_FULL_MAP.bat` = whole-map topology review.
+- `START_FINAL_MAP_PREVIEW.bat` = legacy 0.1.50-era preview, not a normal future tester option.
 
-0.1.52 separates rendering:
-- world camera = map + tokens;
-- UI camera = four HUDs + Roll Dice + route chooser + toast + Full Map controls;
-- UI camera stays at zoom `1.0`.
+## Preview branch policy
 
-## Camera values
-- active-player follow `1.70x`
-- branch decision `1.25x`
-- persistent full-map review `0.50x`
+Next Draft D preview build should default to **AUTO BRANCH** so repeated map QA does not stop for every Left/Right decision.
 
-## Launch
+AUTO BRANCH:
+- deterministic seeded RNG;
+- same seed reproduces the same branch choices;
+- obeys the same forward-only / merge-ahead topology.
 
-Close gameplay review:
-- `START_DRAFT_D_PREVIEW.bat`
-- `?finalmap=3`
+Preview should also expose **AUTO / MANUAL** toggle.
 
-Persistent full-map review:
-- `START_DRAFT_D_FULL_MAP.bat`
-- `?finalmap=3&overview=1`
+MANUAL:
+- shows `RẼ TRÁI / RẼ PHẢI` chooser;
+- intended for targeted route QA.
 
-## CI candidate
+Canonical gameplay remains manual human choice when branching is eventually integrated into `START_PLAYTEST.bat`.
 
-- artifact `mememe-playtest-0.1.52-draft-d-ui-fix`
-- run #1704 / `34896654009`
-- package SHA `cf7129a054d0b82c9a97cb9aa4a8b9dd21bd602d`
-- artifact ID `10368997808`
-- SHA256 `bdd64be273299aa400f75782da08bb84a29462f152d42499c3d17dbee9b36081`
+## Draft D topology
 
-## Draft D retained direction
-- 44 main spaces baseline;
-- asymmetric board, not a simple oval;
-- 3 real decision junctions;
-- more breathing room between spaces;
-- alternate lanes rejoin main route;
-- full map is review/overview, normal turn camera stays close.
+- 44 main spaces.
+- 3 real decision junctions.
+- Both routes progress forward and merge ahead.
+- No backward trap, dead end or branch cycle.
+- Current branch paths use equal movement distance to merge.
 
-Locked special rules remain:
+Current junctions:
+- M04 -> A1 or M05 -> merge M08
+- M17 -> M18 or B1 -> merge M21
+- M35 -> C1 or M36 -> merge M39
+
+## Full-map review
+
+`START_DRAFT_D_FULL_MAP.bat` uses the dedicated 0.1.53 review scene and must fit the whole current Draft D topology into one viewport. It is not normal gameplay.
+
+## Locked special rules
+
 - M01 READY
 - M12 Jail Gate
-- M23 Lottery D6 × 20 B$
+- M23 Lottery: D6 × 20 B$
 - M34 Hospital Gate
-- Jail release `1/3/5`
-- Hospital release exactly `2/4/5`
-- exactly 3 visible exit spaces for each special location.
+- Jail release `1 / 3 / 5`
+- Hospital release exactly `2 / 4 / 5`
+- exactly 3 visible exit spaces for each holding location.
 
 Keep **TIN TỨC / LÁ BÀI** names.
 0.1.49 Legacy Effect Audit remains parallel.
