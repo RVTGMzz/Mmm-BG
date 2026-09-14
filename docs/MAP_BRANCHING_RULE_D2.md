@@ -1,6 +1,6 @@
 # MeMeMe Map Branching Rule D2
 
-Status: **APPROVED PROJECT RULE**.
+Status: **APPROVED PROJECT RULE / PREVIEW IMPLEMENTED IN 0.1.54**.
 
 This rule applies to the Draft D topology and defines the difference between canonical gameplay choices and preview QA automation.
 
@@ -15,17 +15,15 @@ The choice changes which spaces/content the player passes through, but it must n
 
 ## Preview QA rule
 
-`START_DRAFT_D_PREVIEW.bat` is a map/camera sandbox, not the canonical gameplay mode.
+`START_DRAFT_D_PREVIEW.bat` is a map/camera sandbox, not canonical gameplay.
 
-Default preview behavior should be **AUTO BRANCH**:
-- automatically choose Left/Right at junctions;
-- use the preview's deterministic seeded RNG;
-- make the same seed reproduce the same route decisions;
-- avoid forcing the tester to answer Left/Right on every pass.
-
-The preview should also expose an optional **AUTO / MANUAL** branch-choice toggle.
-
-When set to MANUAL, the preview shows the normal **RẼ TRÁI / RẼ PHẢI** chooser for targeted branch testing.
+0.1.54 implements:
+- **AUTO BRANCH** as the default;
+- deterministic branch RNG derived from the preview seed;
+- default launcher seed `5454`;
+- same seed = same AUTO branch sequence;
+- fixed **AUTO / THỦ CÔNG** toggle;
+- MANUAL = normal **RẼ TRÁI / RẼ PHẢI** chooser.
 
 AUTO is a QA convenience only. It must not redefine final human gameplay.
 
@@ -51,7 +49,8 @@ After the merge, movement continues along the forward main route toward READY an
 - No choice may trap the player in a dead end.
 - READY remains the lap destination and only physical lap crossing.
 - Jail/Hospital exit paths remain separate special-location routes, not normal left/right choices.
-- Preview AUTO BRANCH must obey the same topology rules as MANUAL choice.
+- Preview AUTO BRANCH obeys the same topology rules as MANUAL choice.
+- Canonical `START_PLAYTEST.bat` integration must use HOST-authoritative route-choice intents rather than preview automation.
 
 ## Full-map review
 
@@ -59,8 +58,8 @@ After the merge, movement continues along the forward main route toward READY an
 
 ## Launcher-role source of truth
 
-See `docs/PLAYTEST_LAUNCHER_BRANCH_POLICY.md` for the canonical distinction between:
+See `docs/PLAYTEST_LAUNCHER_BRANCH_POLICY.md`:
 - `START_PLAYTEST.bat` = standard gameplay target;
 - `START_DRAFT_D_PREVIEW.bat` = Draft D QA sandbox;
 - `START_DRAFT_D_FULL_MAP.bat` = topology review;
-- `START_FINAL_MAP_PREVIEW.bat` = legacy preview launcher.
+- legacy `START_FINAL_MAP_PREVIEW.bat` = removed from tester package in 0.1.54.
