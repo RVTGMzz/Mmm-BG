@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import type { CardDefinition } from '../core/cards';
 import type { PlayerState } from '../core/types';
 
@@ -72,6 +73,7 @@ export function showCardHandPicker(
     const finish = (selection?: CardHandSelection): void => {
       if (settled) return;
       settled = true;
+      sfxController.play('ui_confirm');
       root.destroy(true);
       resolve(selection);
     };
