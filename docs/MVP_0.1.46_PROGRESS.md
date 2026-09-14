@@ -1,6 +1,6 @@
 # MVP 0.1.46 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -44,6 +44,8 @@ New `tests/job-hub-multiplayer-046.ts` validates:
 - Job picker does not call `Math.random` or `rollD6`;
 - runtime/Lobby/Setup identify 0.1.46.
 
+The 0.1.45 Remote Roll regression was also made version-agnostic so it continues protecting Remote Roll authority without hardcoding the current Lobby/Setup/runtime build number.
+
 ## Retained behavior
 
 - 0.1.45 Remote Roll For Order remains host-authoritative.
@@ -60,4 +62,28 @@ New `tests/job-hub-multiplayer-046.ts` validates:
 - Jail deep mechanics remain undefined.
 - PR #1 remains unmerged.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## CI validation
+
+First 0.1.46 CI run `#1365` failed only because the old 0.1.45 regression still required Lobby/Setup to display literal `0.1.45`. All gameplay and networking tests before that point were green. The test was corrected to own only its Remote Roll invariants.
+
+Validated run: `#1367` / GitHub Actions run `34809081463`.
+
+Validated runtime/package SHA:
+`6d59583f8e1896fb2b0cbb12e438cc85b0b6fb7a`
+
+Artifact:
+`mememe-playtest-0.1.46`
+
+Artifact ID:
+`10334430551`
+
+Artifact size:
+`8,565,865 bytes`
+
+Digest:
+`sha256:2b7b66df3863721f12fd07ff56dc7a43ed55a5d4850af554b02f86f5f04a0bf4`
+
+Run URL:
+`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34809081463`
+
+Full CI passed build/typecheck, deterministic replay, lockstep, two-tab authority, Remote Roll, the new Job Hub multiplayer regression, image bounds, package verifier, guide copy and artifact upload.
