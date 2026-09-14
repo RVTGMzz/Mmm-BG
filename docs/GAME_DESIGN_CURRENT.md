@@ -16,14 +16,22 @@
 - **Landscape-first** để không phải đập UI khi đi PC/console
 
 ### Final board / camera direction
-- Board final phải có **hơn 40 playable spaces**.
-- Working design band hiện tại: khoảng **44–48 spaces**; số chính xác chưa khóa.
+- Board final phải có **hơn 40 ô trên map chính**.
+- Draft B hiện dùng working target **44 ô main loop**: `M01..M44`.
 - Không dùng full-map view làm góc camera gameplay thường trực.
-- Tới lượt ai, camera chuyển/zoom về token của người đó và follow khi di chuyển, theo hướng digital party-board game.
+- Tới lượt ai, camera chuyển/zoom về token của người đó và follow khi di chuyển.
 - Full-map chỉ là overview có chủ đích như intro, xem bản đồ, route inspection hoặc QA/debug.
 - Board ưu tiên một primary loop/path network dễ đọc ở góc nhìn gần.
-- **Hospital** và **Jail** được chốt là hai special side-branch/location của board final.
-- Deep rules của Hospital/Jail vẫn phải được định nghĩa riêng; không tự suy diễn luật Jail như mất lượt, bail, escape roll/card.
+- **Hospital** là đúng **1 special location** nằm ngoài vòng chính.
+- **Jail** là đúng **1 special location** nằm ngoài vòng chính.
+- Hospital/Jail **không phải chuỗi nhiều ô và không đi vào bằng xúc xắc**.
+- Player bị đưa thẳng tới Hospital/Jail bởi effect authoritative từ **TIN TỨC**, **LÁ BÀI**, hoặc effect được duyệt khác.
+- Deep rules của Hospital/Jail vẫn phải được định nghĩa riêng; không tự suy diễn mất lượt, phí, bail, escape roll/card hay điều kiện release.
+
+Current topology source:
+- `docs/MAP_ARCHITECTURE_FINAL.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
 
 ### Final 4-player HUD direction
 - 4 player HUD cố định ở 4 góc màn hình, không di chuyển cùng board camera.
@@ -87,13 +95,25 @@ Cần test readability trên màn hình nhỏ.
 
 ## C. Chưa chốt
 
-### Exact final board count / detailed route graph
-Hướng final đã khóa ở mức **hơn 40 spaces**, camera close-follow và Hospital/Jail side branches, nhưng vẫn chưa khóa:
-- exact node count trong khoảng làm việc 44–48;
-- vị trí từng branch connector;
-- district count và landmark placement;
-- shortcut/alternate-route topology nếu có;
-- effect distribution trên từng khu.
+### Detailed final board distribution / art coordinates
+Draft B đã chọn working topology **44 main spaces + 1 Hospital + 1 Jail**, nhưng vẫn chưa khóa runtime:
+- payload cuối cho từng M01..M44;
+- Mini Game spacing mới cho 44-space loop;
+- district boundaries cuối;
+- landmark placement cuối;
+- world/art coordinates cuối;
+- shortcut/alternate-route topology nếu sau này có;
+- effect distribution cuối.
+
+Draft A cũ `40 + H1..H4 + J1..J4` đã superseded và không còn là thiết kế hiện tại.
+
+### Hospital / Jail stay and exit rules
+Entry concept đã rõ là effect-driven, nhưng chưa chốt:
+- ở bao lâu;
+- có mất lượt hay không;
+- Hospital có phí/recovery hay không;
+- Jail có bail/escape roll/card hay không;
+- release condition.
 
 ### Dynamic board trigger
 Từng có ý tưởng “leader/queen hoàn thành một vòng thì board xáo lại”.
@@ -124,17 +144,15 @@ Một lượt thử nghiệm:
 
 1. Active player bấm Roll.
 2. Dice ra kết quả.
-3. Player token di chuyển trên graph.
-4. Nếu qua branch node, rule path chọn nhánh.
-5. Tile payload trigger.
-6. Nếu là `Lá Bài/Tin Tức`, loader chọn entry theo pool.
-7. Effect resolver thay đổi state.
-8. Presentation layer:
-   - card/news art;
-   - face slot compositing;
-   - system log;
-   - reaction sequencer.
-9. Turn manager chuyển người kế tiếp.
+3. Player token di chuyển trên main graph.
+4. Tile payload trigger.
+5. Nếu là `Lá Bài/Tin Tức`, loader chọn entry theo pool.
+6. Effect resolver thay đổi authoritative state.
+7. Một effect hợp lệ có thể gửi player trực tiếp tới `HOSPITAL` hoặc `JAIL`.
+8. Presentation layer xử lý card/news art, face slot, system log, reaction và camera movement.
+9. Turn manager chuyển người kế tiếp theo authoritative state.
+
+Hospital/Jail relocation là effect resolution, không phải normal dice path routing.
 
 ## E. Face-card rendering model
 
@@ -176,7 +194,7 @@ Rarity không đồng nghĩa 1:1 với “damage”.
 - `SR`: swing lớn
 - `SSR`: moment hiếm, có thể lật mặt trận
 
-Nên dùng weight theo **pool**, không gắn một con số cố định vào rarity cho mọi map. Ví dụ 1% SSR có thể đúng ở một pool nhưng chưa phải chuẩn toàn game.
+Nên dùng weight theo **pool**, không gắn một con số cố định vào rarity cho mọi map.
 
 ## G. Localization
 
