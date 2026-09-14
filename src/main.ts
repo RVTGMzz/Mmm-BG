@@ -12,13 +12,18 @@ import { NetworkBoardScene } from './scenes/NetworkBoardScene';
 import { CareerMinigameBoardScene048 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene048';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 
+const finalMapPreview = new URLSearchParams(window.location.search).get('finalmap') === '1';
+const normalScenes = [LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene, FinalMapPreviewScene050];
+
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'app',
   width: 1280,
   height: 720,
   backgroundColor: '#f4ead7',
-  scene: [LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene, FinalMapPreviewScene050],
+  scene: finalMapPreview
+    ? [FinalMapPreviewScene050, LocalLobbyScene, SetupScene, TurnOrderScene, ActiveBoardScene, BoardScene, NetworkBoardScene]
+    : normalScenes,
   dom: {
     createContainer: true,
   },
