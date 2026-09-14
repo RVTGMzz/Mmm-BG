@@ -1,0 +1,49 @@
+{
+  "schema": "mememe-map-spatial-draft-v2",
+  "status": "DOCUMENTATION_ONLY_NOT_RUNTIME",
+  "draft": "B2",
+  "coordinateSpace": {
+    "width": 4000,
+    "height": 2600,
+    "unit": "design_world_unit"
+  },
+  "cornerNodes": {
+    "M01":{"x":650,"y":2150,"feature":"READY"},
+    "M12":{"x":700,"y":500,"feature":"JAIL_GATE"},
+    "M23":{"x":3400,"y":520,"feature":"LOTTERY"},
+    "M34":{"x":3200,"y":2160,"feature":"HOSPITAL_GATE"}
+  },
+  "specialLocations": {
+    "JAIL":{"x":1180,"y":920,"pairedGate":"M12","ordinaryMovementDistance":false},
+    "HOSPITAL":{"x":2730,"y":1780,"pairedGate":"M34","ordinaryMovementDistance":false}
+  },
+  "presentationConnectors": [
+    {"from":"M12","to":"JAIL","kind":"transfer_spur","diceCounted":false},
+    {"from":"M34","to":"HOSPITAL","kind":"transfer_spur","diceCounted":false}
+  ],
+  "nodes": [
+    {"id":"M01","x":650,"y":2150},{"id":"M02","x":520,"y":2020},{"id":"M03","x":430,"y":1860},{"id":"M04","x":380,"y":1680},{"id":"M05","x":390,"y":1490},{"id":"M06","x":430,"y":1300},{"id":"M07","x":480,"y":1110},{"id":"M08","x":520,"y":920},{"id":"M09","x":530,"y":760},{"id":"M10","x":550,"y":640},{"id":"M11","x":590,"y":550},{"id":"M12","x":700,"y":500},
+    {"id":"M13","x":930,"y":420},{"id":"M14","x":1170,"y":380},{"id":"M15","x":1410,"y":360},{"id":"M16","x":1660,"y":350},{"id":"M17","x":1910,"y":360},{"id":"M18","x":2160,"y":380},{"id":"M19","x":2410,"y":410},{"id":"M20","x":2660,"y":430},{"id":"M21","x":2910,"y":450},{"id":"M22","x":3160,"y":470},{"id":"M23","x":3400,"y":520},
+    {"id":"M24","x":3500,"y":670},{"id":"M25","x":3560,"y":840},{"id":"M26","x":3590,"y":1020},{"id":"M27","x":3600,"y":1200},{"id":"M28","x":3580,"y":1380},{"id":"M29","x":3550,"y":1560},{"id":"M30","x":3500,"y":1730},{"id":"M31","x":3440,"y":1880},{"id":"M32","x":3370,"y":1990},{"id":"M33","x":3300,"y":2080},{"id":"M34","x":3200,"y":2160},
+    {"id":"M35","x":2960,"y":2230},{"id":"M36","x":2720,"y":2270},{"id":"M37","x":2480,"y":2300},{"id":"M38","x":2240,"y":2320},{"id":"M39","x":2000,"y":2330},{"id":"M40","x":1760,"y":2320},{"id":"M41","x":1520,"y":2300},{"id":"M42","x":1280,"y":2270},{"id":"M43","x":1040,"y":2240},{"id":"M44","x":820,"y":2200}
+  ],
+  "quarterFrames": [
+    {"id":"Q1","from":"M01","to":"M12","anchors":["READY","JOB_HUB","JAIL_GATE"]},
+    {"id":"Q2","from":"M12","to":"M23","anchors":["JAIL","MINIGAME_M17","LOTTERY"]},
+    {"id":"Q3","from":"M23","to":"M34","anchors":["LOTTERY","HOSPITAL_GATE","HOSPITAL"]},
+    {"id":"Q4","from":"M34","to":"M01","anchors":["HOSPITAL","MINIGAME_M39","READY_RETURN"]}
+  ],
+  "camera": {
+    "normal":"close_follow_active_token",
+    "lookAheadNodes":2,
+    "gateRelocation":"follow_transfer_spur_then_settle_on_singleton",
+    "overview":"fit_outer_loop_plus_inner_singletons",
+    "hudFixedScreenSpace":true
+  },
+  "constraints": {
+    "jailHospitalSpursAreMovementNodes":false,
+    "releaseReturnNode":"TBD",
+    "releaseSuccessRollAlsoMoves":"TBD",
+    "runtimeImport":"PROHIBITED_UNTIL_FINAL_MAP_IMPLEMENTATION_MILESTONE"
+  }
+}
