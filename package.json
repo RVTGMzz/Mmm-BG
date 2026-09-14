@@ -50,6 +50,7 @@
     "test:draft-d-ui-fix": "tsx tests/final-map-preview-052.ts",
     "test:branching-053": "tsx tests/final-map-branching-053.ts",
     "test:preview-branch-mode-054": "tsx tests/preview-branch-mode-054.ts",
+    "test:canonical-draft-d-055": "tsx tests/final-map-canonical-055.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
