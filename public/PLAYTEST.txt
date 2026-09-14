@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.44 — RESULT CONTROLS UNLOCK AFTER PODIUM
+MeMeMe MVP 0.1.45 — REMOTE ROLL FOR ORDER
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,13 +18,30 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.44 FOCUS
-- Giữ nguyên podium authoritative + face reactions + reveal cascade của 0.1.41–0.1.43.
-- Result buttons bị khóa trong suốt podium reveal.
-- Reveal vẫn theo displayed rank 4 → 3 → 2 → 1; người đồng hạng xuất hiện cùng nhịp.
-- CHƠI LẠI / VỀ LOBBY chỉ nhận click sau khi tween 🥇 cuối cùng hoàn tất, cộng một pad presentation ngắn.
-- Gate dùng scene clock + fixed timing; không dùng gameplay RNG.
-- Không đổi B$, winner ID, ranking authoritative, payout hay authority.
+0.1.45 FOCUS — REMOTE ROLL FOR ORDER
+- JOIN không còn nhảy thẳng vào board; client vào cùng màn Roll For Order với host.
+- Client chọn P2/P3/P4 và giữ đúng ghế đó trong ceremony.
+- Khi tới lượt ghế remote, nút D6 chỉ sáng trên tab client sở hữu ghế.
+- Client chỉ gửi thao tác bấm roll + prompt ID, KHÔNG gửi kết quả xúc xắc.
+- HOST kiểm tra đúng ghế/prompt rồi mới sinh D6 và broadcast kết quả authoritative cho các tab.
+- Unclaimed seats vẫn do HOST bấm.
+- Nhóm hòa chỉ reroll trong nhóm; remote seat hòa sẽ lại tự bấm trên tab remote.
+- HOST broadcast final playOrder và chỉ HOST được release mọi tab vào trận.
+- Player names sync từ HOST Setup; face files vẫn không được gửi qua mạng.
+
+TEST 2 TAB KHUYẾN NGHỊ
+1) Tab A → HOST 2 TAB → giữ room code → Setup → ROLL FOR ORDER.
+2) Tab B → JOIN 2 TAB → nhập room code → chọn P2/P3/P4.
+3) Host phải nhận remote seat rồi mới bắt đầu ceremony.
+4) Khi tới remote seat, bấm D6 trên tab B; cả hai tab phải hiện cùng kết quả.
+5) Nếu hòa, chỉ nhóm hòa đổ lại.
+6) Client chờ HOST bấm VÀO TRẬN rồi cả hai mới sang board.
+
+AUTHORITY CHECK
+- Spam click remote roll không được sinh thêm D6 cho cùng prompt.
+- Remote P2 không được roll prompt của P1/P3/P4.
+- Late join sau khi ceremony khóa ghế phải bị reject rõ ràng.
+- Roll For Order pregame không tiêu thụ gameplay RNG state.
 
 EVENT AUDIO
 - victory: khi bảng kết quả thật xuất hiện.
@@ -38,8 +55,8 @@ EVENT AUDIO
 
 MINI GAME
 - BGM Mini Game = 03_City_Silly.ogg đã khóa checksum.
-- NHIỀU RA ÍT BỊ: hạng 1 = 30 B$ • hạng 2 = 20 B$ • hạng 3 = 10 B$ • hạng 4 = 0 B$.
-- OẲN TÙ XÌ trực tiếp: hạng 1 = 25 B$ • hạng 2 = 15 B$ • hạng 3 = 5 B$ • hạng 4 = 0 B$.
+- NHIỀU RA ÍT BỊ: 30 / 20 / 10 / 0 B$.
+- OẲN TÙ XÌ trực tiếp: 25 / 15 / 5 / 0 B$.
 - Nếu người cuối hoàn thành vòng tại ô Mini Game, kết quả trận phải chờ payout Mini Game xong mới chốt B$.
 
 LUẬT CHỐT ĐIỂM HIỆN TẠI
@@ -48,33 +65,27 @@ LUẬT CHỐT ĐIỂM HIỆN TẠI
 - Ai có B$ cao nhất lúc đó thắng; bằng tiền thì đồng hạng.
 - Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
 
-FINAL RESULT
-- Mọi presentation/payout cuối phải xong trước khi game hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$ • CHỐT THỨ HẠNG.
-- Podium authoritative reveal hạng thấp → cao.
-- Hạng 1 ưu tiên mặt 😆; hạng 4 ưu tiên 😡; giữa dùng 😐. Thiếu ảnh reaction thì fallback neutral.
-- Đồng B$ dùng competition rank: 300/300/250/200 → 1/1/3/4; 300/250/250/200 → 1/2/2/4.
+FINAL RESULT RETAINED
+- Mọi presentation/payout cuối phải xong trước khi hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$.
+- Podium authoritative reveal hạng 4 → 3 → 2 → 1; đồng hạng xuất hiện cùng nhịp.
+- Hạng 1 ưu tiên 😆, hạng 4 ưu tiên 😡, giữa dùng 😐; thiếu ảnh reaction thì fallback neutral.
 - Result controls chỉ unlock sau khi final winner reveal kết thúc.
-- Victory SFX chỉ phát theo result overlay thật, không nhân đôi.
+- Victory SFX chỉ phát theo result overlay thật.
 
 RETAINED FEATURES / FIXES
-- Token Player 1 không được snap ngược khi Card/News/state cập nhật; Job Hub có reconcile riêng để không kẹt visual ở ô cũ.
+- Token P1 không snap ngược khi Card/News/state update; Job Hub có reconcile riêng.
 - Snapshot/resync và rematch vẫn hard-snap token về state authoritative.
-- HUD/Bảng B$ hiển thị tiến độ 🏁0/1 hoặc 🏁✓.
-- Roll For Order: điểm D6 cao đi trước, hòa thì chỉ nhóm hòa đổ lại; player ID/face/màu không đổi.
-- Job Hub bắt buộc dừng; 3 nghề A/B/C; 1–2 → A, 3–4 → B, 5–6 → C.
-- Choice SFX phủ Route/Card/Target/Tactical/Setup/Settings cùng các điểm đã có từ trước.
-
-CPU TEST BOT
-- CPU tự roll và tự xử lý prompt QA.
-- CPU chỉ là QA bot đơn giản, KHÔNG phải AI gameplay final.
+- HUD/Bảng B$ hiển thị 🏁0/1 hoặc 🏁✓.
+- Job Hub bắt buộc dừng; Job D6 1–2 → A, 3–4 → B, 5–6 → C.
+- Starting wallet = 200 B$.
 
 KNOWN LIMITS
-- Roll For Order trong prototype 2-tab hiện được tổ chức từ host/local setup, chưa thu nút roll riêng từ từng remote browser.
-- Thief có thể vào trạng thái jailed nhưng chưa có luật bỏ lượt/bail/escape.
-- Chưa có internet multiplayer production, reconnect/seat reclaim production.
+- Đây vẫn là local BroadcastChannel QA, chưa phải internet multiplayer production.
+- Chưa có reconnect/seat reclaim production.
 - Client chưa nhận face textures từ host.
-- Content/presentation vẫn là pre-alpha.
+- CPU chỉ là QA bot.
+- Thief có thể jailed nhưng chưa có luật bỏ lượt/bail/escape.
 
-MANUAL LOCAL SERVER (nếu không dùng launcher)
+MANUAL LOCAL SERVER
 Node:   npx serve .
 Python: python -m http.server 4173
