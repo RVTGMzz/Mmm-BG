@@ -1,6 +1,6 @@
 # MeMeMe — Current Game Design
 
-> Đây là bản thiết kế hiện tại được chắt lọc từ brainstorm. Mọi mục được gắn nhãn để tránh biến “ý tưởng từng được đề xuất” thành “quyết định đã chốt”.
+> Bản thiết kế hiện tại. Chỉ các mục ghi **Đã chốt** mới được coi là quyết định hiện hành.
 
 ## A. Đã chốt
 
@@ -15,38 +15,41 @@
 - Mobile là điểm vào thực tế
 - **Landscape-first** để không phải đập UI khi đi PC/console
 
-### Final board / camera direction
-- Board final phải có **hơn 40 ô trên map chính**.
-- Draft B hiện dùng working target **44 ô main loop**: `M01..M44`.
-- Không dùng full-map view làm góc camera gameplay thường trực.
-- Tới lượt ai, camera chuyển/zoom về token của người đó và follow khi di chuyển.
-- Full-map chỉ là overview có chủ đích như intro, xem bản đồ, route inspection hoặc QA/debug.
-- Board ưu tiên một primary loop/path network dễ đọc ở góc nhìn gần.
-- **Hospital** là đúng **1 special location** nằm ngoài vòng ordinary path.
-- **Jail / Police Station** là đúng **1 special location** nằm ngoài vòng ordinary path.
-- Hospital/Jail không phải chuỗi nhiều ô.
-- Player có thể bị đưa tới Hospital/Jail từ ô gateway trên main loop hoặc bởi effect authoritative từ **TIN TỨC**, **LÁ BÀI**, hay effect được duyệt khác.
+### Final board / camera direction — Draft C current
+- Board final có **44 ô trên main loop**: `M01..M44`.
+- `M44 -> M01` là lap/salary crossing duy nhất.
+- Không dùng full-map view làm camera gameplay thường trực.
+- Tới lượt ai, camera chuyển/zoom về token người đó và follow khi di chuyển.
+- Full-map chỉ là overview có chủ đích.
+- Map dùng một primary loop dễ đọc, uốn quanh thành phố thay vì khung chữ nhật cứng.
 
-Current map source:
+Current source:
 - `docs/MAP_ARCHITECTURE_FINAL.md`
-- `docs/MAP_ARCHITECTURE_44_DRAFT_B.md`
-- `docs/MAP_ARCHITECTURE_44_DRAFT_B.json`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_C.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_C.json`
+- `docs/MAP_VISUAL_BLUEPRINT_44_DRAFT_C1.md`
 - `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
-- `docs/MAP_SPATIAL_LAYOUT_44_DRAFT_B2.md`
-- `docs/MAP_VISUAL_HIERARCHY_44_DRAFT_B3.md`
-- `docs/MAP_DISTRICT_LANDMARK_BLUEPRINT_44_DRAFT_B4.md`
-- `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_B5.md`
 
-### Four-corner board anchors
-44 ô chia thành bốn quarter 11 ô:
+### Four anchors
 - `M01` = **READY**
 - `M12` = **JAIL_GATE**
 - `M23` = **LOTTERY**
 - `M34` = **HOSPITAL_GATE**
 
-Landing on `JAIL_GATE` sends the player to `JAIL`.
+### Jail / Hospital topology
+- Có đúng **1 JAIL** ở phía trong map.
+- Có đúng **1 HOSPITAL** ở phía trong map.
+- Landing `M12 JAIL_GATE` đưa player thẳng vào `JAIL`.
+- Landing `M34 HOSPITAL_GATE` đưa player thẳng vào `HOSPITAL`.
+- TIN TỨC / LÁ BÀI / effect được duyệt cũng có thể đưa player trực tiếp tới hai location này.
 
-Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
+Jail exit route:
+`JAIL -> J1 -> J2 -> J3 -> M13`
+
+Hospital exit route:
+`HOSPITAL -> H1 -> H2 -> H3 -> M35`
+
+Mỗi lối ra có đúng **3 ô**. Sáu ô branch không tính vào 44 ô main loop và không tạo lap crossing mới.
 
 ### Jail release rule
 - Khi tới lượt player đang ở `JAIL`, roll 1 D6.
@@ -59,7 +62,7 @@ Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
 - Ra **2 / 4 / 5** → được ra.
 - Ra số khác → vẫn ở Hospital và chờ lượt sau roll lại.
 - Xác suất thoát mỗi lần thử: 50%.
-- Bộ số được duyệt là đúng `2 / 4 / 5`, không tự đổi thành rule số chẵn.
+- Bộ số là đúng `2 / 4 / 5`, không đổi thành rule số chẵn.
 
 ### Lottery rule
 - `M23 LOTTERY` roll 1 D6.
@@ -69,7 +72,7 @@ Landing on `HOSPITAL_GATE` sends the player to `HOSPITAL`.
 - RNG và wallet mutation phải HOST-authoritative khi implement.
 
 ### Working 44-space content distribution
-Draft B1 hiện dùng:
+Draft B1 vẫn dùng được vì main loop không đổi:
 - Job Hub: `M08`
 - Mini Game: `M17 / M39`
 - TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
@@ -78,180 +81,120 @@ Draft B1 hiện dùng:
 - Money -: `M07 / M18 / M30 / M40`
 - Normal/breathing: 16 ô
 
-Mini Game spacing hiện là đúng `22 / 22`.
+Mini Game spacing = `22 / 22`.
 
-Đây là working design source, chưa phải runtime lock.
+### Approved visual direction — Draft C1
+- Thành phố/island board rực rỡ nhìn từ trên cao.
+- Đường chính là chuỗi ô tròn sáng, uốn tự nhiên qua thành phố.
+- Landmark lớn giúp định hướng khi camera zoom gần.
+- District sign dùng như mốc thị giác.
+- Jail/Hospital nằm phía trong, nối bằng branch ngắn với main route.
+- Trung tâm thành phố phải còn khoảng thở, không phủ kín bằng ô.
+- Ảnh concept AI chỉ định hướng bố cục/mood; numbering và text AI không authoritative.
+- Lỗi concept Jail `J1 / J1 / J3 / J4` phải sửa thành **`J1 / J2 / J3`**.
 
 ### Final 4-player HUD direction
-- 4 player HUD cố định ở 4 góc màn hình, không di chuyển cùng board camera.
-- P1: top-left; P2: top-right; P3: bottom-left; P4: bottom-right.
-- Mỗi HUD tối thiểu có avatar, tên và B$.
-- Có thể thêm hand count, Job và status badge theo dạng compact.
-- Active player phải nổi bật rõ bằng border/glow/pulse/marker nhưng không làm thay đổi authoritative state.
-- Chi tiết contract nằm tại `docs/UI_FINAL_PLAYER_HUD.md`.
-- Visual reference hiện tại: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
+- P1 top-left
+- P2 top-right
+- P3 bottom-left
+- P4 bottom-right
+- mỗi HUD tối thiểu avatar + tên + B$
+- active player nổi bật
+- HUD cố định screen-space, không di chuyển theo board camera
+- chi tiết contract: `docs/UI_FINAL_PLAYER_HUD.md`
 
 ### Content names
-- `Lá Bài` thay cho `Thần chú`
-- `Tin Tức` thay cho `Tiên tri`
+- **LÁ BÀI** thay cho tên legacy
+- **TIN TỨC** thay cho tên legacy
 - Nội dung chia `Core` và `Map-specific`
 - Rarity: `N / R / SR / SSR`
-- Có `Impact_Level` riêng để cân bằng mức độ ảnh hưởng
+- Có `Impact_Level` riêng
 
 ### Personalization
-- Tên người chơi được chèn động vào system log và dialogue
-- Khuôn mặt thật được ghép động vào avatar/card/situation art
-- Reaction được random từ pool theo event/personality
-- MVP ưu tiên auto-reaction, không bắt người chơi chọn câu đáp
+- Tên player chèn động vào system log/dialogue
+- Khuôn mặt thật có thể ghép vào avatar/card/situation art
+- Reaction random từ pool theo event/personality
+- MVP ưu tiên auto-reaction
 - Audio ưu tiên non-verbal/generic để dễ localization
 
 ### Production philosophy
-- Bắt đầu bằng MVP ít content
+- Bắt đầu MVP ít content
 - Test system trước, fill chiều sâu sau
-- Data-driven, không hard-code content
+- Data-driven, tránh hard-code content
 
-## B. Hướng rất mạnh nhưng cần PoC trước khi khóa
+## B. Hướng mạnh nhưng cần PoC
 
 ### Face input
-Khả năng dùng 3 nhóm mặt:
-1. Neutral
-2. Positive
-3. Negative
+Khả năng dùng 3 nhóm mặt: neutral / positive / negative.
 
-Cần test:
-- người chơi có chịu chụp 3 ảnh không;
-- crop thủ công hay auto;
-- lưu local hay sync;
-- chất lượng ảnh tối thiểu;
-- fallback nếu từ chối camera.
+Cần test consent, crop, storage, quality và fallback nếu người chơi từ chối camera.
 
 ### Art style
-Hướng phù hợp nhất với concept:
-- 2D cozy;
-- paper cutout / sticker / collage;
-- outline mạnh;
-- pastel/cream nền nhẹ;
-- các điểm nhấn đỏ, vàng, xanh, tím theo brand;
-- body vẽ 2D, face thật cố ý hơi “lệch pha” để tạo hài.
-
-Draft B4 hiện khuyên ưu tiên một **stylized toy/collage city thống nhất**, nhưng đây chưa phải art-style lock cuối.
+Hướng hiện tại nghiêng về stylized toy/collage city, sticker-like HUD/characters, outline rõ, màu tươi nhưng vẫn ưu tiên readability.
 
 ### Async reaction
-Gameplay logic và presentation tách nhau:
-- effect resolve ngay;
-- reaction chạy song song;
-- turn tiếp có thể bắt đầu trước khi reaction biến mất.
-
-Cần test readability trên màn hình nhỏ.
+Effect resolve và reaction presentation tách nhau. Cần test readability trên màn hình nhỏ.
 
 ## C. Chưa chốt
 
 ### Final map runtime lock / art implementation
-Draft B/B1/B2/B3/B4/B5 đã có working design khá đầy đủ, nhưng vẫn chưa khóa runtime:
-- final art coordinates;
-- final district names;
-- final landmark sprites;
-- final palette/materials;
-- actual camera tween values;
-- actual total match duration after 44-space runtime playtest;
-- whether working node payload positions need rebalance after playtest.
-
-Draft A cũ `40 + H1..H4 + J1..J4` đã superseded và không còn là thiết kế hiện tại.
+Draft C/C1 đã khóa topology + visual direction nhưng chưa khóa runtime:
+- final art coordinates
+- final district names
+- final landmark sprites
+- final palette/materials
+- actual camera tween values
+- actual match duration sau 44-space runtime playtest
+- payload positions có cần rebalance sau playtest hay không
 
 ### Post-release behavior
-Jail/Hospital release faces đã chốt, nhưng vẫn chưa chốt:
-- player re-enter main loop tại node nào sau khi thoát;
-- roll thoát thành công có được dùng luôn làm bước di chuyển bình thường không;
-- hay thoát xong kết thúc lượt;
-- alternate release effect/card có tồn tại hay không.
+Route hình học đã chốt nhưng timing sau khi roll thoát thành công vẫn chưa chốt:
+- dùng luôn số roll đó để di chuyển qua `J1..J3` / `H1..H3`;
+- vào `J1/H1` rồi hết lượt;
+- hay rule khác được duyệt sau.
 
 ### Dynamic board trigger
-Từng có ý tưởng “leader/queen hoàn thành một vòng thì board xáo lại”.
-Cần chốt:
-- ai trigger;
-- shuffle cái gì;
-- có ảnh hưởng path graph hay chỉ tile payload;
-- có phá readability hay không.
+Ý tưởng board thay đổi sau một mốc vòng vẫn chưa khóa.
 
 ### Win condition
-Legacy có:
-- `Tranh ngôi đoạt vị`
-- `Sống còn`
-
-MeMeMe chưa chốt mode launch.
+Legacy có nhiều mode; MeMeMe chưa khóa mode launch cuối.
 
 ### Town-building / attack
-Brainstorm có nhắc hướng hybrid kiểu town-building / social attack.
-Đây là ý tưởng mở rộng, **không nên coi là core MVP nếu chưa prototype board loop đủ vui**.
+Là hướng mở rộng, không coi là core MVP trước khi board loop chứng minh đủ vui.
 
 ### Network stack
-Phaser.js, PeerJS, Socket.io từng được đề xuất.
-Không coi đây là tech decision final.
+Không coi framework/protocol cụ thể là tech decision final nếu chưa được khóa riêng.
 
-## D. Core gameplay hypothesis cho MVP
+## D. Core gameplay hypothesis
 
-Một lượt thử nghiệm:
-
-1. Active player bấm Roll.
-2. Dice ra kết quả.
-3. Player token di chuyển trên main graph.
+1. Active player Roll.
+2. HOST xác nhận dice.
+3. Token di chuyển trên authoritative route.
 4. Tile payload trigger.
-5. Nếu landing là `JAIL_GATE` hoặc `HOSPITAL_GATE`, HOST chuyển player tới singleton location tương ứng.
-6. Nếu landing là `LOTTERY`, HOST roll D6 và cộng `D6 × 20 B$`.
-7. Nếu là `Lá Bài/Tin Tức`, loader chọn entry theo pool.
-8. Effect resolver thay đổi authoritative state; effect hợp lệ cũng có thể gửi player tới `HOSPITAL` hoặc `JAIL`.
-9. Presentation layer xử lý card/news art, face slot, system log, reaction và camera movement.
-10. Turn manager chuyển người kế tiếp theo authoritative state.
+5. `JAIL_GATE/HOSPITAL_GATE` chuyển player vào holding location tương ứng.
+6. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
+7. LÁ BÀI / TIN TỨC dùng current pool/effect resolver.
+8. Effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
+9. Presentation layer xử lý camera, art, reaction, audio.
+10. Turn manager chuyển người tiếp theo.
 
-Nếu player bắt đầu lượt tại Hospital/Jail, dùng release roll đã khóa trước khi xử lý phần tiếp theo của lượt. Phần hậu-release vẫn TBD.
+Player bắt đầu lượt ở Jail/Hospital dùng release roll đã khóa. Hậu-release timing vẫn TBD.
 
 ## E. Face-card rendering model
 
-Đề xuất schema asset:
-
-```json
-{
-  "art_id": "card_swap_money",
-  "base_texture": "cards/card_swap_money.png",
-  "face_slots": [
-    {
-      "role": "caster",
-      "x": 0.31,
-      "y": 0.43,
-      "scale": 0.85,
-      "rotation_deg": -4,
-      "emotion": "positive"
-    },
-    {
-      "role": "target",
-      "x": 0.70,
-      "y": 0.45,
-      "scale": 0.82,
-      "rotation_deg": 3,
-      "emotion": "negative"
-    }
-  ]
-}
-```
-
-Tọa độ normalized 0..1 để asset dễ scale đa độ phân giải.
+Asset schema dùng normalized coordinates 0..1 cho face slots để scale đa độ phân giải.
 
 ## F. Rarity philosophy
 
-Rarity không đồng nghĩa 1:1 với “damage”.
-
-- `N`: thường xuyên, dễ hiểu, ít đảo game
-- `R`: tạo ưu thế rõ
+Rarity không đồng nghĩa 1:1 với damage:
+- `N`: thường xuyên, dễ hiểu
+- `R`: ưu thế rõ
 - `SR`: swing lớn
-- `SSR`: moment hiếm, có thể lật mặt trận
-
-Nên dùng weight theo **pool**, không gắn một con số cố định vào rarity cho mọi map.
+- `SSR`: moment hiếm, có thể lật trận
 
 ## G. Localization
 
-Từ đầu:
-- UI text qua key;
-- reaction text qua key/template;
-- `{PlayerA}`, `{PlayerB}`, `{Amount}`, `{Tile}` là variable;
-- SFX không chứa câu thoại ngôn ngữ cụ thể ở MVP;
-- không bake text vào art nếu text cần dịch.
+- UI/reaction text qua key/template
+- `{PlayerA}`, `{PlayerB}`, `{Amount}`, `{Tile}` là variable
+- SFX MVP tránh câu thoại gắn ngôn ngữ
+- không bake text vào art nếu text cần dịch
