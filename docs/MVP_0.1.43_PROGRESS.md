@@ -1,6 +1,6 @@
 # MVP 0.1.43 Progress
 
-Status: **ACTIVE / CI VALIDATION IN PROGRESS**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
 
 ## Scope
 
@@ -44,7 +44,7 @@ The slot starts at alpha 0 with a fixed 14px vertical offset, then uses a fixed 
 
 ## Regression
 
-New `tests/podium-reveal-043.ts` checks that:
+`tests/podium-reveal-043.ts` checks that:
 
 - rank 4 reveals before 3, before 2, before 1;
 - equal ranks map to the same reveal beat;
@@ -55,6 +55,25 @@ New `tests/podium-reveal-043.ts` checks that:
 - no wallet mutation or presentation randomness is introduced;
 - `src/main.ts`, Lobby and Setup identify 0.1.43.
 
-The 0.1.42 regression is now version-agnostic so later podium wrappers can inherit its behavior without false failures.
+The 0.1.42 regression is version-agnostic so later podium wrappers can inherit its behavior without false failures.
 
-Final artifact metadata will be added only after full CI/package validation is green.
+## Validated artifact
+
+GitHub Actions run: `34805635514` / run `#1273`
+
+Validated runtime/package SHA:
+`ef63cd6deeddbd59a8c7eaaf2e6e1840aa518314`
+
+Artifact:
+`mememe-playtest-0.1.43`
+
+Artifact ID:
+`10332634348`
+
+Artifact size:
+`8,560,703 bytes`
+
+Digest:
+`sha256:28b19183809fa5174eb89f63a66b613c26ce1d30b92256734d6f9ff999ddac27`
+
+Full CI passed through package validation and artifact upload, including authoritative podium, 0.1.42 reaction/spotlight, and the new deterministic low-to-high reveal regression.
