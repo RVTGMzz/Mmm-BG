@@ -111,6 +111,9 @@ jobs:
       - name: Mini Game host-system payout ownership
         run: npm run test:minigame-authority
 
+      - name: Choice SFX coverage and one-lap copy
+        run: npm run test:choice-sfx
+
       - name: Face image transform bounds
         run: npm run test:image
 
@@ -118,12 +121,12 @@ jobs:
         run: npm run test:package
 
       - name: Add full playtest guide to package
-        run: cp docs/PLAYTEST_0.1.37.md dist/PLAYTEST_GUIDE.md
+        run: cp docs/PLAYTEST_0.1.38.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.37 external playtest build
+      - name: Upload MVP 0.1.38 external playtest build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.37
+          name: mememe-playtest-0.1.38
           path: dist
           if-no-files-found: error
           retention-days: 14
