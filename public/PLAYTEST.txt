@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.40 — LAP-NATIVE SHELL CLEANUP
+MeMeMe MVP 0.1.41 — AUTHORITATIVE FINAL PODIUM
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,14 +18,15 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.40 FOCUS
-- Toàn bộ runtime HUD/shell/log phải dùng tiến độ hoàn thành 1 vòng/người.
-- Center HUD hiển thị dạng 🏁 x/4 ĐỦ VÒNG, không còn Vòng x/y.
-- Màn chờ không được mô tả trận là 3 vòng/12 lượt.
-- Log shell không được nói Demo bắt đầu • 3 vòng • 12 lượt.
-- Kết quả dùng trạng thái cả bàn đủ vòng + B$ authoritative.
-- rounds/turnLimit cũ vẫn tồn tại trong shell để tương thích dữ liệu/network, nhưng KHÔNG điều khiển kết thúc trận và KHÔNG được dùng làm luật hiển thị.
-- 0.1.39 final B$ transition vẫn giữ nguyên.
+0.1.41 FOCUS
+- Sau nhịp 4/4 HOÀN THÀNH → KHÓA BẢNG B$, kết quả cuối được reveal bằng bục xếp hạng 4 người.
+- Bục đọc ranking và B$ từ kết quả authoritative, KHÔNG tự tính lại winner/tiền.
+- Tên người chơi lấy từ MatchState authoritative.
+- Có sticker mặt trung tính nếu đã setup; nếu không có thì fallback P1/P2/P3/P4.
+- Đồng B$ = đồng hạng, cùng huy chương và cùng độ cao bục.
+- Ví dụ 300/300/250/200 → hạng 1/1/3/4.
+- Ví dụ 300/250/250/200 → hạng 1/2/2/4.
+- 0.1.40 lap-native HUD/shell/log và 0.1.39 final-result gate vẫn giữ nguyên.
 
 EVENT AUDIO
 - victory: khi bảng kết quả thật xuất hiện.
@@ -52,9 +53,9 @@ LUẬT CHỐT ĐIỂM HIỆN TẠI
 - Qua READY vẫn nhận lương Job như trước; chưa có Job nhận 0 B$ nhưng vẫn được tính hoàn thành vòng.
 
 FINAL RESULT
-- Khi người cuối cùng hoàn thành vòng và mọi presentation/payout cuối đã xong, game hiện `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG`.
+- Khi người cuối cùng hoàn thành vòng và mọi presentation/payout cuối đã xong, game hiện 4/4 HOÀN THÀNH → KHÓA BẢNG B$ • CHỐT THỨ HẠNG.
 - Trong nhịp chốt B$, input result bị chặn để không bấm nhầm nút vô hình.
-- Sau đó bảng hạng authoritative fade vào; transition không tính lại tiền hay winner.
+- Sau đó podium authoritative fade vào cùng result overlay thật.
 - Victory SFX chỉ phát theo result overlay thật, không nhân đôi.
 
 RETAINED FEATURES / FIXES
