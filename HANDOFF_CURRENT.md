@@ -7,173 +7,168 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## Runtime checkpoints
 
-### MVP 0.1.48 — validated baseline
-0.1.48 is **PASS** by Ron's explicit runtime acceptance on 2026-09-14.
+### MVP 0.1.48 — validated authoritative baseline
+Ron explicitly accepted 0.1.48 runtime on 2026-09-14.
 
-Latest validated baseline artifact remains:
+Validated baseline artifact:
 - `mememe-playtest-0.1.48`
 - run `#1441` / `34814789556`
 - runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-### MVP 0.1.50 — Final Map Preview
-A dedicated **runtime preview milestone is now open** so Ron can test Draft C quickly.
+Do not regress its HOST authority, replay/checksum, Job, Mini Game, audio or final-result invariants.
 
-This preview does **not** replace the authoritative 0.1.48 gameplay chain yet.
+### MVP 0.1.50 — comparison preview
+0.1.50 proved Draft C can run as a separate Final Map preview, but Ron found:
+- map too linear;
+- silhouette too round/oval;
+- nodes too tightly packed;
+- normal camera too far away.
 
+Keep 0.1.50 available for A/B comparison:
+- launcher `START_FINAL_MAP_PREVIEW.bat`
+- query `?finalmap=1`
+
+### MVP 0.1.51 — CURRENT runtime preview candidate
 Read:
-- `docs/MVP_0.1.50_FINAL_MAP_PREVIEW.md`
-- `docs/PLAYTEST_0.1.50_FINAL_MAP_PREVIEW.md`
+- `docs/MVP_0.1.51_DRAFT_D_PREVIEW.md`
+- `docs/PLAYTEST_0.1.51_DRAFT_D_PREVIEW.md`
+- `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+- `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
 
-Runtime preview files:
-- `src/content/city/board_city_final_050.json`
-- `src/core/finalMapPreview050.ts`
-- `src/scenes/FinalMapPreviewScene050.ts`
-- `tests/final-map-preview-050.ts`
+Runtime files:
+- `src/content/city/board_city_final_051.json`
+- `src/core/finalMapPreview051.ts`
+- `src/scenes/FinalMapPreviewScene051.ts`
+- `tests/final-map-preview-051.ts`
 
 Launch:
-- package: `START_FINAL_MAP_PREVIEW.bat`
-- URL/dev: `?finalmap=1`
+- package: `START_DRAFT_D_PREVIEW.bat`
+- URL/dev: `?finalmap=2`
 
-Normal `START_PLAYTEST.bat` still opens the 0.1.48 gameplay flow.
+0.1.51 remains a **local preview**, not the authoritative multiplayer map runtime.
 
-CI package name:
-- `mememe-playtest-0.1.50-final-map-preview`
+## Draft D current design
 
-The full regression suite plus `test:final-map-preview` must remain green before sharing a candidate build.
+### Main structure retained
+- 44 main spaces `M01..M44`
+- `M01 READY`
+- `M12 JAIL_GATE`
+- `M23 LOTTERY`
+- `M34 HOSPITAL_GATE`
+- `TIN TỨC / LÁ BÀI` names stay locked
 
-## Parallel milestone
+Canonical combined map + HUD visual reference remains:
+`docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+
+### New normal route branching
+Draft D adds three manual route decisions for preview testing:
+
+- after M04:
+  - main `M05 -> M06 -> M07 -> M08`
+  - alternate `A1 -> A2 -> A3 -> M08`
+- after M17:
+  - main `M18 -> M19 -> M20 -> M21`
+  - alternate `B1 -> B2 -> B3 -> M21`
+- after M35:
+  - main `M36 -> M37 -> M38 -> M39`
+  - alternate `C1 -> C2 -> C3 -> M39`
+
+Each alternate corridor currently uses the same number of steps as the main corridor. This deliberately avoids locking shortcut/risk/reward balance before Ron playtests the navigation feel.
+
+### Draft D spatial / visual direction
+- asymmetric winding-city silhouette, not an oval;
+- wider node spacing;
+- avoid long dense rows;
+- ordinary preview nodes use rectangles;
+- alternate-route preview nodes use diamonds;
+- branch corridors visually separated from main path;
+- rich final art remains later, current runtime environment is blockout.
+
+## Camera / HUD current contract
+
+0.1.51 working values:
+- normal follow zoom `1.38`
+- branch-decision framing `1.10`
+- overview `0.55`
+
+Rules:
+- normal gameplay shows local action, not the whole board;
+- at a branch, movement pauses and camera pulls back enough to show both paths;
+- player manually chooses route in preview;
+- after choice, camera returns to close follow;
+- full map requires explicit Overview;
+- P1/P2/P3/P4 HUDs remain fixed in four corners;
+- HUD cards are reduced vs 0.1.50;
+- avatar + name + B$ remain core information;
+- active HUD is emphasized.
+
+## Jail / Hospital / Lottery retained
+
+### Jail
+- gate M12 sends to JAIL
+- release D6 succeeds on `1 / 3 / 5`
+- exit geometry exactly `J1 -> J2 -> J3 -> M13`
+
+### Hospital
+- gate M34 sends to HOSPITAL
+- release D6 succeeds on exactly `2 / 4 / 5`
+- exit geometry exactly `H1 -> H2 -> H3 -> M35`
+
+### Lottery
+- M23
+- reward `D6 × 20 B$`
+- payouts `20 / 40 / 60 / 80 / 100 / 120 B$`
+
+Post-release same-turn movement remains intentionally TBD. Preview animation through the three exit spaces is not final authoritative timing.
+
+## Existing main-space pacing retained
+
+- Job Hub `M08`
+- Mini Game `M17 / M39`
+- TIN TỨC `M06 / M14 / M21 / M28 / M36 / M43`
+- LÁ BÀI `M04 / M10 / M16 / M22 / M27 / M32 / M41`
+- Money+ `M03 / M13 / M25 / M35`
+- Money- `M07 / M18 / M30 / M40`
+
+Alternate Draft D branch nodes mirror the broad content density of the main segment they replace for preview purposes.
+
+## Parallel work
 
 **MVP 0.1.49 — Legacy Effect Audit** remains active in parallel.
 
-Current names stay locked:
-- **TIN TỨC**
-- **LÁ BÀI**
+Do not rename current systems to old legacy labels. Keep:
+- TIN TỨC
+- LÁ BÀI
 
-Legacy inventory:
-- `docs/LEGACY_EFFECT_INVENTORY_0.1.49.md`
+## 0.1.51 playtest priority
 
-## Final map — Draft C current
+Ron compares 0.1.51 with 0.1.50 and reports:
+1. whether route feels less linear;
+2. whether spacing is comfortable;
+3. whether 3 junctions are easy to understand;
+4. whether 1.38× camera is close enough;
+5. whether branch pullback shows enough context;
+6. whether compact HUD remains readable;
+7. whether rectangular/diamond node language feels better than all circles;
+8. any HUD or camera obstruction.
 
-Read first:
-1. `docs/MAP_ARCHITECTURE_FINAL.md`
-2. `docs/MAP_ARCHITECTURE_44_DRAFT_C.md`
-3. `docs/MAP_ARCHITECTURE_44_DRAFT_C.json`
-4. `docs/MAP_VISUAL_BLUEPRINT_44_DRAFT_C1.md`
-5. `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` — canonical approved combined **map + four-player HUD visual reference**
-6. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.md`
-7. `docs/MAP_CONTENT_PACING_44_DRAFT_B1.json`
-8. `docs/MAP_CAMERA_MOCKUP_BRIEF_44_DRAFT_C2.md`
-
-Do not misclassify `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png` as HUD-only because of its filename. It is the approved visual reference for the city-board composition **and** four-corner HUD layout.
-
-### Core topology
-- 44 main-loop spaces `M01..M44`
-- lap crossing `M44 -> M01`
-- one inner `JAIL` holding location
-- one inner `HOSPITAL` holding location
-- Jail exit route exactly `J1 -> J2 -> J3 -> M13`
-- Hospital exit route exactly `H1 -> H2 -> H3 -> M35`
-
-### Four locked anchors
-- `M01` READY
-- `M12` JAIL_GATE -> JAIL
-- `M23` LOTTERY -> D6 × 20 B$
-- `M34` HOSPITAL_GATE -> HOSPITAL
-
-The six branch-route spaces are not part of the 44-space main-loop count and do not create extra lap crossings.
-
-### Jail release — approved
-- roll D6 on detained player's turn
-- `1 / 3 / 5` = released
-- other result = remain and retry next turn
-
-### Hospital release — approved
-- roll D6 on hospitalized player's turn
-- exactly `2 / 4 / 5` = released
-- other result = remain and retry next turn
-
-### Lottery — approved
-- landing on `M23` triggers D6
-- reward = `D6 × 20 B$`
-- payouts = `20 / 40 / 60 / 80 / 100 / 120 B$`
-
-## 0.1.50 preview boundary
-
-The preview scene currently implements the map visually/interactively with:
-- 44-space route;
-- four player tokens;
-- four fixed corner HUDs;
-- active-player camera pan;
-- Overview button;
-- Jail/Hospital transfers;
-- release face checks;
-- Lottery x20;
-- Money +/-;
-- placeholder feedback for TIN TỨC / LÁ BÀI / Job / Mini Game.
-
-Important: after a successful Jail/Hospital release roll, preview code animates through all three exit spaces and rejoins the main loop **only so the branch can be visually tested**.
-
-That animation is not a final rule decision.
-
-## Remaining special-location timing decision
-
-Still intentionally TBD for authoritative integration:
-- does the successful release die also count as movement through `J1..J3` / `H1..H3`;
-- or does release end the turn;
-- or another explicitly approved timing rule.
-
-Do not infer this from the 0.1.50 preview animation.
-
-## Current 44-space content pacing retained
-
-- Job Hub: `M08`
-- Mini Game: `M17 / M39` with `22 / 22` spacing
-- TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
-- LÁ BÀI: `M04 / M10 / M16 / M22 / M27 / M32 / M41`
-- Money +: `M03 / M13 / M25 / M35`
-- Money -: `M07 / M18 / M30 / M40`
-- Normal/breathing: 16 spaces
-
-## HUD / camera locks
-
-- P1 top-left
-- P2 top-right
-- P3 bottom-left
-- P4 bottom-right
-- avatar + name + B$ minimum
-- active player highlighted
-- HUD fixed in screen space
-- normal camera follows/pans to active token
-- full map is explicit overview only
+Only after this preview is approved should Draft D move into HOST-authoritative integration.
 
 ## Retained authoritative invariants from 0.1.48
 
-Do not regress these when Final Map moves into authoritative runtime:
 - Remote Roll For Order host-authoritative
 - Multiplayer Job Hub host-authoritative and spectator-safe
 - Job mapping `1–2 A / 3–4 B / 5–6 C`
-- Starting wallet `200 B$`
-- Each player completes one physical lap before final scoring
-- READY pays current Job salary once per crossing and increments lap
-- Mini Game payout host-system-owned and one-shot
-- Nhiều ra ít bị payout `30 / 20 / 10 / 0 B$`
-- Direct RPS payout `25 / 15 / 5 / 0 B$`
-- four approved BGM and eight supplied SFX checksum-protected
+- starting wallet `200 B$`
+- each player completes one physical lap before final scoring
+- READY salary/lap logic stays authoritative
+- Mini Game payouts host-system-owned and one-shot
 - final podium/result-input chain unchanged
-- CPU remains a QA bot
-
-## Next priority
-
-1. Ron playtests **0.1.50 Final Map Preview**.
-2. Collect feedback on route length, camera, HUD overlap, four anchors, Jail/Hospital branches and Lottery feel.
-3. Ron decides the final post-release movement timing.
-4. Only then integrate Draft C into HOST-authoritative replay/checksum runtime.
-5. Continue 0.1.49 Legacy Effect Audit in parallel.
-6. Keep TIN TỨC / LÁ BÀI names.
-7. Do not merge PR #1.
+- CPU remains QA bot
+- PR #1 remains unmerged
 
 ## New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 vẫn là validated authoritative baseline. 0.1.50 Final Map Preview đã mở để playtest riêng qua START_FINAL_MAP_PREVIEW.bat / ?finalmap=1, dùng board_city_final_050.json và FinalMapPreviewScene050. Draft C = 44 main spaces; M01 READY, M12 JAIL_GATE, M23 LOTTERY D6x20 B$, M34 HOSPITAL_GATE; JAIL có J1->J2->J3->M13; HOSPITAL có H1->H2->H3->M35. Jail release 1/3/5; Hospital exactly 2/4/5. Canonical visual reference là docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png, combined map+HUD. Preview animation sau release chỉ để test hình học, không khóa final same-turn movement. 0.1.49 Legacy Effect Audit vẫn chạy song song. Do not merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 là validated authoritative baseline. Current preview milestone là 0.1.51 Draft D qua START_DRAFT_D_PREVIEW.bat / ?finalmap=2. Draft D giữ 44 main spaces và 4 anchors nhưng đổi silhouette thành asymmetric winding city, spacing rộng hơn, camera gần hơn, HUD gọn hơn và thêm 3 manual route decisions: M04 main M05-M07 vs A1-A3 rejoin M08; M17 main M18-M20 vs B1-B3 rejoin M21; M35 main M36-M38 vs C1-C3 rejoin M39. Normal zoom 1.38, branch zoom 1.10, overview 0.55. Jail 1/3/5, Hospital exactly 2/4/5, Lottery D6x20 B$, Jail/Hospital exit still exactly 3 spaces. 0.1.49 Legacy Effect Audit continues in parallel. Do not merge PR #1.`
