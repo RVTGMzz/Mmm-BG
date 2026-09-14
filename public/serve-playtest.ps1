@@ -50,7 +50,7 @@ if (-not $listener) {
 if ($DraftDFullMap) {
   $url = "http://127.0.0.1:$port/?finalmap=4"
 } elseif ($DraftDPreview) {
-  $url = "http://127.0.0.1:$port/?finalmap=3"
+  $url = "http://127.0.0.1:$port/?finalmap=3&seed=5454&branch=auto"
 } elseif ($FinalMapPreview) {
   $url = "http://127.0.0.1:$port/?finalmap=1"
 } else {
@@ -86,7 +86,7 @@ try {
 
       $rawPath = $parts[1].Split('?')[0]
       $decoded = [System.Uri]::UnescapeDataString($rawPath).TrimStart('/')
-      if ([string]::IsNullOrWhiteSpace($decoded)) { $decoded = 'index.html' }
+      if ([System.String]::IsNullOrWhiteSpace($decoded)) { $decoded = 'index.html' }
 
       $relative = $decoded.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
       $candidatePath = [System.IO.Path]::GetFullPath((Join-Path $root $relative))
