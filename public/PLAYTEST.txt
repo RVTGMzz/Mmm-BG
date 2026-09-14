@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.38 — CHOICE SFX + ONE-LAP COPY POLISH
+MeMeMe MVP 0.1.39 — FINAL B$ LOCK + RESULT CLARITY
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -18,12 +18,12 @@ PLAY MODES
 - 4 CPU AUTOPLAY: để game tự chạy cả trận cho QA.
 - HOST 2 TAB + JOIN 2 TAB: PoC local, hai tab phải cùng browser profile/origin.
 
-0.1.38 FOCUS
-- Phủ SFX choice cho các thao tác xác nhận còn thiếu: Setup, route, Lá Bài, target, Tactical Choice và Settings.
-- Local Lobby / Job Dice / Mini Game choice / Vào Trận giữ choice SFX như trước.
-- Dice vẫn dùng SFX dice riêng, không đổi thành choice.
-- Setup và Lobby không còn quảng bá luật demo 3 vòng cũ; build copy chuyển sang 0.1.38 + luật 1 vòng/người.
-- Mini Game payout vẫn host-system authoritative và không được cộng hai lần.
+0.1.39 FOCUS
+- Khi người cuối cùng hoàn thành vòng và mọi presentation/payout cuối đã xong, game hiện nhịp `4/4 HOÀN THÀNH` → `KHÓA BẢNG B$ • CHỐT THỨ HẠNG`.
+- Trong nhịp chốt B$, input result bị chặn để không bấm nhầm nút vô hình.
+- Sau đó bảng hạng authoritative cũ fade vào; transition không tính lại tiền hay winner.
+- Victory SFX vẫn chỉ phát theo result overlay thật, không nhân đôi.
+- Lobby, Setup và board label chuyển sang 0.1.39.
 
 EVENT AUDIO
 - victory: khi bảng kết quả thật xuất hiện.
@@ -56,6 +56,7 @@ RETAINED FEATURES / FIXES
 - Roll For Order: điểm D6 cao đi trước, hòa thì chỉ nhóm hòa đổ lại; player ID/face/màu không đổi.
 - Job Hub bắt buộc dừng; 3 nghề A/B/C; 1–2 → A, 3–4 → B, 5–6 → C.
 - Job được quyết định bằng XÚC XẮC JOB, không click chọn nghề trực tiếp.
+- Choice SFX phủ Route/Card/Target/Tactical/Setup/Settings cùng các điểm đã có từ trước.
 
 CONTROLS
 - Khi tới lượt người chơi, click trực tiếp xúc xắc giữa bàn để roll.
