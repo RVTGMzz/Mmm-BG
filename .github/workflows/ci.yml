@@ -119,18 +119,20 @@ jobs:
         run: npm run test:draft-d-ui-fix
       - name: 0.1.53 left-right forward branching and true full-map review
         run: npm run test:branching-053
+      - name: 0.1.54 deterministic AUTO MANUAL branch sandbox
+        run: npm run test:preview-branch-mode-054
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.53 branching full-map guide to package
-        run: cp docs/PLAYTEST_0.1.53_BRANCHING_FULL_MAP.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.54 AUTO branch sandbox guide to package
+        run: cp docs/PLAYTEST_0.1.54_AUTO_BRANCH_SANDBOX.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.53 branching full-map preview build
+      - name: Upload MVP 0.1.54 AUTO branch sandbox build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.53-branching-full-map
+          name: mememe-playtest-0.1.54-auto-branch-sandbox
           path: dist
           if-no-files-found: error
           retention-days: 14
