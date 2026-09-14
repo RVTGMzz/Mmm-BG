@@ -1,91 +1,76 @@
 # MVP 0.1.48 Progress
 
-Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN / HANDOFF READY**
+Status: **PASS / RUNTIME GATE CLOSED / PLAYTEST ACCEPTED**
+
+Acceptance date: **2026-09-14**
+
+Acceptance record: `docs/MVP_0.1.48_RUNTIME_ACCEPTANCE.md`
 
 ## Scope
 
-0.1.48 is a focused runtime bugfix pass based on direct playtest feedback. It does not add new gameplay rules.
+0.1.48 was a focused runtime bugfix pass based on direct playtest feedback. It did not add new gameplay rules.
 
-## Fixed / changed
+## Accepted fixes
 
 ### Money SFX ownership
 
-`TurnStakesBoardScene` now inspects fresh authoritative events before playing packet-level coin audio.
+Presentation-owned economy moments suppress premature packet-level coin audio while the visible landing/event presentation owns the cue.
 
-Presentation-owned economy events suppress the immediate packet coin cue:
+Covered presentation-owned event types include:
 
 - money `tile_land`;
 - `ready_pass`;
 - `news`;
 - `card_play`.
 
-The visible landing/event presentation remains the audio owner for those moments. Economy updates without a presentation owner, such as Mini Game payout, may still use the packet-level coin cue.
-
-Goal: no result-spoiling coin sound before movement finishes, and no duplicate coin sound on landing.
+Mini Game payout may still use packet-level money audio because it has no money-tile landing owner.
 
 ### Roll For Order D6 face
 
-New wrapper: `src/scenes/TurnOrderScene048.ts`.
-
-The authoritative protocol remains unchanged. The only visual fix is the settled D6 frame: instead of fixed Unicode emoji `🎲`, it now uses the correct `⚀..⚅` glyph corresponding to the host-authoritative result.
+`src/scenes/TurnOrderScene048.ts` keeps the host-authoritative result and replaces the misleading fixed `🎲` settled frame with the matching `⚀..⚅` face plus numeric result.
 
 ### Mini Game BGM isolation
 
-`bgmController.playRound()` no longer maps board round 2 to `city_silly`.
+Normal board progression no longer selects `03_City_Silly.ogg`.
 
-`03_City_Silly.ogg` is reserved for `playMiniGame()` only. The Mini Game overlay still restores its previous track on exit.
+That track remains reserved for actual Mini Game presentation and restores the prior board track afterward.
 
 ### Token snap-back guard
 
-New pure helper: `src/ui/movementVisualPolicy.ts`.
+`src/ui/movementVisualPolicy.ts` and `src/scenes/CareerMinigameBoardScene048.ts` prevent duplicate/stale queued `move_step` presentation from dragging an already-advanced token backward.
 
-New runtime wrapper: `src/scenes/CareerMinigameBoardScene048.ts`.
+The policy remains presentation-only. Authoritative node state, gameplay RNG, replay and checksum data are unchanged.
 
-Before a queued `move_step` tween runs, the presentation checks the token's current screen position against that event's expected from/to node coordinates:
+### Legacy-card naming correction
 
-- at from-node -> animate;
-- already at to-node -> duplicate, ignore;
-- elsewhere -> stale/out-of-order, ignore.
+The old Tiên Tri / Phép Thuật screenshots are references for effect/content analysis only.
 
-This prevents a delayed presentation event from dragging a token back to an earlier node after the authoritative state and visible token have already advanced.
+Current names remain:
 
-No authoritative node state, gameplay RNG, replay command or checksum data is changed.
+- **TIN TỨC**
+- **LÁ BÀI**
 
-### Corrected legacy-card interpretation
+The reference images are not runtime assets for 0.1.48.
 
-The supplied Tiên Tri / Phép Thuật images were reference material from the older game for effect/content analysis, not a request to rename current systems.
+## Regression coverage
 
-The active 0.1.48 runtime therefore bypasses the 0.1.47 visual rename wrapper and returns to the validated 0.1.46 gameplay/UI chain:
+`tests/bugfix-pass-048.ts` covers:
 
-- **TIN TỨC** remains the current board/news system name;
-- **LÁ BÀI** remains the current card system name;
-- `CardHandPicker` is restored to the pre-0.1.47 wording/layout;
-- 0.1.47 HOST/CLIENT presentation parity remains retained as a version-agnostic regression.
-
-Reference images remain external visual/content references and are not persisted as runtime assets in this milestone.
-
-## Regression
-
-New `tests/bugfix-pass-048.ts` validates:
-
-- valid move step animates;
-- duplicate destination is ignored;
-- stale/out-of-order move step is ignored;
-- small screen-position drift around from-node is tolerated;
-- board rounds never select `city_silly`;
-- Mini Game path still selects `city_silly`;
-- packet money cue is suppressed for presentation-owned economy events;
-- money landing presentation retains the event-aligned coin cue;
-- Roll For Order final visual uses the real D6 face;
-- active runtime uses 0.1.48 board + Turn Order wrappers;
-- 0.1.48 bypasses the misunderstood 0.1.47 rename without touching gameplay authority;
-- visible Card vocabulary is restored.
+- valid / duplicate / stale movement-step classification;
+- screen-position tolerance;
+- board-vs-Mini-Game BGM selection;
+- money cue ownership;
+- event-aligned landing cue;
+- Roll For Order final D6 face;
+- 0.1.48 packaged scene wiring;
+- bypass of the mistaken 0.1.47 rename;
+- restored Card vocabulary.
 
 ## Retained invariants
 
 - Remote Roll For Order remains host-authoritative.
-- Multiplayer Job Hub remains host-authoritative.
-- Mandatory Job Hub stop and Job D6 `1–2 A / 3–4 B / 5–6 C` remain unchanged.
+- Multiplayer Job Hub remains host-authoritative and spectator-safe.
+- Job mapping remains `1–2 A / 3–4 B / 5–6 C`.
 - Starting wallet remains `200 B$`.
 - One-lap scoring and READY salary remain unchanged.
 - Mini Game payout remains host-system owned and one-shot.
@@ -94,14 +79,14 @@ New `tests/bugfix-pass-048.ts` validates:
 - Four approved BGM files and eight supplied SFX remain checksum-protected.
 - Final result/podium chain remains unchanged.
 - Original face files remain local.
-- Jail deep mechanics remain undefined.
-- PR #1 remains unmerged and Draft.
+- Jail/Hospital deep mechanics remain undefined.
+- PR #1 remains Draft/Open and unmerged.
 
-## Validated checkpoint
+## Validated playable checkpoint
 
 GitHub Actions run: `34814789556` / run `#1441`
 
-Validated runtime/package SHA:
+Runtime/package SHA:
 `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 
 Artifact:
@@ -113,18 +98,27 @@ Artifact ID:
 Artifact size:
 `8,566,826 bytes`
 
-Digest:
-`sha256:d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
+SHA256:
+`d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-Run URL:
-`https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34814789556`
+Full CI passed build/typecheck, deterministic replay/lockstep, host-client/two-tab authority, retained gameplay/presentation regressions, Remote Roll, Multiplayer Job Hub, presentation parity, 0.1.48 bugfix regression, image bounds, package verification, guide copy and artifact upload.
 
-Full CI passed build/typecheck, deterministic replay/lockstep, host-client/two-tab authority, all retained gameplay/presentation regressions, Remote Roll, Multiplayer Job Hub, presentation parity, the new 0.1.48 bugfix regression, image bounds, package verification, guide copy and artifact upload.
+## Runtime acceptance
 
-## New-chat handoff
+Ron explicitly instructed on 2026-09-14 that the 0.1.48 runtime gate should be treated as **PASS**.
 
-0.1.48 is ready to continue in a fresh chat. The runtime checkpoint above remains the rollback/source-of-truth build even though later documentation commits may advance the branch HEAD.
+This is user playtest acceptance and permits progression to 0.1.49. It is not a claim that the assistant independently executed the browser runtime in its own environment.
 
-First priority in the next chat is **runtime feedback**, especially repeated turns for the same player to verify that token snap-back is gone in real play. If it still reproduces, collect/use the in-game bug report and trace the exact event/state sequence instead of adding another coordinate hard-snap.
+Do not reopen the token snap-back gate unless new reproducible feedback appears.
 
-If the 0.1.48 fixes hold in runtime, the recommended next milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật reference cards as effect ideas for the current **TIN TỨC / LÁ BÀI** systems. Do not rename the current systems and do not implement jail/skip-turn/bail/escape mechanics without Ron defining those rules first.
+## Next milestone
+
+**MVP 0.1.49 — Legacy Effect Audit**
+
+See:
+`docs/MVP_0.1.49_LEGACY_EFFECT_AUDIT.md`
+
+In parallel, continue:
+`docs/MAP_ARCHITECTURE_FINAL.md`
+
+Keep the current names `TIN TỨC / LÁ BÀI` and do not invent undefined Jail/Hospital mechanics.
