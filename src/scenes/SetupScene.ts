@@ -40,7 +40,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.40', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.41', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -73,7 +73,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.40: toàn bộ runtime dùng tiến độ 🏁 x/4; metadata vòng/lượt cũ không còn được dùng làm luật hiển thị.</p>
+      <p id="setup-status" class="setup-status">0.1.41: đủ 1 vòng/người → khóa B$ authoritative → reveal bục 4 người; bằng B$ thì cùng hạng.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
