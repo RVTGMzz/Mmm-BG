@@ -1,6 +1,6 @@
 # MVP 0.1.48 Progress
 
-Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN**
+Status: **ACTIVE / PLAYTEST PACKAGED / FULL CI GREEN / HANDOFF READY**
 
 ## Scope
 
@@ -95,7 +95,7 @@ New `tests/bugfix-pass-048.ts` validates:
 - Final result/podium chain remains unchanged.
 - Original face files remain local.
 - Jail deep mechanics remain undefined.
-- PR #1 remains unmerged.
+- PR #1 remains unmerged and Draft.
 
 ## Validated checkpoint
 
@@ -120,3 +120,11 @@ Run URL:
 `https://github.com/ronvotri/MeMeMe-BoardGame/actions/runs/34814789556`
 
 Full CI passed build/typecheck, deterministic replay/lockstep, host-client/two-tab authority, all retained gameplay/presentation regressions, Remote Roll, Multiplayer Job Hub, presentation parity, the new 0.1.48 bugfix regression, image bounds, package verification, guide copy and artifact upload.
+
+## New-chat handoff
+
+0.1.48 is ready to continue in a fresh chat. The runtime checkpoint above remains the rollback/source-of-truth build even though later documentation commits may advance the branch HEAD.
+
+First priority in the next chat is **runtime feedback**, especially repeated turns for the same player to verify that token snap-back is gone in real play. If it still reproduces, collect/use the in-game bug report and trace the exact event/state sequence instead of adding another coordinate hard-snap.
+
+If the 0.1.48 fixes hold in runtime, the recommended next milestone is **0.1.49 Legacy Effect Audit**: analyze the supplied old Tiên Tri / Phép Thuật reference cards as effect ideas for the current **TIN TỨC / LÁ BÀI** systems. Do not rename the current systems and do not implement jail/skip-turn/bail/escape mechanics without Ron defining those rules first.
