@@ -140,7 +140,7 @@ Feel:
 - social/nightlife hints without becoming the full night district yet.
 
 Priority:
-1. Mini Game M21 / Entertainment Dome;
+1. Mini Game M18 / Entertainment Dome;
 2. curved east-side route;
 3. TIN TỨC / LÁ BÀI readability among richer scenery.
 
@@ -148,12 +148,12 @@ Priority:
 Feel:
 - civic infrastructure mixed with louder public drama;
 - stronger structural massing around Jail;
-- second Mini Game landmark keeps the district from becoming visually monotone.
+- slightly calmer node rhythm after the D3 Mini Game burst.
 
 Priority:
 1. Jail branch silhouette;
 2. M28/M29 main-route anchors;
-3. M31 Mini Game stage;
+3. Civic Square / breathing space near M31;
 4. clear descent toward D5.
 
 ### D5 — Đêm thành phố / Hồi vòng
@@ -163,9 +163,10 @@ Feel:
 - visual pull back toward READY.
 
 Priority:
-1. route direction;
-2. skyline/night-market identity;
-3. anticipation of READY return.
+1. Mini Game M38 / Night Mini Game Stage;
+2. route direction toward READY;
+3. skyline/night-market identity;
+4. anticipation of READY return.
 
 ## Landmark priority tiers
 
@@ -174,13 +175,14 @@ Priority:
 
 ### L2 — district anchor
 - Job Hub Tower;
-- Entertainment Dome;
+- Entertainment Dome at M18;
 - Civic/Jail Complex;
 - Night Market Skyline.
 
 ### L3 — secondary/local anchor
 - Hospital Complex;
-- East Mini Game Stage;
+- Civic Square;
+- Night Mini Game Stage at M38;
 - smaller decorative district cues.
 
 Only one L1/L2 landmark should dominate a normal close-follow frame at a time. Avoid two giant landmarks fighting behind the active token.
@@ -238,7 +240,7 @@ Exact tween duration/easing remains runtime tuning work.
 ## Draft A2 review questions
 
 1. Is the four-tier node hierarchy visually strong enough, or should Money nodes remain V0 while only TIN TỨC/LÁ BÀI use V1?
-2. Should M31 remain a second Mini Game landmark in D4?
+2. Does D5 need the M38 Mini Game landmark to be L2 instead of L3 after art prototyping?
 3. Does D5 need one additional non-gameplay landmark near M39/M40 to foreshadow READY?
 4. Should Hospital be L2 rather than L3 once its gameplay rules are known?
 5. Does the final art want a more playful toy-city look or a more coherent stylized city look? This affects materials, not topology.
