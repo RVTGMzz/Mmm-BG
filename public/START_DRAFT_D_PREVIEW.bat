@@ -1,13 +1,14 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title MeMeMe Draft D Preview 0.1.53
+title MeMeMe Draft D Preview 0.1.54
 echo.
 echo ========================================
-echo   MeMeMe DRAFT D PREVIEW 0.1.53
+echo   MeMeMe DRAFT D PREVIEW 0.1.54
 echo ========================================
 echo.
-echo Dang mo ban test map re trai/phai + camera gan + UI co dinh...
+echo AUTO BRANCH mac dinh: game tu chon Re Trai / Re Phai theo seed co dinh.
+echo Trong game co the bam NHANH: AUTO de doi sang THU CONG khi can test rieng.
 echo KHONG mo index.html truc tiep bang file:// nhe.
 echo.
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0serve-playtest.ps1" -DraftDPreview
