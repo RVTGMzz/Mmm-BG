@@ -3,8 +3,14 @@ import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import {
   miniGameRewardForRank,
+  miniGameRewardType059,
+  type MiniGameBaseRewardType,
   type MiniGameRewardType,
 } from '../core/minigameRewards';
+import {
+  miniGameRewardCopy059,
+  miniGameSlot059,
+} from '../core/miniGameSlots059';
 import {
   minigameModeForActivePlayers,
   resolveMajorityMinorityRound,
@@ -58,7 +64,7 @@ function rpsLabel(choice: RpsChoice): string {
   return 'KÉO';
 }
 
-function rewardTitle(gameType: MiniGameRewardType): string {
+function rewardTitle(gameType: MiniGameBaseRewardType): string {
   return gameType === 'rps' ? 'OẲN TÙ XÌ' : 'NHIỀU RA ÍT BỊ';
 }
 
@@ -66,18 +72,23 @@ export function startMiniGameOverlay(
   scene: Phaser.Scene,
   players: readonly PlayerState[],
   eventSeq: number,
+  contentId?: string,
 ): MiniGameOverlayRun {
+  const slot = miniGameSlot059(contentId);
   const root = scene.add.container(640, 360).setDepth(990);
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
-  const panel = scene.add.rectangle(0, 0, 900, 520, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
-  const title = scene.add.text(0, -215, '🎮 MINI GAME', {
-    fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#202020',
+  const panel = scene.add.rectangle(0, 0, 900, 540, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
+  const title = scene.add.text(0, -224, `${slot.icon} ${slot.title}`, {
+    fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#202020',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -174, '', {
-    fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#6d655b', align: 'center', fixedWidth: 760,
+  const subtitle = scene.add.text(0, -184, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
+    fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#6d655b', align: 'center', fixedWidth: 790,
   }).setOrigin(0.5);
-  const stage = scene.add.container(0, 15);
-  root.add([backdrop, panel, title, subtitle, stage]);
+  const stake = scene.add.text(0, -156, `NHIỀU RA ÍT BỊ: ${miniGameRewardCopy059(slot.contentId, 'majority_minority')}`, {
+    fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#5d4773', align: 'center', fixedWidth: 780,
+  }).setOrigin(0.5);
+  const stage = scene.add.container(0, 22);
+  root.add([backdrop, panel, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
@@ -137,7 +148,8 @@ export function startMiniGameOverlay(
     winnerId?: number,
   ) => {
     clearStage();
-    subtitle.setText('1 VS 1 • OẲN TÙ XÌ • CPU VS CPU CŨNG DIỄN ĐỦ');
+    subtitle.setText(`${slot.title} • 1 VS 1 • OẲN TÙ XÌ`);
+    stake.setText(`OẲN TÙ XÌ: ${miniGameRewardCopy059(slot.contentId, 'rps')}`);
 
     const leftName = scene.add.text(-235, -108, a.name, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#202020', fixedWidth: 240, align: 'center',
@@ -210,17 +222,19 @@ export function startMiniGameOverlay(
     await wait(tied ? 900 : 1150);
   };
 
-  const showRanking = async (rankingPlayerIds: readonly number[], gameType: MiniGameRewardType) => {
+  const showRanking = async (rankingPlayerIds: readonly number[], baseType: MiniGameBaseRewardType) => {
     if (rankingPlayerIds.length === 0) return;
     clearStage();
-    subtitle.setText(`${rewardTitle(gameType)} • THƯỞNG B$ THEO HẠNG`);
+    const payoutType = miniGameRewardType059(baseType, slot.contentId);
+    subtitle.setText(`${slot.title} • ${rewardTitle(baseType)} • ${slot.identity}`);
+    stake.setText(`THƯỞNG: ${miniGameRewardCopy059(slot.contentId, baseType)}`);
     const heading = scene.add.text(0, -98, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#202020',
     }).setOrigin(0.5);
     const medals = ['🥇', '🥈', '🥉', '4️⃣'];
     const rows = rankingPlayerIds.map((id, index) => {
       const player = playerById(id);
-      const reward = miniGameRewardForRank(gameType, index + 1);
+      const reward = miniGameRewardForRank(payoutType, index + 1);
       return `${medals[index] ?? `${index + 1}.`}  ${player?.name ?? `P${id + 1}`}  •  ${reward > 0 ? `+${reward}` : '0'} B$`;
     }).join('\n');
     const body = scene.add.text(0, 38, rows, {
@@ -237,7 +251,7 @@ export function startMiniGameOverlay(
     const a = playerById(finalists[0] ?? -1);
     const b = playerById(finalists[1] ?? -1);
     if (!a || !b) return undefined;
-    subtitle.setText('CÒN 1 VS 1 • TỰ ĐỘNG CHUYỂN SANG OẲN TÙ XÌ');
+    subtitle.setText(`${slot.title} • CÒN 1 VS 1 • OẲN TÙ XÌ`);
 
     for (let round = 1; round <= 8; round += 1) {
       const choose = async (player: PlayerState): Promise<RpsChoice> => {
@@ -267,25 +281,27 @@ export function startMiniGameOverlay(
   const runTournament = async (): Promise<MiniGameOutcome> => {
     let activeIds = players.map((player) => player.id);
     const eliminationOrder: number[] = [];
-    const gameType: MiniGameRewardType = minigameModeForActivePlayers(activeIds) === 'rps'
+    const baseType: MiniGameBaseRewardType = minigameModeForActivePlayers(activeIds) === 'rps'
       ? 'rps'
       : 'majority_minority';
+    const payoutType = miniGameRewardType059(baseType, slot.contentId);
 
     if (activeIds.length <= 1) {
       const rankingPlayerIds = [...activeIds];
-      await showResult('🏆 MINI GAME', `${playerById(activeIds[0] ?? -1)?.name ?? 'Người chơi'} thắng mặc định.`);
-      await showRanking(rankingPlayerIds, gameType);
-      return { gameType, rankingPlayerIds };
+      await showResult('🏆 THẮNG MẶC ĐỊNH', `${playerById(activeIds[0] ?? -1)?.name ?? 'Người chơi'} là người duy nhất đủ điều kiện.`);
+      await showRanking(rankingPlayerIds, baseType);
+      return { gameType: payoutType, rankingPlayerIds };
     }
 
-    if (gameType === 'rps') {
+    if (baseType === 'rps') {
       const final = await runRpsFinal(activeIds, 0);
       const rankingPlayerIds = final ? [final.winnerId, final.loserId] : [...activeIds];
-      await showRanking(rankingPlayerIds, gameType);
-      return { gameType, rankingPlayerIds };
+      await showRanking(rankingPlayerIds, baseType);
+      return { gameType: payoutType, rankingPlayerIds };
     }
 
-    subtitle.setText('NHIỀU RA ÍT BỊ • Chọn SẤP hoặc NGỬA. Phe thiểu số bị loại, chơi tiếp tới 1 VS 1.');
+    subtitle.setText(`${slot.title} • NHIỀU RA ÍT BỊ • phe thiểu số bị loại`);
+    stake.setText(`THƯỞNG: ${miniGameRewardCopy059(slot.contentId, 'majority_minority')}`);
     let round = 0;
     let safety = 0;
     while (activeIds.length > 2 && safety < 16) {
@@ -325,21 +341,21 @@ export function startMiniGameOverlay(
       rankingPlayerIds = final
         ? [final.winnerId, final.loserId, ...[...eliminationOrder].reverse()]
         : [...activeIds, ...[...eliminationOrder].reverse()];
-      await showRanking(rankingPlayerIds, gameType);
-      return { gameType, rankingPlayerIds };
+      await showRanking(rankingPlayerIds, baseType);
+      return { gameType: payoutType, rankingPlayerIds };
     }
 
     if (activeIds.length === 1) {
       rankingPlayerIds = [activeIds[0]!, ...[...eliminationOrder].reverse()];
       await showResult('🏆 NGƯỜI THẮNG MINI GAME!', `${playerById(activeIds[0]!)?.name ?? '???'} thắng.`);
-      await showRanking(rankingPlayerIds, gameType);
-      return { gameType, rankingPlayerIds };
+      await showRanking(rankingPlayerIds, baseType);
+      return { gameType: payoutType, rankingPlayerIds };
     }
 
     await showResult('🌀 HÒA QUÁ NHIỀU', 'Mini game tự kết thúc để không kẹt trận.');
     rankingPlayerIds = [...activeIds, ...[...eliminationOrder].reverse()];
-    await showRanking(rankingPlayerIds, gameType);
-    return { gameType, rankingPlayerIds };
+    await showRanking(rankingPlayerIds, baseType);
+    return { gameType: payoutType, rankingPlayerIds };
   };
 
   const done = runTournament().then((outcome) => {
