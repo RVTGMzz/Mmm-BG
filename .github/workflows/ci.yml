@@ -135,18 +135,20 @@ jobs:
         run: npm run test:job-minigame-depth-059
       - name: 0.1.60 pacing economy finish-lock
         run: npm run test:pacing-economy-060
+      - name: 0.1.61 deterministic local playtest report
+        run: npm run test:playtest-telemetry-061
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.60 pacing economy guide to package
-        run: cp docs/PLAYTEST_0.1.60_PACING_ECONOMY.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.61 playtest report guide to package
+        run: cp docs/PLAYTEST_0.1.61_PLAYTEST_REPORT.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.60 pacing economy build
+      - name: Upload MVP 0.1.61 playtest report build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.60-pacing-economy
+          name: mememe-playtest-0.1.61-playtest-report
           path: dist
           if-no-files-found: error
           retention-days: 14
