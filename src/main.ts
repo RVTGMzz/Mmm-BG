@@ -16,6 +16,10 @@ import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
 import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
 import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode054';
 
+// Legacy regression breadcrumb: before 0.1.62 the launcher used
+// CareerMinigameBoardScene061 as ActiveBoardScene. 0.1.62 extends 0.1.61 directly,
+// so all 0.1.58–0.1.61 depth/telemetry layers remain in the active runtime chain.
+
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
 
