@@ -1,3 +1,4 @@
+import { economyActivePlayers060, isEconomyActivePlayer060 } from './pacingEconomy060';
 import { specialHoldNodeId057 } from './specialLocations057';
 import type { PlayerState, SpecialHoldLocation } from './types';
 
@@ -89,7 +90,7 @@ function applyMoneyDelta(player: PlayerState, requestedDelta: number): number {
 
 function freeOtherPlayers(players: PlayerState[], subjectId: number): PlayerState[] {
   return players
-    .filter((player) => player.id !== subjectId && player.specialHold === undefined)
+    .filter((player) => player.id !== subjectId && player.specialHold === undefined && isEconomyActivePlayer060(player))
     .slice()
     .sort((left, right) => left.id - right.id);
 }
@@ -101,6 +102,14 @@ export function applyNewsEffect(
 ): NewsResolution {
   switch (news.effect.type) {
     case 'money_delta_self': {
+      if (!isEconomyActivePlayer060(subject)) {
+        return {
+          amount: 0,
+          affectedPlayerIds: [],
+          deltas: {},
+          summary: `${subject.name} đã về đích nên B$ cuối cùng không thay đổi.`,
+        };
+      }
       const delta = applyMoneyDelta(subject, news.effect.amount);
       const verb = delta >= 0 ? 'nhận' : 'mất';
       return {
@@ -112,9 +121,10 @@ export function applyNewsEffect(
     }
 
     case 'money_delta_all': {
+      const activePlayers = economyActivePlayers060(players);
       const deltas: Record<number, number> = {};
       let total = 0;
-      for (const player of players) {
+      for (const player of activePlayers) {
         const delta = applyMoneyDelta(player, news.effect.amount);
         deltas[player.id] = delta;
         total += Math.abs(delta);
@@ -123,15 +133,26 @@ export function applyNewsEffect(
       const verb = news.effect.amount >= 0 ? 'nhận' : 'mất';
       return {
         amount: total,
-        affectedPlayerIds: players.map((player) => player.id),
+        affectedPlayerIds: activePlayers.map((player) => player.id),
         deltas,
-        summary: `Cả bàn ${verb} ${Math.abs(Math.floor(news.effect.amount))}B$ mỗi người (tổng ${total}B$).`,
+        summary: activePlayers.length === players.length
+          ? `Cả bàn ${verb} ${Math.abs(Math.floor(news.effect.amount))}B$ mỗi người (tổng ${total}B$).`
+          : `Người còn đang đua ${verb} ${Math.abs(Math.floor(news.effect.amount))}B$ mỗi người; người đã về đích giữ nguyên B$ (tổng ${total}B$).`,
       };
     }
 
     case 'normalize_to_average_self': {
-      const average = players.length > 0
-        ? Math.floor(players.reduce((sum, player) => sum + player.money, 0) / players.length)
+      const activePlayers = economyActivePlayers060(players);
+      if (!isEconomyActivePlayer060(subject)) {
+        return {
+          amount: 0,
+          affectedPlayerIds: [],
+          deltas: {},
+          summary: `${subject.name} đã về đích nên B$ cuối cùng không thay đổi.`,
+        };
+      }
+      const average = activePlayers.length > 0
+        ? Math.floor(activePlayers.reduce((sum, player) => sum + player.money, 0) / activePlayers.length)
         : subject.money;
       const before = subject.money;
       subject.money = Math.max(0, average);
@@ -152,7 +173,7 @@ export function applyNewsEffect(
         return {
           affectedPlayerIds: [subject.id],
           deltas: {},
-          summary: 'Không còn đối thủ tự do hợp lệ nên sự kiện không bắt được ai.',
+          summary: 'Không còn đối thủ đang đua và tự do hợp lệ nên sự kiện không bắt được ai.',
         };
       }
       const offset = Math.abs(Math.floor(news.effect.targetOffset));
