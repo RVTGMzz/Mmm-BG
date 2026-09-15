@@ -25,6 +25,29 @@ Human feedback driving this build:
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
+### 0.1.64 Card-target dice hotfix
+
+Ron reported a UI bug from runtime: while a Card target picker was open, the large direct dice could reappear behind the modal because the authoritative turn still remained `PRE_ROLL_ACTION`.
+
+Hotfix behavior:
+- while `cardPickerOpen === true`, the direct dice is hidden and non-clickable;
+- this covers the whole Card interaction chain: hand picker, target picker and tactical-choice picker;
+- after the Card interaction closes, the dice may return only if the normal direct-dice policy still allows rolling;
+- no gameplay authority, RNG, Card effect, movement, camera, economy or board rule is changed.
+
+Implementation:
+- `src/ui/directDicePolicy.ts` now treats an open Card picker as a hard visibility block;
+- `src/scenes/DirectDiceBoardScene.ts` passes `cardPickerOpen` into both render sync and pointer validation;
+- `tests/direct-dice-030.ts` locks the regression: `PRE_ROLL_ACTION + cardPickerOpen=true -> dice hidden`.
+
+Hotfix code candidate before this documentation update:
+- HEAD `13ea3d8638ca43da399bab93ef7aa54a007002eb`;
+- push run `#2350` / `34992716873`;
+- full suite **65/65 PASS**;
+- artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
+- artifact ID `10405984035`;
+- SHA256 `b72a2cf064ec13c222441bd83ded3fb1b87e8f36b79b17379d4f017a046b57b5`.
+
 ## Runtime
 
 `CareerMinigameBoardScene064 as ActiveBoardScene`
@@ -131,6 +154,7 @@ Active exact sentinels:
 
 ## Green code candidate before docs update
 
+Original 0.1.64 candidate:
 - HEAD `5d8f83b8ed3a009679e64bec62321d9743bdfd00`;
 - push run `#2340` / `34990342825`;
 - artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
@@ -139,11 +163,15 @@ Active exact sentinels:
 - SHA256 `e88e4fe9c4dc7e6976d13896757d89f03665dbba96ebe7ab87f7ecb46070edb8`;
 - **65/65 meaningful CI steps PASS**.
 
+The Card-target dice hotfix has a newer green candidate listed above and supersedes this artifact for manual testing.
+
 ## Manual check
 
 Use `docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md`.
 
 Verify especially:
+- open a Card that requires another-player target: **no direct dice may appear behind the target modal**;
+- cancel/finish Card selection: dice returns only when the turn is actually roll-eligible;
 - board feels spacious and enlarged spaces do not touch;
 - TÙ/J1/J2/J3 and BV/H1/H2/H3 are clearly separated;
 - successful release stays at TÙ/BV until fresh movement D6;
