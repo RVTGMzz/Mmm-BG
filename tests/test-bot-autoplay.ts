@@ -46,7 +46,6 @@ function runAutoplay(seed: number): BotRunResult {
   let rolls = 0;
   let releaseRolls = 0;
   let cards = 0;
-  let branches = 0;
 
   while (authority.state.turn.turnNumber <= DEMO_TURN_LIMIT && safety < 160) {
     safety += 1;
@@ -58,13 +57,16 @@ function runAutoplay(seed: number): BotRunResult {
       decision,
       `CPU had no decision at turn ${authority.state.turn.turnNumber} phase ${authority.state.turn.phase}.`,
     );
+    assert(
+      decision.type !== 'choose_branch',
+      `0.1.62 must not expose BRANCH_CHOICE to CPU; HOST should auto-route before the next decision (${decision.reason}).`,
+    );
 
     if (decision.type === 'roll') {
       rolls += 1;
       if (actor.specialHold) releaseRolls += 1;
     }
     if (decision.type === 'play_card') cards += 1;
-    if (decision.type === 'choose_branch') branches += 1;
 
     const intent: ClientIntent = {
       intentId: `cpu-${seed}-${safety}`,
@@ -80,6 +82,10 @@ function runAutoplay(seed: number): BotRunResult {
       result.status === 'accepted',
       `CPU intent rejected at step ${safety}: ${result.reason ?? decision.reason}`,
     );
+    assert(
+      authority.state.turn.phase !== 'BRANCH_CHOICE',
+      '0.1.62 HOST returned a manual branch pause after an accepted CPU intent.',
+    );
   }
 
   assert(safety < 160, `CPU autoplay exceeded safety limit for seed ${seed}.`);
@@ -91,6 +97,10 @@ function runAutoplay(seed: number): BotRunResult {
     authority.state.turn.phase === 'PRE_ROLL_ACTION',
     `CPU autoplay ended in unsafe phase ${authority.state.turn.phase}.`,
   );
+
+  const branches = authority.source.commandLog.filter(
+    (command) => command.type === 'choose_branch' && command.data.automatic === true,
+  ).length;
 
   return {
     checksum: computeMatchChecksum(authority.state),
@@ -159,9 +169,9 @@ assert(totalRolls >= baseTurns, `Expected at least one roll per turn (${baseTurn
 assert(totalRolls <= baseTurns * 2, `Special release flow produced too many rolls: ${totalRolls} for ${baseTurns} turns.`);
 assert(totalReleaseRolls > 0, 'CPU stress fixture never exercised a Jail/Hospital release roll.');
 assert(totalCards > 0, 'CPU stress fixture never exercised play_card.');
-assert(totalBranches > 0, 'CPU stress fixture never exercised choose_branch.');
+assert(totalBranches > 0, 'CPU stress fixture never exercised a HOST automatic parity branch.');
 
 console.log(
-  `[test-bot-ci] PASS matches=${MATCHES} turns=${baseTurns} rolls=${totalRolls} releaseRolls=${totalReleaseRolls} cards=${totalCards} branches=${totalBranches} maxCommands=${maxCommands} deterministic=${deterministicA.checksum}`,
+  `[test-bot-ci] PASS matches=${MATCHES} turns=${baseTurns} rolls=${totalRolls} releaseRolls=${totalReleaseRolls} cards=${totalCards} autoBranches=${totalBranches} maxCommands=${maxCommands} deterministic=${deterministicA.checksum}`,
 );
-console.log('[test-bot-ci] probes: normal-roll PASS • special-release PASS • card-use PASS • random-target-no-opponent fallback PASS • branch-choice PASS • no-deadlock PASS • same-seed PASS');
+console.log('[test-bot-ci] probes: normal-roll PASS • special-release PASS • card-use PASS • random-target-no-opponent fallback PASS • HOST parity branch PASS • no-manual-branch-pause PASS • no-deadlock PASS • same-seed PASS');
