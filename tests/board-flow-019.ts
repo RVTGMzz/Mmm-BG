@@ -11,6 +11,7 @@ import type { BrowserSessionConfig } from '../src/core/browserSession';
 import type { CardDefinition } from '../src/core/cards';
 import type { MatchEvent } from '../src/core/matchState';
 import type { NewsDefinition } from '../src/core/news';
+import { PACING_060 } from '../src/core/pacingEconomy060';
 import type { BoardDefinition } from '../src/core/types';
 import { presentationTimingForModel } from '../src/ui/presentationFlowPolicy';
 import { buildPresentationModel } from '../src/ui/presentationModel';
@@ -104,20 +105,21 @@ assert.equal(humanTiming.autoCloseMs, undefined, 'player-related solo event must
 
 const cpuTiming = presentationTimingForModel(cpuModel, oneHumanThreeCpu, 4, 1200);
 assert.equal(cpuTiming.mode, 'auto', 'CPU-only event should auto-close');
-assert(cpuTiming.skipAfterMs >= 3000, 'CPU notice should not be skippable before 3 seconds');
-assert((cpuTiming.autoCloseMs ?? Infinity) <= 6000, 'CPU notice must close within 6 seconds');
+assert(cpuTiming.skipAfterMs >= PACING_060.passiveSkipMinMs, 'CPU notice must respect the 0.1.60 passive skip floor');
+assert((cpuTiming.autoCloseMs ?? Infinity) <= PACING_060.passiveAutoMaxMs, 'CPU notice must respect the 0.1.60 passive cap');
 
 const hotseatTiming = presentationTimingForModel(humanModel, hotseat, 4, 1200);
 assert.equal(hotseatTiming.mode, 'auto', 'human-vs-human/hotseat notice should not block forever');
-assert((hotseatTiming.autoCloseMs ?? Infinity) <= 6000, 'multiplayer notice must close within 6 seconds');
+assert((hotseatTiming.autoCloseMs ?? Infinity) <= PACING_060.passiveAutoMaxMs, 'multiplayer notice must respect the 0.1.60 passive cap');
 
 const hostTiming = presentationTimingForModel(humanModel, host, 4, 1200);
 assert.equal(hostTiming.mode, 'auto');
-assert((hostTiming.autoCloseMs ?? Infinity) <= 6000);
+assert((hostTiming.autoCloseMs ?? Infinity) <= PACING_060.passiveAutoMaxMs);
 
 const globalTiming = presentationTimingForModel(globalModel, oneHumanThreeCpu, 4, 4200);
 assert.equal(globalTiming.mode, 'auto', 'global event uses bounded display even when it includes the human');
 assert(globalTiming.skipAfterMs >= 4200, 'global event may only be skipped after its text is revealed');
-assert((globalTiming.autoCloseMs ?? Infinity) <= 10000, 'global/long event must stay under the 10 second cap');
+assert((globalTiming.autoCloseMs ?? Infinity) <= PACING_060.globalAutoMaxMs, 'global/long event must respect the 0.1.60 global cap');
+assert((globalTiming.autoCloseMs ?? 0) >= PACING_060.globalAutoMinMs, 'global/long event still needs minimum reading time');
 
-console.log('[board-flow-019] PASS dice → step movement + audience-aware 3s/6s/10s timing');
+console.log('[board-flow-019] PASS dice → step movement + audience-aware 0.1.60 pacing');
