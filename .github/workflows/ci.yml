@@ -145,18 +145,20 @@ jobs:
         env:
           OUTLIER_REPLAY_OUTPUT: dist/OUTLIER_REPLAY_0.1.61.2.txt
         run: npm run test:outlier-replay-0612
+      - name: 0.1.62 HOST parity branches and round tile readability
+        run: npm run test:random-branch-round-tiles-062
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.61.2 outlier replay guide to package
-        run: cp docs/PLAYTEST_0.1.61.2_OUTLIER_REPLAY.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.62 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.62_RANDOM_BRANCH_ROUND_TILES.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.61.2 outlier replay build
+      - name: Upload MVP 0.1.62 random branch round tile build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.61.2-outlier-replay
+          name: mememe-playtest-0.1.62-random-branch-round-tiles
           path: dist
           if-no-files-found: error
           retention-days: 14
