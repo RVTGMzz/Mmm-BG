@@ -1,3 +1,4 @@
+import { getOutgoingEdges, pickParityEdge } from './board';
 import {
   getValidTargets,
   pickRandomOtherTarget,
@@ -132,6 +133,41 @@ function replayCandidate(authority: HostAuthority, candidateSource: MatchState):
     state: replay.state,
     reason: replay.errors[0] ?? `Host replay consumed ${replay.consumedCommands}/${candidateSource.commandLog.length} commands.`,
   };
+}
+
+/**
+ * 0.1.62 turns branch choice into luck without changing the replay wire format.
+ * A human/client submits only the movement roll. If replay pauses at a fork, HOST
+ * derives LEFT/RIGHT from that authoritative D6 and appends the existing
+ * choose_branch command itself. This keeps old command streams replayable while
+ * removing manual route selection from live gameplay.
+ */
+function autoResolveParityBranches062(authority: HostAuthority): void {
+  let safety = 0;
+  while (authority.state.turn.phase === 'BRANCH_CHOICE') {
+    safety += 1;
+    if (safety > 4) throw new Error('0.1.62 auto branch safety limit exceeded.');
+
+    const actor = currentPlayer(authority.state);
+    if (!actor) throw new Error('0.1.62 auto branch cannot find current player.');
+    const outgoing = getOutgoingEdges(authority.runtime.board, actor.nodeId);
+    const roll = authority.state.turn.lastRoll ?? 0;
+    const edge = pickParityEdge(outgoing, roll);
+    if (!edge) throw new Error(`0.1.62 auto branch cannot resolve node ${actor.nodeId}.`);
+
+    const parity = Math.abs(Math.floor(roll)) % 2 === 0 ? 'even' : 'odd';
+    const command = makeCommand(authority, 'choose_branch', actor.id, {
+      to: edge.to,
+      automatic: true,
+      parity,
+    });
+    const candidateSource = sourceWithCommand(authority, command);
+    const replay = replayCandidate(authority, candidateSource);
+    if (!replay.accepted) {
+      throw new Error(`0.1.62 auto branch rejected at node ${actor.nodeId}: ${replay.reason ?? 'unknown replay error'}`);
+    }
+    commitCommand(authority, candidateSource, replay.state);
+  }
 }
 
 function validateIntentEnvelope(authority: HostAuthority, intent: ClientIntent): string | undefined {
@@ -307,6 +343,10 @@ export function submitClientIntent(authority: HostAuthority, intent: ClientInten
   }
 
   commitCommand(authority, candidateSource, replay.state);
+  if (intent.type === 'roll' && replay.waitingBranch) {
+    autoResolveParityBranches062(authority);
+  }
+
   const result = receipt(authority, intent, 'accepted', { command });
   authority.receipts.set(intent.intentId, result);
   return cloneReceipt(result);
