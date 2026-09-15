@@ -33,6 +33,7 @@ function canonicalMatchPayload(match: MatchState): string {
         jobId: player.jobId,
         jobLevel: player.jobLevel,
         jobStatus: player.jobStatus,
+        specialHold: player.specialHold,
       })),
     pendingJobOfferIds: match.pendingJobOfferIds ? [...match.pendingJobOfferIds] : undefined,
     pendingJobPlayerId: match.pendingJobPlayerId,
