@@ -1,3 +1,4 @@
+import { economyActivePlayers060, isEconomyActivePlayer060 } from './pacingEconomy060';
 import { specialHoldNodeId057 } from './specialLocations057';
 import type { FaceExpression } from './session';
 import type { PlayerState, SpecialHoldLocation } from './types';
@@ -107,8 +108,9 @@ export function drawWeightedCard(
   return enabled[enabled.length - 1];
 }
 
+/** Finished players have a locked final B$ score and leave the interactive target pool. */
 export function getValidTargets<T extends PlayerState>(players: T[], casterId: number): T[] {
-  return players.filter((player) => player.id !== casterId);
+  return players.filter((player) => player.id !== casterId && isEconomyActivePlayer060(player));
 }
 
 export function getValidTargetsForCard<T extends PlayerState>(
@@ -153,6 +155,9 @@ export function tacticalChoicePressureAmount(
 
 function requiredTarget(target: PlayerState | undefined, card: CardDefinition): PlayerState {
   if (!target) throw new Error(`Card ${card.id} requires a target.`);
+  if (!isEconomyActivePlayer060(target)) {
+    throw new Error(`Card ${card.id} cannot target ${target.name}: final B$ is already locked.`);
+  }
   return target;
 }
 
@@ -174,7 +179,7 @@ export function applyCardEffect(
     }
 
     case 'rich_tax': {
-      const resolvedTarget = target ?? pickRichestOtherTarget(players, caster.id);
+      const resolvedTarget = target ? requiredTarget(target, card) : pickRichestOtherTarget(players, caster.id);
       if (!resolvedTarget) return { amount: 0, affectedPlayerIds: [caster.id], summary: `${caster.name} không tìm thấy đối thủ hợp lệ.` };
       const percent = Math.min(1, Math.max(0, card.effect.percent));
       const amount = Math.floor(Math.max(0, resolvedTarget.money) * percent);
@@ -216,7 +221,9 @@ export function applyCardEffect(
     }
 
     case 'catch_up_bonus': {
-      const minimumMoney = Math.min(...players.map((player) => player.money));
+      const activePlayers = economyActivePlayers060(players);
+      const comparison = activePlayers.length > 0 ? activePlayers : [caster];
+      const minimumMoney = Math.min(...comparison.map((player) => player.money));
       const isPoorest = caster.money <= minimumMoney;
       const amount = Math.max(0, Math.floor(isPoorest ? card.effect.poorAmount : card.effect.baseAmount));
       caster.money += amount;
@@ -238,7 +245,7 @@ export function applyCardEffect(
 
     case 'percent_loss_all_others': {
       const percent = Math.min(1, Math.max(0, card.effect.percent));
-      const opponents = players.filter((player) => player.id !== caster.id);
+      const opponents = getValidTargets(players, caster.id);
       let totalLost = 0;
       for (const opponent of opponents) {
         const loss = Math.floor(Math.max(0, opponent.money) * percent);
@@ -248,7 +255,7 @@ export function applyCardEffect(
       return {
         amount: totalLost,
         affectedPlayerIds: opponents.map((player) => player.id),
-        summary: `${caster.name} khiến tất cả người chơi khác mất ${Math.round(percent * 100)}% B$ (tổng ${totalLost}B$).`,
+        summary: `${caster.name} khiến người chơi còn đang đua mất ${Math.round(percent * 100)}% B$ (tổng ${totalLost}B$).`,
       };
     }
 
