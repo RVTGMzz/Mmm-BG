@@ -27,9 +27,61 @@ export interface JobCareerResolution {
   summary: string;
 }
 
+export interface JobDepthProfile059 {
+  riskLabel: 'ỔN ĐỊNH' | 'CÂN BẰNG' | 'BIẾN ĐỘNG' | 'PHI PHÁP';
+  riskIcon: string;
+  salaryCurveLabel: 'TĂNG ĐỀU' | 'TĂNG MẠNH' | 'BÙNG NỔ';
+  promotionPercent: number;
+  demotionPercent: number;
+  firedPercent: number;
+  jailPercent: number;
+}
+
 function clampChance(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.min(1, Math.max(0, value));
+}
+
+function chancePercent(value: number): number {
+  return Math.round(clampChance(value) * 100);
+}
+
+/** Presentation/strategy profile only. It derives from the authoritative Job data. */
+export function jobDepthProfile059(job: JobDefinition): JobDepthProfile059 {
+  const firstSalary = jobSalary(job, 1);
+  const maxSalary = jobSalary(job, job.maxLevel);
+  const growth = Math.max(0, maxSalary - firstSalary);
+  const salaryCurveLabel: JobDepthProfile059['salaryCurveLabel'] = growth >= 110
+    ? 'BÙNG NỔ'
+    : growth >= 65
+      ? 'TĂNG MẠNH'
+      : 'TĂNG ĐỀU';
+
+  let riskLabel: JobDepthProfile059['riskLabel'];
+  let riskIcon: string;
+  if (job.risk === 'crime') {
+    riskLabel = 'PHI PHÁP';
+    riskIcon = '🚨';
+  } else if (job.demotionChance >= 0.18 || job.firedOnDemotionChance >= 0.25) {
+    riskLabel = 'BIẾN ĐỘNG';
+    riskIcon = '🎢';
+  } else if (job.demotionChance <= 0.12 && job.firedOnDemotionChance <= 0.15) {
+    riskLabel = 'ỔN ĐỊNH';
+    riskIcon = '🛡️';
+  } else {
+    riskLabel = 'CÂN BẰNG';
+    riskIcon = '⚖️';
+  }
+
+  return {
+    riskLabel,
+    riskIcon,
+    salaryCurveLabel,
+    promotionPercent: chancePercent(job.promotionChance),
+    demotionPercent: chancePercent(job.demotionChance),
+    firedPercent: chancePercent(job.firedOnDemotionChance),
+    jailPercent: chancePercent(job.jailChance),
+  };
 }
 
 export function drawUniqueJobOffer(
@@ -87,7 +139,7 @@ export function resolveCareerCheck(
       previousLevel,
       level: previousLevel,
       title: `${job.icon} BỊ TÓM!`,
-      summary: `${player.name} làm ${job.title} và dính biến cố vào tù. Hiệu ứng tù sâu hơn sẽ được nối ở milestone sau.`,
+      summary: `${player.name} làm ${job.title} và bị bắt tại Job Hub. 0.1.59 đưa thẳng người chơi về Đồn; thoát Đồn thành công mới quay lại nghề.`,
     };
   }
 
