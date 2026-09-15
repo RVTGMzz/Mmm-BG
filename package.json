@@ -57,6 +57,7 @@
     "test:news-card-depth-058": "tsx tests/news-card-depth-058.ts",
     "test:job-minigame-depth-059": "tsx tests/job-minigame-depth-059.ts",
     "test:pacing-economy-060": "tsx tests/pacing-economy-060.ts",
+    "test:playtest-telemetry-061": "tsx tests/playtest-telemetry-061.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
