@@ -9,112 +9,94 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 **0.1.48** remains the only user-validated HOST-authoritative rollback baseline.
 
-Never regress HOST authority, replay/checksum determinism, remote Roll For Order, multiplayer Job Hub, Mini Game payout ownership, audio/BGM ownership, stale-token guard, or READY/lap/final-result/podium flow.
-
-Keep visible names **TIN TỨC / LÁ BÀI**.
+Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deterministic replay, multiplayer ownership, stale-token protection, or READY/final-result flow.
 
 ## Current candidate
 
-**MVP 0.1.63.2 — Movement Actor Camera Lock**
+**MVP 0.1.63.3 — Presentation Sync + Release D6 Clarity**
 
-Ron reported that 0.1.63.1 still let the moving token leave the viewport on long rolls such as 5 or 6.
-
-Root cause:
-- authoritative `currentPlayer()` can already advance to the next player before queued movement presentation finishes;
-- 0.1.63.1 centered the authoritative current player instead of the actor still being animated.
-
-0.1.63.2 fixes presentation-only camera targeting:
-- active presentation `actorId` has priority over authoritative current-turn player;
-- every `move_step` stays centered on the token actually moving;
-- landing stays framed on the same mover;
-- when presentation becomes idle, camera returns to `currentPlayer()`;
-- `TỔNG QUAN / O` remains the intentional exception.
+Ron reported:
+- destination effect/points could appear before the token visually reached the destination;
+- CPU Jail release could look as if the successful release face was reused as normal movement.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-## Current runtime
+## Runtime
 
-`START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene0632 as ActiveBoardScene`
+`CareerMinigameBoardScene0633 as ActiveBoardScene`
 
 Inheritance:
-`0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
 
-## New regression
+## Root cause and fixes
 
-New files:
-- `src/ui/cameraTarget0632.ts`
-- `src/scenes/CareerMinigameBoardScene0632.ts`
-- `tests/movement-actor-camera-lock-0632.ts`
-- `docs/PLAYTEST_0.1.63.2_MOVEMENT_ACTOR_CAMERA_LOCK.md`
+### Movement/effect timing
+Authoritative state legitimately arrives before queued visual movement completes. Two presentation paths exposed that future state too early:
+- legacy Playtest state-delta toast;
+- canonical HUD reading authoritative money/card values during dice/move presentation.
 
-Critical locked case:
-- P1 presentation is still moving;
-- authoritative turn already says P2;
-- resolver must return **P1** for camera target.
+0.1.63.3 suppresses the early delta toast and holds canonical HUD refresh while `dice_roll`/`move_step` is still presenting.
 
-When no presentation model is active, resolver falls back to P2/current turn.
+Expected visible order:
+`ROLL -> MOVE -> ARRIVE -> LANDING/EFFECT + HUD DELTA`
 
-0.1.63.1 expanded edge bounds remain inherited. No gameplay intent or RNG is added.
+### Jail/Hospital release
+Core authority was already correct and remains unchanged:
+- release D6 only tests release;
+- successful release clears the hold and sets `lastRoll = null`;
+- phase returns to `PRE_ROLL_ACTION` in the same turn;
+- a fresh D6 is required for normal movement.
 
-## Presentation retained
+0.1.63.3 now makes that explicit onscreen:
+- `special_release` gets a visible panel saying the face is **CHỈ dùng để thoát** and a **D6 MỚI** follows;
+- internal exit corridor nodes remain authoritative but no longer look like several normal board steps;
+- one smooth return-to-gate motion represents release;
+- same-turn direct-dice pending state is re-armed only after release presentation finishes, allowing exactly the fresh movement roll the core already requires.
 
-From 0.1.63/0.1.63.1:
-- landing/event UI **1.18x**;
-- Card/News UI **1.14x**;
-- token scale **0.82x**;
-- round radii **27/31/33/36**;
-- gameplay zoom **2.15x**;
-- Overview **0.88x**;
-- expanded camera bounds for edge centering.
+Existing 0.1.57 fresh-D6 test remains green.
 
-Visible labels:
-- `CITY • MVP 0.1.63.2 • MOVEMENT ACTOR CAMERA LOCK`
-- `PLAYTEST 0.1.63.2 • CAMERA BÁM TOKEN ĐANG DI CHUYỂN`
+## Camera retained
 
-## Gameplay retained from 0.1.62
+0.1.63.2 movement-actor camera lock remains inherited:
+- camera follows the actor still being visually animated even if turn state already advanced;
+- rolls 5/6 should remain in frame;
+- Overview/O stays the exception.
 
-Branch rule remains HOST-authoritative:
+## Gameplay retained
+
+No change to RNG/economy/content weights.
+
+Branch rule remains:
 - 1/3/5 -> LEFT;
-- 2/4/6 -> RIGHT.
+- 2/4/6 -> RIGHT;
+- HOST automatic, no manual picker.
 
-No manual branch picker, no second RNG stream, and no changes to economy, Card/News, Job, Mini Game, Jail/Hospital/Lottery or READY finish-lock.
-
-## QA retained
-
-0.1.61 local Playtest Match Report remains inherited/local-only.
-
-0.1.62 deterministic gameplay baseline remains valid because 0.1.63.2 is presentation-only.
-
-Exact active sentinels remain:
+0.1.62 deterministic gameplay sentinels remain:
 - seed `611119`, checksum `9d83fad4`;
 - seed `611113`, checksum `1074ba94`.
 
 ## Green code candidate before docs update
 
-- HEAD `cd3a843d9c82f1e37fd4589eeedb3b67b76be97e`;
-- push run `#2244` / `34965761179`;
-- artifact `mememe-playtest-0.1.63.2-movement-actor-camera`;
-- artifact ID `10395341522`;
-- size `8,591,383 bytes`;
-- SHA256 `bc1b9f490ea5ff0a62876cfcd6798943b2ed10f6e45e904764c08ee0be8d04ba`;
-- expires 2026-09-29.
+- HEAD `c8bd64b97df2e9293d8087400e981cc0e309e121`;
+- push run `#2262` / `34967807791`;
+- artifact `mememe-playtest-0.1.63.3-presentation-release-sync`;
+- artifact ID `10395618561`;
+- size `8,592,557 bytes`;
+- SHA256 `21ae8582ae7de69a3f513ea2180ccb38cfc809300e388066bb084a58ba9984ad`;
+- **63/63 meaningful CI steps PASS**.
 
-Run #2244 passed the full suite, including the new visual-mover-vs-advanced-turn camera regression.
+## Manual check
 
-## Next manual check
-
-Use:
-`docs/PLAYTEST_0.1.63.2_MOVEMENT_ACTOR_CAMERA_LOCK.md`
+Use `docs/PLAYTEST_0.1.63.3_PRESENTATION_RELEASE_SYNC.md`.
 
 Verify especially:
-- rolls 5/6 never let the moving token leave the viewport;
-- camera remains on the visual mover even if turn state has already advanced;
-- camera transfers cleanly after landing presentation finishes;
-- Overview still works;
-- long-run token snap-back does not return.
+- money/TIN TỨC/LÁ BÀI effect waits for visual arrival;
+- long rolls stay camera-centered;
+- successful Jail/Hospital release visibly uses one release-only D6, then a second fresh D6 before normal movement;
+- failed release ends the turn while held;
+- continue watching for long-run token snap-back.
 
-Do not call 0.1.63.2 accepted until Ron confirms it manually.
+Do not call 0.1.63.3 accepted until Ron confirms runtime behavior.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
