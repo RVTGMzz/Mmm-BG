@@ -12,6 +12,7 @@ const BOARD = boardJson as BoardDefinition;
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0561.ts', import.meta.url), 'utf8');
 const scene057Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene057.ts', import.meta.url), 'utf8');
+const scene058Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene058.ts', import.meta.url), 'utf8');
 const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.meta.url), 'utf8');
 
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
@@ -34,8 +35,12 @@ assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
 assert(
-  mainSource.includes("CareerMinigameBoardScene057 as ActiveBoardScene"),
+  mainSource.includes("CareerMinigameBoardScene058 as ActiveBoardScene"),
   'Canonical START_PLAYTEST runtime may advance gameplay wrappers but must keep the 0.1.56.1 presentation architecture.',
+);
+assert(
+  scene058Source.includes('extends CareerMinigameBoardScene057'),
+  '0.1.58 depth wrapper must preserve 0.1.57 authority and the canonical presentation chain.',
 );
 assert(
   scene057Source.includes('extends CareerMinigameBoardScene0561'),
@@ -61,4 +66,4 @@ assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
 
-console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained by 0.1.57');
+console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained through 0.1.58');
