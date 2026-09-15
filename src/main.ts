@@ -9,7 +9,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene064 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene064';
+import { CareerMinigameBoardScene065 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene065';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -25,6 +25,7 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene0633 aligned visible landing effects and special-release/fresh-D6 presentation.
 // CareerMinigameBoardScene0634 as ActiveBoardScene resumes unspent movement after Job Hub and commits visible B$ only at its presented effect.
 // CareerMinigameBoardScene064 expands board spacing, makes J/H corridors real -20 B$ movement, and rebalances Card/Step SFX.
+// CareerMinigameBoardScene065 shows real Job/salary HUD data, rounds UI rectangles and hides the debug footer.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
