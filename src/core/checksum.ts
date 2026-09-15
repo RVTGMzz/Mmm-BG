@@ -37,6 +37,13 @@ function canonicalMatchPayload(match: MatchState): string {
       })),
     pendingJobOfferIds: match.pendingJobOfferIds ? [...match.pendingJobOfferIds] : undefined,
     pendingJobPlayerId: match.pendingJobPlayerId,
+    pendingJobMovement: match.pendingJobMovement
+      ? {
+          roll: match.pendingJobMovement.roll,
+          nextStep: match.pendingJobMovement.nextStep,
+          remainingSteps: match.pendingJobMovement.remainingSteps,
+        }
+      : undefined,
   });
 }
 
