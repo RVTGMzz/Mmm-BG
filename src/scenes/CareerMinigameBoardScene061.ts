@@ -70,7 +70,7 @@ export class CareerMinigameBoardScene061 extends CareerMinigameBoardScene060 {
       .setInteractive();
     const panel = this.add.rectangle(0, 0, 900, 586, 0x24211d, 0.985)
       .setStrokeStyle(5, 0xffd34d, 1);
-    const title = this.add.text(0, -255, '📊 PLAYTEST MATCH REPORT • 0.1.61', {
+    const title = this.add.text(0, -255, '📊 PLAYTEST MATCH REPORT • 0.1.61.1', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
