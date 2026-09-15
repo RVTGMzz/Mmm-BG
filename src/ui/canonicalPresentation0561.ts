@@ -1,7 +1,7 @@
 export const CANONICAL_PRESENTATION_0561 = {
-  version: '0.1.60',
-  header: 'CITY • MVP 0.1.60 • PACING + ECONOMY',
-  badge: 'PLAYTEST 0.1.60 • FINISH LOCK + TIGHTER B$',
+  version: '0.1.61',
+  header: 'CITY • MVP 0.1.61 • PLAYTEST REPORT',
+  badge: 'PLAYTEST 0.1.61 • LOCAL MATCH TELEMETRY',
   normalFollowZoom: 1.75,
   branchDecisionZoom: 1.3,
   overviewZoom: 0.88,
