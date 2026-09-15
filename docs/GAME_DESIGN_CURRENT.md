@@ -29,9 +29,22 @@ Current sources:
 - `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
 - `docs/MAP_BRANCHING_RULE_D2.md`
 - `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+- `docs/UI_FINAL_PLAYER_HUD.md`
+- `docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
 - `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
 - `docs/MVP_0.1.56_BRANCH_IDENTITY.md`
 - `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+
+### Canonical presentation implementation status — IMPORTANT
+
+The visual/camera rules above are **design-locked**, but Ron's manual 0.1.56 test proved that current `START_PLAYTEST.bat` does not yet satisfy them.
+
+Current 0.1.56 gameplay is authoritative/CI-green, but its presentation still inherits the old fixed-screen `DemoBoardScene` shell. That is now an explicit blocker, not an accepted compromise.
+
+Immediate implementation milestone:
+**0.1.56.1 — Canonical Presentation Consolidation**.
+
+It must bring the close camera, four-corner HUD, explicit Overview and readable Draft D greybox into standard authoritative gameplay before 0.1.57 adds deeper systems.
 
 ### Branching rule
 Canonical gameplay trong `START_PLAYTEST.bat`:
@@ -136,6 +149,8 @@ Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tr
 - Trung tâm thành phố phải còn khoảng thở, không phủ kín bằng ô.
 - Ảnh concept AI chỉ định hướng bố cục/mood; numbering và text AI không authoritative.
 - Canonical combined visual reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
+- Normal gameplay phải ưu tiên local board view; full map chỉ là Overview.
+- Greybox có thể chưa đẹp final, nhưng không được dồn/chồng đến mức khó đọc như current 0.1.56 standard shell.
 
 ### Final 4-player HUD direction
 - P1 top-left
@@ -146,9 +161,10 @@ Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tr
 - active player nổi bật
 - HUD cố định screen-space, không di chuyển/zoom theo board camera
 - chi tiết contract: `docs/UI_FINAL_PLAYER_HUD.md`
+- current 0.1.56 `START_PLAYTEST` chưa implement đúng contract này; 0.1.56.1 phải sửa.
 
 ### Launcher roles
-- `START_PLAYTEST.bat` = gameplay chuẩn / canonical Draft D integration.
+- `START_PLAYTEST.bat` = gameplay chuẩn / canonical authoritative integration target; sau 0.1.56 manual review, file này phải luôn là trải nghiệm tích hợp tốt nhất chứ không phải debug shell.
 - `START_DRAFT_D_PREVIEW.bat` = sandbox map/camera; 0.1.54 mặc định AUTO BRANCH seed `5454`, có MANUAL toggle.
 - `START_DRAFT_D_FULL_MAP.bat` = full topology review.
 - Legacy `START_FINAL_MAP_PREVIEW.bat` không còn ship trong tester package từ 0.1.54.
@@ -171,6 +187,7 @@ Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tr
 - Bắt đầu MVP ít content
 - Test system trước, fill chiều sâu sau
 - Data-driven, tránh hard-code content
+- Không cần final art sớm, nhưng **camera/HUD/readability phải theo kịp topology** để playtest gameplay có ý nghĩa.
 
 ## B. Hướng mạnh nhưng cần PoC
 
@@ -185,7 +202,23 @@ Hướng hiện tại nghiêng về stylized toy/collage city, sticker-like HUD/
 ### Async reaction
 Effect resolve và reaction presentation tách nhau. Cần test readability trên màn hình nhỏ.
 
-## C. Chưa chốt
+## C. Chưa chốt / chưa hoàn thiện runtime
+
+### Canonical presentation implementation — immediate blocker
+
+Design direction đã chốt, nhưng current `START_PLAYTEST.bat` vẫn render qua old fixed-screen shell.
+
+Phải hoàn thiện ở 0.1.56.1:
+- world camera + fixed UI camera hoặc kiến trúc tương đương;
+- close follow active token;
+- four-corner HUD;
+- explicit Overview;
+- branch decision framing;
+- cleaner Draft D greybox markers;
+- event/card safe framing;
+- one source of truth cho visible build/version label.
+
+Không được duplicate gameplay state từ preview để làm việc này.
 
 ### Draft D final art / pacing follow-up
 Canonical Draft D gameplay integration đã có từ 0.1.55. Những phần còn cần playtest/tuning:
@@ -224,7 +257,7 @@ Không coi framework/protocol cụ thể là tech decision final nếu chưa đ�
 9. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
 10. Mini Game lấy participant list sau khi loại mọi player đang ở Jail/Hospital; 1 người hợp lệ = auto hạng 1; 0 người = skip.
 11. LÁ BÀI / TIN TỨC dùng current pool/effect resolver; effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
-12. Presentation layer xử lý camera, art, reaction, audio.
+12. Presentation layer xử lý camera, art, reaction, audio mà không tạo gameplay state thứ hai.
 13. Turn manager chuyển người tiếp theo.
 
 ## E. Face-card rendering model
