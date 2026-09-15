@@ -5,9 +5,13 @@ import { buildPresentationModel } from '../src/ui/presentationModel';
 
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0633.ts', import.meta.url), 'utf8');
+const wrapperSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0634.ts', import.meta.url), 'utf8');
 const replaySource = readFileSync(new URL('../src/core/replay.ts', import.meta.url), 'utf8');
 
-assert(mainSource.includes('CareerMinigameBoardScene0633 as ActiveBoardScene'));
+// 0.1.63.4 is the active wrapper, but it must inherit the complete 0.1.63.3
+// release/presentation synchronization instead of replacing or bypassing it.
+assert(mainSource.includes('CareerMinigameBoardScene0634 as ActiveBoardScene'));
+assert(wrapperSource.includes('extends CareerMinigameBoardScene0633'));
 assert(sceneSource.includes('extends CareerMinigameBoardScene0632'));
 
 // Human report: authoritative landing effects must not visually beat movement.
@@ -67,4 +71,4 @@ assert.equal(model.roll, 3);
 assert.match(model.description, /CHỈ dùng để thoát/);
 assert.match(model.description, /D6 MỚI/);
 
-console.log('[presentation-release-sync-0633] PASS movement-before-effect • release D6 explicit • corridor collapsed visually • fresh same-turn D6 re-enabled');
+console.log('[presentation-release-sync-0633] PASS inherited beneath 0.1.63.4 • movement-before-effect • release D6 explicit • corridor collapsed visually • fresh same-turn D6 re-enabled');
