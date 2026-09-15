@@ -141,10 +141,10 @@ jobs:
         env:
           SIMULATION_BASELINE_OUTPUT: dist/SIMULATION_BASELINE_0.1.61.1.txt
         run: npm run test:simulation-baseline-0611
-      - name: 0.1.62 parity-routing outlier replay pack
+      - name: 0.1.63.4 post-Job-continuation sentinel replay
         env:
-          OUTLIER_REPLAY_OUTPUT: dist/OUTLIER_REPLAY_0.1.62.txt
-        run: npm run test:outlier-replay-062
+          OUTLIER_REPLAY_OUTPUT: dist/OUTLIER_REPLAY_0.1.63.4.txt
+        run: npm run test:outlier-replay-0634
       - name: 0.1.62 HOST parity branches and round tile readability
         run: npm run test:random-branch-round-tiles-062
       - name: 0.1.63 UI readability and smooth follow polish
