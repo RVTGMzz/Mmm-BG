@@ -24,14 +24,14 @@ Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
 
 **0.1.65 — Job HUD + Rounded UI + Debug Footer Cleanup**
 
-Latest human feedback after the 0.1.64 Card-target hotfix:
-1. player/CPU cards should show the actual occupation and salary instead of vague `Có việc / Chưa việc` copy;
+Human feedback:
+1. player/CPU cards must show the actual occupation and salary instead of vague `Có việc / Chưa việc` copy;
 2. square-corner rectangular gameplay UI should be rounded for a softer visual language;
-3. the red debug/playtest coordinate/footer line at the bottom of gameplay should be hidden.
+3. the red debug/playtest footer at the bottom of gameplay should be hidden.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-This is intentionally a **presentation-only build**. It does not change gameplay, RNG, authority, economy, board routing or camera behavior.
+0.1.65 is intentionally **presentation-only**. It does not alter gameplay, RNG, authority, economy, board routing or camera behavior.
 
 ## 3. Runtime chain
 
@@ -48,72 +48,72 @@ Implementation:
 - `src/scenes/CareerMinigameBoardScene065.ts`
 - `tests/job-hud-rounded-ui-065.ts`
 
-Player cards now derive career data directly from authoritative `PlayerState` plus `jobs_mvp.json`.
+Player cards derive career information directly from authoritative `PlayerState` plus `jobs_mvp.json`.
 
-Employed display includes:
-- actual Job title;
-- current Job level;
-- salary for the current level using `jobSalary()`.
-
-Example:
+Employed example:
 - `💼 🩺 Bác sĩ Lv.2`
 - `💰 Lương: 110 B$/vòng`
 
-Unemployed display:
+Unemployed:
 - `💼 Chưa có nghề`
 - `💰 Lương: 0 B$/vòng`
 
-The HUD refreshes from authoritative state every frame, so receiving a Job, promotion, demotion, firing, or losing an illegal Job is reflected without a separate UI-only career state.
+Salary is resolved through `jobSalary()` for the current authoritative Job level. The HUD refreshes from state, so Job selection, promotion, demotion, firing or Job loss is reflected without a separate UI-only career state.
 
-The prior vague copy `💼 Có việc / 💼 Chưa việc` is no longer used by the active HUD.
+The active HUD no longer uses the vague `💼 Có việc / 💼 Chưa việc` copy.
 
 ## 5. Rounded UI presentation
 
-Player HUD cards now use rounded `Graphics` backings with radius 18 instead of the inherited square Rectangle visual.
+0.1.65 rounds both major classes of rectangular gameplay UI.
 
-For rectangle-based gameplay UI created by overlays/pickers:
-- visible UI Rectangles are detected recursively;
+### Rectangle-based panels/buttons
+- visible UI `Phaser.GameObjects.Rectangle` objects are detected recursively;
 - a rounded `Graphics` visual is inserted alongside the original object;
 - the original Rectangle remains alive as a near-transparent input hitbox;
-- existing pointer handlers therefore keep working;
-- fill/stroke state is mirrored every frame so hover/click color changes remain visible;
-- full-screen dim overlays intentionally remain edge-to-edge rather than receiving rounded corners.
+- pointer handlers and click behavior are preserved;
+- fill/stroke state is mirrored each frame, so hover/click colors remain visible;
+- full-screen dim overlays intentionally remain edge-to-edge.
 
-This covers the main Rectangle-based gameplay panels/buttons including Card/target UI without rewriting their interaction logic.
+### Text-background badges
+Phaser Text backgrounds are square by default, so 0.1.65 also handles UI Text objects with `backgroundColor`, including badges such as Overview/turn-status/build labels:
+- the built-in square background is made transparent;
+- a rounded Graphics backing is inserted behind the Text;
+- position, size, scale, angle, visibility and alpha are mirrored each frame;
+- the Text itself and its input behavior remain unchanged.
 
-No board circles are changed by this build.
+### Player cards
+All four player/CPU cards use dedicated rounded Graphics backings with radius 18.
+
+No board circles are modified by 0.1.65.
 
 ## 6. Debug/footer cleanup
 
 The always-visible red gameplay footer/debug label is hidden.
 
-The 0.1.65 scene recursively hides Text that:
+The active scene recursively hides Text that:
 - starts with `PLAYTEST `; or
 - contains `LOCAL MATCH TELEMETRY`.
 
-This is presentation cleanup only. The local playtest report feature itself remains available from the result/report UI.
+This removes the red bottom-screen debug strip only. The local playtest report remains available from the result/report UI.
 
-The build header is updated to:
+Build header:
 `CITY • MVP 0.1.65 • JOB HUD + ROUNDED UI`.
 
 ## 7. Card target dice hotfix retained
 
 The post-0.1.64 hotfix remains active:
-- `cardPickerOpen=true` hard-blocks the direct dice;
+- `cardPickerOpen=true` hard-blocks direct dice visibility and clicking;
 - applies throughout Card hand selection, target selection and tactical choice;
-- pointerdown validation also respects the same flag;
-- the dice returns only after Card UI closes and ordinary roll policy allows it.
+- dice returns only after Card UI closes and ordinary roll policy permits rolling.
 
 Regression remains in `tests/direct-dice-030.ts`.
 
 ## 8. 0.1.64 gameplay retained unchanged
 
-0.1.65 must preserve all 0.1.64 gameplay exactly.
-
 ### Expanded board
-- authored board footprint remains approximately `2340 x 1020`;
+- authored footprint remains approximately `2340 x 1020`;
 - round spaces remain 1.5x the 0.1.63 radii;
-- geometry regression requires >=12 px clearance; current closest gap remains 15.0 px;
+- geometry regression requires >=12 px clearance; current minimum remains 15.0 px;
 - TÙ/J1/J2/J3 and BV/H1/H2/H3 stay separated.
 
 ### Jail/Hospital release
@@ -122,7 +122,7 @@ Success:
 2. stay on TÙ node 100 or BV node 110;
 3. discard release D6;
 4. remain same turn at `PRE_ROLL_ACTION`;
-5. fresh D6 is required;
+5. require a fresh movement D6;
 6. fresh D6 traverses the real internal corridor.
 
 Corridors:
@@ -132,7 +132,7 @@ Corridors:
 ### Internal penalties
 - J1/J2/J3 = `-20 B$` each;
 - H1/H2/H3 = `-20 B$` each;
-- penalty applies on landing, not when merely passing over.
+- penalty resolves on landing only.
 
 Visible money order remains:
 `ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD B$ UPDATE`.
@@ -168,45 +168,27 @@ No live manual picker and no second RNG stream.
 
 Because 0.1.65 is presentation-only, active gameplay fingerprints are deliberately **not rebased**.
 
-32-match batch seeds `611100..611131` remains:
-- turns avg 61.8, max 92;
-- commands avg 97.6, max 145;
-- final table B$ avg 1336.2;
-- spread avg 161.6, max 367;
-- deterministic harness checksum `2fca6e9d`.
+32-match deterministic checksum remains `2fca6e9d`.
 
-Active exact sentinel `611102` remains:
-- checksum `1dd42c7c`;
-- 92 turns;
-- 145 authoritative commands;
-- finish IDs `[3,2,1,0]`.
+Active exact sentinels remain unchanged:
+- seed `611102` -> checksum `1dd42c7c`, 92 turns, 145 authoritative commands, finish IDs `[3,2,1,0]`;
+- seed `611113` -> checksum `856548f4`, 51 turns, spread 367 B$, finish IDs `[3,0,2,1]`.
 
-Active exact sentinel `611113` remains:
-- checksum `856548f4`;
-- 51 turns;
-- spread 367 B$;
-- finish IDs `[3,0,2,1]`.
+Run #2378 passed these exact fingerprints unchanged, proving the finished 0.1.65 presentation code did not alter authoritative gameplay.
 
-Run #2370 passed both unchanged, proving the 0.1.65 candidate did not drift authoritative gameplay.
+## 12. 0.1.65 final code candidate before docs-inclusive run
 
-## 12. 0.1.65 green code candidate before docs update
-
-Code candidate is **FULL CI GREEN / PACKAGED**:
-- HEAD `10dfe800eafd633b80779d79cd1e06edce584ad5`;
-- push run `#2370` / `34997984350`;
+Latest code candidate is **FULL CI GREEN / PACKAGED**:
+- HEAD `aa7ee7ebfd7e45eebfc7925f9aee7ac65c0e77bd`;
+- push run `#2378` / `34998498203`;
 - artifact `mememe-playtest-0.1.65-job-hud-rounded-ui`;
-- artifact ID `10408202631`;
-- size `8,595,544 bytes`;
-- SHA256 `84774febd816be36dbca3142d971dee86ef70a7f0e6101ee105c0672d5fe9c8e`;
+- artifact ID `10408766808`;
+- size `8,595,842 bytes`;
+- SHA256 `2a7197a2f9df1c1722cd11a6c09f00642768cbe4f232536b05e66f1818258dd8`;
 - expires 2026-09-29;
 - **66/66 meaningful CI steps PASS**.
 
-The initial 0.1.65 run exposed one historical-only launcher assertion in `tests/expanded-board-release-audio-064.ts` that required `064` to be the direct ActiveBoardScene. It was corrected to require:
-- launcher activates 065;
-- 065 extends 064;
-- every substantive 0.1.64 spacing/release/audio/camera assertion remains unchanged.
-
-No gameplay expectation was weakened.
+The final polish after the first green 0.1.65 candidate added rounded backings for Text-background UI so labels such as `TỔNG QUAN` / turn-state badges do not remain square-cornered while the rest of the interface is rounded.
 
 ## 13. Manual test checklist
 
@@ -215,15 +197,16 @@ Use `docs/PLAYTEST_0.1.65_JOB_HUD_ROUNDED_UI.md` from the artifact.
 Verify especially:
 1. unemployed HUD shows `Chưa có nghề` and `Lương: 0 B$/vòng`;
 2. after getting a Job, HUD shows the real Job name, level and correct salary;
-3. promotion/demotion updates the displayed salary correctly;
+3. promotion/demotion updates displayed salary correctly;
 4. player/CPU info cards have rounded corners;
-5. Card hand / target picker and other Rectangle-based gameplay panels/buttons look rounded and remain clickable;
-6. hover states still work on rounded target cards/buttons;
-7. the red PLAYTEST/debug footer at the bottom is gone;
-8. Card target selection still never shows the direct dice behind the modal;
-9. confirmed-good camera remains centered on rolls 5/6;
-10. 0.1.64 release corridor and Job continuation remain correct;
-11. continue watching for any long-run token snap-back.
+5. Rectangle-based Card/target/popup/button UI has rounded corners and remains clickable;
+6. Text-background badges such as Overview/turn status also have rounded corners;
+7. hover states still work on target cards/buttons;
+8. red PLAYTEST/debug footer is gone;
+9. Card target selection still never shows the direct dice behind the modal;
+10. confirmed-good camera remains centered on rolls 5/6;
+11. 0.1.64 release corridor and Job continuation remain correct;
+12. continue watching for long-run token snap-back.
 
 Do **not** call 0.1.65 user-accepted until Ron manually validates it.
 
