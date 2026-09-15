@@ -35,6 +35,7 @@ const board058 = await readFile('src/scenes/CareerMinigameBoardScene058.ts', 'ut
 const board059 = await readFile('src/scenes/CareerMinigameBoardScene059.ts', 'utf8');
 const board060 = await readFile('src/scenes/CareerMinigameBoardScene060.ts', 'utf8');
 const board061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'utf8');
+const board062 = await readFile('src/scenes/CareerMinigameBoardScene062.ts', 'utf8');
 const picker = await readFile('src/ui/CardHandPicker.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
@@ -61,7 +62,7 @@ assert(!board056.includes('submitIntent('), '0.1.56 branch-identity wrapper must
 assert(!board056.includes('Math.random'), '0.1.56 branch-identity wrapper must not introduce RNG');
 assert(board0561.includes('extends CareerMinigameBoardScene056'), '0.1.56.1 presentation wrapper must inherit 0.1.56 and therefore the 0.1.48 stale-token guard');
 assert(!board0561.includes('Math.random'), '0.1.56.1 presentation consolidation must not introduce RNG');
-assert(board0561.includes('showBranchPicker'), '0.1.56.1 may submit only the player-selected canonical branch through the inherited HOST authority path');
+assert(board0561.includes('showBranchPicker'), '0.1.56.1 keeps its historical manual picker code for replay compatibility');
 assert(board057.includes('extends CareerMinigameBoardScene0561'), '0.1.57 must inherit the canonical 0.1.56.1 presentation and validated 0.1.48 authority chain');
 assert(!board057.includes('Math.random'), '0.1.57 special-location UI wrapper must not introduce client RNG');
 assert(board058.includes('extends CareerMinigameBoardScene057'), '0.1.58 must inherit 057 -> 0561 -> 056 -> 048 without bypassing the stale-token guard');
@@ -75,12 +76,15 @@ assert(!board060.includes('submitIntent('), '0.1.60 pacing wrapper must remain p
 assert(board061.includes('extends CareerMinigameBoardScene060'), '0.1.61 report wrapper must retain 060 -> 048 inheritance chain');
 assert(!board061.includes('Math.random'), '0.1.61 report wrapper must not introduce client RNG');
 assert(!board061.includes('submitIntent('), '0.1.61 report wrapper must remain presentation-only');
+assert(board062.includes('extends CareerMinigameBoardScene061'), '0.1.62 readability wrapper must retain 061 -> 048 and the validated stale-token guard');
+assert(!board062.includes('Math.random'), '0.1.62 readability wrapper must not introduce client RNG');
+assert(!board062.includes('submitIntent('), '0.1.62 readability wrapper must remain presentation-only');
 
 assert(picker.includes('CHỌN LÁ BÀI') && picker.includes('DÙNG LÁ NÀY'), 'Card hand must restore the original visible vocabulary');
 assert(!picker.includes('CHỌN PHÉP THUẬT'), 'legacy reference names must not rename the current Card system');
 assert(main.includes('TurnOrderScene048'), 'packaged runtime must retain the 0.1.48 Roll For Order bugfix scene');
-assert(main.includes('CareerMinigameBoardScene061 as ActiveBoardScene'), 'packaged runtime must activate 0.1.61 through the validated inheritance chain');
+assert(main.includes('CareerMinigameBoardScene062 as ActiveBoardScene'), 'packaged runtime must activate 0.1.62 through the validated inheritance chain');
 assert(lobby.includes('MVP 0.1.48') && setup.includes('MVP 0.1.48'), 'entry surfaces must preserve the validated 0.1.48 baseline copy until intentionally superseded');
 assert(lobby.includes('TIN TỨC / LÁ BÀI giữ nguyên tên cũ'), 'Lobby must document the corrected legacy-card interpretation');
 
-console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + vocabulary retained through 0.1.61');
+console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + vocabulary retained through 0.1.62');
