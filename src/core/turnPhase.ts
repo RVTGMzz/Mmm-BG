@@ -23,11 +23,11 @@ const ALLOWED_TRANSITIONS: Record<TurnPhase, readonly TurnPhase[]> = {
   ROLLING: ['MOVING'],
   // 0.1.57 special-location release succeeds by traversing the visible exit
   // corridor, then returns to PRE_ROLL_ACTION in the SAME turn for a fresh
-  // movement D6. Ordinary movement still resolves through RESOLVING_TILE.
+  // movement D6. 0.1.63.4 also lets a resolved Job encounter resume unspent pips.
   MOVING: ['BRANCH_CHOICE', 'RESOLVING_TILE', 'PRE_ROLL_ACTION'],
   BRANCH_CHOICE: ['MOVING'],
-  RESOLVING_TILE: ['JOB_CHOICE', 'TURN_END'],
-  JOB_CHOICE: ['TURN_END'],
+  RESOLVING_TILE: ['MOVING', 'JOB_CHOICE', 'TURN_END'],
+  JOB_CHOICE: ['MOVING', 'TURN_END'],
   TURN_END: ['TURN_START'],
 };
 
