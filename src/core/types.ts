@@ -30,6 +30,7 @@ export interface BoardDefinition {
 }
 
 export type JobStatus = 'unemployed' | 'employed' | 'jailed';
+export type SpecialHoldLocation = 'jail' | 'hospital';
 
 export interface PlayerState {
   id: number;
@@ -45,4 +46,6 @@ export interface PlayerState {
   jobId?: string;
   jobLevel?: number;
   jobStatus?: JobStatus;
+  /** 0.1.57 authoritative holding state. Omitted means the player is free on the board. */
+  specialHold?: SpecialHoldLocation;
 }
