@@ -12,7 +12,7 @@ export interface PlaytestPlayerReport061 {
 }
 
 export interface PlaytestMatchReport061 {
-  version: '0.1.61.1';
+  version: '0.1.61';
   boardId: string;
   seed: number;
   checksum: string;
@@ -95,7 +95,7 @@ export function buildPlaytestMatchReport061(match: MatchState): PlaytestMatchRep
 
   const releaseEvents = events.filter((event) => event.type === 'special_release');
   return {
-    version: '0.1.61.1',
+    version: '0.1.61',
     boardId: match.boardId,
     seed: match.seed,
     checksum: computeMatchChecksum(match),
