@@ -32,6 +32,7 @@ const board056 = await readFile('src/scenes/CareerMinigameBoardScene056.ts', 'ut
 const board0561 = await readFile('src/scenes/CareerMinigameBoardScene0561.ts', 'utf8');
 const board057 = await readFile('src/scenes/CareerMinigameBoardScene057.ts', 'utf8');
 const board058 = await readFile('src/scenes/CareerMinigameBoardScene058.ts', 'utf8');
+const board059 = await readFile('src/scenes/CareerMinigameBoardScene059.ts', 'utf8');
 const picker = await readFile('src/ui/CardHandPicker.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
@@ -63,12 +64,15 @@ assert(board057.includes('extends CareerMinigameBoardScene0561'), '0.1.57 must i
 assert(!board057.includes('Math.random'), '0.1.57 special-location UI wrapper must not introduce client RNG');
 assert(board058.includes('extends CareerMinigameBoardScene057'), '0.1.58 must inherit 057 -> 0561 -> 056 -> 048 without bypassing the stale-token guard');
 assert(!board058.includes('Math.random'), '0.1.58 depth presentation wrapper must not introduce client RNG');
+assert(board059.includes('extends CareerMinigameBoardScene058'), '0.1.59 must inherit 058 -> 057 -> 0561 -> 056 -> 048 without bypassing the stale-token guard');
+assert(!board059.includes('Math.random'), '0.1.59 Job/Mini presentation wrapper must not introduce client RNG');
+assert(!board059.includes('submitIntent('), '0.1.59 presentation wrapper must not become a second gameplay authority');
 
 assert(picker.includes('CHỌN LÁ BÀI') && picker.includes('DÙNG LÁ NÀY'), 'Card hand must restore the original visible vocabulary');
 assert(!picker.includes('CHỌN PHÉP THUẬT'), 'legacy reference names must not rename the current Card system');
 assert(main.includes('TurnOrderScene048'), 'packaged runtime must retain the 0.1.48 Roll For Order bugfix scene');
-assert(main.includes('CareerMinigameBoardScene058 as ActiveBoardScene'), 'packaged runtime must activate 0.1.58 through the validated inheritance chain');
+assert(main.includes('CareerMinigameBoardScene059 as ActiveBoardScene'), 'packaged runtime must activate 0.1.59 through the validated inheritance chain');
 assert(lobby.includes('MVP 0.1.48') && setup.includes('MVP 0.1.48'), 'entry surfaces must preserve the validated 0.1.48 baseline copy until intentionally superseded');
 assert(lobby.includes('TIN TỨC / LÁ BÀI giữ nguyên tên cũ'), 'Lobby must document the corrected legacy-card interpretation');
 
-console.log('[bugfix-pass-048] PASS money cue ownership + true D6 face + Mini Game BGM isolation + stale token guard + vocabulary restore through 0.1.58 inheritance');
+console.log('[bugfix-pass-048] PASS money cue ownership + true D6 face + Mini Game BGM isolation + stale token guard + vocabulary restore through 0.1.59 inheritance');
