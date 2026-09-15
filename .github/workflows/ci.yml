@@ -151,18 +151,20 @@ jobs:
         run: npm run test:ui-smooth-polish-063
       - name: 0.1.63.1 active-player center lock
         run: npm run test:active-player-center-lock-0631
+      - name: 0.1.63.2 movement presentation actor camera lock
+        run: npm run test:movement-actor-camera-lock-0632
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.63.1 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.63.1_CENTER_LOCK.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.63.2 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.63.2_MOVEMENT_ACTOR_CAMERA_LOCK.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.63.1 active player center-lock build
+      - name: Upload MVP 0.1.63.2 movement actor camera build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.63.1-center-lock
+          name: mememe-playtest-0.1.63.2-movement-actor-camera
           path: dist
           if-no-files-found: error
           retention-days: 14
