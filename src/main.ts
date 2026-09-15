@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import './styles.css';
 import './settings.css';
+import './mobileViewport066.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
@@ -28,7 +29,7 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene064 expands board spacing, makes J/H corridors real -20 B$ movement, and rebalances Card/Step SFX.
 // CareerMinigameBoardScene065 as ActiveBoardScene showed real Job/salary HUD data, rounded UI and hid the debug footer.
 // CareerMinigameBoardScene0651 as ActiveBoardScene fixes rounded-proxy ghosts and adds browser/Steam Deck gamepad UI control.
-// CareerMinigameBoardScene066 as ActiveBoardScene unifies the shipped flow, adds selected match length, and polishes Job/Mini Game presentation.
+// CareerMinigameBoardScene066 as ActiveBoardScene unifies the shipped flow, adds selected match length, mobile viewport handling, and release-resume protection.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
@@ -81,3 +82,21 @@ sfxController.start();
 installSettingsPanel();
 const game = new Phaser.Game(config);
 installGlobalGamepadUiNavigation0651(game);
+
+// Mobile browser chrome and orientation changes can resize the visual viewport
+// without immediately changing the old layout viewport. Refresh FIT sizing against
+// the new #app bounds so 1280x720 fills the actually visible area as much as possible.
+let viewportRefreshFrame = 0;
+const refreshMobileViewport066 = () => {
+  if (viewportRefreshFrame) cancelAnimationFrame(viewportRefreshFrame);
+  viewportRefreshFrame = requestAnimationFrame(() => {
+    viewportRefreshFrame = 0;
+    game.scale.refresh();
+  });
+};
+
+window.addEventListener('resize', refreshMobileViewport066, { passive: true });
+window.addEventListener('orientationchange', refreshMobileViewport066, { passive: true });
+window.visualViewport?.addEventListener('resize', refreshMobileViewport066, { passive: true });
+window.visualViewport?.addEventListener('scroll', refreshMobileViewport066, { passive: true });
+document.addEventListener('fullscreenchange', refreshMobileViewport066);
