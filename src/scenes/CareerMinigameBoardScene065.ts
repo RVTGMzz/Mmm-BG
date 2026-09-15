@@ -8,6 +8,7 @@ import { CareerMinigameBoardScene064 } from './CareerMinigameBoardScene064';
 
 const JOBS = jobsJson as JobDefinition[];
 const PLAYER_COLORS_065 = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
+const PROXY_HITBOX_ALPHA_065 = 0.001;
 
 type HudHandle065 = {
   root: Phaser.GameObjects.Container;
@@ -25,7 +26,7 @@ type SceneRuntime065 = {
 
 type RoundedRectHandle065 = {
   graphic: Phaser.GameObjects.Graphics;
-  originalAlpha: number;
+  visualAlpha: number;
 };
 
 type RoundedTextHandle065 = {
@@ -59,10 +60,9 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     this.updateBuildLabels065();
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.destroyRoundedProxies065();
       this.hudBackings065.clear();
       this.hudBorders065.clear();
-      this.roundedRects065.clear();
-      this.roundedTexts065.clear();
     });
   }
 
@@ -82,7 +82,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     const runtime = this.runtime065();
     for (const [playerId, ui] of runtime.hud) {
       this.hudBorders065.add(ui.border);
-      ui.border.setAlpha(0.001);
+      ui.border.setAlpha(PROXY_HITBOX_ALPHA_065);
 
       const panel = this.add.graphics();
       const parent = ui.root;
@@ -187,7 +187,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   }
 
   private registerRoundedRectangle065(rectangle: Phaser.GameObjects.Rectangle): void {
-    const originalAlpha = rectangle.alpha;
+    const visualAlpha = rectangle.alpha;
     const graphic = this.add.graphics();
     graphic.setPosition(rectangle.x, rectangle.y);
     graphic.setScale(rectangle.scaleX, rectangle.scaleY);
@@ -203,9 +203,9 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
 
     // Keep the original Rectangle alive and interactive. Hover/click handlers still
     // mutate its fill/stroke state; the rounded visual mirrors that state every frame.
-    rectangle.setAlpha(0.001);
-    this.roundedRects065.set(rectangle, { graphic, originalAlpha });
-    this.redrawRoundedRectangle065(rectangle, graphic, originalAlpha);
+    rectangle.setAlpha(PROXY_HITBOX_ALPHA_065);
+    this.roundedRects065.set(rectangle, { graphic, visualAlpha });
+    this.redrawRoundedRectangle065(rectangle, graphic, visualAlpha);
   }
 
   private registerRoundedTextBackground065(text: Phaser.GameObjects.Text): void {
@@ -234,17 +234,36 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
 
   private syncRoundedRectVisuals065(): void {
     for (const [rectangle, handle] of [...this.roundedRects065]) {
-      if (!rectangle.active || !handle.graphic.active) {
+      if (!rectangle.active) {
+        if (handle.graphic.active) handle.graphic.destroy();
         this.roundedRects065.delete(rectangle);
         continue;
       }
-      this.redrawRoundedRectangle065(rectangle, handle.graphic, handle.originalAlpha);
+      if (!handle.graphic.active) {
+        this.roundedRects065.delete(rectangle);
+        continue;
+      }
+
+      // The source Rectangle is normally held at a near-transparent alpha only to
+      // preserve its hitbox. If the owner later fades/hides that source, capture the
+      // new visual alpha instead of leaving a rounded proxy frozen on the board.
+      if (Math.abs(rectangle.alpha - PROXY_HITBOX_ALPHA_065) > 0.0001) {
+        handle.visualAlpha = rectangle.alpha;
+        if (rectangle.alpha > 0.01) rectangle.setAlpha(PROXY_HITBOX_ALPHA_065);
+      }
+
+      this.redrawRoundedRectangle065(rectangle, handle.graphic, handle.visualAlpha);
     }
   }
 
   private syncRoundedTextVisuals065(): void {
     for (const [text, handle] of [...this.roundedTexts065]) {
-      if (!text.active || !handle.graphic.active) {
+      if (!text.active) {
+        if (handle.graphic.active) handle.graphic.destroy();
+        this.roundedTexts065.delete(text);
+        continue;
+      }
+      if (!handle.graphic.active) {
         this.roundedTexts065.delete(text);
         continue;
       }
@@ -255,7 +274,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   private redrawRoundedRectangle065(
     rectangle: Phaser.GameObjects.Rectangle,
     graphic: Phaser.GameObjects.Graphics,
-    originalAlpha: number,
+    visualAlpha: number,
   ): void {
     const halfW = rectangle.width * rectangle.originX;
     const halfH = rectangle.height * rectangle.originY;
@@ -264,8 +283,8 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     const radius = Math.max(8, Math.min(24, rectangle.height * 0.18, rectangle.width * 0.12));
 
     graphic
-      .setVisible(rectangle.visible)
-      .setAlpha(originalAlpha)
+      .setVisible(rectangle.visible && visualAlpha > 0.01)
+      .setAlpha(visualAlpha)
       .setPosition(rectangle.x, rectangle.y)
       .setScale(rectangle.scaleX, rectangle.scaleY)
       .setAngle(rectangle.angle);
@@ -293,7 +312,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     const radius = Math.max(7, Math.min(16, height * 0.28, width * 0.1));
 
     graphic
-      .setVisible(text.visible)
+      .setVisible(text.visible && text.alpha > 0.01)
       .setAlpha(text.alpha)
       .setPosition(text.x, text.y)
       .setScale(text.scaleX, text.scaleY)
@@ -301,6 +320,17 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     graphic.clear();
     graphic.fillStyle(color, fillAlpha);
     graphic.fillRoundedRect(left, top, width, height, radius);
+  }
+
+  private destroyRoundedProxies065(): void {
+    for (const handle of this.roundedRects065.values()) {
+      if (handle.graphic.active) handle.graphic.destroy();
+    }
+    for (const handle of this.roundedTexts065.values()) {
+      if (handle.graphic.active) handle.graphic.destroy();
+    }
+    this.roundedRects065.clear();
+    this.roundedTexts065.clear();
   }
 
   private updateBuildLabels065(): void {
