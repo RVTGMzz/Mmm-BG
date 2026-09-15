@@ -9,7 +9,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene0633 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0633';
+import { CareerMinigameBoardScene0634 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0634';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -22,7 +22,8 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene063 as ActiveBoardScene added UI/smooth-follow polish.
 // CareerMinigameBoardScene0631 as ActiveBoardScene was the first center-lock attempt.
 // CareerMinigameBoardScene0632 as ActiveBoardScene prioritizes the actor still animating.
-// 0.1.63.3 aligns visible landing effects and special-release/fresh-D6 presentation.
+// CareerMinigameBoardScene0633 aligned visible landing effects and special-release/fresh-D6 presentation.
+// 0.1.63.4 resumes unspent movement after Job Hub and commits visible B$ only at its presented effect.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
