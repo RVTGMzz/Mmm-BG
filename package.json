@@ -54,6 +54,7 @@
     "test:branch-identity-056": "tsx tests/branch-identity-056.ts",
     "test:canonical-presentation-0561": "tsx tests/canonical-presentation-0561.ts",
     "test:special-locations-057": "tsx tests/special-locations-057.ts",
+    "test:news-card-depth-058": "tsx tests/news-card-depth-058.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
