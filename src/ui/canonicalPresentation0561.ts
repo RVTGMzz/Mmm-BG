@@ -1,7 +1,7 @@
 export const CANONICAL_PRESENTATION_0561 = {
-  version: '0.1.58',
-  header: 'CITY • MVP 0.1.58 • TIN TỨC + LÁ BÀI DEPTH',
-  badge: 'PLAYTEST 0.1.58 • SPECIAL EFFECTS + GLOBAL NEWS',
+  version: '0.1.59',
+  header: 'CITY • MVP 0.1.59 • JOB + FIVE MINI ARENAS',
+  badge: 'PLAYTEST 0.1.59 • CAREER RISK + 5 MINI STAKES',
   normalFollowZoom: 1.75,
   branchDecisionZoom: 1.3,
   overviewZoom: 0.88,
