@@ -13,107 +13,147 @@ Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deter
 
 ## Current candidate
 
-**MVP 0.1.63.4 — Job Continue + Landing Effect Sync**
+**MVP 0.1.64 — Expanded Board + Release Corridor + Audio Rebalance**
 
-Latest human feedback:
-- roll 5 could reach Job on step 2, resolve Job, then incorrectly stop instead of spending the remaining 3 pips;
-- a destination `-20 B$` could still become visible before the token reached the destination;
-- camera fix is confirmed good by Ron and must be preserved.
+Human feedback driving this build:
+- board spaces were still too clustered, especially TÙ/J1/J2/J3 and BV/H1/H2/H3;
+- requested roughly 2x map spacing and 1.5x round spaces;
+- successful Jail/Hospital release should leave the token standing at TÙ/BV, then a fresh movement D6 should traverse the three internal spaces;
+- J1/J2/J3 and H1/H2/H3 should all be `-20 B$` landing spaces;
+- Card SFX should be 20% softer, Step SFX 30% stronger;
+- camera is already confirmed good and must be preserved.
 
-Manual status: **PENDING RON ACCEPTANCE** for the new Job/money behavior.
+Manual status: **PENDING RON ACCEPTANCE**.
 
 ## Runtime
 
-`CareerMinigameBoardScene0634 as ActiveBoardScene`
+`CareerMinigameBoardScene064 as ActiveBoardScene`
 
 Inheritance:
-`0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
+`064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
 
-## Job continuation
+## Board spacing
 
-Job Hub is now a mid-roll interrupt rather than an automatic movement terminator.
+Board coordinates are expanded without changing canonical IDs/topology.
 
-Example locked by regression:
-`D6 = 5 -> Job on step 2 -> resolve Job -> continue steps 3, 4 and 5`.
+Current authored footprint:
+- width `2340 px`;
+- height `1020 px`.
 
-Authority stores the original roll and unspent pips in `pendingJobMovement`, which is included in checksum/replay. After Job resolution, movement resumes with no new movement RNG.
+Round spaces are `1.5x` the 0.1.63 radii.
 
-If remaining pips encounter a branch, the original D6 parity still drives HOST automatic routing:
-- 1/3/5 -> LEFT;
-- 2/4/6 -> RIGHT.
+Automated geometry check measures every round-space pair after scaling and requires at least 12 px clearance. Current minimum is **15.0 px**, so the previous overlapping/chained clusters are no longer allowed by CI.
 
-If a Job career outcome relocates the player into a special hold, the original movement ends there. If Job is reached on the final pip, there is nothing to resume.
+Overview is reframed at zoom `0.46` for the larger board.
 
-## Landing-timed B$
+## Jail / Hospital release-in-place
 
-0.1.63.4 adds a presentation-owned visible wallet snapshot.
+Release D6 remains release-only.
 
-HOST can calculate state immediately, but displayed B$ waits for the matching effect to reach the screen.
+Success now does:
+1. clear the hold;
+2. keep token standing on `TÙ` node 100 or `BV` node 110;
+3. set `lastRoll = null`;
+4. remain in the same turn at `PRE_ROLL_ACTION`;
+5. require a fresh movement D6;
+6. fresh D6 walks the actual internal corridor.
 
-Expected order on a money destination:
-`ROLL -> MOVE -> ARRIVE -> MONEY EFFECT -> HUD B$ CHANGES`.
+Corridors:
+- Jail: `100 -> J1 -> J2 -> J3 -> node 12`;
+- Hospital: `110 -> H1 -> H2 -> H3 -> node 34`.
 
-The same principle is used for money-bearing READY, Card and TIN TỨC presentation.
+Failed release remains held and ends the turn.
+
+## Internal penalties
+
+The six internal spaces are now real landing money tiles:
+- J1/J2/J3 = `-20 B$` each;
+- H1/H2/H3 = `-20 B$` each.
+
+Passing over them does not charge. Landing on one resolves the penalty.
+
+Locked deterministic example:
+`enter Jail -> release success -> still at TÙ -> fresh D6=1 -> J1 -> then -20 B$`.
+
+Visible money still follows:
+`ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD UPDATE`.
+
+## Audio
+
+Runtime gains:
+- Card draw/play = `0.80`;
+- Step = `1.30`.
+
+The step boost uses WebAudio gain so it is not silently clamped by media-element volume.
 
 ## Camera retained and human-confirmed
 
-Ron explicitly confirmed the camera fix is good.
+Ron already confirmed the camera fix is good.
 
-0.1.63.2 behavior stays inherited unchanged:
-- camera follows the actor still being animated;
+0.1.63.2 behavior remains inherited and regression-locked:
+- camera follows the actor still visually moving;
 - long rolls remain centered;
-- idle camera returns to current turn;
-- Overview/O stays the exception.
+- idle camera returns to current player;
+- Overview/O remains the exception.
 
-## Jail/Hospital retained
+## Job + branch rules retained
 
-0.1.63.3 remains inherited and its full release-sync regression still runs under the 0.1.63.4 wrapper.
+0.1.63.4 Job continuation remains:
+`roll 5 -> Job at step 2 -> resolve -> continue 3 pips`.
 
-Release D6 remains release-only. Success clears the hold, sets `lastRoll = null`, returns to `PRE_ROLL_ACTION` in the same turn, then requires a fresh movement D6.
+HOST parity routing remains:
+- 1/3/5 -> LEFT;
+- 2/4/6 -> RIGHT.
 
-## Deterministic QA rebased intentionally
+No manual picker and no second RNG stream.
 
-Job continuation changes gameplay routes, so the historical 0.1.62 sentinel file is preserved as history while the active sentinel is now 0.1.63.4.
+## Deterministic QA
+
+0.1.64 intentionally changes route/economy outcomes, so historical 0.1.63.4 sentinels are preserved but no longer active for current gameplay.
 
 32-match batch seeds `611100..611131`:
-- turns avg 58.1, p50 56, p90 69, max 81;
-- commands avg 94.8, p50 93, p90 112, max 126;
-- final B$ total avg 1327.4;
-- final spread avg 137.5, p50 129, p90 235, max 277;
-- Cards avg 10.1;
-- News avg 6.7;
-- Mini Games avg 5.6;
+- turns avg 61.8, p50 60, p90 74, max 92;
+- commands avg 97.6, p50 96, p90 114, max 145;
+- final table B$ avg 1336.2;
+- spread avg 161.6, p50 142, p90 253, max 367;
+- movement rolls avg 58.2;
+- release rolls avg 7.4;
+- Cards avg 9.2;
+- News avg 7.4;
+- Mini Games avg 6.1;
 - Jobs selected avg 3.8;
 - Lottery count avg 1.2;
-- deterministic harness checksum `b8ee25a7`.
+- deterministic harness checksum `2fca6e9d`.
 
-Active exact same-seed sentinels:
-- `611119` -> checksum `cb3d9c1b`, 53 turns, finish IDs `[2,3,1,0]`;
-- `611113` -> checksum `93aa3912`, 49 turns, finish IDs `[3,2,1,0]`.
+Active exact sentinels:
+- seed `611102` -> checksum `1dd42c7c`, 92 turns, 145 commands, finish IDs `[3,2,1,0]`;
+- seed `611113` -> checksum `856548f4`, 51 turns, spread 367 B$, finish IDs `[3,0,2,1]`.
 
 ## Green code candidate before docs update
 
-- HEAD `cba4d8c11036a4b19ac872362b039e99fb0493f9`;
-- push run `#2304` / `34976332683`;
-- artifact `mememe-playtest-0.1.63.4-job-continue-landing-sync`;
-- artifact ID `10399547650`;
-- size `8,593,603 bytes`;
-- SHA256 `e3c511bf31d73a3d7adc8fde3c20f92b96c8e39f4eb82856f2ef51126279cd37`;
-- full meaningful CI suite PASS.
+- HEAD `5d8f83b8ed3a009679e64bec62321d9743bdfd00`;
+- push run `#2340` / `34990342825`;
+- artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
+- artifact ID `10405701132`;
+- size `8,594,977 bytes`;
+- SHA256 `e88e4fe9c4dc7e6976d13896757d89f03665dbba96ebe7ab87f7ecb46070edb8`;
+- **65/65 meaningful CI steps PASS**.
 
 ## Manual check
 
-Use `docs/PLAYTEST_0.1.63.4_JOB_CONTINUE_LANDING_SYNC.md`.
+Use `docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md`.
 
 Verify especially:
-- roll 5 -> Job at step 2 -> Job resolves -> exactly 3 pips continue;
-- parity branch still works during resumed movement;
-- `-20/+25` B$ does not appear before visual arrival;
-- B$ changes when landing/effect presentation begins;
-- confirmed-good camera behavior remains intact;
-- Jail/Hospital still uses release D6 followed by fresh movement D6.
+- board feels spacious and enlarged spaces do not touch;
+- TÙ/J1/J2/J3 and BV/H1/H2/H3 are clearly separated;
+- successful release stays at TÙ/BV until fresh movement D6;
+- fresh D6 visibly walks the internal corridor;
+- corridor `-20 B$` occurs only on landing/arrival;
+- Card SFX is 20% softer and Step SFX 30% stronger;
+- confirmed-good camera remains intact;
+- Job continuation remains correct.
 
-Do not call 0.1.63.4 accepted until Ron validates these new behaviors.
+Do not call 0.1.64 accepted until Ron validates runtime behavior.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
