@@ -1,4 +1,5 @@
 import type { MatchEvent } from '../core/matchState';
+import { PACING_060 } from '../core/pacingEconomy060';
 import type { BrowserSessionConfig } from '../core/browserSession';
 import type { PlayerState } from '../core/types';
 import { buildPresentationModel, type PresentationEventModel } from './presentationModel';
@@ -51,12 +52,12 @@ function relatesToAny(model: PresentationEventModel, seatIds: readonly number[])
 }
 
 /**
- * 0.1.19 playfeel policy:
- * - dice/movement are automatic timeline beats;
- * - dedicated 4-CPU stress mode stays fast;
- * - one-human-vs-CPU sessions require acknowledgement only when the event affects that human;
- * - CPU-only and multiplayer/hotseat notices close automatically after at most 6 seconds;
- * - global/long notices may stay up to 10 seconds and become skippable once text reveal is complete.
+ * 0.1.60 pacing policy:
+ * - dice/movement remain automatic timeline beats;
+ * - dedicated 4-CPU stress mode stays very fast;
+ * - one-human-vs-CPU events that affect the human remain manual/acknowledgeable;
+ * - passive multiplayer/CPU notices close ~15–20% sooner than the 0.1.19 policy;
+ * - global events still keep enough reading time, but no longer linger up to 10s.
  */
 export function presentationTimingForModel(
   model: PresentationEventModel,
@@ -72,7 +73,7 @@ export function presentationTimingForModel(
     return {
       mode: 'auto',
       skipAfterMs: Number.POSITIVE_INFINITY,
-      autoCloseMs: Math.max(380, Math.min(900, model.holdMs)),
+      autoCloseMs: Math.max(380, Math.min(PACING_060.cpuAutoMaxMs, model.holdMs)),
     };
   }
 
@@ -83,7 +84,10 @@ export function presentationTimingForModel(
     return {
       mode: 'auto',
       skipAfterMs: revealDone,
-      autoCloseMs: Math.min(10_000, Math.max(6_000, revealDone + 1_800)),
+      autoCloseMs: Math.min(
+        PACING_060.globalAutoMaxMs,
+        Math.max(PACING_060.globalAutoMinMs, revealDone + PACING_060.globalTailMs),
+      ),
     };
   }
 
@@ -99,8 +103,11 @@ export function presentationTimingForModel(
 
   return {
     mode: 'auto',
-    skipAfterMs: Math.max(3_000, revealDone),
-    autoCloseMs: Math.min(6_000, Math.max(4_200, revealDone + 1_600)),
+    skipAfterMs: Math.max(PACING_060.passiveSkipMinMs, revealDone),
+    autoCloseMs: Math.min(
+      PACING_060.passiveAutoMaxMs,
+      Math.max(PACING_060.passiveAutoMinMs, revealDone + PACING_060.passiveTailMs),
+    ),
   };
 }
 
