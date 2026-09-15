@@ -16,6 +16,7 @@ const scene058Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardSc
 const scene059Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
 const scene060Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
 const scene061Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061.ts', import.meta.url), 'utf8');
+const scene062Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene062.ts', import.meta.url), 'utf8');
 const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.meta.url), 'utf8');
 
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
@@ -39,8 +40,12 @@ assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
 assert(
-  mainSource.includes("CareerMinigameBoardScene061 as ActiveBoardScene"),
-  'Canonical START_PLAYTEST runtime may advance presentation-only wrappers but must keep the 0.1.56.1 presentation architecture.',
+  mainSource.includes("CareerMinigameBoardScene062 as ActiveBoardScene"),
+  'Canonical START_PLAYTEST runtime must advance through the 0.1.62 human-feedback wrapper.',
+);
+assert(
+  scene062Source.includes('extends CareerMinigameBoardScene061'),
+  '0.1.62 must preserve 0.1.61 telemetry and the full validated presentation chain.',
 );
 assert(
   scene061Source.includes('extends CareerMinigameBoardScene060'),
@@ -69,9 +74,9 @@ assert(
 assert(sceneSource.includes("'canonical-ui-0561'"), 'Canonical runtime needs a separate fixed UI camera.');
 assert(sceneSource.includes('startFollow(token'), 'Normal gameplay camera must follow the active token.');
 assert(sceneSource.includes('setOverviewMode'), 'Full-map view must be an explicit Overview mode.');
-assert(sceneSource.includes('showBranchPicker'), 'Canonical human branch choice must use the manual branch picker.');
+assert(sceneSource.includes('showBranchPicker'), 'Legacy 0.1.56.1 wrapper keeps its historical manual picker for replay compatibility.');
 assert(sceneSource.includes("phase !== 'BRANCH_CHOICE'"));
-assert(!sceneSource.includes('pickParityEdge'), 'Parity AUTO routing must not be restored in canonical human gameplay.');
+assert(!sceneSource.includes('pickParityEdge'), 'Parity authority must stay outside presentation.');
 assert(!sceneSource.includes('0.1.25'), 'Canonical presentation must not encode the leaked 0.1.25 label.');
 assert(!scene059Source.includes('Math.random'), '0.1.59 must not add presentation RNG.');
 assert(!scene059Source.includes('submitIntent('), '0.1.59 scene must keep gameplay authority outside presentation.');
@@ -79,13 +84,15 @@ assert(!scene060Source.includes('Math.random'), '0.1.60 must not add presentatio
 assert(!scene060Source.includes('submitIntent('), '0.1.60 scene must keep gameplay authority outside presentation.');
 assert(!scene061Source.includes('Math.random'), '0.1.61 must not add presentation RNG.');
 assert(!scene061Source.includes('submitIntent('), '0.1.61 scene must keep gameplay authority outside presentation.');
+assert(!scene062Source.includes('Math.random'), '0.1.62 presentation must not add a second RNG stream.');
+assert(!scene062Source.includes('submitIntent('), '0.1.62 presentation must not mutate gameplay authority.');
 
 assert(
   !pickerSource.includes('1280, 720'),
-  'Branch picker must not restore a full-screen dim surface that hides route context.',
+  'Historical Branch picker must not restore a full-screen dim surface that hides route context.',
 );
 assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
 
-console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained through 0.1.61 runtime');
+console.log('[canonical-presentation-0561] PASS canonical camera/HUD retained through 0.1.62 wrapper; legacy picker remains dormant compatibility code');
