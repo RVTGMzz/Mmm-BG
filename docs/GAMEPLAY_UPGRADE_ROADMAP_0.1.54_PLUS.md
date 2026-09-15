@@ -1,6 +1,6 @@
 # MeMeMe Gameplay Upgrade Roadmap — 0.1.54+
 
-Status: **approved working roadmap**.
+Status: **approved working roadmap / updated after 0.1.56 manual UI review**.
 
 This roadmap defines the transition from the Draft D sandbox into the standard `START_PLAYTEST.bat` gameplay flow.
 
@@ -36,7 +36,7 @@ Locked candidate invariants:
 - no branch may create backward movement, cycles, dead ends or endless wandering;
 - Draft D contains **5 Mini Game spaces**, `M09 / M17 / M26 / M35 / M44`.
 
-0.1.55 passed CI as the first canonical Draft D package. User runtime validation is still separate from CI validation.
+0.1.55 passed CI as the first canonical Draft D gameplay package. User visual acceptance is separate from CI validation.
 
 ## Jail / Hospital release rule — locked
 
@@ -63,7 +63,7 @@ Holding locations remove a player from the current Mini Game participant pool:
 
 Implementation dependency: authoritative enforcement lands when 0.1.57 introduces real Jail/Hospital holding state. 0.1.59 may deepen Mini Game types and pacing, but must not change this eligibility rule.
 
-## 0.1.56 — Give branches gameplay identity — IMPLEMENTED CANDIDATE
+## 0.1.56 — Give branches gameplay identity — FUNCTIONAL CI CANDIDATE
 
 Purpose: make left/right choices meaningful without creating an objectively best route.
 
@@ -75,16 +75,52 @@ Locked branch identities:
 - the other route at each junction is shown as **PHỐ CHÍNH** with mixed content;
 - route identity comes from node content distribution, not hidden distance advantage;
 - equal movement length between split and merge remains locked for this candidate;
-- branch picker now shows flavor, route summary and risk instead of legacy node/parity debug copy.
+- branch picker shows flavor, route summary and risk instead of legacy node/parity debug copy.
+
+0.1.56 is CI-green for gameplay/regression coverage, but Ron's manual test on 2026-09-15 exposed that `START_PLAYTEST.bat` still uses the old prototype presentation shell. Therefore 0.1.56 is **not visually accepted as the canonical build**.
+
+Root-cause audit:
+`docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
 
 Relative balance between the three flavors is intentionally provisional until 0.1.60 real-match economy tuning.
 
-## 0.1.57 — Complete Jail / Hospital / Lottery integration — NEXT
+## 0.1.56.1 — Canonical Presentation Consolidation — IMMEDIATE BLOCKER
+
+Purpose: make `START_PLAYTEST.bat` look and behave like the primary/best gameplay build before adding deeper systems.
+
+Required work:
+
+- preserve all 0.1.56 authoritative gameplay/state logic;
+- replace the old fixed/full-board presentation with a close active-player camera;
+- reuse/extract the proven Draft D preview camera techniques instead of duplicating gameplay state;
+- fixed screen-space four-corner HUD: P1 TL / P2 TR / P3 BL / P4 BR;
+- active player clearly highlighted;
+- branch junction briefly frames both routes, then returns to close follow;
+- explicit Overview/full-map mode only;
+- make the 44-space greybox readable without giant overlapping circles;
+- integrate Mini Game/Job identity cleanly into tile presentation;
+- resize/reframe TIN TỨC/LÁ BÀI surfaces so board context and HUD are not swallowed;
+- replace chained version-label text mutation with one authoritative visible build source;
+- visible runtime must not incorrectly show `0.1.25` when running 0.1.56+;
+- keep replay/checksum, HOST authority, multiplayer parity, movement guard, Job, Mini Game payout ownership, audio and final-result invariants green.
+
+Manual acceptance is required before calling the presentation shell canonical.
+
+Design sources:
+- `docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
+- `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+- `docs/UI_FINAL_PLAYER_HUD.md`
+- `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+- `src/scenes/FinalMapPreviewScene052.ts` as implementation reference only
+
+Do not mix 0.1.57 special-location gameplay into this pass.
+
+## 0.1.57 — Complete Jail / Hospital / Lottery integration — AFTER 0.1.56.1
 
 - HOST-authoritative holding state;
 - locked release-face rules;
 - release die only checks escape/recovery;
-- successful release opens a fresh movement roll in the same turn;
+- successful release traverses the visible 3-space exit route and opens a fresh movement roll in the same turn;
 - Lottery = `D6 × 20 B$`;
 - TIN TỨC / LÁ BÀI can send valid targets to Jail/Hospital through explicit effects;
 - Mini Game participant list excludes Jail/Hospital players;
@@ -129,20 +165,19 @@ Measure with the real integrated board before tuning:
 
 Do not rebalance the economy from empty-map theory alone.
 
-## Presentation comes after gameplay integration
+## Presentation lesson from 0.1.56
 
-Polish after the integrated loop is stable:
+The earlier plan said presentation polish could wait until after gameplay integration. Manual testing showed that this went too far: the new 44-space authoritative board was being judged through an old fixed-screen prototype shell.
 
-- close party-game camera;
-- branch preview/highlight before choice;
-- dice animation;
-- token reactions;
-- four-corner HUD polish;
-- event/card presentation;
-- final map art/landmarks.
+Going forward:
+
+- presentation may remain greybox;
+- final art may wait;
+- **camera/HUD/readability cannot wait** when topology changes materially;
+- canonical `START_PLAYTEST.bat` must always be the best integrated experience;
+- preview launchers are QA tools, not the place where superior camera/HUD behavior lives permanently.
 
 The combined visual reference remains:
-
 `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
 
 Its AI text/numbering is non-authoritative.
