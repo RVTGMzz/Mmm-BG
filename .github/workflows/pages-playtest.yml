@@ -45,6 +45,24 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Build compact public web mirror
+        run: npx vite build --config vite.web-mirror.config.ts --outDir dist-web --emptyOutDir
+
+      - name: Verify compact public web mirror
+        run: |
+          test -f dist-web/index.html
+          test -d dist-web/assets
+          grep -q 'phaser@3.90.0/dist/phaser.esm.js' dist-web/index.html
+          find dist-web/assets -maxdepth 1 -type f -printf '%f %s bytes\n'
+
+      - name: Upload compact public web mirror artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mememe-web-mirror-0.1.66
+          path: dist-web
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Configure GitHub Pages if enabled
         id: pages
         continue-on-error: true
@@ -58,7 +76,7 @@ jobs:
 
       - name: Pages enablement note
         if: steps.pages.outcome != 'success'
-        run: echo "GitHub Pages is not enabled yet. In repository Settings > Pages, set Source to GitHub Actions once; future pushes will deploy automatically."
+        run: echo "GitHub Pages is not enabled yet. The compact public mirror artifact is still uploaded for syncing to ronvotri-MeMeMe-Web-Playtest."
 
   deploy:
     if: needs.build.outputs.pages_status == 'success'
