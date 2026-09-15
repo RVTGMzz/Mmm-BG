@@ -28,79 +28,101 @@ Never regress:
 
 Keep visible names **TIN TỨC / LÁ BÀI**.
 
-## 2. Current gameplay candidate — MVP 0.1.62
+## 2. Current candidate — MVP 0.1.63
 
-0.1.62 was selected from direct human feedback after Ron tested the board presentation:
-- zoom normal gameplay closer;
-- replace rectangular movement spaces with larger round spaces;
-- remove manual branch choice;
-- restore luck: **odd D6 = LEFT, even D6 = RIGHT**.
+**0.1.63 — UI Readability + Smooth Follow Polish**
 
-Build name:
-**0.1.62 — Random Branch + Round Tile Readability**
+This scope came directly from Ron's screenshot/runtime feedback on 0.1.62:
+- central event/chat panel was too small;
+- camera should move more softly while tokens move;
+- player tokens should be slightly smaller;
+- round movement spaces should be slightly larger.
 
-Manual runtime status: **PENDING RON ACCEPTANCE**.
+The same screenshot also exposed a presentation bug: the 0.1.62 build still displayed the old 0.1.61 header/badge because canonical UI labels live inside nested containers and the 0.1.62 label updater only scanned top-level objects. 0.1.63 fixes that recursively.
+
+Manual status: **PENDING RON ACCEPTANCE**.
 
 ## 3. Current runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene062 as ActiveBoardScene`
+`CareerMinigameBoardScene063 as ActiveBoardScene`
 
 Inheritance:
-`062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-0.1.62 therefore retains:
-- 0.1.61 local Playtest Match Report;
-- 0.1.60 one-lap finish lock / economy;
-- 0.1.59 Job + five Mini Game arena identities;
-- 0.1.58 TIN TỨC / LÁ BÀI depth;
-- 0.1.57 Jail / Hospital / Lottery authority;
-- 0.1.56.1 canonical camera/HUD architecture;
-- 0.1.48 stale-token/audio/dice protection.
+0.1.63 is presentation-only. It inherits all 0.1.62 gameplay authority unchanged.
 
-## 4. 0.1.62 authoritative random branching
+## 4. 0.1.62 gameplay retained beneath 0.1.63
 
-Live human/CPU play no longer chooses a route manually.
+Live branching remains HOST-generated from the already-authoritative movement D6:
+- `1 / 3 / 5` -> **TRÁI**;
+- `2 / 4 / 6` -> **PHẢI**.
 
-Rule:
-- D6 `1 / 3 / 5` -> **TRÁI**;
-- D6 `2 / 4 / 6` -> **PHẢI**.
+Rules:
+- no live manual branch picker;
+- no second RNG stream;
+- HOST appends existing `choose_branch` command with `automatic=true` + parity metadata;
+- replay wire format stays backward-compatible;
+- all three Draft D forks stay forward-only and equal-step.
+
+Dedicated regression:
+- `tests/random-branch-round-tiles-062.ts`
+- now explicitly proves 0.1.62 remains intact beneath the 0.1.63 wrapper.
+
+## 5. 0.1.63 presentation changes
 
 Implementation:
-- `src/core/board.ts::pickParityEdge()` honors explicit parity metadata first and falls back to stable `TRÁI` / `PHẢI` edge labels on Draft D;
-- `src/core/authority.ts::autoResolveParityBranches062()` owns live branch resolution;
-- the movement D6 is the only source of chance, no second RNG is consumed;
-- after a `roll` reaches a fork with remaining pips, HOST derives the route and appends the existing `choose_branch` command with `automatic=true` and parity metadata;
-- replay wire format stays backward-compatible;
-- clients do not receive a live manual `BRANCH_CHOICE` pause;
-- old BranchPicker code remains dormant historical compatibility code beneath 0.1.62.
+- `src/scenes/CareerMinigameBoardScene063.ts`
+- `tests/ui-smooth-polish-063.ts`
+- `docs/PLAYTEST_0.1.63_UI_SMOOTH_POLISH.md`
 
-Dedicated gate:
-- `tests/random-branch-round-tiles-062.ts`
-- checks all three Draft D junctions for 1/3/5 LEFT and 2/4/6 RIGHT;
-- uses an immediate-junction authority fixture to prove both odd/even HOST auto-routing;
-- proves no client RNG and no presentation gameplay mutation.
+### Larger event/chat presentation
 
-## 5. 0.1.62 readability pass
+The active `MatchPresentationLayer` is wrapped presentation-only:
+- landing/event contents scale **1.18x**;
+- cinematic Card/News contents scale **1.14x**;
+- no gameplay intent, state mutation or RNG is added.
 
-Camera:
-- normal active-token follow zoom = **2.15x** (was 1.75x);
-- Overview remains **0.88x** via `TỔNG QUAN` / keyboard `O`.
+### Smoother camera follow
 
-Round movement spaces in `CareerMinigameBoardScene062`:
-- inherited rectangular bodies are destroyed, not stacked;
-- normal radius = 23px;
-- feature radius = 27px;
-- anchor radius = 29px;
-- Jail/Hospital hold radius = 32px;
-- authoritative coordinates, labels, colors and tile logic remain unchanged.
+The existing 2.15x close camera is retained.
 
-Visible 0.1.62 badge reminds:
-`LẺ ← TRÁI • CHẴN → PHẢI`
+0.1.63 changes follow behavior to:
+- `roundPixels=false` to remove tiny pixel-step judder;
+- follow lerp **0.075** on both axes for a softer glide behind moving tokens;
+- Overview remains available through `TỔNG QUAN` / keyboard `O` at the inherited 0.88x overview framing.
 
-This is intentionally a readability/form pass. Final per-tile art is deferred.
+### Smaller tokens
 
-## 6. Locked Draft D / gameplay foundation retained
+Player token containers render at **0.82x** presentation scale.
+
+The authoritative token coordinate, movement queue and stale-token guard are unchanged. The wrapper reapplies 0.82x after inherited reconciliation paths that intentionally reset scale to 1.
+
+### Larger round movement spaces
+
+0.1.62 baseline radii were:
+- normal 23;
+- feature 27;
+- anchor 29;
+- Jail/Hospital hold 32.
+
+0.1.63 presentation radii are:
+- normal **27**;
+- feature **31**;
+- anchor **33**;
+- Jail/Hospital hold **36**.
+
+Coordinates, tile identity and gameplay effects remain unchanged.
+
+### Nested build-label fix
+
+0.1.63 recursively visits nested containers so the visible canonical UI now updates to:
+- `CITY • MVP 0.1.63 • UI READABILITY + SMOOTH FOLLOW`
+- `PLAYTEST 0.1.63 • LẺ ← TRÁI • CHẴN → PHẢI`
+
+The report schema itself intentionally remains 0.1.61 because 0.1.63 does not change telemetry fields.
+
+## 6. Locked Draft D/gameplay foundation retained
 
 Board:
 - exactly 44 main spaces `M01..M44`;
@@ -110,7 +132,6 @@ Board:
 - M23 Lottery;
 - M34 Hospital Gate;
 - Mini Game spaces M09/M17/M26/M35/M44;
-- three forward-only equal-step Left/Right junctions;
 - no backward traps, cycles, dead ends or hidden distance shortcuts.
 
 Branch identities remain:
@@ -125,104 +146,73 @@ Special locations remain:
 - Lottery = authoritative D6 × 20 B$;
 - held players excluded from Mini Games.
 
-0.1.60 economy remains unchanged in 0.1.62:
+0.1.60 economy remains unchanged:
 - start 200 B$;
 - first-lap READY finish-stop and spare-pip discard;
 - final B$ lock + retired finishers;
 - main money four -20 / four +25;
 - TIỀN branch +25 / -20 / +25;
-- existing Card / News values unchanged;
+- existing Card/News values unchanged;
 - Mini Game canonical total 50 B$ for 3+/4 and 30 B$ direct 1v1.
 
-## 7. 0.1.61 report remains available
+## 7. Report / QA retained
 
-Result screen still exposes `📊 BÁO CÁO PLAYTEST`.
-
-Report remains:
-- local-only;
+0.1.61 local Playtest Match Report remains inherited and local-only:
 - deterministic from authoritative MatchState/eventLog;
-- no network upload/fetch;
+- no upload/fetch;
 - no gameplay intent or state mutation;
 - no extra RNG;
-- copy via browser clipboard with local fallback.
+- `COPY REPORT` remains available after result/podium.
 
-Use this report for 0.1.62 human feedback.
+## 8. 0.1.62 simulation/sentinel baseline retained
 
-## 8. Simulation comparison after intentional routing change
+Because 0.1.63 is presentation-only, the active 0.1.62 deterministic gameplay fingerprints remain valid.
 
-The existing 32-match deterministic harness still runs seeds `611100..611131` through the real current HOST flow. Because 0.1.62 intentionally changes route resolution, the old 0.1.61.1 gameplay fingerprints are historical comparison data, not active balance targets.
-
-Current 0.1.62-routing batch:
-- turns avg **56.7**, min 46, p50 54, p90 63, max 73;
-- commands avg **89.1**, min 69, p50 86, p90 103, max 123;
-- final table B$ avg **1342.8**, min 1001, p50 1320, p90 1555, max 1765;
-- final B$ spread avg **120.4**, min 27, p50 110, p90 188, max 253;
-- movement rolls avg 53;
-- release rolls avg 7.1;
+32-match current-routing batch, seeds `611100..611131`:
+- turns avg 56.7, p50 54, p90 63, max 73;
+- commands avg 89.1, p50 86, p90 103, max 123;
+- final table B$ avg 1342.8;
+- final spread avg 120.4, p50 110, p90 188, max 253;
 - Cards avg 7.9;
 - News avg 6.4;
 - Mini Games avg 5.0;
 - Mini payout avg 230 B$;
-- Jobs selected avg 3.8;
-- Lottery count avg 0.9;
-- Lottery payout avg 63.8 B$;
-- first-finisher seat counts P1/P2/P3/P4 = `11/5/6/10`;
-- money-leader seat counts P1/P2/P3/P4 = `9/9/6/8`.
+- Lottery count avg 0.9.
 
-For comparison, historical 0.1.61.1 averages were 60.2 turns and 126.3 B$ spread. Do not treat either bot batch as a substitute for human feel feedback.
+Exact active sentinels:
 
-## 9. 0.1.62 exact outlier replay sentinels
-
-Active sentinel test:
-- `tests/outlier-replay-062.ts`
-
-Historical `tests/outlier-replay-0612.ts` and its old fingerprints are retained as history but are no longer the active CI gameplay sentinel because 0.1.62 intentionally changes branching.
-
-### Seed 611119 — longest current batch
+Seed `611119`, longest batch:
 - checksum `9d83fad4`;
 - 73 turns;
-- 123 authoritative commands / 107 submitted commands / 16 HOST-auto commands;
-- final table 1765 B$, spread 175 B$;
-- movement/release = 66/16;
-- Cards 12, News 4;
-- Mini Games 9, payout 415 B$;
-- Jobs 4;
-- Lottery 3, payout 340 B$;
-- finish `P2 > P4 > P1 > P3`;
-- final B$ `P1=433 / P2=403 / P3=552 / P4=377`.
+- 123 authoritative / 107 submitted / 16 HOST-auto commands;
+- table 1765 B$, spread 175;
+- finish `P2 > P4 > P1 > P3`.
 
-### Seed 611113 — largest current B$ spread
+Seed `611113`, largest spread:
 - checksum `1074ba94`;
 - 53 turns;
-- 79 authoritative commands / 68 submitted commands / 11 HOST-auto commands;
-- final table 1465 B$, spread 253 B$;
-- movement/release = 44/13;
-- Cards 4, News 7;
-- Mini Games 4, payout 175 B$;
-- Jobs 3;
-- Lottery 2, payout 160 B$;
-- finish `P4 > P3 > P1 > P2`;
-- final B$ `P1=488 / P2=390 / P3=352 / P4=235`.
+- 79 authoritative / 68 submitted / 11 HOST-auto commands;
+- table 1465 B$, spread 253;
+- finish `P4 > P3 > P1 > P2`.
 
-These are regression sentinels, not balance targets.
+Historical 0.1.61.2 fingerprints remain history only.
 
-## 10. 0.1.62 code candidate
+## 9. 0.1.63 code candidate
 
 Code candidate before this documentation update is **FULL CI GREEN / PACKAGED**:
-- HEAD `1337c81d2e8ac45d7ce824cc5d7d3080afbfd147`;
-- push run `#2192` / `34941360593`;
-- artifact `mememe-playtest-0.1.62-random-branch-round-tiles`;
-- artifact ID `10385173205`;
-- size `8,590,917 bytes`;
-- SHA256 `cbc05669e7444156ceb97ad9221dd0560a47aadde5adb1eae70e5339c386c3fc`;
+- HEAD `811657a9de9042ccbd9fe940342bc0ea36aac636`;
+- push run `#2210` / `34951875619`;
+- artifact `mememe-playtest-0.1.63-ui-smooth-polish`;
+- artifact ID `10389945097`;
+- size `8,591,209 bytes`;
+- SHA256 `703475851f0fccefbe89a1c0eddbc98b71bd39801d78b8587f686d893c405d21`;
 - expires 2026-09-29.
 
-Run #2192 passed the complete suite including:
+Run #2210 passed the complete suite, including:
 - build/typecheck;
 - replay / lockstep / HOST authority;
 - two-tab / multiplayer / CPU stress;
-- random-target-no-opponent regression;
-- presentation / Draft D topology / branch identities;
+- presentation/content/economy/pacing;
 - Job Hub + Mini Game HOST payout ownership;
 - result/podium chain;
 - 0.1.48 stale-token/audio/dice gate;
@@ -232,26 +222,28 @@ Run #2192 passed the complete suite including:
 - 0.1.60 finish-lock/economy;
 - 0.1.61 local report;
 - 32-match simulation harness;
-- 0.1.62 exact outlier sentinel pack;
-- 0.1.62 odd/even HOST branch + round tile/zoom gate;
+- 0.1.62 exact outlier sentinels;
+- 0.1.62 HOST odd/even branch regression;
+- new 0.1.63 UI/smooth-follow gate;
 - image/package validation;
-- playtest guide copy;
+- 0.1.63 guide copy;
 - artifact upload.
 
-## 11. Next manual test
+## 10. Next manual test
 
-Use `docs/PLAYTEST_0.1.62_RANDOM_BRANCH_ROUND_TILES.md` from the packaged artifact.
+Use `docs/PLAYTEST_0.1.63_UI_SMOOTH_POLISH.md` from the packaged artifact.
 
 Ron should specifically check:
-1. no branch picker appears in live play;
-2. odd roll routes LEFT and even roll routes RIGHT whenever a fork must be resolved;
-3. 2.15x follow zoom feels close enough without becoming cramped;
-4. round spaces are easier to read and follow than rectangular spaces;
-5. Overview/O still gives a useful full-board view;
-6. watch for token snap-back after many turns;
-7. finish a match and paste the complete Playtest Report plus short subjective notes.
+1. central event/chat panels are now large enough but do not dominate the board;
+2. camera glides smoothly behind token movement and does not feel floaty/late;
+3. tokens are smaller but still easy to track;
+4. larger circles are easier to read;
+5. `TỔNG QUAN / O` still exits/returns cleanly;
+6. visible header/badge correctly shows 0.1.63 instead of stale 0.1.61;
+7. watch long-run token snap-back after many turns;
+8. finish a match and paste the Playtest Report plus subjective notes if practical.
 
-0.1.62 must **not** be called user-accepted until Ron manually validates it.
+Do **not** call 0.1.63 user-accepted until Ron manually validates it.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
