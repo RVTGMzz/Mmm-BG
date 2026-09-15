@@ -1,23 +1,60 @@
 import Phaser from 'phaser';
+import { browserSession } from '../core/browserSession';
+import { pendingCpuFreshRollAfterRelease066 } from '../core/cpuReleaseResume066';
+import type { ClientIntentType } from '../core/authority';
+import type { MatchEventValue, MatchState } from '../core/matchState';
 import { CareerMinigameBoardScene0651 } from './CareerMinigameBoardScene0651';
 
+type CpuReleaseResumeInternals066 = {
+  match: MatchState;
+  presentation?: { isBlocking(): boolean };
+  submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
+};
+
 /**
- * 0.1.66 presentation wrapper.
+ * 0.1.66 shipped-flow wrapper.
  *
- * Gameplay stays in the inherited HOST-authoritative chain. This layer only:
- * - exposes the 0.1.66 build label;
- * - removes the redundant dice emoji from Job presentation when the briefcase is shown;
- * - reflows Mini Game result/ranking text so headings and multiline bodies never collide.
+ * Retains the inherited HOST-authoritative gameplay chain while adding:
+ * - unified 0.1.66 build label;
+ * - redundant Job dice-icon cleanup;
+ * - Mini Game result/ranking reflow;
+ * - a browser CPU watchdog that wakes the existing HOST roll intent after a
+ *   successful same-turn Jail/Hospital release once presentation is unblocked.
  */
 export class CareerMinigameBoardScene066 extends CareerMinigameBoardScene0651 {
+  private handledCpuReleaseEventSeq066 = 0;
+
   create(): void {
     super.create();
+    this.handledCpuReleaseEventSeq066 = 0;
     this.polishPresentation066();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.handledCpuReleaseEventSeq066 = 0;
+    });
   }
 
   update(): void {
     super.update();
     this.polishPresentation066();
+    this.resumeCpuFreshRollAfterRelease066();
+  }
+
+  private resumeCpuFreshRollAfterRelease066(): void {
+    const internals = this as unknown as CpuReleaseResumeInternals066;
+    if (!internals.match) return;
+
+    const eventSeq = pendingCpuFreshRollAfterRelease066(
+      internals.match,
+      browserSession.current.cpuSeatIds,
+      internals.presentation?.isBlocking() ?? false,
+      this.handledCpuReleaseEventSeq066,
+    );
+    if (eventSeq === undefined) return;
+
+    // Mark before submission so a delayed local transport cannot submit twice.
+    // submitIntent still goes through the existing HOST authority/replay path.
+    this.handledCpuReleaseEventSeq066 = eventSeq;
+    internals.submitIntent('roll', {});
   }
 
   private polishPresentation066(): void {
