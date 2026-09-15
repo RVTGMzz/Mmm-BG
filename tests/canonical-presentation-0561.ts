@@ -14,11 +14,12 @@ const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene
 const scene057Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene057.ts', import.meta.url), 'utf8');
 const scene058Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene058.ts', import.meta.url), 'utf8');
 const scene059Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
+const scene060Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
 const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.meta.url), 'utf8');
 
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
 assert(!CANONICAL_PRESENTATION_0561.badge.includes('0.1.25'));
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.59');
+assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.60');
 assert(CANONICAL_PRESENTATION_0561.normalFollowZoom > CANONICAL_PRESENTATION_0561.branchDecisionZoom);
 assert(CANONICAL_PRESENTATION_0561.branchDecisionZoom > CANONICAL_PRESENTATION_0561.overviewZoom);
 
@@ -37,8 +38,12 @@ assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
 assert(
-  mainSource.includes("CareerMinigameBoardScene059 as ActiveBoardScene"),
+  mainSource.includes("CareerMinigameBoardScene060 as ActiveBoardScene"),
   'Canonical START_PLAYTEST runtime may advance gameplay wrappers but must keep the 0.1.56.1 presentation architecture.',
+);
+assert(
+  scene060Source.includes('extends CareerMinigameBoardScene059'),
+  '0.1.60 pacing/economy wrapper must retain 0.1.59 and the full validated presentation chain.',
 );
 assert(
   scene059Source.includes('extends CareerMinigameBoardScene058'),
@@ -65,6 +70,8 @@ assert(!sceneSource.includes('pickParityEdge'), 'Parity AUTO routing must not be
 assert(!sceneSource.includes('0.1.25'), 'Canonical presentation must not encode the leaked 0.1.25 label.');
 assert(!scene059Source.includes('Math.random'), '0.1.59 must not add presentation RNG.');
 assert(!scene059Source.includes('submitIntent('), '0.1.59 scene must keep gameplay authority outside presentation.');
+assert(!scene060Source.includes('Math.random'), '0.1.60 must not add presentation RNG.');
+assert(!scene060Source.includes('submitIntent('), '0.1.60 scene must keep gameplay authority outside presentation.');
 
 assert(
   !pickerSource.includes('1280, 720'),
@@ -74,4 +81,4 @@ assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
 
-console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained through 0.1.59');
+console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained through 0.1.60');
