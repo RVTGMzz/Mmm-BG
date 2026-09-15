@@ -20,7 +20,7 @@ const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.me
 
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
 assert(!CANONICAL_PRESENTATION_0561.badge.includes('0.1.25'));
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61.1');
+assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
 assert(CANONICAL_PRESENTATION_0561.normalFollowZoom > CANONICAL_PRESENTATION_0561.branchDecisionZoom);
 assert(CANONICAL_PRESENTATION_0561.branchDecisionZoom > CANONICAL_PRESENTATION_0561.overviewZoom);
 
@@ -77,8 +77,8 @@ assert(!scene059Source.includes('Math.random'), '0.1.59 must not add presentatio
 assert(!scene059Source.includes('submitIntent('), '0.1.59 scene must keep gameplay authority outside presentation.');
 assert(!scene060Source.includes('Math.random'), '0.1.60 must not add presentation RNG.');
 assert(!scene060Source.includes('submitIntent('), '0.1.60 scene must keep gameplay authority outside presentation.');
-assert(!scene061Source.includes('Math.random'), '0.1.61.x must not add presentation RNG.');
-assert(!scene061Source.includes('submitIntent('), '0.1.61.x scene must keep gameplay authority outside presentation.');
+assert(!scene061Source.includes('Math.random'), '0.1.61 must not add presentation RNG.');
+assert(!scene061Source.includes('submitIntent('), '0.1.61 scene must keep gameplay authority outside presentation.');
 
 assert(
   !pickerSource.includes('1280, 720'),
@@ -88,4 +88,4 @@ assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
 
-console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained through 0.1.61.1');
+console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained through 0.1.61 runtime');
