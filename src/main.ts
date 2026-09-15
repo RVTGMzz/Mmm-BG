@@ -26,8 +26,8 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene0633 aligned visible landing effects and special-release/fresh-D6 presentation.
 // CareerMinigameBoardScene0634 as ActiveBoardScene resumes unspent movement after Job Hub and commits visible B$ only at its presented effect.
 // CareerMinigameBoardScene064 expands board spacing, makes J/H corridors real -20 B$ movement, and rebalances Card/Step SFX.
-// CareerMinigameBoardScene065 shows real Job/salary HUD data, rounds UI rectangles and hides the debug footer.
-// CareerMinigameBoardScene0651 fixes rounded-proxy ghosts and adds browser/Steam Deck gamepad UI control.
+// CareerMinigameBoardScene065 as ActiveBoardScene showed real Job/salary HUD data, rounded UI and hid the debug footer.
+// CareerMinigameBoardScene0651 as ActiveBoardScene fixes rounded-proxy ghosts and adds browser/Steam Deck gamepad UI control.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
