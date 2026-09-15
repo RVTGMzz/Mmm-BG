@@ -147,18 +147,20 @@ jobs:
         run: npm run test:outlier-replay-062
       - name: 0.1.62 HOST parity branches and round tile readability
         run: npm run test:random-branch-round-tiles-062
+      - name: 0.1.63 UI readability and smooth follow polish
+        run: npm run test:ui-smooth-polish-063
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.62 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.62_RANDOM_BRANCH_ROUND_TILES.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.63 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.63_UI_SMOOTH_POLISH.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.62 random branch round tile build
+      - name: Upload MVP 0.1.63 UI smooth polish build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.62-random-branch-round-tiles
+          name: mememe-playtest-0.1.63-ui-smooth-polish
           path: dist
           if-no-files-found: error
           retention-days: 14
