@@ -13,176 +13,152 @@ Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deter
 
 ## Current candidate
 
-**MVP 0.1.64 — Expanded Board + Release Corridor + Audio Rebalance**
+**MVP 0.1.65 — Job HUD + Rounded UI + Debug Footer Cleanup**
 
-Human feedback driving this build:
-- board spaces were still too clustered, especially TÙ/J1/J2/J3 and BV/H1/H2/H3;
-- requested roughly 2x map spacing and 1.5x round spaces;
-- successful Jail/Hospital release should leave the token standing at TÙ/BV, then a fresh movement D6 should traverse the three internal spaces;
-- J1/J2/J3 and H1/H2/H3 should all be `-20 B$` landing spaces;
-- Card SFX should be 20% softer, Step SFX 30% stronger;
-- camera is already confirmed good and must be preserved.
+Human feedback driving this candidate:
+- replace vague `Có việc / Chưa việc` inside player/CPU cards with the real occupation and salary;
+- make rectangular gameplay UI use rounded corners;
+- hide the red debug/playtest footer at the bottom of gameplay.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-### 0.1.64 Card-target dice hotfix
-
-Ron reported a UI bug from runtime: while a Card target picker was open, the large direct dice could reappear behind the modal because the authoritative turn still remained `PRE_ROLL_ACTION`.
-
-Hotfix behavior:
-- while `cardPickerOpen === true`, the direct dice is hidden and non-clickable;
-- this covers the whole Card interaction chain: hand picker, target picker and tactical-choice picker;
-- after the Card interaction closes, the dice may return only if the normal direct-dice policy still allows rolling;
-- no gameplay authority, RNG, Card effect, movement, camera, economy or board rule is changed.
-
-Implementation:
-- `src/ui/directDicePolicy.ts` now treats an open Card picker as a hard visibility block;
-- `src/scenes/DirectDiceBoardScene.ts` passes `cardPickerOpen` into both render sync and pointer validation;
-- `tests/direct-dice-030.ts` locks the regression: `PRE_ROLL_ACTION + cardPickerOpen=true -> dice hidden`.
-
-Hotfix code candidate before this documentation update:
-- HEAD `13ea3d8638ca43da399bab93ef7aa54a007002eb`;
-- push run `#2350` / `34992716873`;
-- full suite **65/65 PASS**;
-- artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
-- artifact ID `10405984035`;
-- SHA256 `b72a2cf064ec13c222441bd83ded3fb1b87e8f36b79b17379d4f017a046b57b5`.
+0.1.65 is presentation-only. Gameplay, RNG, economy, routing and camera must stay exactly on the 0.1.64 baseline.
 
 ## Runtime
 
-`CareerMinigameBoardScene064 as ActiveBoardScene`
+`CareerMinigameBoardScene065 as ActiveBoardScene`
 
 Inheritance:
-`064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
+`065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
 
-## Board spacing
+## Career HUD
 
-Board coordinates are expanded without changing canonical IDs/topology.
+New helper `src/ui/playerHud065.ts` derives HUD copy from authoritative player state and `jobs_mvp.json`.
 
-Current authored footprint:
-- width `2340 px`;
-- height `1020 px`.
+Employed example:
+- `💼 🩺 Bác sĩ Lv.2`
+- `💰 Lương: 110 B$/vòng`
 
-Round spaces are `1.5x` the 0.1.63 radii.
+Unemployed:
+- `💼 Chưa có nghề`
+- `💰 Lương: 0 B$/vòng`
 
-Automated geometry check measures every round-space pair after scaling and requires at least 12 px clearance. Current minimum is **15.0 px**, so the previous overlapping/chained clusters are no longer allowed by CI.
+HUD refreshes automatically after Job selection, promotion, demotion, firing or Job loss.
 
-Overview is reframed at zoom `0.46` for the larger board.
+## Rounded UI
 
-## Jail / Hospital release-in-place
+`CareerMinigameBoardScene065`:
+- replaces the square visual of all four player cards with rounded backings;
+- scans Rectangle-based gameplay overlays/buttons recursively;
+- draws rounded Graphics visuals while retaining the original Rectangle as the input hitbox;
+- mirrors fill/stroke every frame so hover and click states remain visible;
+- leaves full-screen dim overlays edge-to-edge intentionally.
 
-Release D6 remains release-only.
+This keeps existing interaction logic intact while softening the rectangular UI.
 
-Success now does:
-1. clear the hold;
-2. keep token standing on `TÙ` node 100 or `BV` node 110;
-3. set `lastRoll = null`;
-4. remain in the same turn at `PRE_ROLL_ACTION`;
-5. require a fresh movement D6;
-6. fresh D6 walks the actual internal corridor.
+## Debug footer removed
 
-Corridors:
-- Jail: `100 -> J1 -> J2 -> J3 -> node 12`;
-- Hospital: `110 -> H1 -> H2 -> H3 -> node 34`.
+The active gameplay scene hides the always-visible red footer/debug text whose copy begins with `PLAYTEST` or contains `LOCAL MATCH TELEMETRY`.
 
-Failed release remains held and ends the turn.
+The actual local playtest report remains available from the result/report UI.
 
-## Internal penalties
+Build header now reads:
+`CITY • MVP 0.1.65 • JOB HUD + ROUNDED UI`.
 
-The six internal spaces are now real landing money tiles:
-- J1/J2/J3 = `-20 B$` each;
-- H1/H2/H3 = `-20 B$` each.
+## Card target dice hotfix retained
 
-Passing over them does not charge. Landing on one resolves the penalty.
+The direct dice remains hidden and non-clickable for the whole Card UI flow while `cardPickerOpen=true`:
+- hand picker;
+- target picker;
+- tactical choice.
 
-Locked deterministic example:
-`enter Jail -> release success -> still at TÙ -> fresh D6=1 -> J1 -> then -20 B$`.
+The dice only returns when the Card UI is closed and ordinary roll policy permits it.
 
-Visible money still follows:
+## 0.1.64 gameplay retained
+
+Board:
+- ~2340 x 1020 authored footprint;
+- round spaces remain 1.5x;
+- minimum measured clearance remains 15.0 px.
+
+Jail/Hospital:
+- successful release clears hold but token stays on TÙ/BV;
+- release D6 is discarded;
+- fresh D6 is required same turn;
+- fresh D6 traverses the real J/H corridor.
+
+Penalties:
+- J1/J2/J3/H1/H2/H3 = `-20 B$` on landing only.
+
+Visible money order:
 `ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD UPDATE`.
 
-## Audio
-
-Runtime gains:
-- Card draw/play = `0.80`;
-- Step = `1.30`.
-
-The step boost uses WebAudio gain so it is not silently clamped by media-element volume.
+Audio:
+- Card draw/play `0.80`;
+- Step `1.30`.
 
 ## Camera retained and human-confirmed
 
 Ron already confirmed the camera fix is good.
 
-0.1.63.2 behavior remains inherited and regression-locked:
+0.1.63.2 behavior remains regression-locked:
 - camera follows the actor still visually moving;
 - long rolls remain centered;
 - idle camera returns to current player;
-- Overview/O remains the exception.
+- `TỔNG QUAN / O` remains the exception.
+
+0.1.65 does not alter camera code.
 
 ## Job + branch rules retained
 
-0.1.63.4 Job continuation remains:
-`roll 5 -> Job at step 2 -> resolve -> continue 3 pips`.
+Job continuation:
+`roll 5 -> Job at step 2 -> resolve -> continue 3 remaining pips`.
 
-HOST parity routing remains:
+HOST parity routing:
 - 1/3/5 -> LEFT;
 - 2/4/6 -> RIGHT.
 
-No manual picker and no second RNG stream.
+No manual branch picker and no second RNG stream.
 
 ## Deterministic QA
 
-0.1.64 intentionally changes route/economy outcomes, so historical 0.1.63.4 sentinels are preserved but no longer active for current gameplay.
+0.1.65 is presentation-only, therefore 0.1.64 gameplay sentinels remain active and unchanged.
 
-32-match batch seeds `611100..611131`:
-- turns avg 61.8, p50 60, p90 74, max 92;
-- commands avg 97.6, p50 96, p90 114, max 145;
-- final table B$ avg 1336.2;
-- spread avg 161.6, p50 142, p90 253, max 367;
-- movement rolls avg 58.2;
-- release rolls avg 7.4;
-- Cards avg 9.2;
-- News avg 7.4;
-- Mini Games avg 6.1;
-- Jobs selected avg 3.8;
-- Lottery count avg 1.2;
-- deterministic harness checksum `2fca6e9d`.
+32-match baseline still has deterministic checksum `2fca6e9d`.
 
-Active exact sentinels:
-- seed `611102` -> checksum `1dd42c7c`, 92 turns, 145 commands, finish IDs `[3,2,1,0]`;
-- seed `611113` -> checksum `856548f4`, 51 turns, spread 367 B$, finish IDs `[3,0,2,1]`.
+Exact sentinels still pass:
+- seed `611102` -> checksum `1dd42c7c`;
+- seed `611113` -> checksum `856548f4`.
+
+This proves the current candidate did not alter gameplay outcomes.
 
 ## Green code candidate before docs update
 
-Original 0.1.64 candidate:
-- HEAD `5d8f83b8ed3a009679e64bec62321d9743bdfd00`;
-- push run `#2340` / `34990342825`;
-- artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
-- artifact ID `10405701132`;
-- size `8,594,977 bytes`;
-- SHA256 `e88e4fe9c4dc7e6976d13896757d89f03665dbba96ebe7ab87f7ecb46070edb8`;
-- **65/65 meaningful CI steps PASS**.
+- HEAD `10dfe800eafd633b80779d79cd1e06edce584ad5`;
+- push run `#2370` / `34997984350`;
+- artifact `mememe-playtest-0.1.65-job-hud-rounded-ui`;
+- artifact ID `10408202631`;
+- size `8,595,544 bytes`;
+- SHA256 `84774febd816be36dbca3142d971dee86ef70a7f0e6101ee105c0672d5fe9c8e`;
+- **66/66 meaningful CI steps PASS**.
 
-The Card-target dice hotfix has a newer green candidate listed above and supersedes this artifact for manual testing.
+An initial run only failed because the historical 0.1.64 test required 064 to be the direct launcher scene. The test now requires 065 -> 064 inheritance while keeping all substantive 0.1.64 assertions unchanged.
 
 ## Manual check
 
-Use `docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md`.
+Use `docs/PLAYTEST_0.1.65_JOB_HUD_ROUNDED_UI.md`.
 
-Verify especially:
-- open a Card that requires another-player target: **no direct dice may appear behind the target modal**;
-- cancel/finish Card selection: dice returns only when the turn is actually roll-eligible;
-- board feels spacious and enlarged spaces do not touch;
-- TÙ/J1/J2/J3 and BV/H1/H2/H3 are clearly separated;
-- successful release stays at TÙ/BV until fresh movement D6;
-- fresh D6 visibly walks the internal corridor;
-- corridor `-20 B$` occurs only on landing/arrival;
-- Card SFX is 20% softer and Step SFX 30% stronger;
-- confirmed-good camera remains intact;
-- Job continuation remains correct.
+Verify:
+- actual Job title + level + salary appear in every player/CPU info card;
+- unemployed shows salary 0;
+- Job changes immediately update HUD;
+- main rectangular UI panels/buttons look rounded and remain clickable;
+- hover colors still work;
+- red debug/playtest footer is gone;
+- Card target modal never shows the direct dice behind it;
+- camera remains good on rolls 5/6;
+- 0.1.64 Jail/Hospital corridor and Job continuation remain correct.
 
-Do not call 0.1.64 accepted until Ron validates runtime behavior.
-
-0.1.49 Legacy Effect Audit remains historical input.
+Do not call 0.1.65 accepted until Ron validates runtime behavior.
 
 Do not merge PR #1.
