@@ -1,7 +1,7 @@
 export const CANONICAL_PRESENTATION_0561 = {
-  version: '0.1.56.1',
-  header: 'CITY • MVP 0.1.56.1 • CANONICAL PRESENTATION',
-  badge: 'PLAYTEST 0.1.56.1 • CLOSE CAMERA + 4-CORNER HUD',
+  version: '0.1.57',
+  header: 'CITY • MVP 0.1.57 • SPECIAL LOCATIONS',
+  badge: 'PLAYTEST 0.1.57 • JAIL + HOSPITAL + LOTTERY',
   normalFollowZoom: 1.75,
   branchDecisionZoom: 1.3,
   overviewZoom: 0.88,
