@@ -9,7 +9,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene0632 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0632';
+import { CareerMinigameBoardScene0633 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0633';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -21,7 +21,8 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene062 as ActiveBoardScene added HOST odd/even routing.
 // CareerMinigameBoardScene063 as ActiveBoardScene added UI/smooth-follow polish.
 // CareerMinigameBoardScene0631 as ActiveBoardScene was the first center-lock attempt.
-// 0.1.63.2 prioritizes the actor of the visual presentation still being animated.
+// CareerMinigameBoardScene0632 as ActiveBoardScene prioritizes the actor still animating.
+// 0.1.63.3 aligns visible landing effects and special-release/fresh-D6 presentation.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
