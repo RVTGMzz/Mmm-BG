@@ -137,18 +137,22 @@ jobs:
         run: npm run test:pacing-economy-060
       - name: 0.1.61 deterministic local playtest report
         run: npm run test:playtest-telemetry-061
+      - name: 0.1.61.1 deterministic full-match simulation baseline
+        env:
+          SIMULATION_BASELINE_OUTPUT: dist/SIMULATION_BASELINE_0.1.61.1.txt
+        run: npm run test:simulation-baseline-0611
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.61 playtest report guide to package
-        run: cp docs/PLAYTEST_0.1.61_PLAYTEST_REPORT.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.61.1 simulation baseline guide to package
+        run: cp docs/PLAYTEST_0.1.61.1_SIMULATION_BASELINE.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.61 playtest report build
+      - name: Upload MVP 0.1.61.1 simulation baseline build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.61-playtest-report
+          name: mememe-playtest-0.1.61.1-simulation-baseline
           path: dist
           if-no-files-found: error
           retention-days: 14
