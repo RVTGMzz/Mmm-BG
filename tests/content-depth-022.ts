@@ -58,14 +58,15 @@ assert.equal(averageNewsWeight, 60);
 assert.equal(news.reduce((sum, entry) => sum + entry.dropWeight, 0), 1000);
 
 assert.equal(drawWeightedNews(news, () => 0.10)?.effect.type, 'money_delta_self');
-assert.equal((drawWeightedNews(news, () => 0.10)?.effect as { amount: number }).amount, 30);
+assert.equal((drawWeightedNews(news, () => 0.10)?.effect as { amount: number }).amount, 25);
 assert.equal(drawWeightedNews(news, () => 0.50)?.effect.type, 'money_delta_all');
-assert.equal((drawWeightedNews(news, () => 0.50)?.effect as { amount: number }).amount, 15);
-assert.equal((drawWeightedNews(news, () => 0.60)?.effect as { amount: number }).amount, -40);
+assert.equal((drawWeightedNews(news, () => 0.50)?.effect as { amount: number }).amount, 10);
+assert.equal((drawWeightedNews(news, () => 0.60)?.effect as { amount: number }).amount, -30);
 assert.equal(drawWeightedNews(news, () => 0.75)?.effect.type, 'money_delta_all');
-assert.equal((drawWeightedNews(news, () => 0.75)?.effect as { amount: number }).amount, -15);
+assert.equal((drawWeightedNews(news, () => 0.75)?.effect as { amount: number }).amount, -10);
 assert.equal(drawWeightedNews(news, () => 0.80)?.effect.type, 'send_other_to_special');
 assert.equal(drawWeightedNews(news, () => 0.90)?.effect.type, 'money_delta_all');
+assert.equal((drawWeightedNews(news, () => 0.90)?.effect as { amount: number }).amount, -15);
 assert.equal(drawWeightedNews(news, () => 0.97)?.effect.type, 'normalize_to_average_self');
 
 const reactionIds = new Set(reactions.map((entry) => entry.id));
@@ -83,4 +84,4 @@ assert.equal(node4.title, 'NGÃ TƯ ĐÔNG NGHẸT');
 assert.equal(node18.title, 'HẺM TẮT');
 assert.notEqual(node1.description, node4.description, 'normal tiles should not all read as generic clones');
 
-console.log('[content-depth-022] PASS Card/News weights stay 1000 and 0.1.58 adds special-location depth');
+console.log('[content-depth-022] PASS Card/News weights stay 1000 while 0.1.60 tunes economy amplitudes');
