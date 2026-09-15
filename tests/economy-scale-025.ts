@@ -44,12 +44,17 @@ assert(
 const selfNewsAmounts = news
   .filter((entry) => entry.effect.type === 'money_delta_self')
   .map((entry) => entry.effect.amount);
-assert(selfNewsAmounts.filter((amount) => amount === 30).length === 3, 'Positive News should be +30B$.');
-assert(selfNewsAmounts.filter((amount) => amount === -40).length === 3, 'Negative News should be -40B$.');
+assert(selfNewsAmounts.filter((amount) => amount === 30).length === 3, 'Positive self News should stay +30B$.');
+assert(selfNewsAmounts.filter((amount) => amount === -40).length === 3, 'Negative self News should stay -40B$.');
 
-const groupNews = news.filter((entry) => entry.effect.type === 'money_delta_all');
-assert.equal(groupNews.length, 2);
-assert(groupNews.every((entry) => entry.effect.type === 'money_delta_all' && entry.effect.amount === -20));
+// 0.1.58 adds immediate whole-table +15/-15 News while retaining the two -20 group hits.
+// This expands event variety without changing board money tiles or introducing timed economy states.
+const groupNewsAmounts = news
+  .filter((entry) => entry.effect.type === 'money_delta_all')
+  .map((entry) => entry.effect.type === 'money_delta_all' ? entry.effect.amount : 0)
+  .sort((a, b) => a - b);
+assert.deepEqual(groupNewsAmounts, [-20, -20, -15, 15]);
+assert(groupNewsAmounts.every((amount) => Math.abs(amount) <= 20), 'Immediate group News must stay on the compact B$ scale.');
 
 const catchUp = cards.find((card) => card.id === 'ACT_016');
 assert(catchUp && catchUp.effect.type === 'catch_up_bonus');
@@ -67,4 +72,4 @@ assert(richTax && richTax.effect.type === 'rich_tax' && richTax.effect.percent =
 const groupLoss = cards.filter((card) => card.effect.type === 'percent_loss_all_others');
 assert(groupLoss.every((card) => card.effect.type === 'percent_loss_all_others' && card.effect.percent === 0.3));
 
-console.log('[economy-scale-025] PASS start=200B$ + Draft D -20/+25 tiles + News/Card economy scale');
+console.log('[economy-scale-025] PASS start=200B$ + Draft D -20/+25 tiles + compact immediate global News + Card economy scale');
