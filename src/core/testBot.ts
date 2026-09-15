@@ -79,6 +79,7 @@ export function chooseTestBotIntent(
   if (state.turn.phase !== 'PRE_ROLL_ACTION') return undefined;
 
   const canPlayCard =
+    actor.specialHold === undefined &&
     actor.cardBlockTurns <= 0 &&
     actor.cardsPlayedThisTurn < MVP_MAX_CARD_PLAYS_PER_TURN &&
     actor.handCardIds.length > 0;
@@ -116,6 +117,6 @@ export function chooseTestBotIntent(
   return {
     type: 'roll',
     data: {},
-    reason: 'đổ xúc xắc',
+    reason: actor.specialHold ? `đổ xúc xắc ${actor.specialHold} release` : 'đổ xúc xắc',
   };
 }
