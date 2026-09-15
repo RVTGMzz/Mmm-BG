@@ -219,7 +219,7 @@ These are regression sentinels, not balance targets.
 
 ## 11. 0.1.64 green code candidate
 
-Code candidate before this documentation update is **FULL CI GREEN / PACKAGED**:
+Original 0.1.64 candidate before the Card-target UI hotfix:
 - HEAD `5d8f83b8ed3a009679e64bec62321d9743bdfd00`;
 - push run `#2340` / `34990342825`;
 - artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
@@ -228,37 +228,50 @@ Code candidate before this documentation update is **FULL CI GREEN / PACKAGED**:
 - SHA256 `e88e4fe9c4dc7e6976d13896757d89f03665dbba96ebe7ab87f7ecb46070edb8`;
 - expires 2026-09-29.
 
-Run #2340 passed **65/65 meaningful CI steps**, including:
-- typecheck/build;
-- replay/lockstep/HOST authority;
-- two-tab/multiplayer/CPU stress;
-- 0.1.48 stale-token/audio/dice guard;
-- branch/topology identity chain;
-- 0.1.64 release-in-place + fresh D6 corridor authority;
-- 32-match simulation baseline;
-- locked 0.1.64 outlier sentinels;
-- odd/even HOST branch routing;
-- human-confirmed camera regression gates;
-- 0.1.63.4 Job continuation + landing-timed B$;
-- **0.1.64 spacing x1.5 with measured min gap 15.0 px**;
-- **J/H six penalty nodes = -20 B$**;
-- **Card 0.8 / Step 1.3 audio gain**;
-- package validation and artifact upload.
+## 12. Card target picker direct-dice hotfix
 
-## 12. Next manual test
+Ron reported that while choosing another player as the target of a Card, the large direct dice appeared behind the target modal.
 
-Use `docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md` from the artifact.
+Root cause:
+- Card UI correctly kept `cardPickerOpen = true` throughout hand/target/tactical selection;
+- direct-dice visibility only looked at turn phase/control/CPU/shell state;
+- because the turn was still `PRE_ROLL_ACTION`, the dice could reappear behind the modal.
+
+Fix:
+- `src/ui/directDicePolicy.ts` accepts `cardPickerOpen` and hard-blocks direct dice while true;
+- `src/scenes/DirectDiceBoardScene.ts` passes the flag into both visual sync and pointerdown validation;
+- therefore the dice is hidden and non-clickable throughout Card hand picker, target picker and tactical-choice picker;
+- after Card UI closes, dice only returns if the ordinary roll policy still allows it;
+- no gameplay authority, RNG, Card effect, camera, board, economy or movement rule changes.
+
+Regression:
+- `tests/direct-dice-030.ts` now explicitly requires `PRE_ROLL_ACTION + cardPickerOpen=true -> false`.
+
+Hotfix code candidate before this documentation update is **FULL CI GREEN / PACKAGED**:
+- HEAD `13ea3d8638ca43da399bab93ef7aa54a007002eb`;
+- push run `#2350` / `34992716873`;
+- artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
+- artifact ID `10405984035`;
+- size `8,594,993 bytes`;
+- SHA256 `b72a2cf064ec13c222441bd83ded3fb1b87e8f36b79b17379d4f017a046b57b5`;
+- full suite **65/65 PASS**.
+
+## 13. Next manual test
+
+Use `docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md` from the newest artifact.
 
 Ron should verify especially:
-1. whole board feels roughly twice as spread out and the 1.5x spaces no longer bunch together;
-2. visually inspect TÙ/J1/J2/J3 and BV/H1/H2/H3;
-3. successful release leaves the token standing at TÙ/BV until the fresh movement D6 is rolled;
-4. fresh movement visibly walks through J/H corridor spaces;
-5. landing on J1/J2/J3/H1/H2/H3 applies `-20 B$` only after visual arrival;
-6. Card SFX is softer and step SFX stronger at comfortable levels;
-7. confirmed-good camera remains centered during long rolls;
-8. Job continuation remains correct;
-9. continue watching for long-run token snap-back.
+1. open a Card that targets another player: **the direct dice must not appear anywhere behind the target modal**;
+2. cancel or finish Card selection: the dice returns only if the player is genuinely roll-eligible;
+3. whole board feels roughly twice as spread out and the 1.5x spaces no longer bunch together;
+4. visually inspect TÙ/J1/J2/J3 and BV/H1/H2/H3;
+5. successful release leaves the token standing at TÙ/BV until the fresh movement D6 is rolled;
+6. fresh movement visibly walks through J/H corridor spaces;
+7. landing on J1/J2/J3/H1/H2/H3 applies `-20 B$` only after visual arrival;
+8. Card SFX is softer and step SFX stronger at comfortable levels;
+9. confirmed-good camera remains centered during long rolls;
+10. Job continuation remains correct;
+11. continue watching for long-run token snap-back.
 
 Do **not** call 0.1.64 user-accepted until Ron manually validates it.
 
