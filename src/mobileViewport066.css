@@ -1,0 +1,81 @@
+/* 0.1.66 mobile web shell.
+ * Keep the Phaser game at its canonical 1280x720 logical resolution, but make
+ * the parent follow the actually visible mobile viewport instead of a stale
+ * layout viewport hidden behind browser chrome.
+ */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #f4ead7;
+}
+
+@supports (height: 100dvh) {
+  html,
+  body {
+    width: 100dvw;
+    height: 100dvh;
+    min-width: 100dvw;
+    min-height: 100dvh;
+  }
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  #app {
+    width: 100dvw;
+    height: 100dvh;
+  }
+}
+
+#app > canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0 !important;
+}
+
+/* Phaser's DOM overlay must occupy the same visible viewport as the canvas. */
+#app > div {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .mememe-settings {
+    top: max(6px, env(safe-area-inset-top));
+    right: max(6px, env(safe-area-inset-right));
+  }
+
+  .settings-trigger {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.settings-fullscreen-toggle {
+  min-width: 132px;
+}
