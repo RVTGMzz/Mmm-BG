@@ -1,5 +1,6 @@
 export type FaceExpression = 'neutral' | 'happy' | 'angry';
 export type PersonalityTag = 'mean' | 'whiny' | 'gossip' | 'chill';
+export type MatchLapTarget = 1 | 2 | 3;
 
 const DEFAULT_PERSONALITIES: PersonalityTag[] = ['mean', 'whiny', 'gossip', 'chill'];
 
@@ -19,6 +20,7 @@ export interface PlayerProfile {
 class GameSession {
   players: PlayerProfile[] = [];
   playOrder: number[] = [0, 1, 2, 3];
+  targetLaps: MatchLapTarget = 1;
 
   constructor() {
     this.reset();
@@ -32,6 +34,7 @@ class GameSession {
       faces: {},
     }));
     this.playOrder = [0, 1, 2, 3];
+    this.targetLaps = 1;
   }
 
   setPlayOrder(order: readonly number[]): void {
@@ -42,6 +45,11 @@ class GameSession {
       throw new Error(`Invalid play order: ${order.join(',')}`);
     }
     this.playOrder = [...normalized];
+  }
+
+  setTargetLaps(value: number): void {
+    const normalized = Math.max(1, Math.min(3, Math.floor(value)));
+    this.targetLaps = normalized as MatchLapTarget;
   }
 
   setPlayerName(playerId: number, name: string): void {
