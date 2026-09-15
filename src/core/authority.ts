@@ -141,6 +141,9 @@ function replayCandidate(authority: HostAuthority, candidateSource: MatchState):
  * derives LEFT/RIGHT from that authoritative D6 and appends the existing
  * choose_branch command itself. This keeps old command streams replayable while
  * removing manual route selection from live gameplay.
+ *
+ * 0.1.63.4 can resume the same movement die after Job Hub, so choose_job may also
+ * be the command immediately before a fork. HOST applies the same parity resolver.
  */
 function autoResolveParityBranches062(authority: HostAuthority): void {
   let safety = 0;
@@ -343,7 +346,7 @@ export function submitClientIntent(authority: HostAuthority, intent: ClientInten
   }
 
   commitCommand(authority, candidateSource, replay.state);
-  if (intent.type === 'roll' && replay.waitingBranch) {
+  if ((intent.type === 'roll' || intent.type === 'choose_job') && replay.waitingBranch) {
     autoResolveParityBranches062(authority);
   }
 
