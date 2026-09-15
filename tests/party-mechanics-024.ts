@@ -24,17 +24,17 @@ assert(card15);
 const a = makePlayers([500, 900, 900, 300]);
 assert.equal(pickRichestOtherTarget(a, 0)?.id, 1);
 const r15 = applyCardEffect(card15, a[0]!, a);
-assert.equal(r15.amount, 162);
-assert.equal(a[0]?.money, 662);
-assert.equal(a[1]?.money, 738);
+assert.equal(r15.amount, 135);
+assert.equal(a[0]?.money, 635);
+assert.equal(a[1]?.money, 765);
 assert.deepEqual(r15.affectedPlayerIds, [0, 1]);
 
 const card16 = cards.find((card) => card.id === 'ACT_016');
 assert(card16);
 const b = makePlayers([200, 170, 130, 60]);
 const r16a = applyCardEffect(card16, b[3]!, b);
-assert.equal(r16a.amount, 60);
-assert.equal(b[3]?.money, 120);
+assert.equal(r16a.amount, 50);
+assert.equal(b[3]?.money, 110);
 const r16b = applyCardEffect(card16, b[0]!, b);
 assert.equal(r16b.amount, 15);
 assert.equal(b[0]?.money, 215);
@@ -53,4 +53,4 @@ assert.equal(d[3]?.money, 400);
 assert.equal(n2.amount, 300);
 assert.deepEqual(n2.deltas, { 3: -300 });
 
-console.log('[party-mechanics-024] PASS deterministic mechanics remain correct under 0.1.25 economy tuning');
+console.log('[party-mechanics-024] PASS deterministic party mechanics under 0.1.60 economy tuning');
