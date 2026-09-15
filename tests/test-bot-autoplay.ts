@@ -26,6 +26,7 @@ interface BotRunResult {
   checksum: string;
   commands: number;
   rolls: number;
+  releaseRolls: number;
   cards: number;
   branches: number;
 }
@@ -43,6 +44,7 @@ function runAutoplay(seed: number): BotRunResult {
 
   let safety = 0;
   let rolls = 0;
+  let releaseRolls = 0;
   let cards = 0;
   let branches = 0;
 
@@ -57,7 +59,10 @@ function runAutoplay(seed: number): BotRunResult {
       `CPU had no decision at turn ${authority.state.turn.turnNumber} phase ${authority.state.turn.phase}.`,
     );
 
-    if (decision.type === 'roll') rolls += 1;
+    if (decision.type === 'roll') {
+      rolls += 1;
+      if (actor.specialHold) releaseRolls += 1;
+    }
     if (decision.type === 'play_card') cards += 1;
     if (decision.type === 'choose_branch') branches += 1;
 
@@ -91,6 +96,7 @@ function runAutoplay(seed: number): BotRunResult {
     checksum: computeMatchChecksum(authority.state),
     commands: hostAuthorityCommandSeq(authority),
     rolls,
+    releaseRolls,
     cards,
     branches,
   };
@@ -106,8 +112,13 @@ assert(
   deterministicA.commands === deterministicB.commands,
   `Same-seed CPU autoplay command count mismatch: ${deterministicA.commands} vs ${deterministicB.commands}.`,
 );
+assert(
+  deterministicA.releaseRolls === deterministicB.releaseRolls,
+  `Same-seed release-roll count mismatch: ${deterministicA.releaseRolls} vs ${deterministicB.releaseRolls}.`,
+);
 
 let totalRolls = 0;
+let totalReleaseRolls = 0;
 let totalCards = 0;
 let totalBranches = 0;
 let maxCommands = 0;
@@ -116,16 +127,20 @@ const MATCHES = 32;
 for (let index = 0; index < MATCHES; index += 1) {
   const result = runAutoplay(16020000 + index);
   totalRolls += result.rolls;
+  totalReleaseRolls += result.releaseRolls;
   totalCards += result.cards;
   totalBranches += result.branches;
   maxCommands = Math.max(maxCommands, result.commands);
 }
 
-assert(totalRolls === MATCHES * DEMO_TURN_LIMIT, `Expected ${MATCHES * DEMO_TURN_LIMIT} rolls, got ${totalRolls}.`);
+const baseTurns = MATCHES * DEMO_TURN_LIMIT;
+assert(totalRolls >= baseTurns, `Expected at least one roll per turn (${baseTurns}), got ${totalRolls}.`);
+assert(totalRolls <= baseTurns * 2, `Special release flow produced too many rolls: ${totalRolls} for ${baseTurns} turns.`);
+assert(totalReleaseRolls > 0, 'CPU stress fixture never exercised a Jail/Hospital release roll.');
 assert(totalCards > 0, 'CPU stress fixture never exercised play_card.');
 assert(totalBranches > 0, 'CPU stress fixture never exercised choose_branch.');
 
 console.log(
-  `[test-bot-ci] PASS matches=${MATCHES} turns=${MATCHES * DEMO_TURN_LIMIT} cards=${totalCards} branches=${totalBranches} maxCommands=${maxCommands} deterministic=${deterministicA.checksum}`,
+  `[test-bot-ci] PASS matches=${MATCHES} turns=${baseTurns} rolls=${totalRolls} releaseRolls=${totalReleaseRolls} cards=${totalCards} branches=${totalBranches} maxCommands=${maxCommands} deterministic=${deterministicA.checksum}`,
 );
-console.log('[test-bot-ci] probes: auto-roll PASS • card-use PASS • branch-choice PASS • no-deadlock PASS • same-seed PASS');
+console.log('[test-bot-ci] probes: normal-roll PASS • special-release PASS • card-use PASS • branch-choice PASS • no-deadlock PASS • same-seed PASS');
