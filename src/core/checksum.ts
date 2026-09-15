@@ -30,6 +30,9 @@ function canonicalMatchPayload(match: MatchState): string {
         handCardIds: [...player.handCardIds],
         cardsPlayedThisTurn: player.cardsPlayedThisTurn,
         lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
+        ...(player.targetLaps && player.targetLaps > 1
+          ? { targetLaps: Math.max(2, Math.min(3, Math.floor(player.targetLaps))) }
+          : {}),
         jobId: player.jobId,
         jobLevel: player.jobLevel,
         jobStatus: player.jobStatus,
