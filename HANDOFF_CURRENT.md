@@ -20,94 +20,132 @@ Never regress HOST authority, replay/checksum determinism, remote Roll For Order
 
 Keep visible names **TIN TỨC / LÁ BÀI**.
 
-## 2. Current candidate — MVP 0.1.63.4
+## 2. Current candidate — MVP 0.1.64
 
-**0.1.63.4 — Job Continue + Landing Effect Sync**
+**0.1.64 — Expanded Board + Release Corridor + Audio Rebalance**
 
-Latest human feedback after 0.1.63.3:
-1. if a movement D6 reached JOB before spending all pips, Job Hub consumed the rest of the roll and the player stopped incorrectly;
-2. a destination money result such as `-20 B$` could still become visible before the token visually reached the destination;
-3. Ron explicitly confirmed the camera fix is good. Preserve the 0.1.63.2 camera behavior.
+Latest human feedback after 0.1.63.4:
+1. round spaces were still visually clustered, especially `TÙ/J1/J2/J3` and `BV/H1/H2/H3`; Ron requested roughly 2x map spacing and 1.5x round spaces;
+2. successful Jail/Hospital release should leave the token standing at the hold location, then a fresh movement D6 should start movement through the three internal penalty spaces;
+3. `J1/J2/J3` and `H1/H2/H3` should all be negative-money spaces;
+4. Card SFX should be 20% softer and movement-step SFX 30% stronger;
+5. camera behavior from 0.1.63.2+ is already human-confirmed good and must remain untouched unless new evidence appears.
 
-Manual status: **PENDING RON ACCEPTANCE** for the new Job/money behavior.
+Manual status: **PENDING RON ACCEPTANCE**.
 
 ## 3. Runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene0634 as ActiveBoardScene`
+`CareerMinigameBoardScene064 as ActiveBoardScene`
 
 Inheritance:
-`0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-## 4. Job Hub is now a mid-roll interrupt
+## 4. Expanded board / tile spacing
 
-Gameplay authority change in 0.1.63.4:
-- movement D6 is still rolled once by HOST;
-- when movement reaches a Job space before all pips are spent, the player pauses on Job Hub;
-- the original movement roll, next step number and remaining pip count are stored in authoritative `MatchState.pendingJobMovement`;
-- after `choose_job` / Job D6 resolves, movement resumes with the **remaining pips of the original movement D6**;
-- no new movement RNG is introduced;
-- if resumed movement reaches a branch, HOST still applies the original roll parity automatically;
-- if a Job career outcome relocates the player to Jail/Hospital, the original movement ends there;
-- if Job is reached on the final pip, there are no pips to resume and the turn ends normally after Job resolution.
+Authoritative board data remains `src/content/city/board_city_mvp.json` with the same canonical board id, node ids, edges, branch identities and one-lap topology.
 
-Concrete locked case:
-`roll 5 -> Job on step 2 -> resolve Job -> continue steps 3, 4, 5`.
+0.1.64 changes authored coordinates so the board footprint is now approximately:
+- width **2340 px**;
+- height **1020 px**.
 
-Implementation:
-- `src/core/matchState.ts`
-- `src/core/checksum.ts`
-- `src/core/turnPhase.ts`
-- `src/core/replay.ts`
-- `src/core/authority.ts`
-- `tests/job-continue-landing-sync-0634.ts`
+Round-space presentation is enlarged **1.5x** from the 0.1.63 radii:
+- normal: `27 -> 40.5`;
+- feature: `31 -> 46.5`;
+- anchor: `33 -> 49.5`;
+- Jail/Hospital hold: `36 -> 54`.
 
-`pendingJobMovement` participates in checksum/replay so host/client cannot disagree about unspent pips.
+The 0.1.64 geometry regression measures every pair of round spaces after this scale and requires at least **12 px** clear edge-to-edge separation. Current minimum is **15.0 px**.
 
-## 5. Visible B$ waits for the presented effect
+The special clusters are explicitly spread apart:
+- `TÙ / J1 / J2 / J3`;
+- `BV / H1 / H2 / H3`.
 
-0.1.63.4 adds a presentation-owned visible-money snapshot.
-
-HOST may still calculate the final authoritative state immediately, but the HUD no longer exposes future money while movement is still being presented.
-
-For a money destination such as `-20 B$`, the intended visible order is:
-
-`ROLL -> TOKEN MOVES -> TOKEN ARRIVES -> MONEY LANDING/EFFECT STARTS -> HUD B$ CHANGES`
-
-Money-bearing Card/News/READY presentations use the same principle: the visible wallet commits when the matching effect reaches presentation, not simply because authority is already ahead.
+Overview is reframed for the larger world at zoom `0.46`. Close gameplay keeps the inherited camera behavior rather than changing camera authority/follow logic.
 
 Implementation:
-- `src/ui/landingEffectSync0634.ts`
-- `src/scenes/CareerMinigameBoardScene0634.ts`
+- `src/content/city/board_city_mvp.json`
+- `src/scenes/CareerMinigameBoardScene064.ts`
+- `tests/expanded-board-release-audio-064.ts`
 
-## 6. Camera status
+## 5. Jail/Hospital release-in-place rule
 
-Ron explicitly reported the camera fix is working well.
+0.1.64 intentionally supersedes the 0.1.57–0.1.63 automatic release-corridor traversal.
+
+Release/recovery D6 remains a release check only.
+
+Failure:
+- player remains held;
+- turn ends.
+
+Success:
+1. clear `specialHold`;
+2. token **stays on the current hold node** (`TÙ` node 100 or `BV` node 110);
+3. discard the release D6 with `turn.lastRoll = null`;
+4. return to `PRE_ROLL_ACTION` in the **same turn**;
+5. require a **fresh movement D6**;
+6. the new movement D6 walks the actual corridor edges.
+
+Authoritative fresh-movement corridors:
+- Jail: `100 -> J1(101) -> J2(102) -> J3(103) -> 12`;
+- Hospital: `110 -> H1(111) -> H2(112) -> H3(113) -> 34`.
+
+Core helpers:
+- `specialReleasePath057()` now returns no automatic release movement;
+- `specialCorridorPath064()` exposes the real fresh-D6 corridor.
+
+Locked regression example uses deterministic faces `1,1,1`:
+- first `1`: enter Jail;
+- next-turn release `1`: succeeds, hold clears, token remains at TÙ, money remains 200 B$;
+- fresh movement `1`: token moves to J1;
+- only on landing J1 does money become 180 B$.
+
+## 6. Six internal penalty spaces
+
+The corridor nodes are now real money spaces:
+- `J1 = -20 B$`;
+- `J2 = -20 B$`;
+- `J3 = -20 B$`;
+- `H1 = -20 B$`;
+- `H2 = -20 B$`;
+- `H3 = -20 B$`.
+
+They use normal landing semantics. Passing over a corridor space does not charge it; landing on it resolves the `-20 B$` effect.
+
+0.1.63.4 visible-wallet synchronization remains inherited, so the player-visible order is still:
+
+`ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD B$ UPDATE`.
+
+0.1.64 restores visible step animation through these corridors for the fresh movement D6, even though 0.1.63.3 historically collapsed the old automatic release path.
+
+## 7. Audio rebalance
+
+Runtime gain in `src/audio/sfxController.ts`:
+- `card_draw = 0.80`;
+- `card_play = 0.80`;
+- `step = 1.30`.
+
+Card audio is therefore 20% softer than the previous mix. Step audio is 30% stronger. The SFX source files themselves are unchanged.
+
+Because `HTMLMediaElement.volume` caps at `1.0`, the >1.0 step gain is routed through a WebAudio `GainNode` so `1.30` is real rather than silently clamped.
+
+## 8. Camera status — human confirmed good
+
+Ron explicitly confirmed the camera fix is good before 0.1.64.
 
 Retain 0.1.63.2 behavior unchanged:
-- while presentation is active, camera follows the actor currently being animated;
-- rolls 5/6 remain centered on the moving token even if authoritative turn state has advanced;
-- when presentation is idle, camera returns to current turn player;
+- active presentation actor has priority over already-advanced authoritative turn state;
+- rolls 5/6 remain centered on the moving token;
+- idle camera returns to current turn player;
 - `TỔNG QUAN / O` remains the intentional exception;
-- expanded edge bounds remain inherited.
+- expanded edge handling remains inherited.
 
-Do not casually rework this camera path in later patches without new evidence.
+The 0.1.64 regression explicitly requires the 0.1.63.2 camera resolver and exact-center behavior to remain present.
 
-## 7. Jail/Hospital release retained from 0.1.63.3
+## 9. Other retained gameplay
 
-0.1.63.3 remains inherited and its regression is explicitly checked beneath the 0.1.63.4 wrapper.
-
-Release flow remains:
-1. release/recovery D6 tests release only;
-2. successful release traverses internal exit topology;
-3. `specialHold` clears;
-4. `turn.lastRoll = null`;
-5. phase returns to `PRE_ROLL_ACTION` in the same turn;
-6. a **fresh movement D6** is required.
-
-Presentation still makes clear the release face is **CHỈ dùng để thoát** and the internal corridor is visually collapsed rather than looking like reused movement pips.
-
-## 8. Branch, board and economy rules retained
+0.1.63.4 Job mid-roll continuation remains:
+`roll 5 -> Job on step 2 -> resolve Job -> continue remaining 3 pips`.
 
 Branch rule remains HOST-authoritative:
 - `1 / 3 / 5` -> **TRÁI**;
@@ -115,93 +153,114 @@ Branch rule remains HOST-authoritative:
 
 No live manual branch picker and no second RNG stream.
 
-Draft D remains 44 main spaces, five Mini Game spaces and three equal-step forward-only junctions.
+Retained without value changes:
+- main Draft D economy outside the six new corridor penalties;
+- TIN TỨC/LÁ BÀI content values;
+- Job definitions;
+- Mini Game payout ownership/tables;
+- Lottery x20;
+- READY finish lock;
+- finished-player B$ immunity;
+- final result/podium chain.
 
-No value changes to economy, TIN TỨC/LÁ BÀI, Job definitions, Mini Game payout tables, Lottery, READY finish lock or finished-player B$ immunity.
+## 10. Deterministic baseline after intentional 0.1.64 gameplay change
 
-Presentation retained:
-- landing/event scale 1.18x;
-- Card/News scale 1.14x;
-- token scale 0.82x;
-- round radii 27/31/33/36;
-- close zoom 2.15x;
-- Overview 0.88x.
+Release-in-place plus real corridor movement intentionally changes deterministic routes, command counts and economy outcomes. Historical sentinel files remain preserved:
+- `tests/outlier-replay-062.ts`;
+- `tests/outlier-replay-0634.ts`.
 
-## 9. Deterministic baseline after intentional Job movement change
-
-Job continuation intentionally changes routes and therefore invalidates the active 0.1.62 gameplay fingerprints. Historical `tests/outlier-replay-062.ts` is preserved unchanged as history; active sentinel coverage is now `tests/outlier-replay-0634.ts`.
+The active sentinel is now `tests/outlier-replay-064.ts`.
 
 32-match deterministic batch, seeds `611100..611131`:
-- turns avg 58.1, min 47, p50 56, p90 69, max 81;
-- commands avg 94.8, min 72, p50 93, p90 112, max 126;
-- final table B$ avg 1327.4, min 730, p50 1302, p90 1527, max 1700;
-- final spread avg 137.5, p50 129, p90 235, max 277;
-- movement rolls avg 54.1;
-- release rolls avg 8.0;
-- Cards avg 10.1;
-- News avg 6.7;
-- Mini Games avg 5.6;
-- Mini payout avg 244.5 B$;
-- Jobs selected avg 3.8;
-- Lottery count avg 1.2;
-- Lottery payout avg 78.8 B$;
-- deterministic harness checksum `b8ee25a7`.
+- turns avg **61.8**, min 46, p50 60, p90 74, max **92**;
+- commands avg **97.6**, min 74, p50 96, p90 114, max **145**;
+- final table B$ avg **1336.2**, min 930, p50 1346, p90 1565, max 1810;
+- final spread avg **161.6**, min 48, p50 142, p90 253, max **367**;
+- movement rolls avg **58.2**;
+- release rolls avg **7.4**;
+- Cards avg **9.2**;
+- News avg **7.4**;
+- Mini Games avg **6.1**;
+- Mini payout avg **277.3 B$**;
+- Jobs selected avg **3.8**;
+- Lottery count avg **1.2**;
+- Lottery payout avg **84.4 B$**;
+- deterministic harness checksum **`2fca6e9d`**;
+- max-turn seed `611102`;
+- max-spread seed `611113`.
 
-Rebased same-seed sentinels:
-
-Seed `611119`:
-- checksum `cb3d9c1b`;
-- 53 turns, 87 authoritative commands, 74 submitted, 13 HOST auto-branch commands;
-- final table 730 B$, spread 60;
-- finish IDs `[2,3,1,0]`;
-- per-seat final B$ `[183,160,167,220]`.
-
-Seed `611113`:
-- checksum `93aa3912`;
-- 49 turns, 81 authoritative commands, 69 submitted, 12 HOST auto-branch commands;
-- final table 1302 B$, spread 277;
+Active exact sentinel `611102`:
+- checksum `1dd42c7c`;
+- 92 turns;
+- 145 authoritative commands / 128 submitted / 17 HOST auto;
+- final table 1565 B$, spread 137;
+- movement 76, release 22, Cards 14, News 8;
+- Mini Games 12, payout 565 B$;
+- Jobs 4;
+- Lottery 1 / 40 B$;
 - finish IDs `[3,2,1,0]`;
-- per-seat final B$ `[447,365,320,170]`.
+- per-seat final B$ `[375,333,470,387]`;
+- finish places `[4,3,2,1]`.
+
+Active exact sentinel `611113`:
+- checksum `856548f4`;
+- 51 turns;
+- 79 authoritative commands / 67 submitted / 12 HOST auto;
+- final table 1112 B$, spread 367;
+- movement 50, release 3, Cards 9, News 7;
+- Mini Games 2, payout 100 B$;
+- Jobs 3;
+- Lottery 2 / 140 B$;
+- finish IDs `[3,0,2,1]`;
+- per-seat final B$ `[264,457,301,90]`;
+- finish places `[2,4,3,1]`.
 
 These are regression sentinels, not balance targets.
 
-## 10. 0.1.63.4 green code candidate
+## 11. 0.1.64 green code candidate
 
 Code candidate before this documentation update is **FULL CI GREEN / PACKAGED**:
-- HEAD `cba4d8c11036a4b19ac872362b039e99fb0493f9`;
-- push run `#2304` / `34976332683`;
-- artifact `mememe-playtest-0.1.63.4-job-continue-landing-sync`;
-- artifact ID `10399547650`;
-- size `8,593,603 bytes`;
-- SHA256 `e3c511bf31d73a3d7adc8fde3c20f92b96c8e39f4eb82856f2ef51126279cd37`;
+- HEAD `5d8f83b8ed3a009679e64bec62321d9743bdfd00`;
+- push run `#2340` / `34990342825`;
+- artifact `mememe-playtest-0.1.64-expanded-board-release-audio`;
+- artifact ID `10405701132`;
+- size `8,594,977 bytes`;
+- SHA256 `e88e4fe9c4dc7e6976d13896757d89f03665dbba96ebe7ab87f7ecb46070edb8`;
 - expires 2026-09-29.
 
-Run #2304 passed the complete meaningful suite, including:
-- build/typecheck, replay, lockstep, HOST authority;
+Run #2340 passed **65/65 meaningful CI steps**, including:
+- typecheck/build;
+- replay/lockstep/HOST authority;
 - two-tab/multiplayer/CPU stress;
-- 0.1.48 stale-token regression;
-- 0.1.57 fresh-D6 special-location rule;
-- rebased 0.1.63.4 deterministic sentinels;
-- 0.1.62 HOST parity routing;
-- 0.1.63/0.1.63.1/0.1.63.2 presentation and camera gates;
-- inherited 0.1.63.3 release/presentation sync;
-- **0.1.63.4 roll 5 -> Job step 2 -> resume 3 pips + landing-timed B$ regression**;
+- 0.1.48 stale-token/audio/dice guard;
+- branch/topology identity chain;
+- 0.1.64 release-in-place + fresh D6 corridor authority;
+- 32-match simulation baseline;
+- locked 0.1.64 outlier sentinels;
+- odd/even HOST branch routing;
+- human-confirmed camera regression gates;
+- 0.1.63.4 Job continuation + landing-timed B$;
+- **0.1.64 spacing x1.5 with measured min gap 15.0 px**;
+- **J/H six penalty nodes = -20 B$**;
+- **Card 0.8 / Step 1.3 audio gain**;
 - package validation and artifact upload.
 
-## 11. Next manual test
+## 12. Next manual test
 
-Use `docs/PLAYTEST_0.1.63.4_JOB_CONTINUE_LANDING_SYNC.md` from the artifact.
+Use `docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md` from the artifact.
 
 Ron should verify especially:
-1. roll 5, reach Job at step 2, resolve Job, then visibly continue exactly 3 more spaces;
-2. if those remaining pips cross a fork, odd/even HOST routing remains correct;
-3. while approaching a `-20` or `+25` destination, HUD keeps the old wallet until arrival/effect presentation;
-4. money changes at the moment the destination effect appears;
-5. camera remains as good as the already-confirmed 0.1.63.2 behavior;
-6. Jail/Hospital still uses release D6 then fresh movement D6;
-7. continue watching for long-run token snap-back.
+1. whole board feels roughly twice as spread out and the 1.5x spaces no longer bunch together;
+2. visually inspect TÙ/J1/J2/J3 and BV/H1/H2/H3;
+3. successful release leaves the token standing at TÙ/BV until the fresh movement D6 is rolled;
+4. fresh movement visibly walks through J/H corridor spaces;
+5. landing on J1/J2/J3/H1/H2/H3 applies `-20 B$` only after visual arrival;
+6. Card SFX is softer and step SFX stronger at comfortable levels;
+7. confirmed-good camera remains centered during long rolls;
+8. Job continuation remains correct;
+9. continue watching for long-run token snap-back.
 
-Do **not** call 0.1.63.4 user-accepted until Ron manually validates the new Job/money behavior.
+Do **not** call 0.1.64 user-accepted until Ron manually validates it.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
