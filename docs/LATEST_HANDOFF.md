@@ -11,114 +11,113 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 Never regress HOST authority, replay/checksum determinism, remote Roll For Order, multiplayer Job Hub, Mini Game payout ownership, audio/BGM ownership, stale-token guard, or READY/lap/final-result/podium flow.
 
-Keep **TIN TỨC / LÁ BÀI** names. Do not revive Tiên Tri / Phép Thuật.
+Keep **TIN TỨC / LÁ BÀI** names.
 
 ## Current automated candidate
 
-**MVP 0.1.58 — TIN TỨC / LÁ BÀI Depth**
+**MVP 0.1.59 — Job + Five-Space Mini Game Depth**
 
 Automated status: **CI GREEN / PACKAGED**
 Manual runtime status: **PENDING RON ACCEPTANCE**
 
-Code-candidate artifact before the handoff documentation update:
-- `mememe-playtest-0.1.58-news-card-depth`
-- run `#1968` / `34920448578`
-- runtime/package SHA `6abccee448ceed94eed16fe5c6961e6acbbe0b64`
-- artifact ID `10377598474`
-- size `8,584,746 bytes`
-- SHA256 `c5379ff736b6859d519e6bc02f384504b3c35d9da6623fab7dbdcfb39479b2ba`
-- expires 2026-09-29
+Code-candidate artifact before this documentation update:
+- `mememe-playtest-0.1.59-job-five-mini-depth`
+- run `#2008` / `34921701114`
+- runtime/package SHA `90d178ad96b99941214d42683612bb7b49a14e95`
+- artifact ID `10378621170`
+- size `8,587,029 bytes`
+- SHA256 `8f76f276a584823cd3b538e4aef2eb8f406f8dcdc709b2b097290ac42ef7f3ef`
+- expires 2026-09-29.
 
 ## Runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene058 as ActiveBoardScene`
+`CareerMinigameBoardScene059 as ActiveBoardScene`
 
 Inheritance:
-`058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-0.1.58 retains the close-camera/four-corner-HUD presentation, 0.1.57 special-location authority and the validated 0.1.48 stale-token guard.
+0.1.59 therefore retains 0.1.58 TIN TỨC/LÁ BÀI relocation, 0.1.57 special-location authority, canonical close-camera/four-corner HUD presentation, and the 0.1.48 stale-token guard.
 
-Neither 0.1.56.1, 0.1.57 nor 0.1.58 has manual user acceptance recorded. Ron explicitly asked development to continue, so CI-green candidates advanced without retroactively marking previous candidates accepted.
+0.1.56.1 through 0.1.59 are CI-green candidates without recorded manual user acceptance. Do not call them user-accepted.
 
-## 0.1.58 LÁ BÀI depth
+## Job depth
 
-New authoritative held cards:
-- **Mời Lên Phường**: choose a free opponent and send them directly to Jail.
-- **Giường Bệnh Đã Đặt**: choose a free opponent and send them directly to Hospital.
+The 10-Job system remains authoritative and the assignment die remains HOST-generated:
+- 1–2 = A;
+- 3–4 = B;
+- 5–6 = C.
 
-The target must not already be held. The effect changes authoritative `nodeId + specialHold`, is replay/checksum deterministic, consumes the card once, and then relies on the unchanged 0.1.57 release rules.
+The Job Hub now shows before rolling:
+- Lv.1/Lv.2/Lv.3 salary;
+- salary growth profile;
+- stable/balanced/volatile/criminal risk profile;
+- promotion and demotion percentages;
+- firing risk for legal Jobs;
+- arrest risk for the criminal Job.
 
-Card pool remains weight 1000:
-- N 600 / R 300 / SR 90 / SSR 10.
+### Criminal Job arrest
 
-## 0.1.58 TIN TỨC depth
+The old placeholder jail state is gone. If the criminal Job is caught:
+- the Job is lost;
+- player becomes unemployed;
+- `specialHold = jail`;
+- authoritative node becomes Jail hold node 100;
+- the normal 0.1.57 release rule applies next turn: 1/3/5 succeeds, failure ends the turn, success exits the corridor and requires a fresh movement D6.
 
-The News pool now includes:
-- immediate whole-table +15 B$;
-- immediate whole-table -15 B$;
-- two weighted Jail relocation variants;
-- one Hospital relocation variant.
+The scene only animates the resulting authoritative arrest relocation. It does not mutate gameplay or roll client RNG.
 
-Special News pick a free opponent deterministically from a stable candidate list via content variant offset. No second RNG stream or client RNG was added.
+## Five Mini Game arenas
 
-News pool remains weight 1000:
-- positive self 450;
-- negative self 210;
-- immediate group money 160;
-- special relocation 120;
-- average normalization 60.
+The core Mini Game tournament is unchanged:
+- 3+ eligible = NHIỀU RA ÍT BỊ;
+- 2 eligible = OẲN TÙ XÌ;
+- Jail/Hospital eligibility stays unchanged;
+- payout remains a HOST-system single commit.
 
-## Presentation
+Arena identities and 3+/4-player payout profiles:
+- **M09 PHỐ ĐÔNG NGƯỜI / CÂN BẰNG** = 30/20/10/0;
+- **M17 KÈO ALL-IN / HẠNG 1 ĂN DÀY** = 40/15/5/0;
+- **M26 CÒN THỞ CÒN TIỀN / CỨU VỚT** = 25/20/10/5;
+- **M35 TOP 2 HOẶC VỀ KHÔNG / CẮT TOP** = 35/25/0/0;
+- **M44 NƯỚC RÚT CUỐI VÒNG / CHUNG KẾT** = 30/15/10/5.
 
-`CareerMinigameBoardScene058` only reconciles target-token visuals after incoming authoritative Card/News relocation state. It does not mutate gameplay or submit effect intents.
-
-A delayed News reconciliation rechecks the current authoritative node/hold before moving the target, preventing a stale callback from dragging a newer token state backward.
-
-## Explicit deferrals
-
-Still deferred until there is a proper authoritative timing/status layer:
-- off-turn reaction/passive cards;
-- counter windows;
-- timed global statuses;
-- alternate Jail/Hospital release cards;
-- board-node traps/status placement.
-
-Do not implement these as presentation-only shortcuts.
+Every 3+/4-player profile still distributes exactly **60 B$ total**. Every direct 1v1 profile distributes exactly **40 B$ total**. This deliberately avoids doing the global economy tuning reserved for 0.1.60.
 
 ## CI status
 
-Run #1968 is fully green. It passed:
-- typecheck/build;
+Run #2008 is fully green. It passed:
+- build/typecheck;
 - replay/lockstep/HOST authority;
-- two-tab + multiplayer parity;
-- special-location-aware bot stress;
-- board/content/economy/party/tactical rules;
-- Roll For Order;
-- Job Hub;
+- two-tab + bot stress;
+- Job D6/career tests;
 - Mini Game host-system payout ownership;
-- inherited 0.1.48 audio/dice/stale-token contract;
+- multiplayer Job Hub and presentation parity;
+- 0.1.48 stale-token/audio/dice gate;
 - Draft D 0.1.50–0.1.56 gates;
-- 0.1.56.1 presentation architecture;
-- 0.1.57 special-location authority;
-- new 0.1.58 News/Card authority test;
-- package validation + artifact upload.
+- 0.1.56.1 presentation gate;
+- 0.1.57 special-location gate;
+- 0.1.58 TIN TỨC/LÁ BÀI depth gate;
+- new 0.1.59 Job + five-arena gate;
+- package validation and artifact upload.
 
-Old bot/economy gates were updated where they encoded assumptions invalidated by intentional 0.1.58 behavior. They now explicitly test deterministic release rolls, no deadlock, fixed total content weights and compact global B$ values instead of hard-coding the old content count.
+Historical tests were updated only where they hard-coded superseded launcher/placeholder assumptions. Their underlying authority and determinism checks remain active.
 
 ## Manual test guide
 
-`docs/PLAYTEST_0.1.58_NEWS_CARD_DEPTH.md`
+`docs/PLAYTEST_0.1.59_JOB_MINIGAME_DEPTH.md`
 
 Priority checks:
-- both new special cards target only free opponents;
-- target visually reaches Jail/Hospital;
-- old release/fresh-D6 behavior remains exact;
-- new global News applies B$ exactly once;
-- special News does not snap unrelated tokens;
-- long-run token movement remains stable;
-- camera/HUD/branches/Roll For Order/Job Hub/Mini Games/Lottery/READY/lap/podium remain intact;
-- visible build says **0.1.58** and vocabulary remains **TIN TỨC / LÁ BÀI**.
+- Job profile readability;
+- A/B/C authoritative Job die;
+- promotion/demotion/firing and salary behavior;
+- criminal arrest visibly loses the Job and reaches Jail;
+- normal 1/3/5 Jail release remains exact;
+- all five Mini Game arena labels and reward tables;
+- ranking/payout agreement and single HOST commit;
+- held-player Mini Game exclusion;
+- long-run token snap-back regression;
+- multiplayer Job Hub, branches, TIN TỨC/LÁ BÀI, Lottery, READY/lap, BGM and podium.
 
 ## Roadmap
 
@@ -127,9 +126,9 @@ Priority checks:
 - 0.1.56 branch identity — CI green
 - 0.1.56.1 canonical presentation — CI green, no manual acceptance recorded
 - 0.1.57 special-location authority — CI green, manual acceptance pending
-- **0.1.58 TIN TỨC / LÁ BÀI depth — CI green, manual acceptance pending**
-- 0.1.59 Job + five-space Mini Game depth — next
-- 0.1.60 pacing/economy
+- 0.1.58 TIN TỨC/LÁ BÀI depth — CI green, manual acceptance pending
+- **0.1.59 Job + five-space Mini Game depth — CI green, manual acceptance pending**
+- 0.1.60 pacing/economy — next
 
 0.1.49 Legacy Effect Audit remains historical input.
 
