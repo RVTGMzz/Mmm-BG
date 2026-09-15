@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
-import { configureInitialPlayOrder } from '../core/matchState';
+import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import { faceTextureKey } from '../systems/faces';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
@@ -26,6 +26,7 @@ export class SetupScene extends Phaser.Scene {
     bgmController.playMenu();
     gameSession.reset();
     configureInitialPlayOrder(undefined);
+    configureInitialTargetLaps(1);
     this.cameras.main.setBackgroundColor('#f4ead7');
 
     this.add.rectangle(640, 360, 1190, 660, 0xfffbf3, 1).setStrokeStyle(5, 0x202020, 1);
@@ -40,7 +41,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.48', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.66', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -53,7 +54,7 @@ export class SetupScene extends Phaser.Scene {
       ? `HOST LOCAL • ROOM ${config.roomCode} • Remote Roll + Remote Job Dice`
       : cpuCount > 0
         ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
-        : '4 người HOTSEAT → đặt tên → Roll For Order → mỗi người hoàn thành 1 vòng';
+        : '4 người HOTSEAT → đặt tên → chọn số vòng → Roll For Order';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -66,6 +67,14 @@ export class SetupScene extends Phaser.Scene {
       <div class="setup-grid">
         ${gameSession.players.map((player) => this.playerCardMarkup(player.id)).join('')}
       </div>
+      <div class="match-length-picker" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0 8px;">
+        <strong style="font-size:14px;color:#332f2a;margin-right:6px;">🏁 KẾT THÚC SAU</strong>
+        ${[1, 2, 3].map((laps) => `
+          <button type="button" class="lap-option${laps === 1 ? ' selected' : ''}" data-laps="${laps}"
+            style="min-width:82px;padding:9px 14px;border:3px solid ${laps === 1 ? '#ef4545' : '#403a33'};border-radius:14px;background:${laps === 1 ? '#ffe7df' : '#fffaf1'};font-weight:900;cursor:pointer;">
+            ${laps} VÒNG
+          </button>`).join('')}
+      </div>
       <div class="setup-footer">
         <div>
           <p class="setup-hint"><strong>Ảnh mặt là tùy chọn.</strong> Chạm ảnh để crop, kéo vị trí, zoom/pinch và xoay trước khi dùng.</p>
@@ -73,7 +82,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.48: giữ nguyên hệ TIN TỨC / LÁ BÀI; tập trung sửa âm tiền, mặt D6, nhạc Mini Game và token snap-back.</p>
+      <p id="setup-status" class="setup-status">0.1.66: flow mặc định duy nhất • chọn 1 / 2 / 3 vòng • UI Mini Game dễ đọc hơn.</p>
     `;
 
     const dom = this.add.dom(640, 405, root).setOrigin(0.5);
@@ -95,10 +104,24 @@ export class SetupScene extends Phaser.Scene {
       }
     }
 
+    const lapButtons = [...node.querySelectorAll<HTMLButtonElement>('[data-laps]')];
+    const selectLaps = (value: number) => {
+      gameSession.setTargetLaps(value);
+      configureInitialTargetLaps(gameSession.targetLaps);
+      for (const button of lapButtons) {
+        const active = Number(button.dataset.laps) === gameSession.targetLaps;
+        button.classList.toggle('selected', active);
+        button.style.borderColor = active ? '#ef4545' : '#403a33';
+        button.style.background = active ? '#ffe7df' : '#fffaf1';
+      }
+      this.refreshStatus();
+    };
+    for (const button of lapButtons) {
+      button.addEventListener('click', () => selectLaps(Number(button.dataset.laps)));
+    }
+
     const startButton = node.querySelector<HTMLButtonElement>('#start-game');
-    startButton?.addEventListener('click', () => {
-      this.startGame(node);
-    });
+    startButton?.addEventListener('click', () => this.startGame(node));
 
     this.refreshStatus();
   }
@@ -182,31 +205,30 @@ export class SetupScene extends Phaser.Scene {
       return;
     }
 
+    configureInitialTargetLaps(gameSession.targetLaps);
     sfxController.play('ui_confirm');
     this.scene.start('TurnOrderScene');
   }
 
   private refreshStatus(): void {
     const neutralCount = gameSession.players.filter((player) => Boolean(player.faces.neutral)).length;
-    const expressionCount = gameSession.players.reduce(
-      (total, player) => total + Object.keys(player.faces).length,
-      0,
-    );
+    const expressionCount = gameSession.players.reduce((total, player) => total + Object.keys(player.faces).length, 0);
     const cpuCount = browserSession.current.cpuSeatIds.length;
+    const lapCopy = `🏁 ${gameSession.targetLaps} vòng`;
 
     if (expressionCount === 0) {
       this.setStatus(
         browserSession.current.mode === 'host'
-          ? 'Sẵn sàng. Host sẽ chờ tab JOIN cho Remote Roll; trong trận, Job Hub cũng chuyển quyền bấm cho đúng ghế client.'
+          ? `Sẵn sàng • ${lapCopy}. Host sẽ chờ tab JOIN cho Remote Roll; Job Hub cũng chuyển quyền bấm cho đúng ghế client.`
           : cpuCount > 0
-            ? `Sẵn sàng: ${cpuCount} CPU test sẽ tự đổ thứ tự và tự chơi. Có thể bỏ qua ảnh.`
-            : 'Sẵn sàng. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.',
+            ? `Sẵn sàng • ${lapCopy} • ${cpuCount} CPU test sẽ tự chơi. Có thể bỏ qua ảnh.`
+            : `Sẵn sàng • ${lapCopy}. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.`,
         false,
       );
       return;
     }
 
-    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 người • tổng ${expressionCount}/12 ảnh • CPU: ${cpuCount}/4 • tiếp theo Roll For Order.`, false);
+    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 • tổng ${expressionCount}/12 ảnh • CPU ${cpuCount}/4 • ${lapCopy} • tiếp theo Roll For Order.`, false);
   }
 
   private setStatus(message: string, isError: boolean): void {
