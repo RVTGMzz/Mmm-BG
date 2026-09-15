@@ -173,17 +173,19 @@ const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf
 const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene058.ts', import.meta.url), 'utf8');
 const scene059Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
 const scene060Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
-assert(mainSource.includes('CareerMinigameBoardScene060 as ActiveBoardScene'), 'later runtime wrappers may advance the launcher while retaining 0.1.58 beneath them');
+const scene061Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061.ts', import.meta.url), 'utf8');
+assert(mainSource.includes('CareerMinigameBoardScene061 as ActiveBoardScene'), 'later runtime wrappers may advance the launcher while retaining 0.1.58 beneath them');
+assert(scene061Source.includes('extends CareerMinigameBoardScene060'), '0.1.61 must retain the 0.1.60 pacing layer');
 assert(scene060Source.includes('extends CareerMinigameBoardScene059'), '0.1.60 must retain 0.1.59 beneath the pacing layer');
 assert(scene059Source.includes('extends CareerMinigameBoardScene058'), '0.1.59 must retain the 0.1.58 relocation layer');
 assert(sceneSource.includes('extends CareerMinigameBoardScene057'));
 assert(sceneSource.includes("event.type === 'card_play' || event.type === 'news'"));
 assert(!sceneSource.includes('Math.random'));
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.60');
+assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
 
 const newCopy = JSON.stringify([runtimeCards.slice(-6), runtimeNews.slice(-8)]);
 assert(!newCopy.includes('Tiên Tri'));
 assert(!newCopy.includes('Phép Thuật'));
 
-console.log('[news-card-depth-058] PASS held-card special relocation + immediate global News + replay/checksum + vocabulary retained beneath 0.1.60');
+console.log('[news-card-depth-058] PASS held-card special relocation + immediate global News + replay/checksum + vocabulary retained beneath 0.1.61');
