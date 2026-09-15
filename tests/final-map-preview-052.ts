@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import {
   FINAL_MAP_PREVIEW_052,
@@ -26,8 +27,6 @@ const scene = await readFile('src/scenes/FinalMapPreviewScene052.ts', 'utf8');
 const fullMapScene = await readFile('src/scenes/FullMapReviewScene053.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const server = await readFile('public/serve-playtest.ps1', 'utf8');
-const launcher = await readFile('public/START_DRAFT_D_PREVIEW.bat', 'utf8');
-const fullMapLauncher = await readFile('public/START_DRAFT_D_FULL_MAP.bat', 'utf8');
 
 assert(scene.includes("this.cameras.add(0, 0, VIEW_W, VIEW_H, false, 'ui-052')"), '0.1.52 must use a separate UI camera');
 assert(scene.includes('this.uiCamera.ignore(worldObjects)'), 'UI camera must ignore world objects');
@@ -35,11 +34,11 @@ assert(scene.includes('this.cameras.main.ignore(this.uiLayer)'), 'world camera m
 assert(scene.includes("params.get('overview') === '1'"), '0.1.52 scene keeps its legacy direct overview capability');
 assert(scene.includes("'↩ TRỞ LẠI LƯỢT'"), 'in-scene overview must stay open until the user returns');
 assert(scene.includes('this.uiLayer?.add(root)'), 'route-choice popup must live in the fixed UI layer');
-assert(main.includes("finalMapMode === '3'") && main.includes('FinalMapPreviewScene052'), 'main must route finalmap=3 to gameplay preview');
-assert(main.includes("finalMapMode === '4'") && main.includes('FullMapReviewScene053'), 'main must route finalmap=4 to dedicated full-map review');
-assert(server.includes('?finalmap=4'), 'server must expose the dedicated full-map review mode');
+assert(main.includes("finalMapMode === '3'") && main.includes('FinalMapPreviewScene052'), 'legacy query route remains available for source-level QA');
+assert(main.includes("finalMapMode === '4'") && main.includes('FullMapReviewScene053'), 'legacy full-map source route remains regression-testable');
+assert(server.includes('?finalmap=4'), 'server may retain the legacy QA route even though tester BATs are retired');
 assert(fullMapScene.includes('fitWholeBoard()'), 'dedicated full-map scene must fit the complete board');
-assert(launcher.includes('-DraftDPreview'), 'normal Draft D launcher must use gameplay preview route');
-assert(fullMapLauncher.includes('-DraftDFullMap'), 'full-map launcher must open dedicated full-map review');
+assert(!existsSync('public/START_DRAFT_D_PREVIEW.bat'), '0.1.66 intentionally removes the old Draft D preview launcher');
+assert(!existsSync('public/START_DRAFT_D_FULL_MAP.bat'), '0.1.66 intentionally removes the old Draft D full-map launcher');
 
-console.log('[final-map-preview-052] PASS fixed UI camera retained; dedicated 0.1.53 full-map review supersedes launcher overview mode');
+console.log('[final-map-preview-052] PASS fixed UI camera/source QA retained while 0.1.66 ships one unified launcher');
