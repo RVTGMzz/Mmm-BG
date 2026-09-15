@@ -15,14 +15,14 @@ Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deter
 
 **MVP 0.1.65 — Job HUD + Rounded UI + Debug Footer Cleanup**
 
-Human feedback driving this candidate:
-- replace vague `Có việc / Chưa việc` inside player/CPU cards with the real occupation and salary;
-- make rectangular gameplay UI use rounded corners;
-- hide the red debug/playtest footer at the bottom of gameplay.
+Human feedback:
+- player/CPU info cards must show real occupation + salary instead of vague employment copy;
+- square-corner rectangular gameplay UI should be rounded;
+- red debug/playtest footer at the bottom should be hidden.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-0.1.65 is presentation-only. Gameplay, RNG, economy, routing and camera must stay exactly on the 0.1.64 baseline.
+0.1.65 is presentation-only. Gameplay, RNG, economy, routing and camera stay on the 0.1.64 baseline.
 
 ## Runtime
 
@@ -33,7 +33,7 @@ Inheritance:
 
 ## Career HUD
 
-New helper `src/ui/playerHud065.ts` derives HUD copy from authoritative player state and `jobs_mvp.json`.
+`src/ui/playerHud065.ts` derives the displayed career directly from authoritative player state and `jobs_mvp.json`.
 
 Employed example:
 - `💼 🩺 Bác sĩ Lv.2`
@@ -43,36 +43,41 @@ Unemployed:
 - `💼 Chưa có nghề`
 - `💰 Lương: 0 B$/vòng`
 
-HUD refreshes automatically after Job selection, promotion, demotion, firing or Job loss.
+HUD follows Job selection, promotion, demotion, firing and Job loss automatically.
 
 ## Rounded UI
 
-`CareerMinigameBoardScene065`:
-- replaces the square visual of all four player cards with rounded backings;
-- scans Rectangle-based gameplay overlays/buttons recursively;
-- draws rounded Graphics visuals while retaining the original Rectangle as the input hitbox;
-- mirrors fill/stroke every frame so hover and click states remain visible;
-- leaves full-screen dim overlays edge-to-edge intentionally.
+`CareerMinigameBoardScene065` now rounds both kinds of square gameplay UI:
 
-This keeps existing interaction logic intact while softening the rectangular UI.
+### Rectangle panels/buttons
+- scans Rectangle-based gameplay overlays/buttons recursively;
+- inserts rounded Graphics visuals;
+- retains the original Rectangle as the interactive hitbox;
+- mirrors hover/click fill and stroke state every frame;
+- full-screen dim overlays intentionally remain edge-to-edge.
+
+### Text-background badges
+Phaser Text background rectangles are also replaced visually with rounded backings. This covers square badges such as Overview/turn-status/build labels that are not Rectangle objects.
+
+The original Text object remains intact while its built-in square background becomes transparent.
+
+### Player cards
+All four player/CPU cards use dedicated rounded backings.
 
 ## Debug footer removed
 
-The active gameplay scene hides the always-visible red footer/debug text whose copy begins with `PLAYTEST` or contains `LOCAL MATCH TELEMETRY`.
+The active gameplay scene hides always-visible red footer/debug copy beginning with `PLAYTEST` or containing `LOCAL MATCH TELEMETRY`.
 
-The actual local playtest report remains available from the result/report UI.
-
-Build header now reads:
-`CITY • MVP 0.1.65 • JOB HUD + ROUNDED UI`.
+The actual local match report remains available from the result/report UI.
 
 ## Card target dice hotfix retained
 
-The direct dice remains hidden and non-clickable for the whole Card UI flow while `cardPickerOpen=true`:
-- hand picker;
+While `cardPickerOpen=true`, direct dice is hidden and non-clickable throughout:
+- Card hand picker;
 - target picker;
 - tactical choice.
 
-The dice only returns when the Card UI is closed and ordinary roll policy permits it.
+It only returns after Card UI closes and normal roll policy allows it.
 
 ## 0.1.64 gameplay retained
 
@@ -84,7 +89,7 @@ Board:
 Jail/Hospital:
 - successful release clears hold but token stays on TÙ/BV;
 - release D6 is discarded;
-- fresh D6 is required same turn;
+- fresh D6 required same turn;
 - fresh D6 traverses the real J/H corridor.
 
 Penalties:
@@ -99,9 +104,9 @@ Audio:
 
 ## Camera retained and human-confirmed
 
-Ron already confirmed the camera fix is good.
+Ron explicitly confirmed the camera fix is good.
 
-0.1.63.2 behavior remains regression-locked:
+0.1.63.2 remains regression-locked:
 - camera follows the actor still visually moving;
 - long rolls remain centered;
 - idle camera returns to current player;
@@ -122,40 +127,36 @@ No manual branch picker and no second RNG stream.
 
 ## Deterministic QA
 
-0.1.65 is presentation-only, therefore 0.1.64 gameplay sentinels remain active and unchanged.
+0.1.65 is presentation-only, therefore 0.1.64 gameplay fingerprints remain active unchanged.
 
-32-match baseline still has deterministic checksum `2fca6e9d`.
+- 32-match deterministic checksum `2fca6e9d`;
+- seed `611102` checksum `1dd42c7c`;
+- seed `611113` checksum `856548f4`.
 
-Exact sentinels still pass:
-- seed `611102` -> checksum `1dd42c7c`;
-- seed `611113` -> checksum `856548f4`.
+Run #2378 passed those exact values after the final rounded Text-background polish.
 
-This proves the current candidate did not alter gameplay outcomes.
+## Final green code candidate before docs-inclusive run
 
-## Green code candidate before docs update
-
-- HEAD `10dfe800eafd633b80779d79cd1e06edce584ad5`;
-- push run `#2370` / `34997984350`;
+- HEAD `aa7ee7ebfd7e45eebfc7925f9aee7ac65c0e77bd`;
+- push run `#2378` / `34998498203`;
 - artifact `mememe-playtest-0.1.65-job-hud-rounded-ui`;
-- artifact ID `10408202631`;
-- size `8,595,544 bytes`;
-- SHA256 `84774febd816be36dbca3142d971dee86ef70a7f0e6101ee105c0672d5fe9c8e`;
+- artifact ID `10408766808`;
+- size `8,595,842 bytes`;
+- SHA256 `2a7197a2f9df1c1722cd11a6c09f00642768cbe4f232536b05e66f1818258dd8`;
 - **66/66 meaningful CI steps PASS**.
-
-An initial run only failed because the historical 0.1.64 test required 064 to be the direct launcher scene. The test now requires 065 -> 064 inheritance while keeping all substantive 0.1.64 assertions unchanged.
 
 ## Manual check
 
 Use `docs/PLAYTEST_0.1.65_JOB_HUD_ROUNDED_UI.md`.
 
 Verify:
-- actual Job title + level + salary appear in every player/CPU info card;
+- actual Job title + level + salary appear in every player/CPU card;
 - unemployed shows salary 0;
-- Job changes immediately update HUD;
-- main rectangular UI panels/buttons look rounded and remain clickable;
-- hover colors still work;
+- Job changes update HUD immediately;
+- player cards, popup/button Rectangles and Text-background badges are rounded;
+- UI remains clickable and hover colors work;
 - red debug/playtest footer is gone;
-- Card target modal never shows the direct dice behind it;
+- Card target modal never shows direct dice behind it;
 - camera remains good on rolls 5/6;
 - 0.1.64 Jail/Hospital corridor and Job continuation remain correct.
 
