@@ -132,14 +132,19 @@ export function resolveCareerCheck(
   const previousLevel = Math.max(1, Math.min(job.maxLevel, Math.floor(player.jobLevel ?? 1)));
 
   if (job.risk === 'crime' && random() < clampChance(job.jailChance)) {
-    player.jobStatus = 'jailed';
+    // 0.1.59 closes the old "future milestone" stub: getting caught is now a real
+    // authoritative Jail hold. The illegal Job is lost immediately; specialHold
+    // remains the single source of truth for release eligibility and Mini Game exclusion.
+    clearJob(player);
+    player.specialHold = 'jail';
+    player.nodeId = 100;
     return {
       outcome: 'jailed',
       jobId: job.id,
       previousLevel,
-      level: previousLevel,
+      level: 0,
       title: `${job.icon} BỊ TÓM!`,
-      summary: `${player.name} làm ${job.title} và bị bắt tại Job Hub. 0.1.59 đưa thẳng người chơi về Đồn; thoát Đồn thành công mới quay lại nghề.`,
+      summary: `${player.name} bị bắt khi làm ${job.title}: mất nghề và bị đưa thẳng về Đồn. Lượt sau phải đổ 1 / 3 / 5 để thoát.`,
     };
   }
 
