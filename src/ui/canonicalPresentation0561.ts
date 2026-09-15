@@ -2,7 +2,9 @@ export const CANONICAL_PRESENTATION_0561 = {
   version: '0.1.61',
   header: 'CITY • MVP 0.1.61 • PLAYTEST REPORT',
   badge: 'PLAYTEST 0.1.61 • LOCAL MATCH TELEMETRY',
-  normalFollowZoom: 1.75,
+  // 0.1.62 human feedback: keep the same canonical camera rig but move normal
+  // play closer to the active token. Overview remains one button / O-key away.
+  normalFollowZoom: 2.15,
   branchDecisionZoom: 1.3,
   overviewZoom: 0.88,
   worldWidth: 1280,
