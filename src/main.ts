@@ -9,7 +9,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene057 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene057';
+import { CareerMinigameBoardScene058 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene058';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
