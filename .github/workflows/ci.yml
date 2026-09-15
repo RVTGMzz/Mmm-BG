@@ -157,18 +157,20 @@ jobs:
         run: npm run test:presentation-release-sync-0633
       - name: 0.1.63.4 Job continuation and landing effect synchronization
         run: npm run test:job-continue-landing-sync-0634
+      - name: 0.1.64 expanded board release corridor and audio rebalance
+        run: npm run test:expanded-board-release-audio-064
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.63.4 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.63.4_JOB_CONTINUE_LANDING_SYNC.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.64 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.64_EXPANDED_BOARD_RELEASE_AUDIO.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.63.4 Job continue landing sync build
+      - name: Upload MVP 0.1.64 expanded board release audio build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.63.4-job-continue-landing-sync
+          name: mememe-playtest-0.1.64-expanded-board-release-audio
           path: dist
           if-no-files-found: error
           retention-days: 14
