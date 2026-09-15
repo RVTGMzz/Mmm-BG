@@ -14,8 +14,8 @@ const NEWS = newsJson as NewsDefinition[];
 const runtime = { board: BOARD, cards: CARDS, news: NEWS };
 
 const OUTLIERS = [
-  { seed: 611124, reason: 'longest-match', expectedTurns: 77 },
-  { seed: 611121, reason: 'largest-money-spread', expectedSpread: 292 },
+  { seed: 611124, reason: 'longest-match' },
+  { seed: 611121, reason: 'largest-money-spread' },
 ] as const;
 
 function runTwice(seed: number) {
@@ -31,11 +31,11 @@ function runTwice(seed: number) {
 
 const runs = OUTLIERS.map((fixture) => ({ fixture, run: runTwice(fixture.seed) }));
 
-const longest = runs.find(({ fixture }) => fixture.reason === 'longest-match')!;
-assert.equal(longest.run.report.turnsObserved, longest.fixture.expectedTurns, 'longest-match sentinel drifted from the 0.1.61.1 baseline');
+const longest = runs.find(({ fixture }) => fixture.seed === 611124)!;
+assert.equal(longest.run.report.turnsObserved, 77, 'longest-match sentinel drifted from the 0.1.61.1 baseline');
 
-const widest = runs.find(({ fixture }) => fixture.reason === 'largest-money-spread')!;
-assert.equal(widest.run.report.finalMoneySpread, widest.fixture.expectedSpread, 'largest-money-spread sentinel drifted from the 0.1.61.1 baseline');
+const widest = runs.find(({ fixture }) => fixture.seed === 611121)!;
+assert.equal(widest.run.report.finalMoneySpread, 292, 'largest-money-spread sentinel drifted from the 0.1.61.1 baseline');
 
 for (const { fixture, run } of runs) {
   assert(run.submittedCommands < 1600, `seed ${fixture.seed} reached simulation safety ceiling`);
