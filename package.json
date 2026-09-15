@@ -60,6 +60,7 @@
     "test:playtest-telemetry-061": "tsx tests/playtest-telemetry-061.ts",
     "test:simulation-baseline-0611": "tsx tests/simulation-baseline-0611.ts",
     "test:outlier-replay-0612": "tsx tests/outlier-replay-0612.ts",
+    "test:random-branch-round-tiles-062": "tsx tests/random-branch-round-tiles-062.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
