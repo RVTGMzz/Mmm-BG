@@ -1,79 +1,59 @@
-MeMeMe MVP 0.1.48 — BUGFIX PASS
+MeMeMe MVP 0.1.66 — UNIFIED FLOW + MATCH LENGTH
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
 2) DOUBLE-CLICK: START_PLAYTEST.bat
-3) Trình duyệt sẽ tự mở local playtest server.
+3) Trình duyệt tự mở local playtest server.
 4) GIỮ cửa sổ terminal launcher mở trong lúc chơi.
 
-QUAN TRỌNG
+CHỈ CÒN 1 FLOW MẶC ĐỊNH
+- Chỉ dùng START_PLAYTEST.bat.
+- Hai launcher Draft D preview/full-map cũ không còn ship trong gói tester.
 - KHÔNG double-click index.html trực tiếp.
-- Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì game có thể chỉ hiện màn hình trắng vì browser chặn ES module/local asset khi chạy bằng file://.
-- START_PLAYTEST.bat dùng local server và KHÔNG cần cài Node/Python.
+- Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì browser có thể chặn ES module/local asset.
 
-0.1.48 FOCUS
-- Ô TIN TỨC và LÁ BÀI giữ nguyên tên cũ.
-- Bộ Tiên Tri / Phép Thuật được cung cấp chỉ là reference content để audit/gợi ý effect, không đổi tên hệ thống hiện tại.
-- Money SFX: ô tiền chỉ phát cue khi presentation đáp ô, không phát sớm rồi lặp lần hai.
-- Roll For Order: frame cuối dùng đúng mặt ⚀–⚅ theo kết quả authoritative, không dùng emoji 🎲 cố định.
-- 03_City_Silly.ogg chỉ được dùng trong Mini Game thật; board round không được tự bật track này.
-- Token movement có stale-event guard: move_step tới trễ/duplicate không được kéo token từ vị trí mới quay về vị trí cũ.
+TRƯỚC TRẬN — CHỌN SỐ VÒNG
+- Chọn 1 / 2 / 3 vòng ở màn Setup.
+- Mặc định = 1 vòng để giữ hành vi playtest cũ.
+- Đây là luật thật: chỉ khi tất cả người chơi hoàn thành đủ số vòng đã chọn thì game mới chốt kết quả B$.
 
-TOKEN SNAP-BACK TEST
-1) Chơi ít nhất 2 vòng lượt của cùng một người chơi.
-2) Mỗi lần đổ D6, quan sát token đi từng node tới vị trí cuối.
-3) Sau khi dừng, token KHÔNG được nhảy ngược về node trước khi đổ.
-4) Lượt kế tiếp phải bắt đầu đúng từ nơi token đang đứng.
-5) Lặp lại với P1 và một CPU/remote seat nếu có thể.
+0.1.66 FOCUS
+- JOB popup không còn icon xúc xắc dư khi đã có icon nghề/cặp biểu tượng khác.
+- Mini Game tie/ranking text được reflow để heading và danh sách không chồng nhau.
+- Camera movement-actor lock giữ nguyên vì đã được xác nhận tốt.
+- TIN TỨC / LÁ BÀI giữ nguyên tên.
+- 1/3/5 = rẽ TRÁI, 2/4/6 = rẽ PHẢI, HOST tự quyết định.
 
-MONEY SFX TEST
-1) Đi vào một ô thưởng/phạt tiền.
-2) Trước khi token đáp ô không được nghe coin cue spoil kết quả.
-3) Khi presentation ô tiền xuất hiện chỉ nghe coin gain/loss một lần.
-4) Mini Game payout vẫn được phép có money cue riêng vì không có tile landing presentation sở hữu cue đó.
+JAIL / HOSPITAL
+- Thả thành công: đứng nguyên ở TÙ/BV.
+- Release D6 chỉ dùng để thoát giữ.
+- Sau đó dùng một fresh movement D6 trong cùng lượt.
+- J1/J2/J3 và H1/H2/H3 = -20 B$ khi đáp xuống.
 
-DICE TEST
-- Roll For Order phải kết thúc ở đúng glyph mặt xúc xắc: ⚀ ⚁ ⚂ ⚃ ⚄ ⚅.
-- Con số bên cạnh phải trùng mặt và trùng kết quả HOST authoritative.
-- Tie reroll cũng phải giữ quy tắc này.
+JOB
+- Nếu Job xuất hiện giữa movement, xử lý Job xong tiếp tục số pip còn lại của cùng viên D6.
+- Job Dice: 1–2 = A, 3–4 = B, 5–6 = C.
 
-MINI GAME BGM TEST
-- Trên board bình thường không được nghe 03_City_Silly.ogg chỉ vì đã sang vòng/lượt sau.
-- Chỉ khi Mini Game overlay thật bắt đầu mới chuyển sang 03_City_Silly.ogg.
-- Khi Mini Game kết thúc phải quay lại track board trước đó.
+PRESENTATION SYNC
+- ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD B$ UPDATE.
+- Không được cộng/trừ tiền trước khi token tới ô.
+- Khi chọn LÁ BÀI / mục tiêu, xúc xắc movement phải ẩn.
 
-MULTIPLAYER PARITY RETAINED
-- HOST và CLIENT vẫn sinh cùng presentation từ cùng authoritative event stream.
-- Snapshot resync không phát lại presentation cũ.
-- Remote Roll For Order và Multiplayer Job Hub giữ nguyên authority.
+CAMERA
+- Người đang animate movement phải luôn được camera follow/center.
+- TỔNG QUAN / O là ngoại lệ cố ý.
 
-JOB HUB RETAINED
-- Cả hai tab thấy cùng 3 Job.
-- Chỉ tab sở hữu ghế hiện tại được bấm Job Dice.
-- HOST authoritative sinh D6.
-- 1–2 → A, 3–4 → B, 5–6 → C.
+GAMEPAD / STEAM DECK
+- D-pad: di chuyển lựa chọn UI Phaser.
+- A: xác nhận lựa chọn hiện tại.
+- Chuột/touch vẫn dùng song song.
 
-MATCH RULES
-- Starting wallet = 200 B$.
-- Mỗi người hoàn thành 1 vòng trước khi chốt B$.
-- Qua READY nhận lương Job hiện tại.
-- NHIỀU RA ÍT BỊ: 30 / 20 / 10 / 0 B$.
-- OẲN TÙ XÌ trực tiếp: 25 / 15 / 5 / 0 B$.
-- Final Mini Game payout phải commit trước khi chốt kết quả.
+AUDIO
+- Card SFX = 80% mức cũ.
+- Step SFX = 130% mức cũ.
 
-FINAL RESULT
-- Presentation queue phải sạch trước result.
-- B$ lock chạy trước podium.
-- Podium reveal 4 → 3 → 2 → 1; đồng hạng cùng nhịp.
-- Result controls chỉ unlock sau winner reveal.
+ONLINE PLAYTEST
+- Cùng compiled runtime với bản ZIP tester.
+- Public web repo chỉ chứa compiled browser build, không chứa private TypeScript source/tests/docs/source maps.
 
-AUDIO / PRIVACY
-- 4 BGM approved và 8 SFX supplied giữ nguyên checksum.
-- 03_City_Silly.ogg vẫn checksum-locked nhưng chỉ dùng cho Mini Game.
-- Ảnh mặt gốc vẫn local.
-- Ảnh reference bộ bài không được persist thành runtime asset trong milestone này.
-
-KNOWN LIMITS
-- 2-tab hiện là BroadcastChannel local QA.
-- CPU là QA bot.
-- Jail deep mechanics chưa định nghĩa.
+Copyright © 2026 MeMeMe. All rights reserved.
