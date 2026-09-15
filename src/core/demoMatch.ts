@@ -1,4 +1,5 @@
 import type { MatchState } from './matchState';
+import { targetLapsForPlayer060 } from './pacingEconomy060';
 
 export const DEMO_MATCH_DEFAULT_ROUNDS = 3;
 export const DEMO_MATCH_TARGET_LAPS = 1;
@@ -50,10 +51,7 @@ export function createDemoMatchShell(
 }
 
 export function cloneDemoMatchShell(shell: DemoMatchShellState): DemoMatchShellState {
-  return {
-    ...shell,
-    winnerIds: [...shell.winnerIds],
-  };
+  return { ...shell, winnerIds: [...shell.winnerIds] };
 }
 
 export function demoMatchResult(match: MatchState): DemoMatchResult {
@@ -70,7 +68,9 @@ export function demoMatchResult(match: MatchState): DemoMatchResult {
 }
 
 export function demoMatchLapProgress(match: MatchState): DemoMatchLapProgress {
-  const targetLaps = DEMO_MATCH_TARGET_LAPS;
+  const targetLaps = match.players[0]
+    ? targetLapsForPlayer060(match.players[0])
+    : DEMO_MATCH_TARGET_LAPS;
   return {
     completedPlayers: match.players.filter((player) => (player.lapsCompleted ?? 0) >= targetLaps).length,
     totalPlayers: match.players.length,
@@ -78,11 +78,6 @@ export function demoMatchLapProgress(match: MatchState): DemoMatchLapProgress {
   };
 }
 
-/**
- * A Mini Game landing is presentation-driven, but its payout is authoritative.
- * If the newest event is an unresolved Mini Game, do not freeze the final B$ table
- * before the host commits its ranking/reward command.
- */
 export function hasPendingLatestMiniGame(match: MatchState): boolean {
   const latest = match.eventLog.at(-1);
   if (!latest || latest.type !== 'minigame_tile') return false;
@@ -92,9 +87,7 @@ export function hasPendingLatestMiniGame(match: MatchState): boolean {
 }
 
 /**
- * Current playtest rule:
- * scoring only starts after every player has physically completed one full board lap.
- * Turn count / shell.rounds no longer ends the match; those fields remain for old shell compatibility.
+ * 0.1.66 scoring starts only after every player reaches the selected 1/2/3-lap target.
  * A final Mini Game must also finish its authoritative payout before B$ is scored.
  */
 export function shouldEndDemoMatch(match: MatchState, shell: DemoMatchShellState): boolean {
@@ -104,10 +97,6 @@ export function shouldEndDemoMatch(match: MatchState, shell: DemoMatchShellState
   return progress.completedPlayers === progress.totalPlayers;
 }
 
-/**
- * Legacy turn progress retained for old debug surfaces only.
- * It no longer controls match end.
- */
 export function demoMatchTurnProgress(match: MatchState, shell: DemoMatchShellState): {
   completedTurns: number;
   totalTurns: number;
