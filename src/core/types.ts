@@ -42,6 +42,8 @@ export interface PlayerState {
   cardsPlayedThisTurn: number;
   /** Completed board laps. Optional so older schema-v3 snapshots still deserialize safely. */
   lapsCompleted?: number;
+  /** 0.1.66 per-match finish target. Omitted means the legacy one-lap target. */
+  targetLaps?: number;
   /** Career fields are optional so old schema-v3 playtest snapshots still deserialize cleanly. */
   jobId?: string;
   jobLevel?: number;
