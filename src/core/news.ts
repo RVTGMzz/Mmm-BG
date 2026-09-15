@@ -1,7 +1,8 @@
-import type { PlayerState } from './types';
+import { specialHoldNodeId057 } from './specialLocations057';
+import type { PlayerState, SpecialHoldLocation } from './types';
 
 export type NewsRarity = 'N' | 'R' | 'SR' | 'SSR';
-export type NewsTargetMode = 'self' | 'all_players';
+export type NewsTargetMode = 'self' | 'all_players' | 'other_player';
 
 export interface MoneyDeltaSelfEffect {
   type: 'money_delta_self';
@@ -17,7 +18,22 @@ export interface NormalizeToAverageSelfEffect {
   type: 'normalize_to_average_self';
 }
 
-export type NewsEffect = MoneyDeltaSelfEffect | MoneyDeltaAllEffect | NormalizeToAverageSelfEffect;
+/**
+ * The variant offset is chosen by content. Multiple equal-weight News variants can
+ * point at different offsets, so the authoritative weighted News draw determines
+ * which free opponent is hit without adding a second client-side RNG source.
+ */
+export interface SendOtherToSpecialEffect {
+  type: 'send_other_to_special';
+  location: SpecialHoldLocation;
+  targetOffset: number;
+}
+
+export type NewsEffect =
+  | MoneyDeltaSelfEffect
+  | MoneyDeltaAllEffect
+  | NormalizeToAverageSelfEffect
+  | SendOtherToSpecialEffect;
 
 export interface NewsDefinition {
   id: string;
@@ -36,6 +52,9 @@ export interface NewsResolution {
   affectedPlayerIds: number[];
   deltas: Record<number, number>;
   amount?: number;
+  relocatedPlayerId?: number;
+  relocatedToNodeId?: number;
+  specialHold?: SpecialHoldLocation;
 }
 
 export function drawWeightedNews(
@@ -66,6 +85,13 @@ function applyMoneyDelta(player: PlayerState, requestedDelta: number): number {
   const loss = Math.min(requestedLoss, Math.max(0, player.money));
   player.money -= loss;
   return -loss;
+}
+
+function freeOtherPlayers(players: PlayerState[], subjectId: number): PlayerState[] {
+  return players
+    .filter((player) => player.id !== subjectId && player.specialHold === undefined)
+    .slice()
+    .sort((left, right) => left.id - right.id);
 }
 
 export function applyNewsEffect(
@@ -117,6 +143,31 @@ export function applyNewsEffect(
         summary: delta === 0
           ? `${subject.name} đã đúng mức B$ trung bình nên không thay đổi.`
           : `${subject.name} được cân về mức trung bình ${subject.money}B$ (${delta > 0 ? '+' : ''}${delta}B$).`,
+      };
+    }
+
+    case 'send_other_to_special': {
+      const candidates = freeOtherPlayers(players, subject.id);
+      if (candidates.length === 0) {
+        return {
+          affectedPlayerIds: [subject.id],
+          deltas: {},
+          summary: 'Không còn đối thủ tự do hợp lệ nên sự kiện không bắt được ai.',
+        };
+      }
+      const offset = Math.abs(Math.floor(news.effect.targetOffset));
+      const target = candidates[offset % candidates.length]!;
+      const destination = specialHoldNodeId057(news.effect.location);
+      target.nodeId = destination;
+      target.specialHold = news.effect.location;
+      const place = news.effect.location === 'jail' ? 'Đồn Cảnh Sát' : 'Bệnh Viện';
+      return {
+        affectedPlayerIds: [target.id],
+        deltas: {},
+        relocatedPlayerId: target.id,
+        relocatedToNodeId: destination,
+        specialHold: news.effect.location,
+        summary: `${target.name} bị sự kiện kéo thẳng tới ${place}.`,
       };
     }
   }
