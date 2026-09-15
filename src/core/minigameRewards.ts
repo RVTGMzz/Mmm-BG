@@ -1,17 +1,55 @@
-export type MiniGameRewardType = 'majority_minority' | 'rps';
+import {
+  MINI_GAME_SLOTS_059,
+  miniGameRewardForSlot059,
+  type MiniGameBaseMode059,
+} from './miniGameSlots059';
 
-export const MINI_GAME_REWARDS: Record<MiniGameRewardType, readonly [number, number, number, number]> = {
+export type MiniGameBaseRewardType = MiniGameBaseMode059;
+export type MiniGameRewardType = MiniGameBaseRewardType | `${MiniGameBaseRewardType}@${string}`;
+
+export const MINI_GAME_REWARDS: Record<MiniGameBaseRewardType, readonly [number, number, number, number]> = {
   majority_minority: [30, 20, 10, 0],
   rps: [25, 15, 5, 0],
 };
 
+export interface MiniGameRewardIdentity059 {
+  baseType: MiniGameBaseRewardType;
+  contentId?: string;
+}
+
+export function miniGameRewardType059(
+  baseType: MiniGameBaseRewardType,
+  contentId: string | undefined,
+): MiniGameRewardType {
+  const slot = MINI_GAME_SLOTS_059.find((entry) => entry.contentId === contentId);
+  return slot ? `${baseType}@${slot.contentId}` : baseType;
+}
+
+export function parseMiniGameRewardType059(value: unknown): MiniGameRewardIdentity059 | undefined {
+  if (value === 'majority_minority' || value === 'rps') return { baseType: value };
+  if (typeof value !== 'string') return undefined;
+
+  const separator = value.indexOf('@');
+  if (separator <= 0) return undefined;
+  const baseType = value.slice(0, separator);
+  const contentId = value.slice(separator + 1);
+  if (baseType !== 'majority_minority' && baseType !== 'rps') return undefined;
+  if (!MINI_GAME_SLOTS_059.some((entry) => entry.contentId === contentId)) return undefined;
+  return { baseType, contentId };
+}
+
 export function miniGameRewardForRank(type: MiniGameRewardType, rank: number): number {
   if (!Number.isInteger(rank) || rank < 1) return 0;
-  return MINI_GAME_REWARDS[type][rank - 1] ?? 0;
+  const identity = parseMiniGameRewardType059(type);
+  if (!identity) return 0;
+  if (identity.contentId) {
+    return miniGameRewardForSlot059(identity.contentId, identity.baseType, rank);
+  }
+  return MINI_GAME_REWARDS[identity.baseType][rank - 1] ?? 0;
 }
 
 export function isMiniGameRewardType(value: unknown): value is MiniGameRewardType {
-  return value === 'majority_minority' || value === 'rps';
+  return parseMiniGameRewardType059(value) !== undefined;
 }
 
 export function parseRankingPlayerIds(value: unknown): number[] {
