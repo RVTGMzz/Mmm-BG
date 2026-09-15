@@ -24,6 +24,7 @@ import {
   miniGameRewardTable059,
 } from '../src/core/miniGameSlots059';
 import { createInitialMatchState } from '../src/core/matchState';
+import { ECONOMY_060 } from '../src/core/pacingEconomy060';
 import type { BoardDefinition } from '../src/core/types';
 
 const BOARD = boardJson as BoardDefinition;
@@ -41,23 +42,29 @@ for (const slot of MINI_GAME_SLOTS_059) {
   assert(node, `${slot.boardLabel} node is missing.`);
   assert.equal(node.feature, 'minigame');
   assert.equal(node.contentId, slot.contentId);
-  assert.equal(miniGameRewardTable059(slot.contentId, 'majority_minority').reduce((sum, amount) => sum + amount, 0), 60);
-  assert.equal(miniGameRewardTable059(slot.contentId, 'rps').slice(0, 2).reduce((sum, amount) => sum + amount, 0), 40);
+  assert.equal(
+    miniGameRewardTable059(slot.contentId, 'majority_minority').reduce((sum, amount) => sum + amount, 0),
+    ECONOMY_060.miniGameMajorityTotal,
+  );
+  assert.equal(
+    miniGameRewardTable059(slot.contentId, 'rps').slice(0, 2).reduce((sum, amount) => sum + amount, 0),
+    ECONOMY_060.miniGameRpsTotal,
+  );
 }
 assert.equal(
   new Set(MINI_GAME_SLOTS_059.map((slot) => slot.majorityRewards.join(','))).size,
   5,
-  'Each canonical Mini Game space must have a distinct majority/minority stake profile.',
+  'Each canonical Mini Game space must keep a distinct majority/minority stake profile.',
 );
 
 const allInType = miniGameRewardType059('majority_minority', 'MINIGAME_SLOT_02');
 assert.equal(allInType, 'majority_minority@MINIGAME_SLOT_02');
 assert.equal(isMiniGameRewardType(allInType), true);
 assert.equal(isMiniGameRewardType('majority_minority@MINIGAME_SLOT_99'), false);
-assert.equal(miniGameRewardForRank(allInType, 1), 40);
-assert.equal(miniGameRewardForRank(allInType, 2), 15);
+assert.equal(miniGameRewardForRank(allInType, 1), 35);
+assert.equal(miniGameRewardForRank(allInType, 2), 10);
 assert.equal(miniGameRewardForSlot059('MINIGAME_SLOT_04', 'majority_minority', 3), 0);
-assert.equal(miniGameRewardForRank('majority_minority', 1), 30, 'Legacy/default reward type must stay backwards-compatible.');
+assert.equal(miniGameRewardForRank('majority_minority', 1), 30, 'Legacy/default reward type stays backwards-compatible for old fixtures.');
 
 const doctor = JOBS.find((job) => job.id === 'JOB_DOCTOR')!;
 const idol = JOBS.find((job) => job.id === 'JOB_IDOL')!;
@@ -124,11 +131,12 @@ const payoutReceipt = submitClientIntent(authority, {
 assert.equal(payoutReceipt.status, 'accepted');
 assert.deepEqual(
   authority.state.players.map((player) => player.money),
-  [240, 215, 205, 200],
-  'Slot 2 host-owned payout must use the winner-heavy 40/15/5/0 profile.',
+  [235, 210, 205, 200],
+  'Slot 2 host-owned payout must use the tuned winner-heavy 35/10/5/0 profile.',
 );
 
 const scene059 = await readFile('src/scenes/CareerMinigameBoardScene059.ts', 'utf8');
+const scene060 = await readFile('src/scenes/CareerMinigameBoardScene060.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const canonical = await readFile('src/ui/canonicalPresentation0561.ts', 'utf8');
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
@@ -136,7 +144,8 @@ assert(scene059.includes('startMiniGameOverlay'));
 assert(scene059.includes('installJobArrestReconciliation'));
 assert(!scene059.includes('Math.random'), '0.1.59 presentation wrapper must not add client RNG.');
 assert(!scene059.includes('submitIntent('), '0.1.59 scene must not become a second gameplay authority.');
-assert(main.includes('CareerMinigameBoardScene059 as ActiveBoardScene'));
-assert(canonical.includes("version: '0.1.59'"));
+assert(scene060.includes('extends CareerMinigameBoardScene059'));
+assert(main.includes('CareerMinigameBoardScene060 as ActiveBoardScene'));
+assert(canonical.includes("version: '0.1.60'"));
 
-console.log('[job-minigame-depth-059] PASS Job risk is visible/real + five canonical Mini Game arenas keep HOST payout ownership and bounded total stakes');
+console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under 0.1.60 tuned payouts and HOST ownership');
