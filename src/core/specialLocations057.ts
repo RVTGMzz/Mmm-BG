@@ -1,3 +1,4 @@
+import { miniGameEligiblePlayers060 } from './pacingEconomy060';
 import type { BoardNode, PlayerState, SpecialHoldLocation } from './types';
 
 export const SPECIAL_LOCATION_057 = {
@@ -53,8 +54,12 @@ export function lotteryReward057(roll: number): number {
   return face * SPECIAL_LOCATION_057.lottery.multiplier;
 }
 
+/**
+ * 0.1.60 layers finish-line retirement over the original 0.1.57 hold exclusion.
+ * The export name stays stable so older authority/replay call sites keep working.
+ */
 export function miniGameEligiblePlayers057(players: readonly PlayerState[]): PlayerState[] {
-  return players.filter((player) => player.specialHold === undefined);
+  return miniGameEligiblePlayers060(players);
 }
 
 export function specialHoldLabel057(location: SpecialHoldLocation | undefined): string {
