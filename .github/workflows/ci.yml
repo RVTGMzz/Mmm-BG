@@ -161,18 +161,20 @@ jobs:
         run: npm run test:expanded-board-release-audio-064
       - name: 0.1.65 Job salary HUD rounded UI and debug cleanup
         run: npm run test:job-hud-rounded-ui-065
+      - name: 0.1.65.1 UI ghost cleanup gamepad and Steam Deck web
+        run: npm run test:ui-ghost-gamepad-web-0651
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.65 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.65_JOB_HUD_ROUNDED_UI.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.65.1 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.65.1_STEAM_DECK_HOTFIX.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.65 job HUD rounded UI build
+      - name: Upload MVP 0.1.65.1 Steam Deck hotfix build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.65-job-hud-rounded-ui
+          name: mememe-playtest-0.1.65.1-steamdeck-hotfix
           path: dist
           if-no-files-found: error
           retention-days: 14
