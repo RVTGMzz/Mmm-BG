@@ -36,6 +36,7 @@ import {
   validateMiniGameRanking,
 } from './minigameRewards';
 import { applyNewsEffect, drawWeightedNews, type NewsDefinition } from './news';
+import { isPlayerFinished060 } from './pacingEconomy060';
 import { createRandomSource } from './rng';
 import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
 import {
@@ -270,7 +271,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
           contentId: node.contentId ?? 'MINIGAME_SLOT_01',
           title: 'MINI GAME • BỎ QUA',
           impact: '🎮⏭️',
-          description: 'Không có người chơi đủ điều kiện vì tất cả đang ở Đồn/Bệnh viện.',
+          description: 'Không có người chơi đủ điều kiện vì tất cả đang ở Đồn/Bệnh viện hoặc đã về đích.',
           summary: '0 người hợp lệ = bỏ Mini Game, không có payout.',
           status: 'no_eligible_players',
           affectedPlayerIds: '',
@@ -293,8 +294,8 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
           ? `${eligible[0]?.name ?? 'Người chơi'} là người duy nhất đủ điều kiện và tự động hạng #1.`
           : '3+ người: Nhiều ra ít bị. Phe sấp/ngửa thiểu số bị loại.',
         summary: eligible.length === 1
-          ? 'Người ở Đồn/Bệnh viện bị loại khỏi Mini Game. Hệ thống tự xếp người còn lại hạng #1.'
-          : 'Người ở Đồn/Bệnh viện không tham gia. Khi còn đúng 1v1, hệ thống tự chuyển sang Oẳn Tù Xì.',
+          ? 'Người ở Đồn/Bệnh viện hoặc đã về đích không tham gia. Hệ thống tự xếp người còn lại hạng #1.'
+          : 'Người ở Đồn/Bệnh viện hoặc đã về đích không tham gia. Khi còn đúng 1v1, hệ thống tự chuyển sang Oẳn Tù Xì.',
         status: eligible.length === 1 ? 'auto_rank_1' : 'rules_locked',
         eligibleCount: eligible.length,
         affectedPlayerIds: eligible.map((entry) => entry.id).join(','),
@@ -504,17 +505,23 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
       const currentJob = player.jobStatus === 'employed' ? jobById(JOBS, player.jobId) : undefined;
       const salaryAmount = currentJob ? jobSalary(currentJob, player.jobLevel) : 0;
       player.money += salaryAmount;
+      const finishLocked = isPlayerFinished060(player);
       appendMatchEvent(ctx.state, 'ready_pass', {
         amount: salaryAmount,
         salaryAmount,
         resultMoney: player.money,
         lapsCompleted: player.lapsCompleted,
+        finishLocked,
         jobId: currentJob?.id ?? null,
         jobTitle: currentJob?.title ?? null,
         jobIcon: currentJob?.icon ?? null,
         jobLevel: player.jobLevel ?? 0,
         affectedPlayerIds: String(player.id),
       }, player.id);
+
+      // 0.1.60 one-lap pacing: once the target lap is complete, READY is a real
+      // finish line. Remaining pips on this movement die are discarded.
+      if (finishLocked) break;
     }
 
     const steppedNode = getBoardNode(ctx.board, edge.to);
