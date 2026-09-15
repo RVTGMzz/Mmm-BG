@@ -2,6 +2,7 @@ import type { ClientIntentType } from './authority';
 import { getOutgoingEdges, pickParityEdge } from './board';
 import {
   getValidTargets,
+  getValidTargetsForCard,
   tacticalChoicePressureAmount,
   type CardDefinition,
 } from './cards';
@@ -21,6 +22,12 @@ function currentPlayer(state: MatchState): PlayerState | undefined {
 
 function chooseSingleTarget(state: MatchState, casterId: number): PlayerState | undefined {
   return getValidTargets(state.players, casterId)
+    .slice()
+    .sort((a, b) => b.money - a.money || a.id - b.id)[0];
+}
+
+function chooseCardTarget(state: MatchState, casterId: number, card: CardDefinition): PlayerState | undefined {
+  return getValidTargetsForCard(card, state.players, casterId)
     .slice()
     .sort((a, b) => b.money - a.money || a.id - b.id)[0];
 }
@@ -54,6 +61,16 @@ export function chooseTestBotIntent(
   const actor = currentPlayer(state);
   if (!actor) return undefined;
 
+  // 0.1.57: holding locations own the turn opener. A held CPU must roll the
+  // authoritative release check before considering cards or normal movement.
+  if (state.turn.phase === 'PRE_ROLL_ACTION' && actor.specialHold) {
+    return {
+      type: 'roll',
+      data: {},
+      reason: actor.specialHold === 'jail' ? 'đổ xúc xắc xin thả khỏi Đồn' : 'đổ xúc xắc xin xuất viện',
+    };
+  }
+
   if (state.turn.phase === 'JOB_CHOICE') {
     if ((state.pendingJobOfferIds ?? []).length !== 3) return undefined;
     return {
@@ -79,7 +96,6 @@ export function chooseTestBotIntent(
   if (state.turn.phase !== 'PRE_ROLL_ACTION') return undefined;
 
   const canPlayCard =
-    actor.specialHold === undefined &&
     actor.cardBlockTurns <= 0 &&
     actor.cardsPlayedThisTurn < MVP_MAX_CARD_PLAYS_PER_TURN &&
     actor.handCardIds.length > 0;
@@ -92,7 +108,9 @@ export function chooseTestBotIntent(
       let choice: MatchEventValue = null;
       const cpuQuirk = shouldCpuQuirk(state, actor.id, card.id);
       if (card.targetMode === 'single_other') {
-        const target = chooseSingleTarget(state, actor.id);
+        const target = card.effect.type === 'send_to_special'
+          ? chooseCardTarget(state, actor.id, card)
+          : chooseSingleTarget(state, actor.id);
         if (target) targetId = target.id;
         else return { type: 'roll', data: {}, reason: 'không có target hợp lệ nên roll' };
       }
@@ -117,6 +135,6 @@ export function chooseTestBotIntent(
   return {
     type: 'roll',
     data: {},
-    reason: actor.specialHold ? `đổ xúc xắc ${actor.specialHold} release` : 'đổ xúc xắc',
+    reason: 'đổ xúc xắc',
   };
 }
