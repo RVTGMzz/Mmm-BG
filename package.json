@@ -71,6 +71,7 @@
     "test:job-continue-landing-sync-0634": "tsx tests/job-continue-landing-sync-0634.ts",
     "test:expanded-board-release-audio-064": "tsx tests/expanded-board-release-audio-064.ts",
     "test:job-hud-rounded-ui-065": "tsx tests/job-hud-rounded-ui-065.ts",
+    "test:ui-ghost-gamepad-web-0651": "tsx tests/ui-ghost-gamepad-web-0651.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
