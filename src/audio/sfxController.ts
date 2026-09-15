@@ -32,6 +32,13 @@ const SFX_ASSETS: Partial<Record<SfxCue, string>> = {
   victory: 'victory.ogg',
 };
 
+/** 0.1.64 human mix feedback: Card -20%, footsteps +30%. */
+export const SFX_GAIN_064: Partial<Record<SfxCue, number>> = {
+  card_draw: 0.8,
+  card_play: 0.8,
+  step: 1.3,
+};
+
 function loadMuted(): boolean {
   if (typeof window === 'undefined') return false;
   try {
@@ -95,11 +102,23 @@ export class SfxController {
     if (file && typeof Audio !== 'undefined') {
       const template = this.prepareCue(cue);
       if (template) {
+        const gainMultiplier = SFX_GAIN_064[cue] ?? 1;
         const audio = template.cloneNode(true) as HTMLAudioElement;
         audio.preload = 'auto';
         audio.muted = false;
-        audio.volume = cue === 'step' ? 0.82 : 1;
-        const cleanup = () => this.activeAssets.delete(audio);
+        audio.volume = Math.min(1, gainMultiplier);
+
+        // HTMLMediaElement.volume caps at 1.0. Route only >1 cues through a
+        // WebAudio GainNode so the requested +30% step mix is real rather than
+        // silently clamped to the old ceiling.
+        const boosted = gainMultiplier > 1
+          ? this.routeBoostedAsset064(audio, gainMultiplier)
+          : undefined;
+
+        const cleanup = () => {
+          this.activeAssets.delete(audio);
+          boosted?.();
+        };
         audio.addEventListener('ended', cleanup, { once: true });
         audio.addEventListener('error', cleanup, { once: true });
         this.activeAssets.add(audio);
@@ -111,6 +130,31 @@ export class SfxController {
       }
     }
     this.playFallback(cue);
+  }
+
+  private routeBoostedAsset064(audio: HTMLAudioElement, multiplier: number): (() => void) | undefined {
+    const context = this.ensureContext();
+    if (!context) return undefined;
+    try {
+      const source = context.createMediaElementSource(audio);
+      const gain = context.createGain();
+      gain.gain.value = multiplier;
+      source.connect(gain);
+      gain.connect(context.destination);
+      void context.resume().catch(() => undefined);
+      return () => {
+        try {
+          source.disconnect();
+          gain.disconnect();
+        } catch {
+          // Already disconnected during browser cleanup.
+        }
+      };
+    } catch {
+      // If a browser refuses MediaElementSource routing, the element still plays
+      // at volume 1.0 instead of failing the SFX entirely.
+      return undefined;
+    }
   }
 
   private prepareCue(cue: SfxCue): HTMLAudioElement | undefined {
@@ -154,10 +198,10 @@ export class SfxController {
         this.tone(360, 180, now, 0.18, 0.12, 'triangle');
         break;
       case 'card_draw':
-        this.tone(420, 920, now, 0.2, 0.09, 'triangle');
+        this.tone(420, 920, now, 0.2, 0.072, 'triangle');
         break;
       case 'card_play':
-        this.tone(520, 1200, now, 0.16, 0.12, 'sawtooth');
+        this.tone(520, 1200, now, 0.16, 0.096, 'sawtooth');
         break;
       case 'news':
         this.tone(520, 520, now, 0.08, 0.1, 'square');
@@ -177,7 +221,7 @@ export class SfxController {
         this.tone(760, 860, now, 0.05, 0.04, 'sine');
         break;
       case 'step':
-        this.tone(135, 105, now, 0.055, 0.026, 'triangle');
+        this.tone(135, 105, now, 0.055, 0.0338, 'triangle');
         break;
       case 'victory':
         this.tone(520, 780, now, 0.14, 0.09, 'sine');
