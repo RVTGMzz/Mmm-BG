@@ -20,62 +20,82 @@ Never regress HOST authority, replay/checksum determinism, remote Roll For Order
 
 Keep visible names **TIN TỨC / LÁ BÀI**.
 
-## 2. Current candidate — MVP 0.1.63.1
+## 2. Current candidate — MVP 0.1.63.2
 
-**0.1.63.1 — Active Player Center Lock**
+**0.1.63.2 — Movement Actor Camera Lock**
 
-Direct human feedback on 0.1.63 showed the low-lerp follow camera could lag far enough behind a moving token that the current player left the viewport.
+Human feedback on 0.1.63.1 showed the moving token could still leave the viewport on rolls such as 5 or 6.
 
-0.1.63.1 is a presentation-only hotfix:
-- current-turn player is forced to the exact gameplay-camera center every frame;
-- camera follows the token's tweened coordinates, so motion stays smooth without lag;
-- camera bounds are expanded dynamically so edge/corner board spaces can still sit at screen center;
-- `TỔNG QUAN / O` remains the only intentional exception to center lock.
+Root cause found:
+- authoritative turn state can advance to the next player before the queued presentation/movement animation finishes;
+- 0.1.63.1 centered `currentPlayer()`;
+- therefore camera could center P2 while P1 was still visually animating through the remaining move steps.
+
+0.1.63.2 fixes camera target priority:
+1. if a presentation model is active, camera centers that model's `actorId`;
+2. this keeps every `move_step` centered on the token actually moving;
+3. landing presentation remains framed on the same player;
+4. only when presentation is idle does camera return to authoritative `currentPlayer()`;
+5. `TỔNG QUAN / O` remains the intentional exception.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
 ## 3. Current runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene0631 as ActiveBoardScene`
+`CareerMinigameBoardScene0632 as ActiveBoardScene`
 
 Inheritance:
-`0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-0.1.63.1 does not change gameplay authority, economy or RNG.
+0.1.63.2 is presentation-only. Gameplay/economy/RNG authority remains unchanged.
 
-## 4. 0.1.63 presentation polish retained
+## 4. Camera implementation and regression
+
+New implementation:
+- `src/ui/cameraTarget0632.ts`
+- `src/scenes/CareerMinigameBoardScene0632.ts`
+- `tests/movement-actor-camera-lock-0632.ts`
+- `docs/PLAYTEST_0.1.63.2_MOVEMENT_ACTOR_CAMERA_LOCK.md`
+
+Key regression case now locked:
+- presentation still animates P1;
+- authoritative turn already says P2;
+- camera target **must remain P1**.
+
+The pure resolver `resolveCameraActor0632()` prioritizes `currentModel.actorId` over current-turn player ID. Scene camera resolution runs after inherited camera updates each frame, so it is the final pre-render camera decision.
+
+When presentation becomes idle, resolver falls back to the authoritative current-turn player.
+
+0.1.63.1 expanded edge bounds remain inherited, so edge/corner nodes can still occupy screen center.
+
+No `submitIntent()` or new RNG is introduced by 0.1.63.2.
+
+## 5. Presentation retained from 0.1.63 / 0.1.63.1
 
 Inherited unchanged:
-- central landing/event content scale **1.18x**;
+- landing/event content scale **1.18x**;
 - Card/News cinematic content scale **1.14x**;
 - token scale **0.82x**;
 - round tile radii normal/feature/anchor/hold = **27/31/33/36**;
 - close gameplay zoom **2.15x**;
 - Overview **0.88x**;
-- recursive build-label refresh.
+- recursive build-label refresh;
+- expanded camera bounds from 0.1.63.1.
 
-The old 0.1.63 low-lerp follow is no longer authoritative for normal gameplay because 0.1.63.1 center-lock runs after it every frame.
+Visible labels identify 0.1.63.2:
+- `CITY • MVP 0.1.63.2 • MOVEMENT ACTOR CAMERA LOCK`
+- `PLAYTEST 0.1.63.2 • CAMERA BÁM TOKEN ĐANG DI CHUYỂN`
 
-Visible labels now identify the hotfix:
-- `CITY • MVP 0.1.63.1 • ACTIVE PLAYER CENTER LOCK`
-- `PLAYTEST 0.1.63.1 • ACTIVE TOKEN LUÔN Ở GIỮA`
-
-## 5. 0.1.62 gameplay retained
+## 6. 0.1.62 gameplay retained
 
 Branch rule remains HOST-authoritative from the movement D6:
 - `1 / 3 / 5` -> **TRÁI**;
 - `2 / 4 / 6` -> **PHẢI**.
 
-No live manual branch picker, no second RNG stream, and HOST continues to append the backward-compatible `choose_branch` command with `automatic=true`.
+No live manual branch picker and no second RNG stream.
 
-No changes to:
-- economy/Card/News values;
-- Job rules;
-- five Mini Game arenas and HOST payout ownership;
-- Jail/Hospital/Lottery;
-- READY first-lap finish lock;
-- finished-player final B$ immunity.
+No changes to economy, Card/News values, Job rules, five Mini Game arenas, Jail/Hospital/Lottery, READY first-lap finish lock, or finished-player final B$ immunity.
 
 Draft D remains 44 main spaces, five Mini Game spaces and three equal-step forward-only junctions.
 
@@ -85,39 +105,11 @@ Branch identities remain:
 - TIỀN = +25/-20/+25 B$;
 - PHỐ CHÍNH remains the comparison route.
 
-## 6. Center-lock implementation / regression
-
-Implementation:
-- `src/scenes/CareerMinigameBoardScene0631.ts`
-- `tests/active-player-center-lock-0631.ts`
-- `docs/PLAYTEST_0.1.63.1_CENTER_LOCK.md`
-
-Normal gameplay path:
-- `update()` calls `centerActivePlayer0631()` after inherited updates;
-- current actor token is resolved from authoritative current-player state + visual map;
-- inherited lagging follow is stopped;
-- camera `centerOn(token.x, token.y)` runs on the token's interpolated tween position every frame;
-- Overview short-circuits this method.
-
-Bounds:
-- half viewport in world units is derived from current zoom;
-- min/max board-node coordinates are expanded by those half extents plus a 96px world margin;
-- this prevents camera bounds from blocking exact centering near board edges.
-
-Regression gate proves:
-- 0.1.63.1 is the active scene;
-- it inherits 0.1.63;
-- exact center lock runs every frame;
-- Overview remains exempt;
-- expanded bounds exist;
-- no `submitIntent()` and no `Math.random` are introduced;
-- 0.1.62 HOST parity-routing authority remains present.
-
 ## 7. Report / deterministic QA retained
 
 0.1.61 local Playtest Match Report remains inherited/local-only.
 
-Because 0.1.63 and 0.1.63.1 are presentation-only, the 0.1.62 deterministic gameplay baseline remains valid.
+Because 0.1.63.x is presentation-only, the 0.1.62 deterministic gameplay baseline remains valid.
 
 32-match current-routing batch, seeds `611100..611131`:
 - turns avg 56.7, p50 54, p90 63, max 73;
@@ -134,42 +126,42 @@ Exact active sentinels remain:
 - seed `611119`, checksum `9d83fad4`, 73 turns, finish `P2 > P4 > P1 > P3`;
 - seed `611113`, checksum `1074ba94`, 53 turns, finish `P4 > P3 > P1 > P2`.
 
-## 8. 0.1.63.1 code candidate
+## 8. 0.1.63.2 code candidate
 
 Code candidate before this documentation update is **FULL CI GREEN / PACKAGED**:
-- HEAD `2a7371ae2f7bd6da0deff9d9e940ec0253216aa0`;
-- push run `#2226` / `34957324629`;
-- artifact `mememe-playtest-0.1.63.1-center-lock`;
-- artifact ID `10391986394`;
-- size `8,591,052 bytes`;
-- SHA256 `0c241f8063972fcab9475cd8f2010b285d6ff55237d52b451d0294236f59860c`;
+- HEAD `cd3a843d9c82f1e37fd4589eeedb3b67b76be97e`;
+- push run `#2244` / `34965761179`;
+- artifact `mememe-playtest-0.1.63.2-movement-actor-camera`;
+- artifact ID `10395341522`;
+- size `8,591,383 bytes`;
+- SHA256 `bc1b9f490ea5ff0a62876cfcd6798943b2ed10f6e45e904764c08ee0be8d04ba`;
 - expires 2026-09-29.
 
-Run #2226 passed the complete suite including:
+Run #2244 passed the complete suite including:
 - build/typecheck;
 - replay/lockstep/HOST authority;
 - two-tab/multiplayer/CPU stress;
-- presentation/content/economy/pacing;
 - 0.1.48 stale-token/audio/dice regression;
 - 0.1.57–0.1.61 gameplay/report gates;
-- 0.1.62 exact sentinels + HOST odd/even routing;
-- 0.1.63 UI polish regression;
-- new 0.1.63.1 active-player center-lock regression;
-- package validation + artifact upload.
+- 0.1.62 sentinels + HOST odd/even routing;
+- 0.1.63 UI polish gate;
+- 0.1.63.1 edge-bound center-lock gate;
+- **0.1.63.2 visual-mover-vs-advanced-turn camera regression**;
+- image/package validation and artifact upload.
 
 ## 9. Next manual test
 
-Use `docs/PLAYTEST_0.1.63.1_CENTER_LOCK.md` from the artifact.
+Use `docs/PLAYTEST_0.1.63.2_MOVEMENT_ACTOR_CAMERA_LOCK.md` from the artifact.
 
 Ron should specifically verify:
-1. whoever owns the current turn stays in the exact screen center through every movement step;
-2. long rolls cannot outrun the camera;
-3. edge/corner spaces can still be centered;
-4. camera movement feels smooth because it follows the token tween rather than trailing it;
-5. `TỔNG QUAN / O` still works and center lock resumes immediately after returning;
+1. roll 5 and 6 repeatedly and confirm the moving token never leaves the screen;
+2. camera remains on the token finishing its animation even if the next turn has already begun internally;
+3. after movement/landing presentation finishes, camera transfers cleanly to the next player;
+4. edge/corner spaces remain centerable;
+5. `TỔNG QUAN / O` still works and normal camera lock resumes on return;
 6. keep watching for long-run token snap-back.
 
-Do **not** call 0.1.63.1 user-accepted until Ron manually validates it.
+Do **not** call 0.1.63.2 user-accepted until Ron manually validates it.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
