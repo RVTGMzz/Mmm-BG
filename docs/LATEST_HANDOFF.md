@@ -9,157 +9,119 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 **0.1.48** remains the only user-validated HOST-authoritative rollback baseline.
 
-Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deterministic replay, multiplayer ownership, stale-token protection, camera movement-actor lock, or READY/final-result flow.
+Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deterministic replay, multiplayer ownership, stale-token protection, human-confirmed camera movement-actor lock, or READY/final-result flow.
 
 ## Current candidate
 
-**MVP 0.1.65 — Job HUD + Rounded UI + Debug Footer Cleanup**
+**MVP 0.1.65.1 — Steam Deck Hotfix**
 
-Human feedback:
-- player/CPU info cards must show real occupation + salary instead of vague employment copy;
-- square-corner rectangular gameplay UI should be rounded;
-- red debug/playtest footer at the bottom should be hidden.
+Human feedback driving this hotfix:
+- 0.1.65 could leave a large black rounded UI backing stuck over the board after its popup closed;
+- controller/Steam Deck should navigate choices and confirm them;
+- Ron wants a GitHub-hosted web test build.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-0.1.65 is presentation-only. Gameplay, RNG, economy, routing and camera stay on the 0.1.64 baseline.
+0.1.65.1 changes presentation/input only. Gameplay remains exactly on the 0.1.64 deterministic baseline.
 
 ## Runtime
 
-`CareerMinigameBoardScene065 as ActiveBoardScene`
+`CareerMinigameBoardScene0651 as ActiveBoardScene`
 
 Inheritance:
-`065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
+`0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
 
-## Career HUD
+## UI ghost fix
 
-`src/ui/playerHud065.ts` derives the displayed career directly from authoritative player state and `jobs_mvp.json`.
+Root cause: 0.1.65 rounded `Graphics` proxies could outlive or ignore the fade state of their source Rectangle/Text.
 
-Employed example:
-- `💼 🩺 Bác sĩ Lv.2`
-- `💰 Lương: 110 B$/vòng`
+Fix in `CareerMinigameBoardScene065.ts`:
+- proxy alpha follows later source alpha changes;
+- proxy hides when source is hidden/faded;
+- source inactive/destroyed explicitly destroys its proxy;
+- scene shutdown destroys all remaining proxies;
+- same cleanup applies to rounded Text-background proxies.
 
-Unemployed:
-- `💼 Chưa có nghề`
-- `💰 Lương: 0 B$/vòng`
+Regression: `tests/ui-ghost-gamepad-web-0651.ts`.
 
-HUD follows Job selection, promotion, demotion, firing and Job loss automatically.
+## Gamepad / Steam Deck input
 
-## Rounded UI
+New `src/ui/gamepadUiNavigation0651.ts` uses standard browser Gamepad API mapping:
+- D-pad Up/Down/Left/Right = buttons 12/13/14/15;
+- A/confirm = button 0.
 
-`CareerMinigameBoardScene065` now rounds both kinds of square gameplay UI:
+It discovers the highest active interactive Phaser UI layer and reuses existing handlers:
+- D-pad emits existing `pointerover` / `pointerout`;
+- A emits existing `pointerdown`.
 
-### Rectangle panels/buttons
-- scans Rectangle-based gameplay overlays/buttons recursively;
-- inserts rounded Graphics visuals;
-- retains the original Rectangle as the interactive hitbox;
-- mirrors hover/click fill and stroke state every frame;
-- full-screen dim overlays intentionally remain edge-to-edge.
+Therefore it does not create a second gameplay path, RNG stream, or authority bypass. It is intended to cover direct dice, Card hand/target, Tactical Choice, Job Hub, lobby/setup and other pointer-driven UI.
 
-### Text-background badges
-Phaser Text background rectangles are also replaced visually with rounded backings. This covers square badges such as Overview/turn-status/build labels that are not Rectangle objects.
+Actual Steam Deck hardware validation is still required.
 
-The original Text object remains intact while its built-in square background becomes transparent.
+## Retained 0.1.65 polish
 
-### Player cards
-All four player/CPU cards use dedicated rounded backings.
+- player/CPU cards show authoritative Job name, level and salary;
+- unemployed shows `Chưa có nghề` / `0 B$/vòng`;
+- Rectangle panels/buttons and Text-background badges stay rounded;
+- red always-visible PLAYTEST/debug footer stays hidden;
+- Card target picker still suppresses direct dice.
 
-## Debug footer removed
+## Gameplay retained
 
-The active gameplay scene hides always-visible red footer/debug copy beginning with `PLAYTEST` or containing `LOCAL MATCH TELEMETRY`.
+0.1.64 remains unchanged:
+- expanded board and 1.5x spaces;
+- Jail/Hospital release succeeds in place, then fresh D6 traverses real corridor;
+- J1/J2/J3/H1/H2/H3 = `-20 B$` on landing;
+- Card gain 0.80, Step 1.30;
+- Job continuation and HOST odd/even branches retained;
+- 0.1.63.2 camera remains untouched and human-confirmed good.
 
-The actual local match report remains available from the result/report UI.
+Deterministic fingerprints remain:
+- 32-match checksum `2fca6e9d`;
+- seed 611102 checksum `1dd42c7c`;
+- seed 611113 checksum `856548f4`.
 
-## Card target dice hotfix retained
+## Green code/web candidate before docs-inclusive run
 
-While `cardPickerOpen=true`, direct dice is hidden and non-clickable throughout:
-- Card hand picker;
-- target picker;
-- tactical choice.
+HEAD `3ee37e98a0415e2b2ab5b2d69ffba8a1a93688c0`.
 
-It only returns after Card UI closes and normal roll policy allows it.
+Main CI:
+- push run `#2406` / `35000958076`;
+- **67/67 PASS**;
+- artifact `mememe-playtest-0.1.65.1-steamdeck-hotfix`;
+- artifact ID `10410130708`;
+- SHA256 `7bc61ce6fa94fceb40a182fead5432044632f114849011d37f169b6d64452fab`.
 
-## 0.1.64 gameplay retained
+Steam Deck web workflow:
+- run `#5` / `35000958074`;
+- **SUCCESS**;
+- production Vite build succeeds;
+- artifact `mememe-steamdeck-web-dist`;
+- artifact ID `10409557987`;
+- SHA256 `0ddad7fefeb38427c689cdc580ba392ce81d3f9103e443dd68b7a9919190297f`.
 
-Board:
-- ~2340 x 1020 authored footprint;
-- round spaces remain 1.5x;
-- minimum measured clearance remains 15.0 px.
+## GitHub Pages blocker
 
-Jail/Hospital:
-- successful release clears hold but token stays on TÙ/BV;
-- release D6 is discarded;
-- fresh D6 required same turn;
-- fresh D6 traverses the real J/H corridor.
+There is not yet a live browser URL because GitHub Pages is disabled for the private repository and the connected integration cannot change repository Administration settings.
 
-Penalties:
-- J1/J2/J3/H1/H2/H3 = `-20 B$` on landing only.
+One-time manual action required from Ron:
+`Repository Settings -> Pages -> Build and deployment -> Source: GitHub Actions`
 
-Visible money order:
-`ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD UPDATE`.
+The Pages workflow is already prepared. Until Pages is enabled it remains green, builds `dist`, uploads `mememe-steamdeck-web-dist`, and skips deployment. After Pages is enabled, a new run will deploy automatically.
 
-Audio:
-- Card draw/play `0.80`;
-- Step `1.30`.
-
-## Camera retained and human-confirmed
-
-Ron explicitly confirmed the camera fix is good.
-
-0.1.63.2 remains regression-locked:
-- camera follows the actor still visually moving;
-- long rolls remain centered;
-- idle camera returns to current player;
-- `TỔNG QUAN / O` remains the exception.
-
-0.1.65 does not alter camera code.
-
-## Job + branch rules retained
-
-Job continuation:
-`roll 5 -> Job at step 2 -> resolve -> continue 3 remaining pips`.
-
-HOST parity routing:
-- 1/3/5 -> LEFT;
-- 2/4/6 -> RIGHT.
-
-No manual branch picker and no second RNG stream.
-
-## Deterministic QA
-
-0.1.65 is presentation-only, therefore 0.1.64 gameplay fingerprints remain active unchanged.
-
-- 32-match deterministic checksum `2fca6e9d`;
-- seed `611102` checksum `1dd42c7c`;
-- seed `611113` checksum `856548f4`.
-
-Run #2378 passed those exact values after the final rounded Text-background polish.
-
-## Final green code candidate before docs-inclusive run
-
-- HEAD `aa7ee7ebfd7e45eebfc7925f9aee7ac65c0e77bd`;
-- push run `#2378` / `34998498203`;
-- artifact `mememe-playtest-0.1.65-job-hud-rounded-ui`;
-- artifact ID `10408766808`;
-- size `8,595,842 bytes`;
-- SHA256 `2a7197a2f9df1c1722cd11a6c09f00642768cbe4f232536b05e66f1818258dd8`;
-- **66/66 meaningful CI steps PASS**.
+Do not claim a live Pages URL until deploy succeeds.
 
 ## Manual check
 
-Use `docs/PLAYTEST_0.1.65_JOB_HUD_ROUNDED_UI.md`.
+Use `docs/PLAYTEST_0.1.65.1_STEAM_DECK_HOTFIX.md`.
 
-Verify:
-- actual Job title + level + salary appear in every player/CPU card;
-- unemployed shows salary 0;
-- Job changes update HUD immediately;
-- player cards, popup/button Rectangles and Text-background badges are rounded;
-- UI remains clickable and hover colors work;
-- red debug/playtest footer is gone;
-- Card target modal never shows direct dice behind it;
-- camera remains good on rolls 5/6;
-- 0.1.64 Jail/Hospital corridor and Job continuation remain correct.
+Focus on:
+- the black rounded orphan panel from the screenshot no longer remains after popup close;
+- repeated popup open/close does not leave any proxy behind;
+- D-pad moves selection and A confirms on Steam Deck/controller;
+- mouse remains functional;
+- camera, Card target dice suppression, Jail/Hospital corridor and Job continuation remain correct.
 
-Do not call 0.1.65 accepted until Ron validates runtime behavior.
+Do not call 0.1.65.1 accepted until Ron validates runtime behavior.
 
 Do not merge PR #1.
