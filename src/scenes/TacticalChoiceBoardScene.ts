@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import boardJson from '../content/city/board_city_mvp.json';
 import cardsJson from '../content/core/cards_mvp.json';
 import type { ClientIntentType } from '../core/authority';
-import { getValidTargets, type CardDefinition } from '../core/cards';
+import { getValidTargetsForCard, type CardDefinition } from '../core/cards';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import { MVP_MAX_CARD_PLAYS_PER_TURN } from '../core/rules';
 import type { TurnPhaseMachine } from '../core/turnPhase';
@@ -65,7 +65,12 @@ export class TacticalChoiceBoardScene extends TurnStakesBoardScene {
           if (!tacticalChoice) return;
           choice = tacticalChoice;
         } else if (card.targetMode === 'single_other') {
-          const target = await showTargetPicker(this, caster, getValidTargets(internals.match.players, caster.id));
+          const validTargets = getValidTargetsForCard(card, internals.match.players, caster.id);
+          if (validTargets.length === 0) {
+            internals.flashCenter('🎯 KHÔNG CÓ MỤC TIÊU HỢP LỆ', '#c34a44');
+            return;
+          }
+          const target = await showTargetPicker(this, caster, validTargets);
           if (!target) return;
           targetId = target.id;
         }
