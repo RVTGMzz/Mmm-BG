@@ -149,18 +149,20 @@ jobs:
         run: npm run test:random-branch-round-tiles-062
       - name: 0.1.63 UI readability and smooth follow polish
         run: npm run test:ui-smooth-polish-063
+      - name: 0.1.63.1 active-player center lock
+        run: npm run test:active-player-center-lock-0631
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.63 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.63_UI_SMOOTH_POLISH.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.63.1 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.63.1_CENTER_LOCK.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.63 UI smooth polish build
+      - name: Upload MVP 0.1.63.1 active player center-lock build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.63-ui-smooth-polish
+          name: mememe-playtest-0.1.63.1-center-lock
           path: dist
           if-no-files-found: error
           retention-days: 14
