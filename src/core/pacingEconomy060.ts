@@ -1,6 +1,6 @@
 import type { PlayerState } from './types';
 
-/** One-lap playtest target stays unchanged in 0.1.60. */
+/** One lap remains the backwards-compatible default when no per-match target is present. */
 export const MVP_TARGET_LAPS_060 = 1;
 
 /**
@@ -39,15 +39,20 @@ export const PACING_060 = {
   passiveTailMs: 1_250,
 } as const;
 
-export function isPlayerFinished060(player: Pick<PlayerState, 'lapsCompleted'>): boolean {
-  return (player.lapsCompleted ?? 0) >= MVP_TARGET_LAPS_060;
+export function targetLapsForPlayer060(player: Pick<PlayerState, 'targetLaps'>): number {
+  const raw = Math.floor(player.targetLaps ?? MVP_TARGET_LAPS_060);
+  return Math.max(1, Math.min(3, raw));
+}
+
+export function isPlayerFinished060(player: Pick<PlayerState, 'lapsCompleted' | 'targetLaps'>): boolean {
+  return (player.lapsCompleted ?? 0) >= targetLapsForPlayer060(player);
 }
 
 export function economyActivePlayers060<T extends PlayerState>(players: readonly T[]): T[] {
   return players.filter((player) => !isPlayerFinished060(player));
 }
 
-export function isEconomyActivePlayer060(player: Pick<PlayerState, 'lapsCompleted'>): boolean {
+export function isEconomyActivePlayer060(player: Pick<PlayerState, 'lapsCompleted' | 'targetLaps'>): boolean {
   return !isPlayerFinished060(player);
 }
 
