@@ -20,199 +20,182 @@ Never regress HOST authority, replay/checksum determinism, remote Roll For Order
 
 Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
 
-## 2. Current candidate — MVP 0.1.65.1
+## 2. Current candidate — MVP 0.1.66
 
-**0.1.65.1 — Steam Deck Hotfix: UI Ghost Cleanup + Gamepad Navigation + Web Build**
-
-Human feedback after 0.1.65:
-1. a large black rounded panel could remain stuck on the board after the owning popup closed;
-2. Steam Deck/controller should be able to navigate and confirm gameplay UI without a mouse;
-3. Ron wants a GitHub-hosted web build for Steam Deck testing.
+**0.1.66 — Unified Flow + Match Length + Mini Game Readability + Mobile/Release Hotfix**
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-This remains a presentation/input hotfix on top of 0.1.65. Gameplay, RNG, HOST authority, economy, routing and camera are unchanged.
+Latest human runtime feedback driving the hotfix portion:
+1. the public mobile web build renders the 1280×720 game too small inside the phone browser instead of using the actually visible viewport well;
+2. in 1-human + 3-CPU play, the match appeared frozen after a CPU succeeded at Jail release and the `ĐƯỢC THẢ!` presentation finished.
+
+0.1.66 also retains the planned unified launcher, selectable 1/2/3-lap match length and Mini Game readability work.
 
 ## 3. Runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene0651 as ActiveBoardScene`
+`CareerMinigameBoardScene066 as ActiveBoardScene`
 
 Inheritance:
-`0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-Build header:
-`CITY • MVP 0.1.65.1 • STEAM DECK HOTFIX`.
+Setup/header copy identifies `PLAYTEST MVP 0.1.66`.
 
-## 4. Rounded UI ghost root cause and fix
+## 4. Mobile viewport / fullscreen fix
 
-0.1.65 replaces square Rectangle visuals with rounded `Graphics` proxies while retaining the original Rectangle as a near-transparent hitbox.
+0.1.66 keeps the game logic at 1280×720 so hitboxes, camera math and input coordinates do not get distorted, but makes the browser container follow the real visible mobile viewport.
 
-Human runtime exposed two lifecycle gaps:
-- the proxy stored its creation-time visual alpha, so an owning popup could fade/hide the source while the proxy stayed visible;
-- when the source object became inactive/destroyed, the map entry could disappear without explicitly destroying the proxy Graphics.
+Implemented:
+- `src/mobileViewport066.css` uses dynamic viewport units (`100dvh` / `100dvw`);
+- `index.html` uses `viewport-fit=cover`, disables accidental page zoom and opts into visible-widget resizing;
+- `src/main.ts` refreshes Phaser FIT sizing on normal resize, orientation changes, `visualViewport` resize/scroll and fullscreen changes;
+- Settings now exposes a real **TOÀN MÀN HÌNH** button using the browser Fullscreen API.
 
-0.1.65.1 fixes both paths in `CareerMinigameBoardScene065.ts`:
-- `visualAlpha` mirrors later source alpha changes;
-- proxy visibility requires the source to remain visible and visual alpha > 0.01;
-- when the source is inactive, the proxy Graphics is explicitly destroyed before removing the map entry;
-- Text-background rounded proxies get the same inactive-source cleanup;
-- scene shutdown explicitly destroys all remaining rounded proxies.
+Android browsers require fullscreen to originate from a user gesture, so the Settings button is intentional rather than attempting to force fullscreen automatically.
 
-Expected result: Card/Job/Roll For Order/News/Mini Game/modal backings must disappear with their owner and must never remain as a black/cream orphan panel over the board.
+Expected manual result in landscape: the game should occupy substantially more of the usable phone screen; tapping **TOÀN MÀN HÌNH** should remove normal browser chrome where the browser permits it.
 
-Regression:
-`tests/ui-ghost-gamepad-web-0651.ts`.
+Regression is covered by `tests/unified-flow-match-length-066.ts`.
 
-## 5. Global gamepad / Steam Deck UI navigation
+## 5. CPU release-resume freeze protection
 
-New module:
-`src/ui/gamepadUiNavigation0651.ts`
+Authoritative Jail/Hospital gameplay rules are **unchanged**:
+- a release D6 only decides release;
+- on success, `specialHold` clears while the player remains at TÙ/BV;
+- the release D6 is discarded;
+- the same player must then roll a fresh movement D6;
+- that fresh D6 traverses the real Jail/Hospital penalty corridor.
 
-Uses the browser standard Gamepad API and reuses existing Phaser pointer handlers rather than creating a second gameplay path.
+Human runtime showed a presentation/autoplay handoff gap: after the release-success presentation clears, a CPU can be back at `PRE_ROLL_ACTION` with `lastRoll=null` in the same turn but fail to visibly resume, making the match look frozen.
 
-Standard mapping:
-- D-pad Up = button 12;
-- D-pad Down = button 13;
-- D-pad Left = button 14;
-- D-pad Right = button 15;
-- A / confirm = button 0.
+New helper:
+`src/core/cpuReleaseResume066.ts`
 
-Behavior:
-- recursively discovers currently visible, active, interactive UI objects with `pointerdown` handlers;
-- ignores large backdrop rectangles;
-- only navigates the highest active UI layer;
-- D-pad changes focus and emits existing `pointerover` / `pointerout` feedback;
-- A emits the existing `pointerdown` action.
+`pendingCpuFreshRollAfterRelease066(...)` only arms when all of these are true:
+- latest relevant event is a successful `special_release` for the current player;
+- current actor is a configured CPU seat;
+- phase is `PRE_ROLL_ACTION`;
+- `lastRoll === null`;
+- hold has actually been cleared;
+- presentation is no longer blocking;
+- this release event sequence has not already been handled.
 
-This is intentionally generic so it can cover the direct dice, Card hand, Card target picker, Tactical Choice, Job Hub, lobby/setup buttons, and other pointer-driven Phaser UI without rewriting each gameplay feature.
+`CareerMinigameBoardScene066` then submits exactly one normal `roll` intent through the existing HOST-authoritative path.
 
 Safety:
 - no `Math.random`;
-- no new RNG stream;
-- no direct `submitIntent`/HOST bypass;
-- gameplay remains owned by the existing handlers and authority chain.
+- no second RNG stream;
+- no direct match-state mutation;
+- no HOST bypass;
+- source event sequence prevents double-submit;
+- no submit while a blocking presentation is active.
 
-Manual controller validation is still required on actual Steam Deck hardware.
+The historical 0.1.48 regression was updated only to allow this one guarded executable submit; broad authority protection remains intact.
 
-## 6. 0.1.65 presentation retained
+## 6. Unified launcher + selectable match length
 
-Player/CPU HUD still shows authoritative career data from `jobs_mvp.json`:
-- actual Job title;
-- current Job level;
-- current salary;
-- unemployed = `Chưa có nghề` / `0 B$/vòng`.
+0.1.66 ships one normal playtest launcher:
+- keep `START_PLAYTEST.bat`;
+- do not ship the old Draft D preview/full-map launchers.
 
-Rounded presentation remains for:
-- all four player cards;
-- Rectangle-based panels/buttons;
-- Text objects with square background colors.
+The historical preview engine remains in source for deterministic QA/regression only.
 
-The red always-visible PLAYTEST/debug footer remains hidden. The result-screen local playtest report remains available.
+Setup now offers **1 / 2 / 3 VÒNG**.
+- 1 lap preserves legacy checksum shape;
+- 2/3-lap targets are authoritative and checksummed;
+- finish/retirement logic uses each player's target laps.
 
-The Card-target direct-dice hotfix remains active: direct dice is hidden/non-clickable for the entire Card UI flow while `cardPickerOpen=true`.
+Mini Game presentation is reflowed for readability while retaining HOST-system payout ownership and deterministic rules.
 
-## 7. 0.1.64 gameplay retained unchanged
+## 7. Retained 0.1.65.1 / 0.1.65 presentation-input fixes
 
-Board:
-- ~2340 x 1020 footprint;
-- 1.5x round spaces;
-- minimum measured clearance 15 px.
+Still retained:
+- rounded UI proxy ghost cleanup;
+- browser/Steam Deck gamepad navigation using existing pointer handlers;
+- authoritative Job title/level/salary HUD;
+- unemployed = `Chưa có nghề` / `0 B$/vòng`;
+- hidden always-on debug footer;
+- direct dice remains suppressed while Card target flow is open.
 
-Jail/Hospital release:
-- success clears hold but stays on TÙ/BV;
-- release D6 is discarded;
-- fresh movement D6 is required same turn;
-- fresh D6 traverses the actual J/H corridor.
+0.1.63.2 movement-actor camera lock remains the human-confirmed camera baseline beneath this build.
 
-Corridors:
-- Jail `100 -> 101 -> 102 -> 103 -> 12`;
-- Hospital `110 -> 111 -> 112 -> 113 -> 34`.
+## 8. Retained 0.1.64 gameplay baseline
 
-Internal penalties:
-- J1/J2/J3/H1/H2/H3 = `-20 B$` on landing only.
+Board/gameplay remains on the 0.1.64 deterministic foundation except for selectable target-lap count:
+- expanded ~2340×1020 board;
+- 1.5× round spaces;
+- real Jail corridor `100 -> 101 -> 102 -> 103 -> 12`;
+- real Hospital corridor `110 -> 111 -> 112 -> 113 -> 34`;
+- J1/J2/J3/H1/H2/H3 = `-20 B$` on landing;
+- Card SFX gain 0.80, Step 1.30;
+- Job mid-roll continuation retained;
+- HOST odd/even branch routing retained.
 
-Audio:
-- Card draw/play `0.80`;
-- Step `1.30`.
+The 32-match deterministic QA batch remains a regression baseline rather than a balance verdict. Current 0.1.64-derived fingerprints in CI include the release-corridor sentinels and must only be deliberately rebased after an intentional gameplay change.
 
-Camera remains the human-confirmed-good 0.1.63.2 movement-actor lock and is untouched by 0.1.65.1.
+## 9. Green 0.1.66 code/test checkpoint
 
-Job mid-roll continuation and HOST odd/even branch routing remain unchanged.
+Code/test HEAD before this handoff-doc commit:
+`fdecf86206d655945e5b789ae6a9efab2e245d64`
 
-## 8. Deterministic gameplay baseline remains 0.1.64
+Main push CI:
+- run `#2473` / `35010767981`;
+- **FULL SUITE SUCCESS**;
+- all authority, replay, multiplayer, historical regression, 0.1.66, face-transform and package-validation steps passed.
 
-Because 0.1.65.1 only changes presentation/input, active gameplay fingerprints are deliberately not rebased.
+Artifact:
+- `mememe-playtest-0.1.66-unified-flow-match-length`;
+- artifact ID `10414015335`;
+- size `8,597,042 bytes`;
+- SHA256 `e794a90f8c38605d57229263d9de6ca1e427f2e854e293b002db1361e4a49831`;
+- expires `2026-09-29T18:59:04Z`.
 
-32-match deterministic checksum remains:
-- `2fca6e9d`.
+Production Vite bundle from this checkpoint:
+- JS `assets/index-18fZ1c7p.js`;
+- CSS `assets/index-H5khdwyb.css`.
 
-Active exact sentinels remain:
-- seed `611102` -> checksum `1dd42c7c`, 92 turns, 145 commands, finish IDs `[3,2,1,0]`;
-- seed `611113` -> checksum `856548f4`, 51 turns, spread 367 B$, finish IDs `[3,0,2,1]`.
+After these handoff docs are committed, run the full push CI again and record the exact docs-inclusive HEAD/run/artifact before calling the checkpoint finalized.
 
-Push CI run #2406 passed the full suite with these fingerprints unchanged.
+## 10. Web deployment status
 
-## 9. Green 0.1.65.1 candidate before docs-inclusive run
+Private-repo web workflow for the same green runtime SHA:
+- `MeMeMe Steam Deck Web Playtest` run `#39` / `35010767705`;
+- build/artifact SUCCESS;
+- deploy skipped because GitHub Pages is not enabled for the private repository.
 
-Code/web candidate at HEAD `3ee37e98a0415e2b2ab5b2d69ffba8a1a93688c0`:
+The public test URL Ron has been using is:
+`https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Main CI:
-- push run `#2406` / `35000958076`;
-- **67/67 meaningful CI steps PASS**;
-- artifact `mememe-playtest-0.1.65.1-steamdeck-hotfix`;
-- artifact ID `10410130708`;
-- size `8,597,189 bytes`;
-- SHA256 `7bc61ce6fa94fceb40a182fead5432044632f114849011d37f169b6d64452fab`;
-- expires 2026-09-29.
+Public mirror repository:
+`ronvotri/ronvotri-MeMeMe-Web-Playtest`
 
-Steam Deck web workflow:
-- run `#5` / `35000958074`;
-- workflow conclusion **SUCCESS**;
-- production Vite build succeeds;
-- standalone artifact `mememe-steamdeck-web-dist`;
-- artifact ID `10409557987`;
-- size `8,594,498 bytes`;
-- SHA256 `0ddad7fefeb38427c689cdc580ba392ce81d3f9103e443dd68b7a9919190297f`;
-- expires 2026-09-29.
+At the time of this handoff update, its committed `index.html` still references the older compiled bundle:
+- `assets/index-BqZUERzh.js`;
+- `assets/index-LXsjZvVl.css`.
 
-## 10. GitHub Pages / Steam Deck URL status
+A cross-repository artifact sync attempt was added but failed at artifact download because a public repository `GITHUB_TOKEN` cannot read artifacts from the private `MeMeMe-BoardGame` repository. Do not claim the public URL contains 0.1.66 until its committed `index.html` is verified to reference the 0.1.66 bundle and the Pages deployment succeeds.
 
-The web production build is ready, but the repository does **not yet have GitHub Pages enabled**.
+Do not commit temporary signed artifact URLs or credentials to either repository.
 
-Two direct deploy attempts proved the blocker is repository administration, not the game build:
-- Pages API returned site-not-found when Pages was disabled;
-- automatic enablement failed with `Resource not accessible by integration` because the connected GitHub App/Actions token does not have repository Administration permission.
+## 11. Manual validation checklist for Ron
 
-The workflow is now graceful:
-- always builds production `dist`;
-- always uploads `mememe-steamdeck-web-dist`;
-- tries `configure-pages` without failing the workflow;
-- deploys only once Pages is enabled.
+Use the 0.1.66 artifact and, once verified deployed, the public web build.
 
-Ron must perform this one-time GitHub UI action:
-`Repository Settings -> Pages -> Build and deployment -> Source: GitHub Actions`
+Priorities:
+1. mobile landscape fills the usable viewport much better than the screenshot from the older web build;
+2. Settings -> **TOÀN MÀN HÌNH** enters browser fullscreen where supported;
+3. reproduce several Jail/Hospital holds and confirm a CPU does not freeze after `ĐƯỢC THẢ!`;
+4. successful CPU release visibly proceeds to a fresh movement D6 only after release presentation clears;
+5. no double-roll or skipped turn after release;
+6. 1/2/3-lap picker works and the match ends at the selected target;
+7. Mini Game UI remains readable;
+8. rounded popup backings do not become orphan panels;
+9. controller/gamepad behavior still works;
+10. camera remains centered on the visible mover;
+11. continue watching the historical long-run token snap-back issue.
 
-After that, trigger any new push/workflow run and the same workflow will deploy the Steam Deck web build. Do not claim a live Pages URL until a deploy job actually succeeds.
-
-## 11. Manual test checklist
-
-Use `docs/PLAYTEST_0.1.65.1_STEAM_DECK_HOTFIX.md`.
-
-Verify especially:
-1. reproduce the flow from the screenshot: the large dark rounded popup backing disappears completely after the popup closes;
-2. repeatedly open/close Card, target, Job and other modals and watch for any orphan panel;
-3. on Steam Deck/controller, D-pad moves focus between visible choices;
-4. A confirms the focused UI element;
-5. controller works on dice, Card hand, Card target, Tactical Choice, Job Hub and setup/lobby buttons;
-6. hover/focus feedback remains visible;
-7. mouse input still works normally;
-8. Card target modal still never shows direct dice behind it;
-9. camera remains centered during long rolls;
-10. 0.1.64 release corridor and Job continuation remain correct;
-11. continue watching for long-run token snap-back.
-
-Do **not** call 0.1.65.1 user-accepted until Ron manually validates it.
+Do **not** call 0.1.66 user-accepted until Ron manually validates the runtime behavior above.
 
 0.1.49 Legacy Effect Audit remains historical input only.
 
