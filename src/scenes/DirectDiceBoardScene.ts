@@ -8,6 +8,7 @@ import { TacticalChoiceBoardScene } from './TacticalChoiceBoardScene';
 type DirectDiceInternals = {
   match: MatchState;
   shell: { status: 'waiting' | 'active' | 'ended' };
+  cardPickerOpen: boolean;
   currentPlayer(): PlayerState | undefined;
   canControlCurrentPlayer(): boolean;
   handleRoll(): void;
@@ -113,6 +114,7 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
         canControl: internals.canControlCurrentPlayer(),
         isCpu: browserSession.isCpuSeat(player.id),
         shellActive: internals.shell.status === 'active',
+        cardPickerOpen: internals.cardPickerOpen,
       });
       if (!allowed || this.rollPendingTurn === internals.match.turn.turnNumber) return;
       this.rollPendingTurn = internals.match.turn.turnNumber;
@@ -140,6 +142,7 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
         canControl: internals.canControlCurrentPlayer(),
         isCpu: browserSession.isCpuSeat(player.id),
         shellActive: internals.shell.status === 'active',
+        cardPickerOpen: internals.cardPickerOpen,
       });
 
     if (shouldShow && !this.directDice.visible) {
