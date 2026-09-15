@@ -115,6 +115,13 @@ export function chooseTestBotIntent(
         else return { type: 'roll', data: {}, reason: 'không có target hợp lệ nên roll' };
       }
 
+      // 0.1.60 finish-lock can retire every opponent before the last runner finishes.
+      // Random-target Cards must not be submitted in that state because HOST correctly
+      // rejects them when no active opponent exists. CPU simply keeps the Card and rolls.
+      if (card.targetMode === 'random_other' && getValidTargets(state.players, actor.id).length === 0) {
+        return { type: 'roll', data: {}, reason: 'không có target ngẫu nhiên hợp lệ nên roll' };
+      }
+
       if (card.effect.type === 'tactical_choice') {
         const safeAmount = Math.max(0, Math.floor(card.effect.safeAmount));
         const pressureAmount = tacticalChoicePressureAmount(card.effect, state.players, actor.id);
