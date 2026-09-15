@@ -284,6 +284,29 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     };
   }
 
+  if (event.type === 'special_release') {
+    const success = event.data.success === true;
+    const roll = dataNumber(event, 'result') ?? 1;
+    const location = dataString(event, 'location');
+    const place = location === 'hospital' ? 'BỆNH VIỆN' : 'ĐỒN CẢNH SÁT';
+    return {
+      ...base,
+      kind: 'tile_land',
+      eyebrow: `${base.actorName} • ${place}`,
+      title: title || (success ? 'ĐƯỢC THẢ!' : 'CHƯA ĐƯỢC THẢ'),
+      rarity: '',
+      impact: impact || (success ? '✅' : '⛔'),
+      description: success
+        ? `Xúc xắc ${roll} vừa rồi CHỈ dùng để thoát. Ra khỏi ${place === 'BỆNH VIỆN' ? 'Bệnh viện' : 'Đồn'} xong sẽ đổ một D6 MỚI để di chuyển.`
+        : (description || 'Chưa đạt điều kiện. Ở lại và kết thúc lượt.'),
+      summary: '',
+      reactions: [],
+      holdMs: success ? 1500 : 1700,
+      tileType: 'special_release',
+      roll,
+    };
+  }
+
   if (event.type === 'move_step') {
     return {
       ...base,
