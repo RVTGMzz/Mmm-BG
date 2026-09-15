@@ -5,7 +5,10 @@ export const SPECIAL_LOCATION_057 = {
   jail: {
     gateContentId: 'SPECIAL_JAIL_GATE',
     holdNodeId: 100,
+    // 0.1.64: these nodes are now the real fresh-D6 corridor after release.
+    // Release itself no longer auto-traverses them.
     exitPath: [101, 102, 103, 12] as const,
+    releaseAutoPath: [] as const,
     releaseFaces: [1, 3, 5] as const,
     title: 'ĐỒN CẢNH SÁT',
     icon: '🚔',
@@ -14,6 +17,7 @@ export const SPECIAL_LOCATION_057 = {
     gateContentId: 'SPECIAL_HOSPITAL_GATE',
     holdNodeId: 110,
     exitPath: [111, 112, 113, 34] as const,
+    releaseAutoPath: [] as const,
     releaseFaces: [2, 4, 5] as const,
     title: 'BỆNH VIỆN',
     icon: '🏥',
@@ -40,7 +44,20 @@ export function specialHoldNodeId057(location: SpecialHoldLocation): number {
   return SPECIAL_LOCATION_057[location].holdNodeId;
 }
 
+/**
+ * Automatic movement performed by the release check itself.
+ *
+ * 0.1.57–0.1.63 traversed the whole corridor here. Human runtime feedback for
+ * 0.1.64 changes that rule: a successful release clears the hold while the token
+ * stays on the hold node. A fresh movement D6 then walks the normal board edges,
+ * including J1/J2/J3 or H1/H2/H3.
+ */
 export function specialReleasePath057(location: SpecialHoldLocation): readonly number[] {
+  return SPECIAL_LOCATION_057[location].releaseAutoPath;
+}
+
+/** Authoritative corridor used by fresh movement after a successful release. */
+export function specialCorridorPath064(location: SpecialHoldLocation): readonly number[] {
   return SPECIAL_LOCATION_057[location].exitPath;
 }
 
