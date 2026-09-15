@@ -17,9 +17,12 @@ import type { BoardDefinition, BoardNode } from '../src/core/types';
 const BOARD = boardJson as BoardDefinition;
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const scene064 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene064.ts', import.meta.url), 'utf8');
+const scene065 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene065.ts', import.meta.url), 'utf8');
 const camera0632 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0632.ts', import.meta.url), 'utf8');
 
-assert(mainSource.includes('CareerMinigameBoardScene064 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene065 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene064'));
+assert(scene065.includes('extends CareerMinigameBoardScene064'));
 assert(mainSource.includes('CareerMinigameBoardScene0634 as ActiveBoardScene'));
 assert(scene064.includes('extends CareerMinigameBoardScene0634'));
 assert(scene064.includes('TILE_SCALE_064 = 1.5'));
@@ -141,4 +144,4 @@ assert.equal(SFX_GAIN_064.card_draw, 0.8);
 assert.equal(SFX_GAIN_064.card_play, 0.8);
 assert.equal(SFX_GAIN_064.step, 1.3);
 
-console.log(`[expanded-board-release-audio-064] PASS width=${Math.round(Math.max(...xs) - Math.min(...xs))} height=${Math.round(Math.max(...ys) - Math.min(...ys))} minGap=${minimumGap.toFixed(1)}px • release-in-place • J/H=-20 • card=0.8 step=1.3`);
+console.log(`[expanded-board-release-audio-064] PASS inherited under 0.1.65 width=${Math.round(Math.max(...xs) - Math.min(...xs))} height=${Math.round(Math.max(...ys) - Math.min(...ys))} minGap=${minimumGap.toFixed(1)}px • release-in-place • J/H=-20 • card=0.8 step=1.3`);
