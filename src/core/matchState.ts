@@ -1,4 +1,5 @@
 import { computeMatchChecksum } from './checksum';
+import { isPlayerFinished060 } from './pacingEconomy060';
 import { createRngState, type SerializableRngState } from './rng';
 import type { TurnPhase, TurnPhaseSnapshot } from './turnPhase';
 import type { PlayerState } from './types';
@@ -190,6 +191,11 @@ export function appendMatchCommand(
   return command;
 }
 
+/**
+ * 0.1.60 retires players from future turns after they finish the one-lap playtest.
+ * If everybody is already finished we fall back to the legacy next seat so final
+ * state serialization remains well-defined while the shell transitions to results.
+ */
 export function advanceMatchTurn(match: MatchState): number {
   if (match.players.length === 0) {
     throw new Error('Cannot advance a match with no players.');
@@ -198,8 +204,24 @@ export function advanceMatchTurn(match: MatchState): number {
   const order = normalizePlayOrder(match.playOrder, match.players.length)
     ?? match.players.map((player) => player.id);
   const currentPosition = order.indexOf(match.turn.currentPlayerIndex);
-  const nextPosition = currentPosition >= 0 ? (currentPosition + 1) % order.length : 0;
-  match.turn.currentPlayerIndex = order[nextPosition] ?? 0;
+  const basePosition = currentPosition >= 0 ? currentPosition : -1;
+
+  let nextPlayerId: number | undefined;
+  for (let offset = 1; offset <= order.length; offset += 1) {
+    const candidateId = order[(basePosition + offset + order.length) % order.length];
+    const candidate = match.players.find((player) => player.id === candidateId);
+    if (candidate && !isPlayerFinished060(candidate)) {
+      nextPlayerId = candidate.id;
+      break;
+    }
+  }
+
+  if (nextPlayerId === undefined) {
+    const fallbackPosition = currentPosition >= 0 ? (currentPosition + 1) % order.length : 0;
+    nextPlayerId = order[fallbackPosition] ?? 0;
+  }
+
+  match.turn.currentPlayerIndex = nextPlayerId;
   match.turn.turnNumber += 1;
   match.turn.lastRoll = null;
   delete match.pendingJobOfferIds;
