@@ -64,7 +64,7 @@ const checksumAfter = computeMatchChecksum(match);
 assert.equal(checksumAfter, checksumBefore, 'building telemetry must not mutate authoritative state');
 assert.deepEqual(buildPlaytestMatchReport061(match), report, 'same state must produce identical report');
 
-assert.equal(report.version, '0.1.61');
+assert.equal(report.version, '0.1.61.1');
 assert.equal(report.seed, 6101);
 assert.equal(report.checksum, checksumBefore);
 assert.equal(report.playerCount, 4);
@@ -95,7 +95,7 @@ assert.deepEqual(report.players.map((player) => player.moneyDelta), [60, 20, -20
 assert.deepEqual(report.players.map((player) => player.finishOrder), [2, 4, 1, 3]);
 
 const text = formatPlaytestMatchReport061(report);
-assert(text.includes('MeMeMe PLAYTEST REPORT 0.1.61'));
+assert(text.includes('MeMeMe PLAYTEST REPORT 0.1.61.1'));
 assert(text.includes('seed=6101'));
 assert(text.includes(`checksum=${checksumBefore}`));
 assert(text.includes('mini=+50B$'));
@@ -111,10 +111,11 @@ assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene061.includes('BÁO CÁO PLAYTEST'));
 assert(scene061.includes('LOCAL ONLY'));
 assert(scene061.includes('navigator.clipboard'));
+assert(scene061.includes('0.1.61.1'));
 assert(!scene061.includes('Math.random'));
 assert(!scene061.includes('submitIntent('));
 assert(!scene061.includes('fetch('));
 assert(main.includes('CareerMinigameBoardScene061 as ActiveBoardScene'));
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
+assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61.1');
 
-console.log('[playtest-telemetry-061] PASS deterministic local-only match report + copy surface + zero gameplay authority');
+console.log('[playtest-telemetry-061] PASS deterministic local-only match report + copy surface + zero gameplay authority through 0.1.61.1');
