@@ -45,6 +45,16 @@ export interface MatchTurnState extends TurnPhaseSnapshot {
   lastRoll: number | null;
 }
 
+/**
+ * 0.1.63.4 remembers the unspent pips when movement is interrupted by Job Hub.
+ * Example: roll 5, reach Job on step 2, resolve Job, then continue steps 3–5.
+ */
+export interface PendingJobMovement {
+  roll: number;
+  nextStep: number;
+  remainingSteps: number;
+}
+
 export interface MatchState {
   schemaVersion: 3;
   boardId: string;
@@ -61,6 +71,7 @@ export interface MatchState {
   nextEventSeq: number;
   pendingJobOfferIds?: string[];
   pendingJobPlayerId?: number;
+  pendingJobMovement?: PendingJobMovement;
 }
 
 export interface CreateMatchOptions {
@@ -226,6 +237,7 @@ export function advanceMatchTurn(match: MatchState): number {
   match.turn.lastRoll = null;
   delete match.pendingJobOfferIds;
   delete match.pendingJobPlayerId;
+  delete match.pendingJobMovement;
   return match.turn.currentPlayerIndex;
 }
 
@@ -257,6 +269,9 @@ export function deserializeMatchState(serialized: string): MatchState {
     return {
       ...current,
       players: normalizePlayers(current.players),
+      pendingJobMovement: current.pendingJobMovement
+        ? { ...current.pendingJobMovement }
+        : undefined,
     };
   }
 
