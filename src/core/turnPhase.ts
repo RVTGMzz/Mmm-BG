@@ -21,7 +21,10 @@ const ALLOWED_TRANSITIONS: Record<TurnPhase, readonly TurnPhase[]> = {
   PRE_ROLL_ACTION: ['CARD_ACTION', 'ROLLING'],
   CARD_ACTION: ['PRE_ROLL_ACTION'],
   ROLLING: ['MOVING'],
-  MOVING: ['BRANCH_CHOICE', 'RESOLVING_TILE'],
+  // 0.1.57 special-location release succeeds by traversing the visible exit
+  // corridor, then returns to PRE_ROLL_ACTION in the SAME turn for a fresh
+  // movement D6. Ordinary movement still resolves through RESOLVING_TILE.
+  MOVING: ['BRANCH_CHOICE', 'RESOLVING_TILE', 'PRE_ROLL_ACTION'],
   BRANCH_CHOICE: ['MOVING'],
   RESOLVING_TILE: ['JOB_CHOICE', 'TURN_END'],
   JOB_CHOICE: ['TURN_END'],
