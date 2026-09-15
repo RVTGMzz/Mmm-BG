@@ -127,18 +127,20 @@ jobs:
         run: npm run test:branch-identity-056
       - name: 0.1.56.1 canonical camera HUD and build source
         run: npm run test:canonical-presentation-0561
+      - name: 0.1.57 authoritative Jail Hospital Lottery and Mini Game eligibility
+        run: npm run test:special-locations-057
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.56.1 canonical presentation guide to package
-        run: cp docs/PLAYTEST_0.1.56.1_CANONICAL_PRESENTATION.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.57 special-location guide to package
+        run: cp docs/PLAYTEST_0.1.57_SPECIAL_LOCATIONS.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.56.1 canonical presentation build
+      - name: Upload MVP 0.1.57 special-location build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.56.1-canonical-presentation
+          name: mememe-playtest-0.1.57-special-locations
           path: dist
           if-no-files-found: error
           retention-days: 14
