@@ -5,68 +5,304 @@ PR: #1 (Draft/Open)
 
 Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## Validated rollback baseline
+## 1. Validated rollback baseline
 
-MVP 0.1.48 remains the user-accepted HOST-authoritative rollback baseline. Newer 0.1.55/0.1.56 builds are CI-green candidates but have not yet been user runtime-accepted.
+MVP **0.1.48** remains the user-accepted HOST-authoritative rollback baseline.
 
-0.1.48 artifact:
+Artifact:
 - `mememe-playtest-0.1.48`
 - run `#1441` / `34814789556`
 - runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-Do not regress HOST authority, replay/checksum, Job, Mini Game payout ownership, audio, movement, multiplayer parity or final-result invariants from 0.1.48.
+Never regress from 0.1.48:
+- HOST authority;
+- replay/checksum determinism;
+- remote Roll For Order;
+- multiplayer Job Hub;
+- Mini Game payout ownership;
+- audio ownership/BGM isolation;
+- stale token guard;
+- final-result/podium chain.
 
-## Current canonical gameplay candidate
+Keep current content names:
+- **TIN TỨC**
+- **LÁ BÀI**
 
-### MVP 0.1.56 — Branch Identity
+Do not revive the rejected Tiên Tri / Phép Thuật rename.
 
-Status: **CI GREEN / USER PLAYTEST PENDING**
+## 2. What happened in this chat session
 
-Ron explicitly asked to continue building while he was preparing to sleep, so 0.1.56 was completed without waiting for a 0.1.55 runtime test. Do **not** claim 0.1.56 is user-validated yet.
+This session moved MeMeMe from the early Final Map preview into a real Draft D gameplay candidate.
 
-Read first:
-- `docs/MVP_0.1.56_BRANCH_IDENTITY.md`
-- `docs/PLAYTEST_0.1.56_BRANCH_IDENTITY.md`
-- `docs/GAME_DESIGN_CURRENT.md`
-- `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
-- `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
-- `docs/MAP_BRANCHING_RULE_D2.md`
+### 0.1.50 — Final Map Preview
 
-Runtime/content changes:
-- `src/content/city/board_city_mvp.json` keeps the canonical Draft D topology and gives A/B/C corridors distinct content identities.
-- `src/core/branchIdentity056.ts` defines player-facing flavor metadata.
-- `src/ui/BranchPicker.ts` shows flavor, first tile, corridor summary and risk instead of technical node/parity copy.
-- `src/scenes/CareerMinigameBoardScene056.ts` is a presentation/content wrapper that **extends 0.1.48** rather than replacing its validated bugfix layer.
-- `src/main.ts` activates the 0.1.56 wrapper for standard `START_PLAYTEST.bat` gameplay.
-- `tests/branch-identity-056.ts` protects the exact SAFE/DRAMA/MONEY content and unchanged equal-step topology.
-- historical regression tests were adapted only where they encoded old labels/scene names too literally; 0.1.48 behavior remains guarded through inheritance.
+Created a separate local preview with:
+- 44 main spaces;
+- READY / Jail Gate / Lottery / Hospital Gate anchors;
+- Jail/Hospital 3-space exit geometry;
+- local Lottery preview;
+- first four-corner HUD/camera experiments.
 
-### 0.1.56 CI artifact
+This preview remained presentation-only and did not replace the validated 0.1.48 runtime.
 
-- artifact: `mememe-playtest-0.1.56-branch-identity`
+### Draft D feedback from Ron
+
+Ron manually rejected the oval/too-linear feel and asked for:
+- non-circular/asymmetric route composition;
+- meaningful branching;
+- more space between tiles;
+- fewer long straight rows;
+- closer party-game camera;
+- full-map only as an intentional overview.
+
+Draft D was then defined around three forward-only branch decisions.
+
+### 0.1.51 / 0.1.52 — Draft D camera/HUD preview work
+
+Preview work established the desired presentation direction:
+- larger world than viewport;
+- close active-token camera;
+- smooth movement follow;
+- separate screen-space HUD camera;
+- four corner HUDs;
+- Overview/full-map mode;
+- irregular board silhouette;
+- district/landmark context.
+
+`FinalMapPreviewScene052` is especially important as an implementation reference for the presentation architecture.
+
+### 0.1.53 — Left/Right forward branching
+
+Draft D gained real route decisions where both options:
+- move forward;
+- reconnect ahead;
+- avoid cycles/dead ends/backtracking;
+- continue toward READY.
+
+### 0.1.54 — QA sandbox convenience
+
+Preview defaults to deterministic AUTO branch for repetitive testing, with MANUAL toggle still available.
+
+Important distinction:
+- AUTO is only QA convenience;
+- canonical human gameplay is manual `RẼ TRÁI / RẼ PHẢI`.
+
+### 0.1.55 — Draft D canonical gameplay integration
+
+`START_PLAYTEST.bat` migrated to the Draft D board data while retaining the authoritative gameplay stack.
+
+Locked candidate:
+- 44 main-loop spaces `M01..M44`;
+- 3 forward-only equal-step junctions;
+- 5 Mini Game spaces;
+- route choice remains HOST-authoritative.
+
+### 0.1.56 — Branch Identity
+
+Ron asked to continue while he was preparing to sleep, so 0.1.56 was built without waiting for a manual 0.1.55 runtime acceptance pass.
+
+Branch identities:
+
+**AN TOÀN 🛡️**
+- `A1 / A2 / A3 = Normal / Normal / Normal`
+- lowest immediate volatility.
+
+**DRAMA 🎭**
+- `B1 = TIN TỨC`
+- `B2 = LÁ BÀI`
+- `B3 = TIN TỨC`
+- highest direct event/card exposure.
+
+**TIỀN 💰**
+- `C1 = +25 B$`
+- `C2 = -20 B$`
+- `C3 = +25 B$`
+- every stop touches the wallet.
+
+At every junction the alternative is shown as **PHỐ CHÍNH** with mixed content.
+
+No route has a hidden distance advantage. Split-to-merge step counts remain equal.
+
+The branch picker now shows player-facing:
+- TRÁI / PHẢI;
+- route flavor;
+- first tile;
+- route summary;
+- risk.
+
+Do not restore technical `Node 200` or odd/even parity debug copy to the canonical player-facing picker.
+
+## 3. 0.1.56 artifact and CI result
+
+Artifact:
+- `mememe-playtest-0.1.56-branch-identity`
 - run `#1846` / `34908302700`
-- runtime/package head SHA `dfa391e50666802dfc91ae2e3c585da39837bac1`
+- runtime/package code SHA `dfa391e50666802dfc91ae2e3c585da39837bac1`
 - artifact ID `10373547363`
 - size `8,578,336 bytes`
 - SHA256 `8f3f47d169118766edd47b5f8e8e64665ee0547db9b969b960db09a5191f8d44`
 
-All CI gates passed, including build/typecheck, replay, lockstep, HOST authority, two-tab sync, bot stress, presentation, board/economy, Job/Mini Game, multiplayer parity, the inherited 0.1.48 bugfix gate, all 0.1.50–0.1.55 regressions, the new 0.1.56 branch-identity gate, package validation and artifact upload.
+All CI gates passed:
+- typecheck/build;
+- replay;
+- lockstep;
+- HOST authority;
+- two-tab sync;
+- bot stress;
+- presentation/event queue;
+- board/economy;
+- Job/Mini Game;
+- multiplayer parity;
+- inherited 0.1.48 bugfix gate;
+- 0.1.50–0.1.55 regressions;
+- new 0.1.56 branch-identity gate;
+- package validation/artifact upload.
 
-## Canonical Draft D topology — retained
+**Do not confuse CI-green with user visual acceptance.**
 
-- 44 main-loop spaces `M01..M44`.
-- Asymmetric city-party layout.
-- Three real Left/Right decision junctions.
-- Human canonical gameplay uses HOST-authoritative branch choice.
-- Both choices always progress forward, use equal split-to-merge distance, and merge ahead.
-- No branch cycle, backward trap or dead end.
+## 4. Major finding after Ron manually tested 0.1.56
 
-Junctions:
-- after M04: left `A1`, right `M05`, merge M08
-- after M17: left `M18`, right `B1`, merge M21
-- after M35: left `C1`, right `M36`, merge M39
+Ron tested `START_PLAYTEST.bat` on 2026-09-15 and supplied screenshots.
+
+His feedback was correct: the canonical launcher should be the best integrated experience, but visually it still looks like an old prototype.
+
+### Visible symptoms
+
+- Header shows `CITY • MVP 0.1.25 • 200B$ ECONOMY` despite running the 0.1.56 package.
+- Bottom-right badge also shows old 0.1.25 copy.
+- Normal gameplay shows nearly the whole board instead of a close active-token camera.
+- No final P1/P2/P3/P4 four-corner HUD.
+- Current-player info is still a compact bottom bar; leaderboard is top-right.
+- 44 main spaces plus branch corridors are squeezed into the old 1280×720 board composition.
+- Many nodes/branches crowd or overlap visually, especially on the right.
+- Large event overlay hides most of the board.
+- Old center `MeMeMe CITY / DEMO MATCH` prototype copy survives.
+
+### Root cause confirmed in repo
+
+`public/START_PLAYTEST.bat` is correct. It launches standard gameplay.
+
+`src/main.ts` is also correct in selecting:
+`CareerMinigameBoardScene056 as ActiveBoardScene`.
+
+The problem is architectural:
+
+1. `CareerMinigameBoardScene056` is a very thin wrapper that extends `CareerMinigameBoardScene048`.
+2. That preserves the 0.1.48 authoritative bugfix chain, which is good.
+3. But the scene inheritance ultimately still renders through the old `DemoBoardScene` presentation shell.
+4. `DemoBoardScene` assumes the entire board fits on one 1280×720 screen and draws every ordinary node as a large circle.
+5. `PresentationParityBoardScene` only layered a compact bottom HUD/top-right score table on top of that old renderer. It never became the locked four-corner HUD/camera system.
+6. `FinalMapPreviewScene052` already demonstrated the superior world camera + separate UI camera + close follow + four-corner HUD approach, but it remained preview-only.
+7. 0.1.55 moved **board data/topology** into canonical gameplay without moving that superior **presentation architecture**.
+
+### Separate version-label bug
+
+Build labels are changed through a chain of exact-string replacements.
+
+Example:
+- `PartyMechanicsBoardScene` changes a 0.1.23 label into `0.1.25`.
+- `TurnStakesBoardScene` later searches for `0.1.24`, which no longer exists.
+- downstream wrappers then fail to find their expected previous string.
+
+Therefore a genuine 0.1.56 runtime can still display `0.1.25`.
+
+This must be replaced with one authoritative visible build/version source.
+
+Full audit:
+`docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
+
+Updated HUD/camera contract:
+`docs/UI_FINAL_PLAYER_HUD.md`
+
+## 5. Current status declaration
+
+### 0.1.56 gameplay
+
+**CI GREEN / FUNCTIONAL CANDIDATE**
+
+Branch identity/content work remains valid.
+
+### 0.1.56 presentation
+
+**NOT USER-ACCEPTED / CANONICAL UI REWORK REQUIRED**
+
+Do not claim the current `START_PLAYTEST.bat` look is accepted.
+
+### 0.1.48
+
+Still the only user-validated rollback baseline for authoritative runtime behavior.
+
+## 6. Immediate next milestone — 0.1.56.1 Canonical Presentation Consolidation
+
+This is now a blocker **before implementing 0.1.57 special-location authority**.
+
+Purpose:
+make `START_PLAYTEST.bat` finally become the best integrated build, while keeping gameplay state/authority untouched.
+
+Required work:
+
+### Camera
+- normal gameplay does not show the full board;
+- follow active token closely;
+- smooth pan/follow during authoritative move steps;
+- at branch junction, zoom out slightly to show both routes;
+- after route choice, return to close follow;
+- Overview button explicitly shows full map;
+- Overview never becomes the default gameplay view.
+
+### Four-corner HUD
+- P1 top-left;
+- P2 top-right;
+- P3 bottom-left;
+- P4 bottom-right;
+- avatar + name + B$ minimum;
+- compact hand/job/lap/status where useful;
+- active player clearly highlighted;
+- HUD remains screen-space and independent from board camera.
+
+### Board readability
+- stop using giant 34px ordinary circles for the whole Draft D graph;
+- use smaller clean greybox markers suitable for close zoom;
+- preserve asymmetric Draft D spacing;
+- visibly separate branch corridors;
+- integrate Job/Mini Game marker identity without stacked competing circles;
+- final art is not required yet.
+
+### Event/Card presentation
+- TIN TỨC/LÁ BÀI still readable;
+- do not cover the whole central playfield;
+- preserve visible board/token context;
+- do not cover all four HUD corners.
+
+### Version/build UI
+- one source of truth for current visible build/version;
+- no chained exact-string mutation;
+- no old `0.1.25` leakage.
+
+### Safety
+Do not change authoritative gameplay semantics while doing this UI pass.
+
+Must keep green:
+- replay/checksum;
+- HOST authority;
+- multiplayer parity;
+- Roll For Order;
+- Job Hub;
+- Mini Game payout ownership;
+- stale token guard;
+- audio;
+- READY/lap/final-result chain;
+- 0.1.56 branch rules.
+
+Ron must manually accept this presentation before calling it canonical.
+
+## 7. Canonical Draft D topology / content
+
+Main loop:
+- exactly 44 spaces `M01..M44`;
+- only `M44 -> M01` creates lap crossing.
 
 Anchors:
 - `M01 READY`
@@ -74,156 +310,131 @@ Anchors:
 - `M23 LOTTERY`
 - `M34 HOSPITAL_GATE`
 
-## 0.1.56 branch identity — LOCKED CANDIDATE
+Junctions:
+- after M04: left A corridor or right M05 route, merge M08;
+- after M17: left M18 route or right B corridor, merge M21;
+- after M35: left C corridor or right M36 route, merge M39.
 
-### Branch A — AN TOÀN 🛡️
+Both choices always progress forward and merge ahead.
+No cycle, backward trap, dead end, or endless wandering.
 
-`M04 -> A1 -> A2 -> A3 -> M08`
+Five Mini Games are locked:
+- `M09 -> MINIGAME_SLOT_01`
+- `M17 -> MINIGAME_SLOT_02`
+- `M26 -> MINIGAME_SLOT_03`
+- `M35 -> MINIGAME_SLOT_04`
+- `M44 -> MINIGAME_SLOT_05`
 
-- A1 = Normal
-- A2 = Normal
-- A3 = Normal
-- no direct B$ swing, TIN TỨC or LÁ BÀI inside the corridor
-- lowest immediate volatility
+Job Hub:
+- `M08`
 
-### Branch B — DRAMA 🎭
+Main-loop TIN TỨC:
+- M06 / M14 / M21 / M28 / M36 / M43
 
-`M17 -> B1 -> B2 -> B3 -> M21`
+Main-loop LÁ BÀI:
+- M04 / M10 / M16 / M22 / M27 / M32 / M41
 
-- B1 = TIN TỨC
-- B2 = LÁ BÀI
-- B3 = TIN TỨC
-- highest event/card density and volatility
+Main-loop Money+:
+- M03 / M13 / M25 / M39 = +25 B$
 
-### Branch C — TIỀN 💰
+Main-loop Money-:
+- M07 / M18 / M30 / M40 = -20 B$
 
-`M35 -> C1 -> C2 -> C3 -> M39`
+## 8. Jail / Hospital / Lottery rules already locked for 0.1.57
 
-- C1 = +25 B$
-- C2 = -20 B$
-- C3 = +25 B$
-- every possible stop in the corridor directly affects the wallet
+### Jail
 
-At each junction the other option is labeled **PHỐ CHÍNH** and keeps mixed content. All split-to-merge route lengths remain equal. 0.1.56 creates identity through content exposure, not hidden shortcut distance.
+Entry anchor:
+`M12 JAIL_GATE -> JAIL`
 
-Relative strength of AN TOÀN / DRAMA / TIỀN is **not final balance**. Tune that in 0.1.60 after real match playtests.
+Release:
+- roll D6 at start of detained player's turn;
+- success on `1 / 3 / 5`;
+- fail = remain in Jail and turn ends;
+- success traverses `JAIL -> J1 -> J2 -> J3 -> M13`;
+- release die is **only** an escape check;
+- after successful exit, player rolls a **fresh movement D6** in the same turn.
 
-## Branch picker UX — 0.1.56
+### Hospital
 
-The player-facing chooser now shows:
-- TRÁI / PHẢI direction;
-- PHỐ CHÍNH or AN TOÀN / DRAMA / TIỀN;
-- first landing tile type;
-- short corridor content summary;
-- risk label.
+Entry anchor:
+`M34 HOSPITAL_GATE -> HOSPITAL`
 
-Do not restore technical `Node 200` copy or legacy odd/even parity hints in canonical player-facing UI.
+Release:
+- roll D6 at start of hospitalized player's turn;
+- success on exactly `2 / 4 / 5`;
+- fail = remain in Hospital and turn ends;
+- success traverses `HOSPITAL -> H1 -> H2 -> H3 -> M35`;
+- release die is **only** a recovery check;
+- after successful exit, player rolls a **fresh movement D6** in the same turn.
 
-## Five Mini Game spaces — LOCKED
+### Mini Game eligibility while held
 
-Draft D has exactly five Mini Game spaces:
-- `M09` → `MINIGAME_SLOT_01`
-- `M17` → `MINIGAME_SLOT_02`
-- `M26` → `MINIGAME_SLOT_03`
-- `M35` → `MINIGAME_SLOT_04`
-- `M44` → `MINIGAME_SLOT_05`
+Once holding state becomes authoritative:
+- Jail player = ineligible;
+- Hospital player = ineligible;
+- 2+ eligible = normal Mini Game;
+- exactly 1 eligible = auto rank #1;
+- 0 eligible = skip / no payout.
 
-All five IDs currently use shared MVP Mini Game rules. IDs stay separate so 0.1.59 can deepen them independently without another board migration.
+This is a core rule and 0.1.59 must not change it.
 
-## Jail / Hospital release rule — LOCKED DESIGN
+### Lottery
 
-Jail:
-- release D6 succeeds on `1 / 3 / 5`;
-- failure = stay detained and end turn;
-- successful exit route = `JAIL -> J1 -> J2 -> J3 -> M13`.
+`M23 LOTTERY`
+- HOST rolls one D6;
+- reward = `D6 × 20 B$`;
+- outcomes = 20 / 40 / 60 / 80 / 100 / 120 B$;
+- RNG and wallet mutation must be HOST-authoritative.
 
-Hospital:
-- release D6 succeeds on exactly `2 / 4 / 5`;
-- failure = stay hospitalized and end turn;
-- successful exit route = `HOSPITAL -> H1 -> H2 -> H3 -> M35`.
+## 9. Launcher roles
 
-For both locations:
-- release die is **only** the release check;
-- after successful release and the three visible exit spaces, player takes a **fresh movement D6** in the same turn;
-- never reuse the release roll as movement distance.
+`START_PLAYTEST.bat`
+- canonical gameplay launcher;
+- must become the best integrated presentation in 0.1.56.1;
+- current 0.1.56 package is functionally useful but visually not accepted.
 
-### Scope boundary
+`START_DRAFT_D_PREVIEW.bat`
+- QA sandbox;
+- AUTO/MANUAL tooling;
+- preview techniques may be extracted into canonical runtime;
+- preview gameplay model must not replace authoritative match state.
 
-0.1.56 still contains only the approved Jail/Hospital geometry/content IDs. It does **not** pretend the HOST-authoritative holding-state machine is already implemented.
-Full Jail/Hospital/Lottery authority is the next milestone, 0.1.57.
+`START_DRAFT_D_FULL_MAP.bat`
+- whole-topology review only.
 
-## Mini Game eligibility while held — LOCKED DESIGN
+Legacy `START_FINAL_MAP_PREVIEW.bat`
+- do not ship in clean tester packages.
 
-When 0.1.57 introduces authoritative holding state:
-- player in JAIL = not eligible for Mini Game;
-- player in HOSPITAL = not eligible for Mini Game;
-- `2+` eligible = play normally;
-- exactly `1` eligible = that player **auto rank #1**;
-- `0` eligible = skip Mini Game, no payout.
+## 10. Current roadmap
 
-This eligibility rule is core. 0.1.59 may deepen Mini Game content without changing it.
+- 0.1.49 Legacy Effect Audit — parallel, feeds 0.1.58
+- 0.1.54 AUTO/MANUAL Draft D sandbox — DONE
+- 0.1.55 Draft D canonical gameplay data/topology — CI GREEN
+- 0.1.56 branch identity — GAMEPLAY/CI GREEN, PRESENTATION NOT ACCEPTED
+- **0.1.56.1 canonical presentation consolidation — IMMEDIATE NEXT**
+- 0.1.57 authoritative Jail/Hospital/Lottery + holding-state Mini Game eligibility
+- 0.1.58 TIN TỨC / LÁ BÀI depth
+- 0.1.59 Job + five-space Mini Game depth
+- 0.1.60 real match pacing + economy tuning
 
-## Lottery — LOCKED DESIGN
+## 11. Read first in the next chat
 
-- `M23 LOTTERY` rolls one D6.
-- reward = `D6 × 20 B$`.
-- payout table = `20 / 40 / 60 / 80 / 100 / 120 B$`.
-- RNG + wallet mutation become fully HOST-authoritative in 0.1.57.
+In this order:
 
-## Launcher roles
-
-- `START_PLAYTEST.bat` = canonical standard gameplay and the file Ron should use to validate 0.1.56 when awake/available.
-- `START_DRAFT_D_PREVIEW.bat` = QA sandbox; 0.1.54 AUTO/MANUAL tooling remains available.
-- `START_DRAFT_D_FULL_MAP.bat` = whole-topology review only.
-- legacy `START_FINAL_MAP_PREVIEW.bat` stays out of clean tester packages.
-
-Keep labels:
-- **TIN TỨC**
-- **LÁ BÀI**
-
-Canonical visual reference:
-- `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
-
-Do not treat AI numbering/text in the reference as authoritative.
-
-## Gameplay upgrade roadmap
-
-- 0.1.54 = sandbox AUTO/MANUAL branch mode — **DONE / CI GREEN**
-- 0.1.55 = Draft D canonical `START_PLAYTEST` integration — **CI GREEN / PREVIOUS CANDIDATE**
-- 0.1.56 = AN TOÀN / DRAMA / TIỀN branch identity — **CI GREEN / USER PLAYTEST PENDING**
-- 0.1.57 = authoritative Jail/Hospital/Lottery + holding-state Mini Game eligibility — **NEXT**
-- 0.1.58 = deepen TIN TỨC / LÁ BÀI interaction
-- 0.1.59 = deepen Job / five-space Mini Game system
-- 0.1.60 = real match pacing + economy tuning
-
-0.1.49 Legacy Effect Audit remains parallel and feeds 0.1.58.
-
-## Next user test gate
-
-When Ron is available, run **`START_PLAYTEST.bat`** from the 0.1.56 package and focus on:
-1. Branch picker readability at 1280×720 and with four HUDs.
-2. AN TOÀN communicates low volatility quickly.
-3. DRAMA communicates high event/card exposure.
-4. TIỀN communicates direct wallet risk/reward.
-5. TRÁI / PHẢI direction remains obvious despite flavor copy.
-6. All three routes merge correctly and do not feel like hidden shortcuts.
-7. Existing Roll For Order / Job / Mini Game / TIN TỨC / LÁ BÀI / READY / final-result flow remains intact.
-
-Do not use Jail/Hospital holding behavior as a 0.1.56 acceptance criterion because that authoritative state belongs to 0.1.57.
-
-## Immediate next runtime target — 0.1.57
-
-Implement real HOST-authoritative special-location state:
-- Jail/Hospital holding state;
-- release checks with the locked face sets;
-- successful 3-space exit traversal + fresh movement D6;
-- Lottery D6×20 host-owned RNG/wallet mutation;
-- Mini Game eligibility filtered from authoritative holding state;
-- 1 eligible = auto #1; 0 eligible = skip/no payout;
-- preserve replay/checksum/multiplayer parity.
+1. `HANDOFF_CURRENT.md`
+2. `docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
+3. `docs/UI_FINAL_PLAYER_HUD.md`
+4. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+5. `docs/GAME_DESIGN_CURRENT.md`
+6. `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
+7. `docs/MVP_0.1.56_BRANCH_IDENTITY.md`
+8. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+9. `src/scenes/FinalMapPreviewScene052.ts` as presentation implementation reference
+10. `src/scenes/CareerMinigameBoardScene056.ts`, `PresentationParityBoardScene.ts`, `DemoBoardScene.ts` to understand the old shell/root cause
 
 Do not merge PR #1.
 
-## New-chat resume prompt
+## 12. New-chat resume prompt
 
-`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. 0.1.48 vẫn là user-validated rollback baseline. Current canonical candidate là 0.1.56 Branch Identity, CI green nhưng user playtest pending vì Ron đi ngủ/chưa test. Artifact mememe-playtest-0.1.56-branch-identity, run #1846 / 34908302700, head SHA dfa391e50666802dfc91ae2e3c585da39837bac1, artifact ID 10373547363, SHA256 8f3f47d169118766edd47b5f8e8e64665ee0547db9b969b960db09a5191f8d44. START_PLAYTEST.bat dùng Draft D 44 main spaces, 3 forward equal-step junctions, 5 Mini Game spaces M09/M17/M26/M35/M44. Branch A AN TOÀN = A1/A2/A3 Normal; Branch B DRAMA = TIN TỨC/LÁ BÀI/TIN TỨC; Branch C TIỀN = +25/-20/+25 B$; route kia tại mỗi junction là PHỐ CHÍNH. Branch picker hiện flavor + summary + risk, không còn Node/parity debug copy. Jail release 1/3/5, Hospital exactly 2/4/5, release die only checks release, success traverses 3 exit spaces then fresh movement D6 same turn. Held Jail/Hospital players cannot join Mini Games; 1 eligible auto #1, 0 eligible skip/no payout. Authoritative implementation của các special-location rules là next milestone 0.1.57. Keep TIN TỨC / LÁ BÀI. Do not merge PR #1.`
+`Tiếp tục MeMeMe Board Game từ HANDOFF_CURRENT.md trên branch mememe-mvp-0.1-core. Đọc ngay docs/START_PLAYTEST_UI_AUDIT_0.1.56.md và docs/UI_FINAL_PLAYER_HUD.md. 0.1.48 vẫn là user-validated authoritative rollback baseline. 0.1.56 Branch Identity gameplay/CI đã green (artifact mememe-playtest-0.1.56-branch-identity, run #1846 / 34908302700, code SHA dfa391e50666802dfc91ae2e3c585da39837bac1, artifact 10373547363, SHA256 8f3f47d169118766edd47b5f8e8e64665ee0547db9b969b960db09a5191f8d44), nhưng Ron đã test START_PLAYTEST.bat và REJECT presentation hiện tại vì vẫn là old fixed/full-board prototype shell: header leak 0.1.25, camera quá xa, không có four-corner HUD, Draft D 44 ô bị dồn/chồng, event overlay che map. Root cause: 056 chỉ wrap 048 và authoritative chain vẫn render qua DemoBoardScene/PresentationParityBoardScene; superior world-camera + fixed UI camera chỉ đang nằm ở FinalMapPreviewScene052. Immediate next milestone là 0.1.56.1 Canonical Presentation Consolidation BEFORE 0.1.57: extract/reuse preview camera/HUD ideas into canonical authoritative START_PLAYTEST without duplicating gameplay state, close active-token follow, fixed P1 TL/P2 TR/P3 BL/P4 BR HUD, branch framing, explicit Overview only, cleaner greybox tile rendering, smaller event overlays, single authoritative build/version label source. Preserve all 0.1.48+ authority/replay/checksum/multiplayer/Job/Mini Game/audio/final result rules. Branch identities locked: A AN TOÀN Normal×3, B DRAMA TIN TỨC/LÁ BÀI/TIN TỨC, C TIỀN +25/-20/+25, other route PHỐ CHÍNH, equal distance. 5 Mini Games M09/M17/M26/M35/M44. Jail 1/3/5, Hospital exactly 2/4/5; release die only checks release, success traverses 3 exit spaces then fresh movement D6 same turn. Jail/Hospital players cannot join Mini Games; 1 eligible auto #1, 0 eligible skip/no payout. Lottery D6×20. Keep TIN TỨC/LÁ BÀI. Do not merge PR #1.`
