@@ -1,10 +1,12 @@
+import { specialHoldNodeId057 } from './specialLocations057';
 import type { FaceExpression } from './session';
-import type { PlayerState } from './types';
+import type { PlayerState, SpecialHoldLocation } from './types';
 
 export type CardRarity = 'N' | 'R' | 'SR' | 'SSR';
 export type CardFaceRole = 'caster' | 'target';
 export type CardTargetMode = 'self' | 'single_other' | 'random_other' | 'richest_other' | 'all_others';
 export type TacticalCardChoice = 'safe' | 'pressure';
+export type CardTiming = 'before_roll';
 
 export interface CardFaceSlot {
   role: CardFaceRole;
@@ -51,6 +53,11 @@ export interface SwapMoneyEffect {
   type: 'swap_money';
 }
 
+export interface SendToSpecialEffect {
+  type: 'send_to_special';
+  location: SpecialHoldLocation;
+}
+
 export type CardEffect =
   | StealMoneyEffect
   | RichTaxEffect
@@ -58,7 +65,8 @@ export type CardEffect =
   | CatchUpBonusEffect
   | BlockCardsEffect
   | PercentLossAllOthersEffect
-  | SwapMoneyEffect;
+  | SwapMoneyEffect
+  | SendToSpecialEffect;
 
 export interface CardDefinition {
   id: string;
@@ -68,6 +76,7 @@ export interface CardDefinition {
   impact: string;
   description: string;
   targetMode: CardTargetMode;
+  timing?: CardTiming;
   effect: CardEffect;
   faceSlots: CardFaceSlot[];
 }
@@ -76,6 +85,9 @@ export interface CardResolution {
   summary: string;
   affectedPlayerIds: number[];
   amount?: number;
+  relocatedPlayerId?: number;
+  relocatedToNodeId?: number;
+  specialHold?: SpecialHoldLocation;
 }
 
 export function drawWeightedCard(
@@ -97,6 +109,18 @@ export function drawWeightedCard(
 
 export function getValidTargets<T extends PlayerState>(players: T[], casterId: number): T[] {
   return players.filter((player) => player.id !== casterId);
+}
+
+export function getValidTargetsForCard<T extends PlayerState>(
+  card: CardDefinition,
+  players: T[],
+  casterId: number,
+): T[] {
+  const candidates = getValidTargets(players, casterId);
+  if (card.effect.type === 'send_to_special') {
+    return candidates.filter((player) => player.specialHold === undefined);
+  }
+  return candidates;
 }
 
 export function pickRandomOtherTarget<T extends PlayerState>(
@@ -234,6 +258,24 @@ export function applyCardEffect(
       caster.money = resolvedTarget.money;
       resolvedTarget.money = casterMoney;
       return { affectedPlayerIds: [caster.id, resolvedTarget.id], summary: `${caster.name} và ${resolvedTarget.name} hoán đổi toàn bộ B$.` };
+    }
+
+    case 'send_to_special': {
+      const resolvedTarget = requiredTarget(target, card);
+      if (resolvedTarget.specialHold) {
+        throw new Error(`Card ${card.id} cannot relocate ${resolvedTarget.name}: already held in ${resolvedTarget.specialHold}.`);
+      }
+      const destination = specialHoldNodeId057(card.effect.location);
+      resolvedTarget.nodeId = destination;
+      resolvedTarget.specialHold = card.effect.location;
+      const place = card.effect.location === 'jail' ? 'Đồn Cảnh Sát' : 'Bệnh Viện';
+      return {
+        affectedPlayerIds: [resolvedTarget.id],
+        relocatedPlayerId: resolvedTarget.id,
+        relocatedToNodeId: destination,
+        specialHold: card.effect.location,
+        summary: `${caster.name} đưa ${resolvedTarget.name} thẳng tới ${place}.`,
+      };
     }
   }
 }
