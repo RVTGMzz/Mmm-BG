@@ -46,9 +46,9 @@ type HudHandle0561 = {
 /**
  * 0.1.56.1 canonical presentation consolidation.
  *
- * Gameplay authority deliberately remains inherited from the 0.1.48 -> 0.1.56
- * chain. This scene owns only the canonical camera, fixed HUD, board readability,
- * branch-choice presentation and visible build identity.
+ * Authority, deterministic state, replay, movement events, Job Hub, Mini Game
+ * payout ownership and the 0.1.48 stale-token guard stay inherited unchanged.
+ * This wrapper owns presentation only.
  */
 export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
   private uiCamera?: Phaser.Cameras.Scene2D.Camera;
@@ -143,12 +143,12 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
   private installCanonicalBoardVisuals(): void {
     const nodePositions = new Set(BOARD.nodes.map((node) => `${node.x}:${node.y}`));
 
+    // Hide only the inherited low-depth board geometry. Authoritative tokens stay.
     for (const object of this.children.list) {
       if (object instanceof Phaser.GameObjects.Graphics && object.depth <= 5) {
         object.setVisible(false);
         continue;
       }
-
       if (
         object instanceof Phaser.GameObjects.Arc &&
         object.depth <= 5 &&
@@ -157,13 +157,12 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
         object.setVisible(false);
         continue;
       }
-
       if (object instanceof Phaser.GameObjects.Text && object.depth <= 6) {
-        if (nodePositions.has(`${object.x}:${object.y}`)) {
-          object.setVisible(false);
-          continue;
-        }
-        if ((object.text === 'MINI' || object.text === 'JOB') && BOARD.nodes.some((node) => node.x === object.x && Math.abs(node.y + 29 - object.y) < 2)) {
+        if (nodePositions.has(`${object.x}:${object.y}`)) object.setVisible(false);
+        if (
+          (object.text === 'MINI' || object.text === 'JOB') &&
+          BOARD.nodes.some((node) => node.x === object.x && Math.abs(node.y + 29 - object.y) < 2)
+        ) {
           object.setVisible(false);
         }
       }
@@ -180,7 +179,11 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
       const from = getBoardNode(BOARD, edge.from);
       const to = getBoardNode(BOARD, edge.to);
       const line = this.add.graphics().setDepth(0);
-      line.lineStyle(edge.route === 'branch' ? 5 : 7, edge.route === 'branch' ? 0x4fb7b1 : 0xf3dfad, edge.route === 'branch' ? 0.92 : 0.95);
+      line.lineStyle(
+        edge.route === 'branch' ? 5 : 7,
+        edge.route === 'branch' ? 0x4fb7b1 : 0xf3dfad,
+        edge.route === 'branch' ? 0.92 : 0.95,
+      );
       line.lineBetween(from.x, from.y, to.x, to.y);
     }
 
@@ -190,7 +193,11 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
   private drawCanonicalNode(node: BoardNode): void {
     const contentId = node.contentId ?? '';
     const isHolding = contentId === 'SPECIAL_JAIL_HOLD' || contentId === 'SPECIAL_HOSPITAL_HOLD';
-    const isAnchor = node.type === 'ready' || contentId === 'SPECIAL_JAIL_GATE' || contentId === 'SPECIAL_HOSPITAL_GATE' || contentId === 'SPECIAL_LOTTERY';
+    const isAnchor =
+      node.type === 'ready' ||
+      contentId === 'SPECIAL_JAIL_GATE' ||
+      contentId === 'SPECIAL_HOSPITAL_GATE' ||
+      contentId === 'SPECIAL_LOTTERY';
     const isBranch = /^[ABC][123]$/.test(contentId);
 
     let fill = 0xf7f0e4;
@@ -322,7 +329,12 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
   }
 
   private installCanonicalCameraRig(): void {
-    this.cameras.main.setBounds(-80, -60, CANONICAL_PRESENTATION_0561.worldWidth + 160, CANONICAL_PRESENTATION_0561.worldHeight + 120);
+    this.cameras.main.setBounds(
+      -80,
+      -60,
+      CANONICAL_PRESENTATION_0561.worldWidth + 160,
+      CANONICAL_PRESENTATION_0561.worldHeight + 120,
+    );
     this.cameras.main.setZoom(CANONICAL_PRESENTATION_0561.normalFollowZoom);
   }
 
@@ -401,21 +413,27 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
       ui.name.setText(`${active ? '▶ ' : ''}P${player.id + 1} • ${player.name}`);
       ui.money.setText(`🪙 ${player.money} B$`);
       ui.meta.setText(`🃏 ${player.handCardIds.length}/3 • ${job} • 🏁 ${player.lapsCompleted ?? 0}${lock}`);
-      ui.border.setStrokeStyle(active ? 6 : 3, active ? 0xffd34d : (PLAYER_COLORS[player.id] ?? 0x444444), 1);
+      ui.border.setStrokeStyle(
+        active ? 6 : 3,
+        active ? 0xffd34d : (PLAYER_COLORS[player.id] ?? 0x444444),
+        1,
+      );
       ui.root.setScale(active ? 1 : 0.94).setAlpha(active ? 1 : 0.84);
     }
 
     this.turnStatus?.setText(`LƯỢT: ${current.name} • ${this.phaseLabel(internals.match.turn.phase)}`);
   }
 
-  private phaseLabel(phase: MatchState['turn']['phase']): string {
+  private phaseLabel(phase: string): string {
     if (phase === 'BRANCH_CHOICE') return 'CHỌN ĐƯỜNG';
     if (phase === 'PRE_ROLL_ACTION') return 'TRƯỚC KHI ĐỔ';
-    if (phase === 'ROLL') return 'ĐỔ XÚC XẮC';
-    if (phase === 'MOVE') return 'ĐANG DI CHUYỂN';
-    if (phase === 'RESOLVE_TILE') return 'XỬ LÝ Ô';
+    if (phase === 'CARD_ACTION') return 'DÙNG LÁ BÀI';
+    if (phase === 'ROLLING') return 'ĐỔ XÚC XẮC';
+    if (phase === 'MOVING') return 'ĐANG DI CHUYỂN';
+    if (phase === 'RESOLVING_TILE') return 'XỬ LÝ Ô';
     if (phase === 'JOB_CHOICE') return 'JOB HUB';
-    return String(phase).replaceAll('_', ' ');
+    if (phase === 'TURN_END') return 'KẾT THÚC LƯỢT';
+    return phase.replaceAll('_', ' ');
   }
 
   private syncCameraState(): void {
@@ -453,7 +471,11 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
     this.activePlayerId = current.id;
     this.cameras.main.stopFollow();
     if (!animated) this.cameras.main.centerOn(token.x, token.y);
-    this.cameras.main.zoomTo(CANONICAL_PRESENTATION_0561.normalFollowZoom, animated ? 260 : 0, 'Sine.easeInOut');
+    this.cameras.main.zoomTo(
+      CANONICAL_PRESENTATION_0561.normalFollowZoom,
+      animated ? 260 : 0,
+      'Sine.easeInOut',
+    );
     this.cameras.main.startFollow(token, true, 0.12, 0.12);
   }
 
@@ -467,7 +489,11 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
     const y = points.reduce((sum, node) => sum + node.y, 0) / points.length;
 
     this.cameras.main.stopFollow();
-    this.cameras.main.zoomTo(CANONICAL_PRESENTATION_0561.branchDecisionZoom, animated ? 220 : 0, 'Sine.easeInOut');
+    this.cameras.main.zoomTo(
+      CANONICAL_PRESENTATION_0561.branchDecisionZoom,
+      animated ? 220 : 0,
+      'Sine.easeInOut',
+    );
     if (animated) this.cameras.main.pan(x, y, 220, 'Sine.easeInOut');
     else this.cameras.main.centerOn(x, y);
   }
@@ -477,9 +503,24 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
     this.cameras.main.stopFollow();
     if (enabled) {
       this.overviewButton?.setText('↩ TRỞ LẠI LƯỢT');
-      this.cameras.main.zoomTo(CANONICAL_PRESENTATION_0561.overviewZoom, animated ? 260 : 0, 'Sine.easeInOut');
-      if (animated) this.cameras.main.pan(CANONICAL_PRESENTATION_0561.worldWidth / 2, CANONICAL_PRESENTATION_0561.worldHeight / 2, 260, 'Sine.easeInOut');
-      else this.cameras.main.centerOn(CANONICAL_PRESENTATION_0561.worldWidth / 2, CANONICAL_PRESENTATION_0561.worldHeight / 2);
+      this.cameras.main.zoomTo(
+        CANONICAL_PRESENTATION_0561.overviewZoom,
+        animated ? 260 : 0,
+        'Sine.easeInOut',
+      );
+      if (animated) {
+        this.cameras.main.pan(
+          CANONICAL_PRESENTATION_0561.worldWidth / 2,
+          CANONICAL_PRESENTATION_0561.worldHeight / 2,
+          260,
+          'Sine.easeInOut',
+        );
+      } else {
+        this.cameras.main.centerOn(
+          CANONICAL_PRESENTATION_0561.worldWidth / 2,
+          CANONICAL_PRESENTATION_0561.worldHeight / 2,
+        );
+      }
       return;
     }
     this.focusActiveToken(animated);
