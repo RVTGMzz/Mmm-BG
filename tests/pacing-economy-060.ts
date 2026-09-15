@@ -188,15 +188,19 @@ assert.equal(finishReplay.state.turn.currentPlayerIndex, 1, 'finished P1 must re
 assert(PACING_060.globalAutoMaxMs < 10_000);
 assert(PACING_060.passiveAutoMaxMs < 6_000);
 
+const scene061 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061.ts', import.meta.url), 'utf8');
 const scene060 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
 const scene059 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+assert(scene061.includes('extends CareerMinigameBoardScene060'));
 assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
 assert(scene060.includes('B$ ĐÃ KHÓA'));
 assert(!scene060.includes('Math.random'));
 assert(!scene060.includes('submitIntent('));
-assert(main.includes('CareerMinigameBoardScene060 as ActiveBoardScene'));
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.60');
+assert(!scene061.includes('Math.random'));
+assert(!scene061.includes('submitIntent('));
+assert(main.includes('CareerMinigameBoardScene061 as ActiveBoardScene'));
+assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
 
-console.log('[pacing-economy-060] PASS finish-stop + retired turns + locked final B$ + tighter Card/News/Mini economy + faster auto pacing');
+console.log('[pacing-economy-060] PASS finish-stop + retired turns + locked final B$ + tighter Card/News/Mini economy retained beneath 0.1.61 telemetry wrapper');
