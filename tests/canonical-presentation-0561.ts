@@ -11,11 +11,11 @@ import {
 const BOARD = boardJson as BoardDefinition;
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0561.ts', import.meta.url), 'utf8');
+const scene057Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene057.ts', import.meta.url), 'utf8');
 const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.meta.url), 'utf8');
 
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.56.1');
-assert(CANONICAL_PRESENTATION_0561.header.includes('0.1.56.1'));
-assert(CANONICAL_PRESENTATION_0561.badge.includes('0.1.56.1'));
+assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
+assert(!CANONICAL_PRESENTATION_0561.badge.includes('0.1.25'));
 assert(CANONICAL_PRESENTATION_0561.normalFollowZoom > CANONICAL_PRESENTATION_0561.branchDecisionZoom);
 assert(CANONICAL_PRESENTATION_0561.branchDecisionZoom > CANONICAL_PRESENTATION_0561.overviewZoom);
 
@@ -34,8 +34,12 @@ assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
 assert(
-  mainSource.includes("CareerMinigameBoardScene0561 as ActiveBoardScene"),
-  'Canonical START_PLAYTEST runtime must activate the 0.1.56.1 presentation wrapper.',
+  mainSource.includes("CareerMinigameBoardScene057 as ActiveBoardScene"),
+  'Canonical START_PLAYTEST runtime may advance gameplay wrappers but must keep the 0.1.56.1 presentation architecture.',
+);
+assert(
+  scene057Source.includes('extends CareerMinigameBoardScene0561'),
+  '0.1.57 must preserve the canonical 0.1.56.1 presentation wrapper.',
 );
 assert(
   sceneSource.includes('extends CareerMinigameBoardScene056'),
@@ -47,7 +51,7 @@ assert(sceneSource.includes('setOverviewMode'), 'Full-map view must be an explic
 assert(sceneSource.includes('showBranchPicker'), 'Canonical human branch choice must use the manual branch picker.');
 assert(sceneSource.includes("phase !== 'BRANCH_CHOICE'"));
 assert(!sceneSource.includes('pickParityEdge'), 'Parity AUTO routing must not be restored in canonical human gameplay.');
-assert(!sceneSource.includes('0.1.25'), '0.1.56.1 visible presentation must not encode the leaked 0.1.25 label.');
+assert(!sceneSource.includes('0.1.25'), 'Canonical presentation must not encode the leaked 0.1.25 label.');
 
 assert(
   !pickerSource.includes('1280, 720'),
@@ -57,4 +61,4 @@ assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
 
-console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD + single current build source');
+console.log('[canonical-presentation-0561] PASS close follow + branch framing + explicit overview + four-corner HUD retained by 0.1.57');
