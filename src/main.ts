@@ -9,7 +9,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene063 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene063';
+import { CareerMinigameBoardScene0631 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0631';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -19,7 +19,8 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // Legacy regression breadcrumbs:
 // CareerMinigameBoardScene061 as ActiveBoardScene was the report runtime.
 // CareerMinigameBoardScene062 as ActiveBoardScene added HOST odd/even routing.
-// 0.1.63 extends 0.1.62 directly and is presentation-only.
+// CareerMinigameBoardScene063 as ActiveBoardScene added UI/smooth-follow polish.
+// 0.1.63.1 extends 0.1.63 and only fixes active-player camera centering.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
