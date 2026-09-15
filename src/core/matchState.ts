@@ -45,10 +45,6 @@ export interface MatchTurnState extends TurnPhaseSnapshot {
   lastRoll: number | null;
 }
 
-/**
- * 0.1.63.4 remembers the unspent pips when movement is interrupted by Job Hub.
- * Example: roll 5, reach Job on step 2, resolve Job, then continue steps 3–5.
- */
 export interface PendingJobMovement {
   roll: number;
   nextStep: number;
@@ -63,7 +59,6 @@ export interface MatchState {
   rng: SerializableRngState;
   turn: MatchTurnState;
   players: PlayerState[];
-  /** Stable player IDs in actual play order. Omitted means legacy identity order [0,1,2,...]. */
   playOrder?: number[];
   commandLog: MatchCommand[];
   nextCommandSeq: number;
@@ -81,9 +76,15 @@ export interface CreateMatchOptions {
   seed: number;
   startingMoney?: number;
   playOrder?: number[];
+  targetLaps?: number;
 }
 
 let configuredInitialPlayOrder: number[] | undefined;
+let configuredInitialTargetLaps = 1;
+
+function normalizeTargetLaps(value: number | undefined): number {
+  return Math.max(1, Math.min(3, Math.floor(value ?? 1)));
+}
 
 function normalizePlayOrder(order: readonly number[] | undefined, playerCount: number): number[] | undefined {
   if (!order || order.length !== playerCount) return undefined;
@@ -96,11 +97,15 @@ function normalizePlayOrder(order: readonly number[] | undefined, playerCount: n
 }
 
 function normalizePlayers(players: PlayerState[]): PlayerState[] {
-  return players.map((player) => ({
-    ...player,
-    handCardIds: [...player.handCardIds],
-    lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
-  }));
+  return players.map((player) => {
+    const targetLaps = player.targetLaps === undefined ? undefined : normalizeTargetLaps(player.targetLaps);
+    return {
+      ...player,
+      handCardIds: [...player.handCardIds],
+      lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
+      ...(targetLaps && targetLaps > 1 ? { targetLaps } : {}),
+    };
+  });
 }
 
 /** Configure the next browser-created matches after the pregame Roll For Order ceremony. */
@@ -108,9 +113,15 @@ export function configureInitialPlayOrder(order?: readonly number[]): void {
   configuredInitialPlayOrder = order ? [...order] : undefined;
 }
 
+/** Configure the selected 0.1.66 match length. 1 lap keeps the legacy serialized shape. */
+export function configureInitialTargetLaps(value?: number): void {
+  configuredInitialTargetLaps = normalizeTargetLaps(value);
+}
+
 export function createInitialMatchState(options: CreateMatchOptions): MatchState {
   const rng = createRngState(options.seed);
   const startingMoney = options.startingMoney ?? 200;
+  const targetLaps = normalizeTargetLaps(options.targetLaps ?? configuredInitialTargetLaps);
   const players = options.playerNames.map<PlayerState>((name, index) => ({
     id: index,
     name: name.trim() || `Player ${index + 1}`,
@@ -120,6 +131,7 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     handCardIds: [],
     cardsPlayedThisTurn: 0,
     lapsCompleted: 0,
+    ...(targetLaps > 1 ? { targetLaps } : {}),
   }));
   const playOrder = normalizePlayOrder(options.playOrder ?? configuredInitialPlayOrder, players.length);
 
@@ -202,15 +214,8 @@ export function appendMatchCommand(
   return command;
 }
 
-/**
- * 0.1.60 retires players from future turns after they finish the one-lap playtest.
- * If everybody is already finished we fall back to the legacy next seat so final
- * state serialization remains well-defined while the shell transitions to results.
- */
 export function advanceMatchTurn(match: MatchState): number {
-  if (match.players.length === 0) {
-    throw new Error('Cannot advance a match with no players.');
-  }
+  if (match.players.length === 0) throw new Error('Cannot advance a match with no players.');
 
   const order = normalizePlayOrder(match.playOrder, match.players.length)
     ?? match.players.map((player) => player.id);
@@ -269,9 +274,7 @@ export function deserializeMatchState(serialized: string): MatchState {
     return {
       ...current,
       players: normalizePlayers(current.players),
-      pendingJobMovement: current.pendingJobMovement
-        ? { ...current.pendingJobMovement }
-        : undefined,
+      pendingJobMovement: current.pendingJobMovement ? { ...current.pendingJobMovement } : undefined,
     };
   }
 
