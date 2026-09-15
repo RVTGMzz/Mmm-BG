@@ -81,7 +81,11 @@ const thief = JOBS.find((job) => job.id === 'JOB_THIEF')!;
 applyJobSelection(player, thief);
 const jailed = resolveCareerCheck(player, thief, () => 0.01);
 assert.equal(jailed.outcome, 'jailed');
-assert.equal(player.jobStatus, 'jailed');
+assert.equal(player.jobStatus, 'unemployed', '0.1.59 arrest must cost the illegal Job.');
+assert.equal(player.jobId, undefined);
+assert.equal(player.jobLevel, undefined);
+assert.equal(player.specialHold, 'jail', '0.1.59 criminal arrest must reuse canonical specialHold Jail authority.');
+assert.equal(player.nodeId, 100, '0.1.59 criminal arrest must move authoritative state to Jail hold node 100.');
 
 const ordered = createInitialMatchState({
   boardId: 'order-test',
@@ -288,4 +292,4 @@ const duplicateReward = submitClientIntent(miniAuthority, {
 });
 assert.equal(duplicateReward.status, 'rejected', 'same Mini Game source event cannot pay twice');
 
-console.log('[job-minigame-031] PASS Job salary + mandatory stop + D6 A/B/C + career risks + Roll For Order + Mini Game rewards 30/20/10/0 and RPS 25/15/5/0');
+console.log('[job-minigame-031] PASS Job salary + mandatory stop + D6 A/B/C + real criminal Jail hold + Roll For Order + legacy/default Mini Game rewards');
