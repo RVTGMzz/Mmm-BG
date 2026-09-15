@@ -109,21 +109,23 @@ assert(fixtureEdges.find((edge) => edge.to === evenTarget)?.label?.includes('PH�
 
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const scene062Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene062.ts', import.meta.url), 'utf8');
+const scene063Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene063.ts', import.meta.url), 'utf8');
 const authoritySource = readFileSync(new URL('../src/core/authority.ts', import.meta.url), 'utf8');
 
-assert(mainSource.includes('CareerMinigameBoardScene062 as ActiveBoardScene'), 'START_PLAYTEST must activate runtime 0.1.62.');
+assert(mainSource.includes('CareerMinigameBoardScene063 as ActiveBoardScene'), '0.1.63 may wrap 0.1.62 but must remain the active runtime.');
+assert(scene063Source.includes('extends CareerMinigameBoardScene062'), '0.1.63 must retain the 0.1.62 parity-routing runtime directly.');
 assert(scene062Source.includes('extends CareerMinigameBoardScene061'), '0.1.62 must retain the 0.1.61 runtime chain.');
 assert(scene062Source.includes('this.add.circle'), '0.1.62 movement spaces must render as circles.');
 assert(scene062Source.includes('body.destroy()'), '0.1.62 must replace inherited rectangular tile bodies rather than stack both shapes.');
-assert(scene062Source.includes('return 23'), '0.1.62 normal round spaces must be visibly larger than the old 34x24 rectangles.');
+assert(scene062Source.includes('return 23'), '0.1.62 round-space baseline must remain available beneath the 0.1.63 polish layer.');
 assert(scene062Source.includes('LẺ ← TRÁI • CHẴN → PHẢI'), 'Runtime must state the luck routing rule visibly.');
-assert(!scene062Source.includes('showBranchPicker'), '0.1.62 active wrapper must not expose a manual branch picker.');
-assert(CANONICAL_PRESENTATION_0561.normalFollowZoom >= 2.1, '0.1.62 active-token camera must zoom closer than the 1.75 baseline.');
+assert(!scene062Source.includes('showBranchPicker'), '0.1.62 active gameplay layer must not expose a manual branch picker.');
+assert(CANONICAL_PRESENTATION_0561.normalFollowZoom >= 2.1, 'Active-token camera must retain the closer 0.1.62 framing.');
 assert.equal(CANONICAL_PRESENTATION_0561.overviewZoom, 0.88, 'Overview must remain available at the established full-board framing.');
 assert(authoritySource.includes('autoResolveParityBranches062'), 'HOST authority must own automatic branch resolution.');
 assert(!authoritySource.includes('Math.random'), '0.1.62 branch luck must reuse the movement D6, never a second RNG stream.');
 
 console.log(
-  `[random-branch-round-tiles-062] PASS junctions=3 oddSeed=${observed.get('odd')!.seed} evenSeed=${observed.get('even')!.seed} zoom=${CANONICAL_PRESENTATION_0561.normalFollowZoom}`,
+  `[random-branch-round-tiles-062] PASS beneath 0.1.63 junctions=3 oddSeed=${observed.get('odd')!.seed} evenSeed=${observed.get('even')!.seed} zoom=${CANONICAL_PRESENTATION_0561.normalFollowZoom}`,
 );
-console.log('[random-branch-round-tiles-062] HOST odd=LEFT even=RIGHT • no manual pause • round larger spaces • Overview retained');
+console.log('[random-branch-round-tiles-062] HOST odd=LEFT even=RIGHT • no manual pause • round baseline retained • Overview retained');
