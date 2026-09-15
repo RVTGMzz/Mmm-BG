@@ -15,139 +15,127 @@ Keep **TIN TỨC / LÁ BÀI** names.
 
 ## Current automated candidate
 
-**MVP 0.1.60 — Pacing / Economy**
+**MVP 0.1.61 — Local Playtest Match Report**
 
 Automated status: **CI GREEN / PACKAGED**
 Manual runtime status: **PENDING RON ACCEPTANCE**
 
 Code-candidate artifact before this documentation update:
-- `mememe-playtest-0.1.60-pacing-economy`
-- run `#2066` / `34923325355`
-- runtime/package SHA `124ac2cde988ea4fa5f113c450115eaa46111e32`
-- artifact ID `10378873290`
-- size `8,587,489 bytes`
-- SHA256 `90f1727caabe6bfc5de5bb6f0a5ebbd76f6024da7ee2a021f8ae18d370b0501a`
+- `mememe-playtest-0.1.61-playtest-report`
+- run `#2096` / `34924768578`
+- runtime/package SHA `108cd8bd4f789356a200765f5bfc943d0b0e3fdc`
+- artifact ID `10379671442`
+- size `8,589,092 bytes`
+- SHA256 `a968c0468062df433b0d368715f4e9d251d3db8826d9eeaf71574619b59c7057`
 - expires 2026-09-29.
 
 ## Runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene060 as ActiveBoardScene`
+`CareerMinigameBoardScene061 as ActiveBoardScene`
 
 Inheritance:
-`060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-0.1.60 retains 0.1.59 Job/Mini Game depth, 0.1.58 TIN TỨC/LÁ BÀI relocation, 0.1.57 special-location authority, canonical presentation and the 0.1.48 stale-token guard.
+0.1.61 therefore retains the complete 0.1.60 pacing/economy candidate, 0.1.59 Job/Mini depth, 0.1.58 TIN TỨC/LÁ BÀI relocation, 0.1.57 special-location authority, canonical presentation and 0.1.48 stale-token guard.
 
-0.1.56.1 through 0.1.60 are CI-green candidates without recorded manual user acceptance.
+0.1.56.1 through 0.1.61 are CI-green candidates without recorded manual user acceptance.
 
-## Finish-line pacing
+## Why 0.1.61 exists
 
-M01 READY is now a real finish line for the one-lap playtest.
+The 0.1.60 handoff explicitly said the next gameplay milestone should follow runtime feedback rather than be invented in advance. Since development was asked to continue without new runtime feedback, 0.1.61 adds observability only instead of changing gameplay again.
 
-When a player completes lap 1:
-- movement stops immediately on READY;
-- remaining movement pips are discarded;
-- READY Job salary pays first;
-- `finishLocked = true` is recorded;
-- that player is skipped in future turns while unfinished players remain;
-- presentation shows `VỀ ĐÍCH / B$ ĐÃ KHÓA`.
+No economy, board, Card, News, Job, Mini Game, Jail/Hospital, Lottery or pacing rule was changed in 0.1.61.
 
-This removes the old second-lap farming window for early finishers.
+## Local Playtest Report
 
-## Final B$ lock
+After the authoritative result/podium exists, the result screen exposes:
+`📊 BÁO CÁO PLAYTEST`
 
-After finishing, a player's final B$ cannot be modified by later active-race systems.
+The report is deterministically derived from authoritative `MatchState` + `eventLog` and contains:
+- build, board ID, seed and final checksum;
+- player count + starting B$;
+- observed turns, command/event counts and RNG calls;
+- movement/release/Lottery roll counts;
+- Card/News/Mini/Job counts;
+- Mini Game triggered/skipped counts and total Mini payout;
+- Jail/Hospital release-attempt counts;
+- Lottery count + total payout;
+- final table B$ total, average and spread;
+- finish order;
+- final B$, delta, laps and finish place per player.
 
-Finished players are excluded from:
-- Card targets, richest/random targets, swaps and group attacks;
-- Jail/Hospital Card relocation;
-- global/normalize/special News effects;
-- Mini Game eligibility.
+The modal includes `COPY REPORT` so the result can be pasted directly into Discord, Notepad or ChatGPT for analysis.
 
-The authoritative Card layer rejects a finished target even if UI validation is bypassed.
+## Privacy / authority contract
 
-## Economy tuning
+0.1.61 is local-only:
+- no automatic telemetry upload;
+- no `fetch()` call;
+- no gameplay intent;
+- no state mutation;
+- no `Math.random` or new RNG stream;
+- report generation leaves the authoritative checksum unchanged;
+- identical state produces identical report.
 
-Unchanged:
-- start = 200 B$;
-- Draft D main money spaces = four -20 and four +25;
-- TIỀN branch = +25 / -20 / +25;
-- Job salary curves;
-- Lottery = D6 × 20;
-- Jail/Hospital release rules;
-- Card and News weight distributions.
+The UI explicitly labels the report `LOCAL ONLY • KHÔNG TỰ GỬI DỮ LIỆU RA NGOÀI`.
 
-Tuned Cards:
-- Kèo Hai Cửa safe = +20 B$;
-- Thuế Top 1 = 15%;
-- SR group loss = 20%;
-- Phao Cứu Sinh = +50 if poorest active racer, otherwise +15.
+## 0.1.60 gameplay remains locked beneath it
 
-Tuned News:
-- self +25 / -30;
-- common global +10 / -10;
-- rare global -15.
+Finish behavior remains:
+- M01 READY stops movement immediately at lap 1;
+- unused pips are discarded;
+- Job salary pays once before final score lock;
+- finisher is skipped in future turns;
+- finished B$ is immune to later Card/News/Mini effects.
 
-Direct weighted News money expectation stays about +4.3 B$/draw, but variance is lower.
-
-## Five Mini Game arenas
-
-0.1.59 identities and HOST-system single-commit payout ownership remain.
-
-Canonical 3+/4-player tables are now:
-- M09: 25/15/10/0;
-- M17: 35/10/5/0;
-- M26: 20/15/10/5;
-- M35: 30/20/0/0;
-- M44: 25/15/5/5.
-
-Every canonical 3+/4-player table distributes **50 B$ total**. Every canonical direct 1v1 table distributes **30 B$ total**.
-
-## Presentation pacing
-
-Automatic notices are tighter:
-- all-CPU auto max ~820 ms;
-- global notices ~5–8 seconds;
-- passive CPU/multiplayer notices ~3.5–5 seconds;
-- passive skip floor 2.5 seconds.
-
-Solo events that directly affect the human remain manually acknowledgeable after text reveal.
+Economy remains:
+- start 200 B$;
+- board money and TIỀN branch unchanged;
+- Lottery D6 × 20;
+- Kèo Hai Cửa +20;
+- Thuế Top 1 15%;
+- SR all-opponent loss 20%;
+- Phao Cứu Sinh +50/+15;
+- self News +25/-30;
+- global +10/-10, rare -15;
+- canonical Mini arenas distribute 50 B$ for 3+/4 players and 30 B$ direct 1v1.
 
 ## CI status
 
-Run #2066 is fully green. It passed:
+Run #2096 is fully green. It passed:
 - build/typecheck;
 - replay/lockstep/HOST authority;
 - two-tab + bot stress;
-- board/content/party/economy/tactical/pacing gates;
-- Job D6 and multiplayer Job Hub;
-- Mini Game host-system payout ownership;
+- presentation/flow/content/economy/pacing;
+- Job D6 + multiplayer Job Hub;
+- Mini Game HOST-system payout ownership;
 - final-result/podium chain;
-- 0.1.48 stale-token/audio/dice gate;
+- 0.1.48 stale-token/audio/dice regression;
 - Draft D 0.1.50–0.1.56 gates;
-- 0.1.56.1 presentation;
+- 0.1.56.1 canonical presentation;
 - 0.1.57 special locations;
 - 0.1.58 TIN TỨC/LÁ BÀI depth;
 - 0.1.59 Job/five-arena depth;
-- new 0.1.60 finish-lock/economy gate;
+- 0.1.60 finish-lock/economy;
+- new 0.1.61 deterministic local-report gate;
 - package validation + artifact upload.
 
-Historical timing/party assertions were updated only where 0.1.60 intentionally superseded their old economy/pacing constants.
+An earlier 0.1.61 run failed only because a historical test hard-coded Scene060 as launcher. It was updated to prove `061 -> 060 -> ... -> 048`; authority/stale-token checks were preserved.
 
 ## Manual guide
 
-`docs/PLAYTEST_0.1.60_PACING_ECONOMY.md`
+`docs/PLAYTEST_0.1.61_PLAYTEST_REPORT.md`
 
 Priority checks:
-- extra pips are discarded when crossing READY;
-- finishers are skipped in future turns;
-- final B$ stays frozen against later Card/News/Mini Game effects;
-- READY salary pays once before the lock;
-- all five Mini Game payout tables match the new values;
-- Lottery x20 and Jail/Hospital rules remain unchanged;
-- no long-run token snap-back;
-- Roll For Order, multiplayer Job Hub, branches, TIN TỨC/LÁ BÀI, BGM and podium remain intact.
+- complete a real match to podium;
+- verify report button appears at the result only;
+- compare report finish order/final B$ against the actual match;
+- verify Mini/Lottery/Job/Jail/Hospital counts when those systems occur;
+- copy report and paste elsewhere without line loss;
+- check report modal/button for clipping or overlap on host/client result screens;
+- continue watching long-run token snap-back;
+- recheck Roll For Order, Job Hub, branches, TIN TỨC/LÁ BÀI, BGM and podium.
 
 ## Roadmap
 
@@ -158,8 +146,11 @@ Priority checks:
 - 0.1.57 special locations — CI green, manual pending
 - 0.1.58 TIN TỨC/LÁ BÀI depth — CI green, manual pending
 - 0.1.59 Job + five Mini Game depth — CI green, manual pending
-- **0.1.60 pacing/economy — CI green, manual pending**
-- next milestone should follow 0.1.60 runtime feedback.
+- 0.1.60 pacing/economy — CI green, manual pending
+- **0.1.61 local playtest report — CI green, manual pending**
+- **0.1.62 must follow 0.1.61 copied runtime report + subjective feedback. Do not invent gameplay scope in advance.**
+
+For the most useful feedback, paste the full report and add whether the match felt fast/right/slow, whether B$ spread felt right, and what felt strongest, weakest or slowest.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
