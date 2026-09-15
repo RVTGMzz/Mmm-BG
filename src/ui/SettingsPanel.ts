@@ -3,6 +3,44 @@ import { sfxController } from '../audio/sfxController';
 
 let installed = false;
 
+type LegacyFullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void> | void;
+};
+
+type LegacyFullscreenElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
+function isFullscreenActive(): boolean {
+  const legacy = document as LegacyFullscreenDocument;
+  return Boolean(document.fullscreenElement ?? legacy.webkitFullscreenElement);
+}
+
+async function toggleFullscreen(): Promise<void> {
+  const legacyDocument = document as LegacyFullscreenDocument;
+  const target = document.documentElement as LegacyFullscreenElement;
+
+  try {
+    if (isFullscreenActive()) {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (legacyDocument.webkitExitFullscreen) await Promise.resolve(legacyDocument.webkitExitFullscreen());
+      return;
+    }
+
+    if (target.requestFullscreen) await target.requestFullscreen();
+    else if (target.webkitRequestFullscreen) await Promise.resolve(target.webkitRequestFullscreen());
+
+    const orientation = screen.orientation as unknown as {
+      lock?: (orientation: string) => Promise<void>;
+    };
+    if (orientation.lock) void orientation.lock('landscape').catch(() => undefined);
+  } catch {
+    // Fullscreen/orientation may be denied by the browser. The normal responsive
+    // viewport remains fully usable, so this convenience action fails silently.
+  }
+}
+
 /**
  * Global presentation settings shell.
  *
@@ -56,7 +94,13 @@ export function installSettingsPanel(): void {
 
       <div class="settings-section settings-future">
         <div class="settings-section-title">GAME</div>
-        <p>Các tùy chọn hiển thị, tốc độ và trợ năng sau này sẽ nằm gọn tại đây.</p>
+        <div class="settings-row">
+          <div class="settings-copy">
+            <strong>Toàn màn hình</strong>
+            <span>Mobile/Steam Deck: tận dụng tối đa vùng hiển thị.</span>
+          </div>
+          <button class="settings-toggle settings-fullscreen-toggle" type="button" aria-label="Bật/tắt toàn màn hình">⛶ TOÀN MÀN HÌNH</button>
+        </div>
       </div>
     </section>
   `;
@@ -70,6 +114,7 @@ export function installSettingsPanel(): void {
   const volumeValue = root.querySelector<HTMLElement>('.settings-volume-value');
   const bgmStatus = root.querySelector<HTMLElement>('.settings-bgm-status');
   const sfxToggle = root.querySelector<HTMLButtonElement>('.settings-sfx-toggle');
+  const fullscreenToggle = root.querySelector<HTMLButtonElement>('.settings-fullscreen-toggle');
 
   const setOpen = (open: boolean) => {
     if (!panel || !trigger) return;
@@ -78,6 +123,19 @@ export function installSettingsPanel(): void {
     trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     trigger.textContent = open ? '×' : '⚙️';
     trigger.setAttribute('aria-label', open ? 'Đóng cài đặt' : 'Mở cài đặt');
+  };
+
+  const refreshFullscreenButton = () => {
+    if (!fullscreenToggle) return;
+    const target = document.documentElement as LegacyFullscreenElement;
+    const supported = Boolean(document.fullscreenEnabled || target.requestFullscreen || target.webkitRequestFullscreen);
+    fullscreenToggle.disabled = !supported;
+    fullscreenToggle.classList.toggle('is-off', !supported);
+    fullscreenToggle.textContent = !supported
+      ? 'KHÔNG HỖ TRỢ'
+      : isFullscreenActive()
+        ? '↙ THOÁT FULL'
+        : '⛶ TOÀN MÀN HÌNH';
   };
 
   trigger?.addEventListener('click', () => {
@@ -108,6 +166,13 @@ export function installSettingsPanel(): void {
     bgmController.setVolume(Number(bgmVolume.value) / 100);
   });
   sfxToggle?.addEventListener('click', () => sfxController.toggleMuted());
+  fullscreenToggle?.addEventListener('click', () => {
+    sfxController.play('ui_confirm');
+    void toggleFullscreen().finally(refreshFullscreenButton);
+  });
+  document.addEventListener('fullscreenchange', refreshFullscreenButton);
+  document.addEventListener('webkitfullscreenchange', refreshFullscreenButton as EventListener);
+  refreshFullscreenButton();
 
   bgmController.subscribe((state) => {
     const enabled = !state.muted && state.volume > 0;
