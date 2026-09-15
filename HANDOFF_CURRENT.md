@@ -48,22 +48,22 @@ Canonical human branch choice remains manual Left/Right through HOST authority. 
 ## 3. Current runtime chain
 
 Current launcher activates:
-`CareerMinigameBoardScene060 as ActiveBoardScene`
+`CareerMinigameBoardScene061 as ActiveBoardScene`
 
 Inheritance remains unbroken:
-`060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-0.1.60 therefore retains:
-- 0.1.56.1 close active-token camera + fixed four-corner HUD;
-- canonical manual branch framing and explicit Overview;
-- 0.1.57 Jail/Hospital/Lottery authority;
-- 0.1.58 TIN TỨC/LÁ BÀI relocation depth;
+0.1.61 therefore retains:
+- 0.1.60 one-lap finish lock, final B$ lock and tuned economy/pacing;
 - 0.1.59 Job depth + five Mini Game arena identities;
+- 0.1.58 TIN TỨC/LÁ BÀI special relocation depth;
+- 0.1.57 Jail/Hospital/Lottery authority;
+- 0.1.56.1 close active-token camera + fixed four-corner HUD, manual branches and Overview;
 - 0.1.48 stale-token protection.
 
-0.1.56.1 through 0.1.60 have no manual runtime acceptance recorded. Do not retroactively call any of them user-accepted.
+0.1.56.1 through 0.1.61 have no manual runtime acceptance recorded. Do not retroactively call any of them user-accepted.
 
-## 4. Locked special-location rules inherited from 0.1.57
+## 4. Locked 0.1.57 special-location rules
 
 ### Jail
 - hold node 100;
@@ -71,7 +71,7 @@ Inheritance remains unbroken:
 - failure = stay held, turn ends;
 - success exit path `100 -> 101 -> 102 -> 103 -> 12`;
 - release D6 is discarded;
-- successful player then rolls a fresh movement D6 in the same turn.
+- then a fresh movement D6 in the same turn.
 
 ### Hospital
 - hold node 110;
@@ -87,170 +87,139 @@ Inheritance remains unbroken:
 
 Holding state remains replay/checksum critical.
 
-## 5. 0.1.60 — one-lap finish lock
+## 5. Locked 0.1.60 pacing/economy rules
 
-0.1.60 turns M01 READY into a real finish line for the current one-lap playtest.
-
-When a player crosses M01 and reaches the target `lapsCompleted = 1`:
-- the authoritative movement stops immediately on READY;
-- any unused pips on that movement D6 are discarded;
-- Job salary for crossing READY is paid first, exactly once;
-- `ready_pass` records `finishLocked = true`;
-- the player is retired from later turns while unfinished players remain;
+### One-lap finish
+When a player crosses M01 and reaches `lapsCompleted = 1`:
+- authoritative movement stops immediately on READY;
+- unused movement pips are discarded;
+- READY Job salary pays first, exactly once;
+- `ready_pass.finishLocked = true`;
+- player is skipped in later turns while unfinished racers remain;
 - presentation shows `VỀ ĐÍCH / B$ ĐÃ KHÓA`.
 
-This removes the old pacing/economy exploit where an early finisher could continue around a second lap while waiting for the last player.
+### Final B$ lock
+Finished players are excluded from later active-race Card targets/effects, global/special/normalize News and Mini Games. The authoritative Card layer rejects a finished target even if UI validation is bypassed.
 
-`advanceMatchTurn` now skips finished players. If everyone is already finished, it falls back to a stable next seat only so final state serialization remains well-defined while the shell transitions to results.
-
-## 6. 0.1.60 — final B$ score lock
-
-A player who has completed the target lap keeps a frozen final score while the remaining racers finish.
-
-Finished players are excluded from:
-- Card target pools;
-- random/richest target selection;
-- all-opponent Card effects;
-- swap-money Cards;
-- Jail/Hospital relocation Cards;
-- global News money effects;
-- special News relocation;
-- normalize-to-average calculations;
-- Mini Game eligibility.
-
-The authoritative effect layer rejects a finished Card target even if UI validation is bypassed.
-
-Held players are still excluded from Mini Games exactly as before. 0.1.60 therefore layers finish retirement over the existing 0.1.57 eligibility rule.
-
-## 7. 0.1.60 — economy tuning
-
-The goal is lower variance and less table-wide inflation without rewriting the established board economy.
-
-### Explicitly unchanged
-- starting money = **200 B$**;
-- main board money spaces = four `-20` and four `+25`;
-- TIỀN branch = `+25 / -20 / +25`;
-- all Job salary curves;
+### Economy values
+Unchanged foundations:
+- starting money = 200 B$;
+- main board money = four -20 and four +25;
+- TIỀN branch = +25 / -20 / +25;
+- Job salary curves unchanged;
 - Lottery = D6 × 20;
-- Card rarity weights = N600 / R300 / SR90 / SSR10;
-- News category weights remain total 1000 and unchanged by category;
-- no new RNG stream.
+- Card rarity weights and News category weights unchanged.
 
-### Card tune
-- `Kèo Hai Cửa` safe choice: **+20 B$**;
-- `Thuế Top 1`: **15%**;
-- SR all-opponent loss Cards: **20%**;
-- `Phao Cứu Sinh`: **+50 B$** if poorest among active racers, otherwise **+15 B$**;
-- 10 B$ steal Cards unchanged;
-- SSR swap remains rare and unchanged in rarity weight.
+Tuned Cards:
+- Kèo Hai Cửa safe +20;
+- Thuế Top 1 15%;
+- SR all-opponent loss 20%;
+- Phao Cứu Sinh +50 if poorest active racer, otherwise +15.
 
-### News tune
-- positive self News: **+25 B$**;
-- negative self News: **-30 B$**;
-- common group gain/loss: **+10 / -10 B$**;
-- rare group loss: **-15 B$**.
+Tuned News:
+- self +25 / -30;
+- common global +10 / -10;
+- rare global -15.
 
-Weights are unchanged. The direct weighted money expectation remains approximately **+4.3 B$/draw**, close to the previous scale, while single-event swings are smaller.
+Canonical 3+/4-player Mini Game payouts:
+- M09 = 25/15/10/0;
+- M17 = 35/10/5/0;
+- M26 = 20/15/10/5;
+- M35 = 30/20/0/0;
+- M44 = 25/15/5/5.
 
-## 8. 0.1.60 — Mini Game payout tuning
+Every canonical 3+/4-player arena distributes 50 B$ total; direct 1v1 distributes 30 B$ total.
 
-The 0.1.59 arena identities and HOST-system single-commit ranking flow remain unchanged.
+## 6. 0.1.61 — Local Playtest Match Report
 
-Canonical 3+/4-player payouts are now:
+0.1.61 intentionally adds **observability only**. It does not tune gameplay again before real runtime feedback arrives.
 
-| Space | Arena | 0.1.60 payout |
-| --- | --- | --- |
-| M09 | PHỐ ĐÔNG NGƯỜI | 25 / 15 / 10 / 0 |
-| M17 | KÈO ALL-IN | 35 / 10 / 5 / 0 |
-| M26 | CÒN THỞ CÒN TIỀN | 20 / 15 / 10 / 5 |
-| M35 | TOP 2 HOẶC VỀ KHÔNG | 30 / 20 / 0 / 0 |
-| M44 | NƯỚC RÚT CUỐI VÒNG | 25 / 15 / 5 / 5 |
+After the authoritative final result/podium exists, the result screen exposes:
+`📊 BÁO CÁO PLAYTEST`
 
-Guardrails:
-- every canonical 3+/4-player arena distributes exactly **50 B$ total**;
-- every canonical direct 1v1 arena distributes exactly **30 B$ total**;
-- arena identities stay distinct;
-- old generic/default reward type remains backwards-compatible for legacy fixtures only.
+The report is derived only from the existing authoritative `MatchState` + `eventLog` and contains:
+- build version, board ID, seed and final checksum;
+- player count and starting B$;
+- turns observed, command count, event count and RNG call count;
+- normal movement rolls, Jail/Hospital release rolls and Lottery rolls;
+- Card plays and News triggers;
+- Mini Games triggered/skipped and total Mini payout;
+- Job offers, selections and progress checks;
+- Jail/Hospital release-attempt counts;
+- Lottery count and total Lottery payout;
+- final table B$ total, average and spread;
+- finish order;
+- each player's final B$, delta from start, laps and finish position.
 
-## 9. 0.1.60 — presentation pacing
+`formatPlaytestMatchReport061()` creates a plain-text block suitable for Discord, Notepad or ChatGPT bug reports.
 
-Automatic notices are tighter without shortening human-controlled reading:
-- all-CPU auto notices cap around **820 ms**;
-- global auto notices use roughly **5–8 seconds**;
-- passive CPU/multiplayer notices use roughly **3.5–5 seconds**;
-- passive skip floor is **2.5 seconds**.
+## 7. Privacy / authority contract for 0.1.61
 
-Solo events that directly affect the one human player remain manual/acknowledgeable once text is readable.
+`CareerMinigameBoardScene061` is presentation-only:
+- no gameplay state mutation;
+- no gameplay intent submission;
+- no `Math.random`;
+- no extra RNG stream;
+- no automatic network upload;
+- no `fetch()` telemetry;
+- report modal explicitly says `LOCAL ONLY`;
+- `COPY REPORT` uses the browser clipboard, with a local textarea fallback.
 
-`CareerMinigameBoardScene060` is presentation-only. It adds finish-lock feedback but no client RNG and no gameplay intent submission.
+Building the report is regression-tested to leave the authoritative checksum unchanged and to return identical output from identical state.
 
-## 10. 0.1.60 implementation files
+## 8. 0.1.61 implementation files
 
-Core/content:
-- `src/core/pacingEconomy060.ts`
-- `src/core/matchState.ts`
-- `src/core/replay.ts`
-- `src/core/cards.ts`
-- `src/core/news.ts`
-- `src/core/specialLocations057.ts`
-- `src/core/miniGameSlots059.ts`
-- `src/content/core/cards_mvp.json`
-- `src/content/core/news_mvp_demo.json`
+Core:
+- `src/core/playtestTelemetry061.ts`.
 
 Runtime/presentation:
-- `src/ui/presentationFlowPolicy.ts`
-- `src/scenes/CareerMinigameBoardScene060.ts`
-- `src/main.ts`
-- `src/ui/canonicalPresentation0561.ts`.
+- `src/scenes/CareerMinigameBoardScene061.ts`;
+- `src/main.ts`;
+- `src/ui/canonicalPresentation0561.ts` visible build labels advanced to 0.1.61.
 
 Tests/docs/CI:
-- `tests/pacing-economy-060.ts`
-- updated economy/content/party/tactical/board-flow regression gates;
-- updated 0.1.48/0.1.58/0.1.59 inheritance gates;
-- `package.json`
-- `.github/workflows/ci.yml`
-- `docs/PLAYTEST_0.1.60_PACING_ECONOMY.md`.
+- `tests/playtest-telemetry-061.ts`;
+- updated 0.1.48 / 0.1.56.1 / 0.1.58 / 0.1.59 / 0.1.60 inheritance gates;
+- `package.json`;
+- `.github/workflows/ci.yml`;
+- `docs/PLAYTEST_0.1.61_PLAYTEST_REPORT.md`.
 
-## 11. 0.1.60 automated result
+## 9. 0.1.61 automated result
 
 The code candidate is **CI GREEN / PACKAGED**.
 
 Code-candidate artifact before this handoff documentation update:
-- `mememe-playtest-0.1.60-pacing-economy`
-- run `#2066` / `34923325355`
-- runtime/package SHA `124ac2cde988ea4fa5f113c450115eaa46111e32`
-- artifact ID `10378873290`
-- size `8,587,489 bytes`
-- SHA256 `90f1727caabe6bfc5de5bb6f0a5ebbd76f6024da7ee2a021f8ae18d370b0501a`
+- `mememe-playtest-0.1.61-playtest-report`
+- run `#2096` / `34924768578`
+- runtime/package SHA `108cd8bd4f789356a200765f5bfc943d0b0e3fdc`
+- artifact ID `10379671442`
+- size `8,589,092 bytes`
+- SHA256 `a968c0468062df433b0d368715f4e9d251d3db8826d9eeaf71574619b59c7057`
 - expires 2026-09-29.
 
-All full-suite gates passed, including:
+Full suite passed, including:
 - typecheck/build;
-- replay + lockstep + HOST authority;
+- deterministic replay + lockstep + HOST authority;
 - two-tab + bot stress;
-- presentation/flow/pacing;
-- content/party/economy/tactical;
+- presentation/flow/pacing/content/economy;
 - Job D6 + multiplayer Job Hub;
-- Mini Game host-system payout ownership;
+- Mini Game HOST single-commit payout ownership;
 - final-result/podium chain;
 - 0.1.48 stale-token/audio/dice gate;
 - Draft D 0.1.50–0.1.56 gates;
 - 0.1.56.1 canonical presentation;
 - 0.1.57 special-location authority;
 - 0.1.58 TIN TỨC/LÁ BÀI depth;
-- 0.1.59 Job + five-arena depth;
-- new 0.1.60 finish-lock/economy gate;
+- 0.1.59 Job/five-arena depth;
+- 0.1.60 finish-lock/economy;
+- new 0.1.61 deterministic local-report gate;
 - package validation and artifact upload.
 
-Two historical gates initially failed because they encoded intentionally superseded 0.1.60 values:
-- board-flow required the old 3s/6s/10s automatic presentation timing;
-- party-mechanics required the old 18% rich tax and +60 catch-up bonus.
+An earlier 0.1.61 run failed only because the historical 0.1.48 regression test still hard-coded Scene060 as the launcher. It was updated to prove the stronger chain `061 -> 060 -> ... -> 048`; stale-token and authority assertions were not weakened.
 
-They were updated to the new explicit 0.1.60 constants instead of weakening coverage.
+## 10. Status declaration
 
-## 12. Status declaration
-
-### 0.1.60 automated implementation
+### 0.1.61 automated implementation
 **CI GREEN / PACKAGED CANDIDATE**
 
 ### Manual runtime acceptance
@@ -259,36 +228,43 @@ They were updated to the new explicit 0.1.60 constants instead of weakening cove
 ### Rollback baseline
 **0.1.48 remains the only user-validated rollback baseline.**
 
-Do not call 0.1.60 user-accepted from CI alone.
+Do not call 0.1.61 user-accepted from CI alone.
 
-## 13. Manual checklist
+## 11. Manual checklist
 
 Use:
-`docs/PLAYTEST_0.1.60_PACING_ECONOMY.md`
+`docs/PLAYTEST_0.1.61_PLAYTEST_REPORT.md`
 
 Highest-value checks:
-1. Cross M01 with extra pips and confirm the token stops exactly on READY.
-2. Confirm a finished player's later turns are skipped.
-3. Confirm the finish toast clearly says B$ is locked.
-4. Confirm later Card/News/Mini Game effects cannot change a finished player's B$.
-5. Confirm Job salary still pays once before finish lock.
-6. Confirm all five Mini Game arenas use the new payout tables exactly once through HOST authority.
-7. Confirm Lottery remains D6 × 20.
-8. Confirm Jail/Hospital release rules and fresh movement D6 are unchanged.
-9. Confirm long-run movement never snaps backward.
-10. Recheck Roll For Order, multiplayer Job Hub, branches, TIN TỨC/LÁ BÀI relocation, BGM and podium.
+1. Play a complete real match through podium.
+2. Confirm `BÁO CÁO PLAYTEST` appears only after the result exists.
+3. Open the report and verify seed/checksum are visible.
+4. Compare finish order with the actual race.
+5. Compare per-player final B$ with the podium.
+6. Check Mini/Lottery/Job/Jail/Hospital counts against events that actually occurred.
+7. Press `COPY REPORT`, paste elsewhere and ensure all lines survive.
+8. Check report modal/button layout for overlap or clipping, especially on multiplayer/client result screens.
+9. Continue watching long-run token snap-back and final-result/podium ordering.
+10. Recheck Roll For Order, multiplayer Job Hub, branches, TIN TỨC/LÁ BÀI, Lottery and BGM.
 
-## 14. Roadmap
+## 12. Roadmap
 
 - 0.1.54 sandbox — done
 - 0.1.55 canonical Draft D topology — CI green
 - 0.1.56 branch identity — CI green
-- 0.1.56.1 canonical presentation — CI green, no manual acceptance recorded
-- 0.1.57 special-location authority — CI green, manual acceptance pending
-- 0.1.58 TIN TỨC/LÁ BÀI depth — CI green, manual acceptance pending
-- 0.1.59 Job + five-space Mini Game depth — CI green, manual acceptance pending
-- **0.1.60 pacing/economy — CI green, manual acceptance pending**
-- next milestone should be selected from 0.1.60 runtime feedback rather than invented in advance.
+- 0.1.56.1 canonical presentation — CI green, manual pending
+- 0.1.57 special locations — CI green, manual pending
+- 0.1.58 TIN TỨC / LÁ BÀI depth — CI green, manual pending
+- 0.1.59 Job + five Mini Game depth — CI green, manual pending
+- 0.1.60 pacing/economy — CI green, manual pending
+- **0.1.61 local playtest report — CI green, manual pending**
+- **0.1.62 must be selected from 0.1.61 copied runtime report + subjective playtest feedback. Do not invent gameplay scope in advance.**
+
+Recommended feedback payload after a real run:
+- paste the full 0.1.61 report;
+- say whether the match felt fast / right / slow;
+- say whether final B$ felt too compressed / right / too swingy;
+- identify the biggest pacing drag or strongest/weakest event.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
