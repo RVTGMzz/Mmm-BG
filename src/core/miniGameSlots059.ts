@@ -14,12 +14,11 @@ export interface MiniGameSlot059 {
 }
 
 /**
- * 0.1.59 gives the five Draft D Mini Game spaces distinct stakes while keeping the
- * existing hidden-choice tournament engine and HOST-owned payout path intact.
- *
- * Economy guardrail: every 3+/4-player table still distributes exactly 60 B$ total,
- * and every direct 1v1 table still distributes exactly 40 B$ total. 0.1.60 remains
- * the dedicated global pacing/economy tuning milestone.
+ * 0.1.59 established five distinct canonical arenas. 0.1.60 keeps those identities
+ * but lowers table-wide inflation for the one-lap economy:
+ * - 3+/4-player tables distribute exactly 50 B$ total;
+ * - direct 1v1 tables distribute exactly 30 B$ total.
+ * Ranking, hidden-choice rules and HOST payout ownership are unchanged.
  */
 export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
   {
@@ -30,8 +29,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '⚖️',
     identity: 'CÂN BẰNG',
     description: 'Kèo nhập môn: tiền thưởng trải đều theo thứ hạng.',
-    majorityRewards: [30, 20, 10, 0],
-    rpsRewards: [25, 15, 0, 0],
+    majorityRewards: [25, 15, 10, 0],
+    rpsRewards: [18, 12, 0, 0],
   },
   {
     contentId: 'MINIGAME_SLOT_02',
@@ -41,8 +40,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '🔥',
     identity: 'HẠNG 1 ĂN DÀY',
     description: 'Top 1 bứt mạnh, hạng dưới nhận ít hơn.',
-    majorityRewards: [40, 15, 5, 0],
-    rpsRewards: [30, 10, 0, 0],
+    majorityRewards: [35, 10, 5, 0],
+    rpsRewards: [22, 8, 0, 0],
   },
   {
     contentId: 'MINIGAME_SLOT_03',
@@ -52,8 +51,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '🛟',
     identity: 'CỨU VỚT',
     description: 'Cả bốn hạng đều có phần, giảm cảm giác trắng tay.',
-    majorityRewards: [25, 20, 10, 5],
-    rpsRewards: [22, 18, 0, 0],
+    majorityRewards: [20, 15, 10, 5],
+    rpsRewards: [16, 14, 0, 0],
   },
   {
     contentId: 'MINIGAME_SLOT_04',
@@ -63,8 +62,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '⚔️',
     identity: 'CẮT TOP',
     description: 'Chỉ hai vị trí dẫn đầu có thưởng.',
-    majorityRewards: [35, 25, 0, 0],
-    rpsRewards: [28, 12, 0, 0],
+    majorityRewards: [30, 20, 0, 0],
+    rpsRewards: [20, 10, 0, 0],
   },
   {
     contentId: 'MINIGAME_SLOT_05',
@@ -74,8 +73,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '🏁',
     identity: 'CHUNG KẾT',
     description: 'Ô cuối vòng chia thưởng cho mọi hạng nhưng vẫn ưu tiên top 1.',
-    majorityRewards: [30, 15, 10, 5],
-    rpsRewards: [24, 16, 0, 0],
+    majorityRewards: [25, 15, 5, 5],
+    rpsRewards: [17, 13, 0, 0],
   },
 ] as const;
 
