@@ -64,6 +64,7 @@
     "test:random-branch-round-tiles-062": "tsx tests/random-branch-round-tiles-062.ts",
     "test:ui-smooth-polish-063": "tsx tests/ui-smooth-polish-063.ts",
     "test:active-player-center-lock-0631": "tsx tests/active-player-center-lock-0631.ts",
+    "test:movement-actor-camera-lock-0632": "tsx tests/movement-actor-camera-lock-0632.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
