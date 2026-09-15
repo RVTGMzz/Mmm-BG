@@ -117,6 +117,27 @@ assert(
   `Same-seed release-roll count mismatch: ${deterministicA.releaseRolls} vs ${deterministicB.releaseRolls}.`,
 );
 
+// 0.1.60 finish-lock can leave the last runner with a random-target Card but no
+// active opponent. CPU must keep the Card and roll rather than sending a HOST-rejected intent.
+const randomTargetCard = CARDS.find((card) => card.id === 'ACT_003');
+assert(randomTargetCard?.targetMode === 'random_other', 'ACT_003 must remain the random-target regression fixture.');
+const noTargetAuthority = createEmptyHostAuthority(
+  {
+    boardId: BOARD.id,
+    startNodeId: BOARD.startNodeId,
+    playerNames: ['Runner', 'Done 2', 'Done 3', 'Done 4'],
+    seed: 611100,
+  },
+  { board: BOARD, cards: CARDS, news: NEWS },
+);
+const noTargetActor = noTargetAuthority.state.players[0];
+assert(noTargetActor, 'Missing CPU fallback actor.');
+noTargetActor.handCardIds = [randomTargetCard.id];
+for (const opponent of noTargetAuthority.state.players.slice(1)) opponent.lapsCompleted = 1;
+const noTargetDecision = chooseTestBotIntent(noTargetAuthority.state, BOARD, CARDS);
+assert(noTargetDecision?.type === 'roll', `Random-target fallback must roll, got ${noTargetDecision?.type ?? 'none'}.`);
+assert(noTargetActor.handCardIds.includes(randomTargetCard.id), 'Fallback must keep the unusable Card in hand.');
+
 let totalRolls = 0;
 let totalReleaseRolls = 0;
 let totalCards = 0;
@@ -143,4 +164,4 @@ assert(totalBranches > 0, 'CPU stress fixture never exercised choose_branch.');
 console.log(
   `[test-bot-ci] PASS matches=${MATCHES} turns=${baseTurns} rolls=${totalRolls} releaseRolls=${totalReleaseRolls} cards=${totalCards} branches=${totalBranches} maxCommands=${maxCommands} deterministic=${deterministicA.checksum}`,
 );
-console.log('[test-bot-ci] probes: normal-roll PASS • special-release PASS • card-use PASS • branch-choice PASS • no-deadlock PASS • same-seed PASS');
+console.log('[test-bot-ci] probes: normal-roll PASS • special-release PASS • card-use PASS • random-target-no-opponent fallback PASS • branch-choice PASS • no-deadlock PASS • same-seed PASS');
