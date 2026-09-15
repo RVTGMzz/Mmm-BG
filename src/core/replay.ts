@@ -86,6 +86,12 @@ interface ReplayContext {
 
 type TileResolutionResult = 'done' | 'job_choice';
 
+type MovementSegmentResult = {
+  consumedExtra: number;
+  pausedForJob: boolean;
+  finalTileResolved: boolean;
+};
+
 function currentPlayer(ctx: ReplayContext): PlayerState {
   const player = ctx.state.players[ctx.state.turn.currentPlayerIndex];
   if (!player) throw new Error(`Replay missing player index ${ctx.state.turn.currentPlayerIndex}.`);
@@ -400,6 +406,116 @@ function findBranchEdge(ctx: ReplayContext, outgoing: BoardEdge[], command: Matc
   return edge;
 }
 
+function appendReadyPass060(ctx: ReplayContext, player: PlayerState): boolean {
+  player.lapsCompleted = (player.lapsCompleted ?? 0) + 1;
+  const currentJob = player.jobStatus === 'employed' ? jobById(JOBS, player.jobId) : undefined;
+  const salaryAmount = currentJob ? jobSalary(currentJob, player.jobLevel) : 0;
+  player.money += salaryAmount;
+  const finishLocked = isPlayerFinished060(player);
+  appendMatchEvent(ctx.state, 'ready_pass', {
+    amount: salaryAmount,
+    salaryAmount,
+    resultMoney: player.money,
+    lapsCompleted: player.lapsCompleted,
+    finishLocked,
+    jobId: currentJob?.id ?? null,
+    jobTitle: currentJob?.title ?? null,
+    jobIcon: currentJob?.icon ?? null,
+    jobLevel: player.jobLevel ?? 0,
+    affectedPlayerIds: String(player.id),
+  }, player.id);
+  return finishLocked;
+}
+
+/**
+ * Move a deterministic slice of one already-rolled movement D6.
+ *
+ * 0.1.63.4 treats Job Hub as an interrupt, not an end-of-turn wall. If a Job offer
+ * needs player/CPU resolution we remember the unspent pips in MatchState, pause on
+ * JOB_CHOICE, and resume this same roll after choose_job. Existing Job progress is
+ * resolved immediately and movement continues unless that Job outcome sends the
+ * player to a special hold such as Jail.
+ */
+function replayMovementSegment(
+  ctx: ReplayContext,
+  player: PlayerState,
+  commandIndex: number,
+  roll: number,
+  firstStep: number,
+  stepCount: number,
+): MovementSegmentResult {
+  let consumedExtra = 0;
+  let finalTileResolved = false;
+
+  for (let offset = 0; offset < stepCount; offset += 1) {
+    const stepNumber = firstStep + offset;
+    const outgoing = getOutgoingEdges(ctx.board, player.nodeId);
+    if (outgoing.length === 0) break;
+
+    let edge = outgoing[0];
+    if (outgoing.length > 1) {
+      transition(ctx, 'BRANCH_CHOICE');
+      const branchCommand = ctx.commands[commandIndex + consumedExtra + 1];
+      if (!branchCommand) {
+        const anchor = ctx.commands[commandIndex];
+        failCommand(ctx, anchor, `missing branch choice after node ${player.nodeId}.`);
+      }
+      validateCommand(ctx, branchCommand);
+      edge = findBranchEdge(ctx, outgoing, branchCommand);
+      consumedExtra += 1;
+      transition(ctx, 'MOVING');
+    }
+
+    const fromNodeId = player.nodeId;
+    player.nodeId = edge.to;
+    appendMatchEvent(ctx.state, 'move_step', {
+      fromNodeId,
+      toNodeId: edge.to,
+      step: stepNumber,
+      roll,
+      affectedPlayerIds: String(player.id),
+    }, player.id);
+
+    if (edge.to === ctx.board.startNodeId) {
+      const finishLocked = appendReadyPass060(ctx, player);
+      if (finishLocked) break;
+    }
+
+    const steppedNode = getBoardNode(ctx.board, edge.to);
+    if (steppedNode.feature !== 'job') continue;
+
+    transition(ctx, 'RESOLVING_TILE');
+    const resolution = resolveReplayTile(ctx, player);
+    finalTileResolved = true;
+    const remainingSteps = stepCount - offset - 1;
+
+    if (resolution === 'job_choice') {
+      if (remainingSteps > 0) {
+        ctx.state.pendingJobMovement = {
+          roll,
+          nextStep: stepNumber + 1,
+          remainingSteps,
+        };
+      } else {
+        delete ctx.state.pendingJobMovement;
+      }
+      transition(ctx, 'JOB_CHOICE');
+      return { consumedExtra, pausedForJob: true, finalTileResolved: true };
+    }
+
+    // A career check can arrest a criminal Job holder. Once authority relocated the
+    // player into a special hold, the original movement die is finished immediately.
+    if (player.specialHold || player.nodeId !== steppedNode.id || remainingSteps === 0) {
+      return { consumedExtra, pausedForJob: false, finalTileResolved: true };
+    }
+
+    transition(ctx, 'MOVING');
+    finalTileResolved = false;
+  }
+
+  return { consumedExtra, pausedForJob: false, finalTileResolved };
+}
+
 function replaySpecialReleaseRoll057(ctx: ReplayContext, command: MatchCommand, player: PlayerState): void {
   const location = player.specialHold;
   if (!location) failCommand(ctx, command, 'special release requested without holding state.');
@@ -474,72 +590,25 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
   appendMatchEvent(ctx.state, 'dice_roll', { result, affectedPlayerIds: String(player.id) }, player.id);
   transition(ctx, 'MOVING');
 
-  let consumedExtra = 0;
-  for (let step = 0; step < result; step += 1) {
-    const outgoing = getOutgoingEdges(ctx.board, player.nodeId);
-    if (outgoing.length === 0) break;
+  const movement = replayMovementSegment(ctx, player, commandIndex, result, 1, result);
+  if (movement.pausedForJob) return movement.consumedExtra;
 
-    let edge = outgoing[0];
-    if (outgoing.length > 1) {
-      transition(ctx, 'BRANCH_CHOICE');
-      const branchCommand = ctx.commands[commandIndex + consumedExtra + 1];
-      if (!branchCommand) failCommand(ctx, command, `missing branch choice after node ${player.nodeId}.`);
-      validateCommand(ctx, branchCommand);
-      edge = findBranchEdge(ctx, outgoing, branchCommand);
-      consumedExtra += 1;
-      transition(ctx, 'MOVING');
+  if (!movement.finalTileResolved) {
+    transition(ctx, 'RESOLVING_TILE');
+    const resolution = resolveReplayTile(ctx, player);
+    if (resolution === 'job_choice') {
+      delete ctx.state.pendingJobMovement;
+      transition(ctx, 'JOB_CHOICE');
+      return movement.consumedExtra;
     }
-
-    const fromNodeId = player.nodeId;
-    player.nodeId = edge.to;
-    appendMatchEvent(ctx.state, 'move_step', {
-      fromNodeId,
-      toNodeId: edge.to,
-      step: step + 1,
-      roll: result,
-      affectedPlayerIds: String(player.id),
-    }, player.id);
-
-    if (edge.to === ctx.board.startNodeId) {
-      player.lapsCompleted = (player.lapsCompleted ?? 0) + 1;
-      const currentJob = player.jobStatus === 'employed' ? jobById(JOBS, player.jobId) : undefined;
-      const salaryAmount = currentJob ? jobSalary(currentJob, player.jobLevel) : 0;
-      player.money += salaryAmount;
-      const finishLocked = isPlayerFinished060(player);
-      appendMatchEvent(ctx.state, 'ready_pass', {
-        amount: salaryAmount,
-        salaryAmount,
-        resultMoney: player.money,
-        lapsCompleted: player.lapsCompleted,
-        finishLocked,
-        jobId: currentJob?.id ?? null,
-        jobTitle: currentJob?.title ?? null,
-        jobIcon: currentJob?.icon ?? null,
-        jobLevel: player.jobLevel ?? 0,
-        affectedPlayerIds: String(player.id),
-      }, player.id);
-
-      // 0.1.60 one-lap pacing: once the target lap is complete, READY is a real
-      // finish line. Remaining pips on this movement die are discarded.
-      if (finishLocked) break;
-    }
-
-    const steppedNode = getBoardNode(ctx.board, edge.to);
-    if (steppedNode.feature === 'job') break;
-  }
-
-  transition(ctx, 'RESOLVING_TILE');
-  const resolution = resolveReplayTile(ctx, player);
-  if (resolution === 'job_choice') {
-    transition(ctx, 'JOB_CHOICE');
-    return consumedExtra;
   }
 
   finishAndAdvanceTurn(ctx, player);
-  return consumedExtra;
+  return movement.consumedExtra;
 }
 
-function replayJobChoice(ctx: ReplayContext, command: MatchCommand): void {
+function replayJobChoice(ctx: ReplayContext, commandIndex: number): number {
+  const command = ctx.commands[commandIndex];
   const player = currentPlayer(ctx);
   if (command.type !== 'choose_job') failCommand(ctx, command, `expected choose_job, got ${command.type}.`);
   validateCommand(ctx, command);
@@ -562,8 +631,12 @@ function replayJobChoice(ctx: ReplayContext, command: MatchCommand): void {
   }, player.id);
 
   applyJobSelection(player, job);
+  const pendingMovement = ctx.state.pendingJobMovement
+    ? { ...ctx.state.pendingJobMovement }
+    : undefined;
   delete ctx.state.pendingJobOfferIds;
   delete ctx.state.pendingJobPlayerId;
+  delete ctx.state.pendingJobMovement;
   appendMatchEvent(ctx.state, 'job_selected', {
     jobId: job.id,
     jobTitle: job.title,
@@ -575,10 +648,49 @@ function replayJobChoice(ctx: ReplayContext, command: MatchCommand): void {
     title: `${job.icon} 🎲 ${result} → NHẬN VIỆC`,
     impact: job.icon,
     description: `${player.name} đổ ${result}, trúng ${job.title} • lương Lv.1 ${jobSalary(job, 1)} B$/cổng.`,
-    summary: job.special,
+    summary: pendingMovement
+      ? `${job.special} • Còn ${pendingMovement.remainingSteps} bước từ xúc xắc di chuyển, tiếp tục đi.`
+      : job.special,
     affectedPlayerIds: String(player.id),
   }, player.id);
+
+  if (!pendingMovement || pendingMovement.remainingSteps <= 0) {
+    finishAndAdvanceTurn(ctx, player);
+    return 0;
+  }
+
+  transition(ctx, 'MOVING');
+  appendMatchEvent(ctx.state, 'job_movement_resume', {
+    roll: pendingMovement.roll,
+    nextStep: pendingMovement.nextStep,
+    remainingSteps: pendingMovement.remainingSteps,
+    title: `TIẾP TỤC ${pendingMovement.remainingSteps} BƯỚC`,
+    impact: '👣',
+    description: `Job chỉ tạm dừng lượt. ${player.name} tiếp tục phần bước còn lại của xúc xắc ${pendingMovement.roll}.`,
+    affectedPlayerIds: String(player.id),
+  }, player.id);
+
+  const movement = replayMovementSegment(
+    ctx,
+    player,
+    commandIndex,
+    pendingMovement.roll,
+    pendingMovement.nextStep,
+    pendingMovement.remainingSteps,
+  );
+  if (movement.pausedForJob) return movement.consumedExtra;
+
+  if (!movement.finalTileResolved) {
+    transition(ctx, 'RESOLVING_TILE');
+    const resolution = resolveReplayTile(ctx, player);
+    if (resolution === 'job_choice') {
+      transition(ctx, 'JOB_CHOICE');
+      return movement.consumedExtra;
+    }
+  }
+
   finishAndAdvanceTurn(ctx, player);
+  return movement.consumedExtra;
 }
 
 function replayMiniGameResult(ctx: ReplayContext, command: MatchCommand): void {
@@ -736,8 +848,8 @@ export function replayMatchCommands(
         continue;
       }
       if (command.type === 'choose_job') {
-        replayJobChoice(ctx, command);
-        index += 1;
+        const extra = replayJobChoice(ctx, index);
+        index += extra + 1;
         continue;
       }
       if (command.type === 'resolve_minigame') {
