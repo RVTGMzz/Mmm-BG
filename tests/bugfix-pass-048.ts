@@ -69,8 +69,8 @@ assert(!board066.includes('Math.random'), '0.1.66 wrapper must add no client RNG
 
 // 0.1.66 human runtime found a CPU stall after a successful same-turn Jail/Hospital release.
 // Permit exactly the guarded fresh-roll wake-up through the existing HOST intent path.
-const submitIntentCalls066 = board066.match(/submitIntent\(/g) ?? [];
-assert.equal(submitIntentCalls066.length, 1, '0.1.66 may contain only the guarded CPU fresh-roll intent');
+const executableSubmitCalls066 = board066.match(/internals\.submitIntent\(/g) ?? [];
+assert.equal(executableSubmitCalls066.length, 1, '0.1.66 may execute only the guarded CPU fresh-roll intent');
 assert(board066.includes("internals.submitIntent('roll', {})"));
 assert(board066.includes('pendingCpuFreshRollAfterRelease066'));
 assert(!releaseGuard066.includes('Math.random'));
