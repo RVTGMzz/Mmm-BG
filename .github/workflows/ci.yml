@@ -155,18 +155,20 @@ jobs:
         run: npm run test:movement-actor-camera-lock-0632
       - name: 0.1.63.3 presentation/release D6 synchronization
         run: npm run test:presentation-release-sync-0633
+      - name: 0.1.63.4 Job continuation and landing effect synchronization
+        run: npm run test:job-continue-landing-sync-0634
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.63.3 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.63.3_PRESENTATION_RELEASE_SYNC.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.63.4 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.63.4_JOB_CONTINUE_LANDING_SYNC.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.63.3 presentation release sync build
+      - name: Upload MVP 0.1.63.4 Job continue landing sync build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.63.3-presentation-release-sync
+          name: mememe-playtest-0.1.63.4-job-continue-landing-sync
           path: dist
           if-no-files-found: error
           retention-days: 14
