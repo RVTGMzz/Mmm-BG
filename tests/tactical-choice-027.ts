@@ -19,7 +19,7 @@ assert(tactical, 'ACT_008 tactical card missing');
 assert.equal(tactical.title, 'Kèo Hai Cửa');
 assert.equal(tactical.effect.type, 'tactical_choice');
 if (tactical.effect.type !== 'tactical_choice') throw new Error('ACT_008 effect drifted');
-assert.equal(tactical.effect.safeAmount, 25);
+assert.equal(tactical.effect.safeAmount, 20);
 assert.equal(tactical.effect.taxPercent, 0.15);
 
 function makeState(values: number[]) {
@@ -36,8 +36,8 @@ function makeState(values: number[]) {
 
 const safeState = makeState([100, 300, 240, 180]);
 const safe = applyCardEffect(tactical, safeState.players[0]!, safeState.players, undefined, 'safe');
-assert.equal(safe.amount, 25);
-assert.equal(safeState.players[0]?.money, 125);
+assert.equal(safe.amount, 20);
+assert.equal(safeState.players[0]?.money, 120);
 assert.equal(safeState.players[1]?.money, 300);
 assert.deepEqual(safe.affectedPlayerIds, [0]);
 
@@ -92,4 +92,4 @@ const rarityWeight = CARDS
   .reduce((sum, card) => sum + card.dropWeight, 0);
 assert.equal(rarityWeight, 300, 'R rarity total must stay 300/1000');
 
-console.log('[tactical-choice-027/0.1.28] PASS tactical choice + rare CPU quirk + 2.5x NPC chat');
+console.log('[tactical-choice-027/0.1.60] PASS tuned tactical choice + rare CPU quirk + 2.5x NPC chat');
