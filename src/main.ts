@@ -10,7 +10,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene0651 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0651';
+import { CareerMinigameBoardScene066 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene066';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -28,6 +28,7 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene064 expands board spacing, makes J/H corridors real -20 B$ movement, and rebalances Card/Step SFX.
 // CareerMinigameBoardScene065 as ActiveBoardScene showed real Job/salary HUD data, rounded UI and hid the debug footer.
 // CareerMinigameBoardScene0651 as ActiveBoardScene fixes rounded-proxy ghosts and adds browser/Steam Deck gamepad UI control.
+// CareerMinigameBoardScene066 as ActiveBoardScene unifies the shipped flow, adds selected match length, and polishes Job/Mini Game presentation.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
