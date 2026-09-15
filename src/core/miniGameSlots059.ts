@@ -1,5 +1,4 @@
-import type { MiniGameRewardType } from './minigameRewards';
-
+export type MiniGameBaseMode059 = 'majority_minority' | 'rps';
 export type MiniGameRewardTable059 = readonly [number, number, number, number];
 
 export interface MiniGameSlot059 {
@@ -89,7 +88,7 @@ export function miniGameSlot059(contentId: string | undefined): MiniGameSlot059 
 
 export function miniGameRewardTable059(
   contentId: string | undefined,
-  gameType: MiniGameRewardType,
+  gameType: MiniGameBaseMode059,
 ): MiniGameRewardTable059 {
   const slot = miniGameSlot059(contentId);
   return gameType === 'rps' ? slot.rpsRewards : slot.majorityRewards;
@@ -97,14 +96,14 @@ export function miniGameRewardTable059(
 
 export function miniGameRewardForSlot059(
   contentId: string | undefined,
-  gameType: MiniGameRewardType,
+  gameType: MiniGameBaseMode059,
   rank: number,
 ): number {
   if (!Number.isInteger(rank) || rank < 1) return 0;
   return miniGameRewardTable059(contentId, gameType)[rank - 1] ?? 0;
 }
 
-export function miniGameRewardCopy059(contentId: string | undefined, gameType: MiniGameRewardType): string {
+export function miniGameRewardCopy059(contentId: string | undefined, gameType: MiniGameBaseMode059): string {
   const rewards = miniGameRewardTable059(contentId, gameType);
   const visibleCount = gameType === 'rps' ? 2 : 4;
   return rewards
