@@ -137,6 +137,7 @@ assert.deepEqual(
 
 const scene059 = await readFile('src/scenes/CareerMinigameBoardScene059.ts', 'utf8');
 const scene060 = await readFile('src/scenes/CareerMinigameBoardScene060.ts', 'utf8');
+const scene061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const canonical = await readFile('src/ui/canonicalPresentation0561.ts', 'utf8');
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
@@ -145,7 +146,8 @@ assert(scene059.includes('installJobArrestReconciliation'));
 assert(!scene059.includes('Math.random'), '0.1.59 presentation wrapper must not add client RNG.');
 assert(!scene059.includes('submitIntent('), '0.1.59 scene must not become a second gameplay authority.');
 assert(scene060.includes('extends CareerMinigameBoardScene059'));
-assert(main.includes('CareerMinigameBoardScene060 as ActiveBoardScene'));
-assert(canonical.includes("version: '0.1.60'"));
+assert(scene061.includes('extends CareerMinigameBoardScene060'));
+assert(main.includes('CareerMinigameBoardScene061 as ActiveBoardScene'));
+assert(canonical.includes("version: '0.1.61'"));
 
-console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under 0.1.60 tuned payouts and HOST ownership');
+console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under 0.1.60 tuned payouts and 0.1.61 telemetry wrapper');
