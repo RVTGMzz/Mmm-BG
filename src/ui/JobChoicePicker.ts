@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
-import { jobSalary, type JobDefinition } from '../core/jobs';
+import { jobDepthProfile059, jobSalary, type JobDefinition } from '../core/jobs';
 
 export interface JobRollPickerOptions {
   canRoll?: boolean;
@@ -31,16 +31,16 @@ export function createJobRollPicker(
   const canRoll = options.canRoll ?? true;
   const root = scene.add.container(640, 360).setDepth(980);
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.7).setInteractive();
-  const panel = scene.add.rectangle(0, 0, 960, 520, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
-  const title = scene.add.text(0, -214, `💼 ${playerName} • JOB HUB`, {
+  const panel = scene.add.rectangle(0, 0, 960, 540, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
+  const title = scene.add.text(0, -224, `💼 ${playerName} • JOB HUB`, {
     fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
     fontSize: '29px',
     fontStyle: 'bold',
     color: '#202020',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -174, '3 nghề đã random • Xúc xắc quyết định A / B / C, không chọn nghề trực tiếp.', {
+  const subtitle = scene.add.text(0, -184, '3 nghề đã random • Xúc xắc quyết định A / B / C • xem rõ lương và rủi ro trước khi đổ.', {
     fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#6d655b',
   }).setOrigin(0.5);
   root.add([backdrop, panel, title, subtitle]);
@@ -51,61 +51,80 @@ export function createJobRollPicker(
   jobs.forEach((job, index) => {
     const x = xs[index] ?? 0;
     const risky = job.risk === 'crime';
-    const box = scene.add.rectangle(x, 5, 265, 275, risky ? 0xffc6c1 : 0xffe09a, 1)
+    const profile = jobDepthProfile059(job);
+    const box = scene.add.rectangle(x, 0, 265, 300, risky ? 0xffc6c1 : 0xffe09a, 1)
       .setStrokeStyle(4, 0x242424, 1);
-    const letterBadge = scene.add.circle(x - 104, -102, 22, risky ? 0xc34742 : 0x5d4773, 1)
+    const letterBadge = scene.add.circle(x - 104, -116, 22, risky ? 0xc34742 : 0x5d4773, 1)
       .setStrokeStyle(3, 0x242424, 1);
-    const letter = scene.add.text(x - 104, -102, letters[index] ?? '?', {
+    const letter = scene.add.text(x - 104, -116, letters[index] ?? '?', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '19px',
       fontStyle: 'bold',
       color: '#ffffff',
     }).setOrigin(0.5);
-    const range = scene.add.text(x + 18, -105, ranges[index] ?? '🎲', {
+    const range = scene.add.text(x + 18, -119, ranges[index] ?? '🎲', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '18px',
       fontStyle: 'bold',
       color: risky ? '#9e2f2c' : '#5d4773',
     }).setOrigin(0.5);
-    const icon = scene.add.text(x, -64, job.icon, { fontSize: '42px' }).setOrigin(0.5);
-    const name = scene.add.text(x, -15, job.title, {
+    const icon = scene.add.text(x, -77, job.icon, { fontSize: '40px' }).setOrigin(0.5);
+    const name = scene.add.text(x, -34, job.title, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '19px',
+      fontSize: '18px',
       fontStyle: 'bold',
       color: '#202020',
       fixedWidth: 235,
       align: 'center',
     }).setOrigin(0.5);
-    const salary = scene.add.text(x, 38, `💰 ${jobSalary(job, 1)} / ${jobSalary(job, 2)} / ${jobSalary(job, 3)} B$`, {
+    const salary = scene.add.text(x, 8, `💰 ${jobSalary(job, 1)} / ${jobSalary(job, 2)} / ${jobSalary(job, 3)} B$`, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '13px',
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5);
-    const salaryLabel = scene.add.text(x, 61, 'Lương qua cổng • Lv.1 / Lv.2 / Lv.3', {
+    const salaryLabel = scene.add.text(x, 30, `Lv.1 / Lv.2 / Lv.3 • ${profile.salaryCurveLabel}`, {
       fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#746a60',
     }).setOrigin(0.5);
-    const special = scene.add.text(x, 103, job.special, {
-      fontFamily: 'Arial, sans-serif',
+    const riskLabel = scene.add.text(x, 56, `${profile.riskIcon} ${profile.riskLabel}`, {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '11px',
+      fontStyle: 'bold',
+      color: risky ? '#9e2f2c' : '#4f4740',
+    }).setOrigin(0.5);
+    const odds = job.risk === 'crime'
+      ? `⬆ ${profile.promotionPercent}% • ⬇ ${profile.demotionPercent}% • 🚔 ${profile.jailPercent}%`
+      : `⬆ ${profile.promotionPercent}% • ⬇ ${profile.demotionPercent}% • 📦 ${profile.firedPercent}% khi tụt`;
+    const oddsText = scene.add.text(x, 77, odds, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '9px',
+      fontStyle: 'bold',
+      color: '#5d554d',
+      fixedWidth: 235,
+      align: 'center',
+    }).setOrigin(0.5);
+    const special = scene.add.text(x, 111, job.special, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '10px',
       color: '#4f4740',
       align: 'center',
       fixedWidth: 225,
       wordWrap: { width: 225 },
+      maxLines: 3,
     }).setOrigin(0.5);
-    root.add([box, letterBadge, letter, range, icon, name, salary, salaryLabel, special]);
+    root.add([box, letterBadge, letter, range, icon, name, salary, salaryLabel, riskLabel, oddsText, special]);
   });
 
-  const diceRule = scene.add.text(0, 151, '1–2 → A     •     3–4 → B     •     5–6 → C', {
+  const diceRule = scene.add.text(0, 172, '1–2 → A     •     3–4 → B     •     5–6 → C', {
     fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
     fontSize: '13px',
     fontStyle: 'bold',
     color: '#4f4740',
   }).setOrigin(0.5);
-  const rollButton = scene.add.rectangle(0, 204, 340, 62, canRoll ? 0xef4545 : 0xb8ada1, 1)
+  const rollButton = scene.add.rectangle(0, 220, 340, 58, canRoll ? 0xef4545 : 0xb8ada1, 1)
     .setStrokeStyle(4, 0x242424, 1);
   const defaultLabel = canRoll ? '🎲 ĐỔ XÚC XẮC JOB' : (options.waitingLabel ?? `⏳ CHỜ ${playerName} ĐỔ JOB`);
-  const rollText = scene.add.text(0, 204, defaultLabel, {
+  const rollText = scene.add.text(0, 220, defaultLabel, {
     fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
     fontSize: canRoll ? '18px' : '14px',
     fontStyle: 'bold',
@@ -113,7 +132,7 @@ export function createJobRollPicker(
     fixedWidth: 315,
     align: 'center',
   }).setOrigin(0.5);
-  const authorityText = scene.add.text(0, 242, 'HOST quyết định D6 authoritative • client không gửi kết quả nghề', {
+  const authorityText = scene.add.text(0, 253, 'HOST quyết định D6 authoritative • client không gửi kết quả nghề', {
     fontFamily: 'Arial, sans-serif',
     fontSize: '10px',
     fontStyle: 'bold',
