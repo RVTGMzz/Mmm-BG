@@ -12,10 +12,30 @@ export function getOutgoingEdges(board: BoardDefinition, nodeId: number): BoardE
   return board.edges.filter((edge) => edge.from === nodeId);
 }
 
+function edgeDirectionFromLabel(edge: BoardEdge): 'left' | 'right' | undefined {
+  const label = edge.label?.toLocaleUpperCase('vi-VN') ?? '';
+  if (label.includes('TRÁI')) return 'left';
+  if (label.includes('PHẢI')) return 'right';
+  return undefined;
+}
+
+/**
+ * 0.1.62 luck-first routing.
+ *
+ * The movement D6 owns every branch decision: odd = LEFT, even = RIGHT.
+ * Explicit edge.parity remains the strongest signal for fixtures/future boards.
+ * Draft D predates parity metadata, so its visible TRÁI/PHẢI labels are a stable
+ * compatibility fallback. No RNG is consumed here: the already-authoritative
+ * movement roll is the only source of chance.
+ */
 export function pickParityEdge(edges: BoardEdge[], roll: number): BoardEdge | undefined {
   if (edges.length === 0) return undefined;
   const parity = Math.abs(Math.floor(roll)) % 2 === 0 ? 'even' : 'odd';
-  return edges.find((edge) => edge.parity === parity) ?? edges[0];
+  const explicit = edges.find((edge) => edge.parity === parity);
+  if (explicit) return explicit;
+
+  const direction = parity === 'odd' ? 'left' : 'right';
+  return edges.find((edge) => edgeDirectionFromLabel(edge) === direction) ?? edges[0];
 }
 
 export function validateBoardDefinition(board: BoardDefinition): string[] {
