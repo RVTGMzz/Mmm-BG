@@ -153,18 +153,20 @@ jobs:
         run: npm run test:active-player-center-lock-0631
       - name: 0.1.63.2 movement presentation actor camera lock
         run: npm run test:movement-actor-camera-lock-0632
+      - name: 0.1.63.3 presentation/release D6 synchronization
+        run: npm run test:presentation-release-sync-0633
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.63.2 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.63.2_MOVEMENT_ACTOR_CAMERA_LOCK.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.63.3 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.63.3_PRESENTATION_RELEASE_SYNC.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.63.2 movement actor camera build
+      - name: Upload MVP 0.1.63.3 presentation release sync build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.63.2-movement-actor-camera
+          name: mememe-playtest-0.1.63.3-presentation-release-sync
           path: dist
           if-no-files-found: error
           retention-days: 14
