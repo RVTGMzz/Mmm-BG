@@ -14,8 +14,48 @@ const NEWS = newsJson as NewsDefinition[];
 const runtime = { board: BOARD, cards: CARDS, news: NEWS };
 
 const OUTLIERS = [
-  { seed: 611124, reason: 'longest-match' },
-  { seed: 611121, reason: 'largest-money-spread' },
+  {
+    seed: 611124,
+    reason: 'longest-match',
+    checksum: 'adf6c230',
+    turns: 77,
+    commands: 119,
+    moneyTotal: 1042,
+    spread: 151,
+    movement: 68,
+    release: 14,
+    cards: 11,
+    news: 5,
+    mini: 7,
+    miniPayout: 290,
+    jobs: 4,
+    lotteryCount: 0,
+    lotteryPayout: 0,
+    finishOrderPlayerIds: [1, 3, 0, 2],
+    finalMoney: [229, 246, 359, 208],
+    finishOrderBySeat: [3, 1, 4, 2],
+  },
+  {
+    seed: 611121,
+    reason: 'largest-money-spread',
+    checksum: 'a19c5b1d',
+    turns: 64,
+    commands: 97,
+    moneyTotal: 1389,
+    spread: 292,
+    movement: 62,
+    release: 6,
+    cards: 7,
+    news: 6,
+    mini: 3,
+    miniPayout: 105,
+    jobs: 4,
+    lotteryCount: 2,
+    lotteryPayout: 160,
+    finishOrderPlayerIds: [1, 2, 3, 0],
+    finalMoney: [362, 205, 325, 497],
+    finishOrderBySeat: [4, 1, 2, 3],
+  },
 ] as const;
 
 function runTwice(seed: number) {
@@ -31,17 +71,29 @@ function runTwice(seed: number) {
 
 const runs = OUTLIERS.map((fixture) => ({ fixture, run: runTwice(fixture.seed) }));
 
-const longest = runs.find(({ fixture }) => fixture.seed === 611124)!;
-assert.equal(longest.run.report.turnsObserved, 77, 'longest-match sentinel drifted from the 0.1.61.1 baseline');
-
-const widest = runs.find(({ fixture }) => fixture.seed === 611121)!;
-assert.equal(widest.run.report.finalMoneySpread, 292, 'largest-money-spread sentinel drifted from the 0.1.61.1 baseline');
-
 for (const { fixture, run } of runs) {
+  const { report } = run;
+  assert.equal(report.checksum, fixture.checksum, `seed ${fixture.seed} checksum drifted`);
+  assert.equal(report.turnsObserved, fixture.turns, `seed ${fixture.seed} turn count drifted`);
+  assert.equal(report.commandCount, fixture.commands, `seed ${fixture.seed} command count drifted`);
+  assert.equal(run.submittedCommands, fixture.commands, `seed ${fixture.seed} submitted command count drifted`);
+  assert.equal(report.finalMoneyTotal, fixture.moneyTotal, `seed ${fixture.seed} final money total drifted`);
+  assert.equal(report.finalMoneySpread, fixture.spread, `seed ${fixture.seed} final money spread drifted`);
+  assert.equal(report.movementRolls, fixture.movement, `seed ${fixture.seed} movement roll count drifted`);
+  assert.equal(report.releaseRolls, fixture.release, `seed ${fixture.seed} release roll count drifted`);
+  assert.equal(report.cardsPlayed, fixture.cards, `seed ${fixture.seed} Card count drifted`);
+  assert.equal(report.newsTriggered, fixture.news, `seed ${fixture.seed} News count drifted`);
+  assert.equal(report.miniGamesTriggered, fixture.mini, `seed ${fixture.seed} Mini Game count drifted`);
+  assert.equal(run.miniGameResolutions, fixture.mini, `seed ${fixture.seed} Mini Game resolution count drifted`);
+  assert.equal(report.miniGameRewardTotal, fixture.miniPayout, `seed ${fixture.seed} Mini payout drifted`);
+  assert.equal(report.jobsSelected, fixture.jobs, `seed ${fixture.seed} Job selection count drifted`);
+  assert.equal(report.lotteryCount, fixture.lotteryCount, `seed ${fixture.seed} Lottery count drifted`);
+  assert.equal(report.lotteryRewardTotal, fixture.lotteryPayout, `seed ${fixture.seed} Lottery payout drifted`);
+  assert.deepEqual(report.finishOrderPlayerIds, [...fixture.finishOrderPlayerIds], `seed ${fixture.seed} finish order drifted`);
+  assert.deepEqual(report.players.map((player) => player.finalMoney), [...fixture.finalMoney], `seed ${fixture.seed} per-seat final money drifted`);
+  assert.deepEqual(report.players.map((player) => player.finishOrder), [...fixture.finishOrderBySeat], `seed ${fixture.seed} per-seat finish place drifted`);
   assert(run.submittedCommands < 1600, `seed ${fixture.seed} reached simulation safety ceiling`);
-  assert(run.report.commandCount > 0);
-  assert(run.report.movementRolls > 0);
-  assert(run.report.players.every((player) => player.lapsCompleted >= 1), `seed ${fixture.seed} must finish one lap for every player`);
+  assert(report.players.every((player) => player.lapsCompleted >= 1), `seed ${fixture.seed} must finish one lap for every player`);
 }
 
 function playerLine(run: (typeof runs)[number]['run']): string {
@@ -71,4 +123,4 @@ const outputPath = process.env.OUTLIER_REPLAY_OUTPUT?.trim();
 if (outputPath) writeFileSync(outputPath, `${text}\n`, 'utf8');
 
 console.log(text);
-console.log(`[outlier-replay-0612] PASS seeds=${OUTLIERS.map((fixture) => fixture.seed).join(',')} output=${outputPath || '(stdout only)'}`);
+console.log(`[outlier-replay-0612] PASS full fingerprints locked for seeds=${OUTLIERS.map((fixture) => fixture.seed).join(',')} output=${outputPath || '(stdout only)'}`);
