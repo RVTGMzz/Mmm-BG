@@ -141,18 +141,22 @@ jobs:
         env:
           SIMULATION_BASELINE_OUTPUT: dist/SIMULATION_BASELINE_0.1.61.1.txt
         run: npm run test:simulation-baseline-0611
+      - name: 0.1.61.2 deterministic outlier replay pack
+        env:
+          OUTLIER_REPLAY_OUTPUT: dist/OUTLIER_REPLAY_0.1.61.2.txt
+        run: npm run test:outlier-replay-0612
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.61.1 simulation baseline guide to package
-        run: cp docs/PLAYTEST_0.1.61.1_SIMULATION_BASELINE.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.61.2 outlier replay guide to package
+        run: cp docs/PLAYTEST_0.1.61.2_OUTLIER_REPLAY.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.61.1 simulation baseline build
+      - name: Upload MVP 0.1.61.2 outlier replay build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.61.1-simulation-baseline
+          name: mememe-playtest-0.1.61.2-outlier-replay
           path: dist
           if-no-files-found: error
           retention-days: 14
