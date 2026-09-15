@@ -81,9 +81,10 @@ const mobileCss = readFileSync('src/mobileViewport066.css', 'utf8');
 const html = readFileSync('index.html', 'utf8');
 const quickstart = readFileSync('public/PLAYTEST.txt', 'utf8');
 
-assert.match(setup, /data-laps="1"/);
-assert.match(setup, /data-laps="2"/);
-assert.match(setup, /data-laps="3"/);
+// The three options are generated from one canonical array, not duplicated HTML.
+assert(setup.includes('[1, 2, 3].map((laps)'));
+assert(setup.includes('data-laps="${laps}"'));
+assert(setup.includes('${laps} VÒNG'));
 assert.match(setup, /configureInitialTargetLaps\(gameSession\.targetLaps\)/);
 assert.match(scene066, /extends CareerMinigameBoardScene0651/);
 assert.match(scene066, /replaceAll\('💼🎲', '💼'\)/);
