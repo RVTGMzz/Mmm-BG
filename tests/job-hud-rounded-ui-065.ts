@@ -44,9 +44,12 @@ const mainSource = readFileSync('src/main.ts', 'utf8');
 assert.match(sceneSource, /extends CareerMinigameBoardScene064/);
 assert.match(sceneSource, /fillRoundedRect/);
 assert.match(sceneSource, /strokeRoundedRect/);
+assert.match(sceneSource, /registerRoundedTextBackground065/);
+assert.match(sceneSource, /setBackgroundColor\('rgba\(0,0,0,0\)'\)/);
+assert.match(sceneSource, /syncRoundedTextVisuals065/);
 assert.match(sceneSource, /text\.startsWith\('PLAYTEST '\)/);
 assert.match(sceneSource, /setVisible\(false\)/);
 assert.match(sceneSource, /playerHudCareer065/);
 assert.match(mainSource, /CareerMinigameBoardScene065 as ActiveBoardScene/);
 
-console.log('[job-hud-rounded-ui-065] PASS real Job salary HUD, rounded UI panels, debug footer hidden');
+console.log('[job-hud-rounded-ui-065] PASS real Job salary HUD, rounded Rectangle/Text-background UI, debug footer hidden');
