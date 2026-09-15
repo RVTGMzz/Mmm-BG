@@ -22,6 +22,7 @@ const board061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'ut
 const board062 = await readFile('src/scenes/CareerMinigameBoardScene062.ts', 'utf8');
 const board0651 = await readFile('src/scenes/CareerMinigameBoardScene0651.ts', 'utf8');
 const board066 = await readFile('src/scenes/CareerMinigameBoardScene066.ts', 'utf8');
+const releaseGuard066 = await readFile('src/core/cpuReleaseResume066.ts', 'utf8');
 const picker = await readFile('src/ui/CardHandPicker.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const lobby = await readFile('src/scenes/LocalLobbyScene.ts', 'utf8');
@@ -64,8 +65,16 @@ assert(!board062.includes('Math.random'));
 assert(!board062.includes('submitIntent('));
 assert(board0651.includes('extends CareerMinigameBoardScene065'));
 assert(board066.includes('extends CareerMinigameBoardScene0651'), '0.1.66 must keep the validated chain back to 0.1.48');
-assert(!board066.includes('submitIntent('));
-assert(!board066.includes('Math.random'));
+assert(!board066.includes('Math.random'), '0.1.66 wrapper must add no client RNG');
+
+// 0.1.66 human runtime found a CPU stall after a successful same-turn Jail/Hospital release.
+// Permit exactly the guarded fresh-roll wake-up through the existing HOST intent path.
+const submitIntentCalls066 = board066.match(/submitIntent\(/g) ?? [];
+assert.equal(submitIntentCalls066.length, 1, '0.1.66 may contain only the guarded CPU fresh-roll intent');
+assert(board066.includes("internals.submitIntent('roll', {})"));
+assert(board066.includes('pendingCpuFreshRollAfterRelease066'));
+assert(!releaseGuard066.includes('Math.random'));
+assert(!releaseGuard066.includes('submitIntent('), 'guard helper must remain pure and authority-free');
 
 assert(picker.includes('CHỌN LÁ BÀI') && picker.includes('DÙNG LÁ NÀY'));
 assert(!picker.includes('CHỌN PHÉP THUẬT'));
@@ -75,4 +84,4 @@ assert(lobby.includes('MVP 0.1.48'), 'Lobby baseline breadcrumb must remain visi
 assert(setup.includes('PLAYTEST MVP 0.1.66'), 'Setup intentionally advances to the current 0.1.66 build label');
 assert(lobby.includes('TIN TỨC / LÁ BÀI giữ nguyên tên cũ'));
 
-console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + vocabulary retained through 0.1.66');
+console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + guarded CPU release wake-up + vocabulary retained through 0.1.66');
