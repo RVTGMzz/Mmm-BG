@@ -8,7 +8,7 @@ const BOARD = boardJson as BoardDefinition;
 
 assert.deepEqual(validateBoardDefinition(BOARD), [], '0.1.56 branch-identity board must validate cleanly.');
 assert.equal(BOARD.id, 'city-mvp-graph-01', '0.1.56 must keep the canonical board id stable.');
-assert(BOARD.name.includes('0.1.56'));
+assert(BOARD.name.includes('0.1.64'), '0.1.64 may rename the board while retaining the locked 0.1.56 branch identity.');
 
 const safe = [200, 201, 202].map((id) => getBoardNode(BOARD, id));
 assert.deepEqual(safe.map((node) => node.type), ['normal', 'normal', 'normal']);
@@ -48,4 +48,4 @@ assert.equal(getOutgoingEdges(BOARD, 202)[0]?.to, 7);
 assert.equal(getOutgoingEdges(BOARD, 212)[0]?.to, 20);
 assert.equal(getOutgoingEdges(BOARD, 222)[0]?.to, 38);
 
-console.log('[branch-identity-056] PASS SAFE=normal/normal/normal • DRAMA=news/card/news • MONEY=+25/-20/+25 • topology unchanged');
+console.log('[branch-identity-056] PASS under 0.1.64 • SAFE=normal/normal/normal • DRAMA=news/card/news • MONEY=+25/-20/+25 • topology unchanged');
