@@ -37,4 +37,16 @@ assert.equal(
   'waiting/ended match shells must not show the direct dice',
 );
 
-console.log('[direct-dice-030] PASS direct dice only appears for the local human before rolling');
+assert.equal(
+  shouldShowDirectTurnDice({
+    phase: 'PRE_ROLL_ACTION',
+    canControl: true,
+    isCpu: false,
+    shellActive: true,
+    cardPickerOpen: true,
+  }),
+  false,
+  'direct dice must stay hidden while Card hand/target/tactical picker is open',
+);
+
+console.log('[direct-dice-030] PASS direct dice only appears for the local human before rolling and stays hidden during Card selection');
