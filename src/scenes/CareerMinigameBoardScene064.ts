@@ -72,8 +72,9 @@ export class CareerMinigameBoardScene064 extends CareerMinigameBoardScene0634 {
 
   private hideLegacyBackdrop064(): void {
     for (const object of this.children.list) {
-      const depth = Number((object as Phaser.GameObjects.GameObject & { depth?: number }).depth ?? 0);
-      if (depth < 0) object.setVisible(false);
+      const display = object as Phaser.GameObjects.GameObject & { depth?: number; setVisible?: (visible: boolean) => unknown };
+      const depth = Number(display.depth ?? 0);
+      if (depth < 0) display.setVisible?.(false);
     }
 
     // The camera background already uses this green. Add one board-sized plane so
