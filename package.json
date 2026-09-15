@@ -66,6 +66,7 @@
     "test:active-player-center-lock-0631": "tsx tests/active-player-center-lock-0631.ts",
     "test:movement-actor-camera-lock-0632": "tsx tests/movement-actor-camera-lock-0632.ts",
     "test:presentation-release-sync-0633": "tsx tests/presentation-release-sync-0633.ts",
+    "test:job-continue-landing-sync-0634": "tsx tests/job-continue-landing-sync-0634.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
