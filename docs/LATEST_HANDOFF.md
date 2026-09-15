@@ -9,94 +9,111 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 **0.1.48** remains the only user-validated HOST-authoritative rollback baseline.
 
-Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deterministic replay, multiplayer ownership, stale-token protection, or READY/final-result flow.
+Keep visible names **TIN TỨC / LÁ BÀI**. Never regress HOST authority, deterministic replay, multiplayer ownership, stale-token protection, camera movement-actor lock, or READY/final-result flow.
 
 ## Current candidate
 
-**MVP 0.1.63.3 — Presentation Sync + Release D6 Clarity**
+**MVP 0.1.63.4 — Job Continue + Landing Effect Sync**
 
-Ron reported:
-- destination effect/points could appear before the token visually reached the destination;
-- CPU Jail release could look as if the successful release face was reused as normal movement.
+Latest human feedback:
+- roll 5 could reach Job on step 2, resolve Job, then incorrectly stop instead of spending the remaining 3 pips;
+- a destination `-20 B$` could still become visible before the token reached the destination;
+- camera fix is confirmed good by Ron and must be preserved.
 
-Manual status: **PENDING RON ACCEPTANCE**.
+Manual status: **PENDING RON ACCEPTANCE** for the new Job/money behavior.
 
 ## Runtime
 
-`CareerMinigameBoardScene0633 as ActiveBoardScene`
+`CareerMinigameBoardScene0634 as ActiveBoardScene`
 
 Inheritance:
-`0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
+`0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
 
-## Root cause and fixes
+## Job continuation
 
-### Movement/effect timing
-Authoritative state legitimately arrives before queued visual movement completes. Two presentation paths exposed that future state too early:
-- legacy Playtest state-delta toast;
-- canonical HUD reading authoritative money/card values during dice/move presentation.
+Job Hub is now a mid-roll interrupt rather than an automatic movement terminator.
 
-0.1.63.3 suppresses the early delta toast and holds canonical HUD refresh while `dice_roll`/`move_step` is still presenting.
+Example locked by regression:
+`D6 = 5 -> Job on step 2 -> resolve Job -> continue steps 3, 4 and 5`.
 
-Expected visible order:
-`ROLL -> MOVE -> ARRIVE -> LANDING/EFFECT + HUD DELTA`
+Authority stores the original roll and unspent pips in `pendingJobMovement`, which is included in checksum/replay. After Job resolution, movement resumes with no new movement RNG.
 
-### Jail/Hospital release
-Core authority was already correct and remains unchanged:
-- release D6 only tests release;
-- successful release clears the hold and sets `lastRoll = null`;
-- phase returns to `PRE_ROLL_ACTION` in the same turn;
-- a fresh D6 is required for normal movement.
+If remaining pips encounter a branch, the original D6 parity still drives HOST automatic routing:
+- 1/3/5 -> LEFT;
+- 2/4/6 -> RIGHT.
 
-0.1.63.3 now makes that explicit onscreen:
-- `special_release` gets a visible panel saying the face is **CHỈ dùng để thoát** and a **D6 MỚI** follows;
-- internal exit corridor nodes remain authoritative but no longer look like several normal board steps;
-- one smooth return-to-gate motion represents release;
-- same-turn direct-dice pending state is re-armed only after release presentation finishes, allowing exactly the fresh movement roll the core already requires.
+If a Job career outcome relocates the player into a special hold, the original movement ends there. If Job is reached on the final pip, there is nothing to resume.
 
-Existing 0.1.57 fresh-D6 test remains green.
+## Landing-timed B$
 
-## Camera retained
+0.1.63.4 adds a presentation-owned visible wallet snapshot.
 
-0.1.63.2 movement-actor camera lock remains inherited:
-- camera follows the actor still being visually animated even if turn state already advanced;
-- rolls 5/6 should remain in frame;
+HOST can calculate state immediately, but displayed B$ waits for the matching effect to reach the screen.
+
+Expected order on a money destination:
+`ROLL -> MOVE -> ARRIVE -> MONEY EFFECT -> HUD B$ CHANGES`.
+
+The same principle is used for money-bearing READY, Card and TIN TỨC presentation.
+
+## Camera retained and human-confirmed
+
+Ron explicitly confirmed the camera fix is good.
+
+0.1.63.2 behavior stays inherited unchanged:
+- camera follows the actor still being animated;
+- long rolls remain centered;
+- idle camera returns to current turn;
 - Overview/O stays the exception.
 
-## Gameplay retained
+## Jail/Hospital retained
 
-No change to RNG/economy/content weights.
+0.1.63.3 remains inherited and its full release-sync regression still runs under the 0.1.63.4 wrapper.
 
-Branch rule remains:
-- 1/3/5 -> LEFT;
-- 2/4/6 -> RIGHT;
-- HOST automatic, no manual picker.
+Release D6 remains release-only. Success clears the hold, sets `lastRoll = null`, returns to `PRE_ROLL_ACTION` in the same turn, then requires a fresh movement D6.
 
-0.1.62 deterministic gameplay sentinels remain:
-- seed `611119`, checksum `9d83fad4`;
-- seed `611113`, checksum `1074ba94`.
+## Deterministic QA rebased intentionally
+
+Job continuation changes gameplay routes, so the historical 0.1.62 sentinel file is preserved as history while the active sentinel is now 0.1.63.4.
+
+32-match batch seeds `611100..611131`:
+- turns avg 58.1, p50 56, p90 69, max 81;
+- commands avg 94.8, p50 93, p90 112, max 126;
+- final B$ total avg 1327.4;
+- final spread avg 137.5, p50 129, p90 235, max 277;
+- Cards avg 10.1;
+- News avg 6.7;
+- Mini Games avg 5.6;
+- Jobs selected avg 3.8;
+- Lottery count avg 1.2;
+- deterministic harness checksum `b8ee25a7`.
+
+Active exact same-seed sentinels:
+- `611119` -> checksum `cb3d9c1b`, 53 turns, finish IDs `[2,3,1,0]`;
+- `611113` -> checksum `93aa3912`, 49 turns, finish IDs `[3,2,1,0]`.
 
 ## Green code candidate before docs update
 
-- HEAD `c8bd64b97df2e9293d8087400e981cc0e309e121`;
-- push run `#2262` / `34967807791`;
-- artifact `mememe-playtest-0.1.63.3-presentation-release-sync`;
-- artifact ID `10395618561`;
-- size `8,592,557 bytes`;
-- SHA256 `21ae8582ae7de69a3f513ea2180ccb38cfc809300e388066bb084a58ba9984ad`;
-- **63/63 meaningful CI steps PASS**.
+- HEAD `cba4d8c11036a4b19ac872362b039e99fb0493f9`;
+- push run `#2304` / `34976332683`;
+- artifact `mememe-playtest-0.1.63.4-job-continue-landing-sync`;
+- artifact ID `10399547650`;
+- size `8,593,603 bytes`;
+- SHA256 `e3c511bf31d73a3d7adc8fde3c20f92b96c8e39f4eb82856f2ef51126279cd37`;
+- full meaningful CI suite PASS.
 
 ## Manual check
 
-Use `docs/PLAYTEST_0.1.63.3_PRESENTATION_RELEASE_SYNC.md`.
+Use `docs/PLAYTEST_0.1.63.4_JOB_CONTINUE_LANDING_SYNC.md`.
 
 Verify especially:
-- money/TIN TỨC/LÁ BÀI effect waits for visual arrival;
-- long rolls stay camera-centered;
-- successful Jail/Hospital release visibly uses one release-only D6, then a second fresh D6 before normal movement;
-- failed release ends the turn while held;
-- continue watching for long-run token snap-back.
+- roll 5 -> Job at step 2 -> Job resolves -> exactly 3 pips continue;
+- parity branch still works during resumed movement;
+- `-20/+25` B$ does not appear before visual arrival;
+- B$ changes when landing/effect presentation begins;
+- confirmed-good camera behavior remains intact;
+- Jail/Hospital still uses release D6 followed by fresh movement D6.
 
-Do not call 0.1.63.3 accepted until Ron confirms runtime behavior.
+Do not call 0.1.63.4 accepted until Ron validates these new behaviors.
 
 0.1.49 Legacy Effect Audit remains historical input.
 
