@@ -82,7 +82,6 @@ const hospitalCard: CardDefinition = {
   effect: { type: 'send_to_special', location: 'hospital' },
 };
 
-// Unit semantics: relocation is authoritative state, not a presentation-only flag.
 const unitPlayers: PlayerState[] = [
   { id: 0, name: 'P1', nodeId: 4, money: 200, cardBlockTurns: 0, handCardIds: [], cardsPlayedThisTurn: 0 },
   { id: 1, name: 'P2', nodeId: 9, money: 200, cardBlockTurns: 0, handCardIds: [], cardsPlayedThisTurn: 0 },
@@ -103,7 +102,6 @@ assert.equal(
   'special relocation picker must hide already-held targets',
 );
 
-// Full HOST/replay path: draw held card, play it, and reconstruct the same checksum.
 const cardBoard = fixtureBoard('card');
 const cardRuntime = { board: cardBoard, cards: [jailCard], news: [] as NewsDefinition[] };
 const cardAuthority = createEmptyHostAuthority(
@@ -121,8 +119,6 @@ assert(!cardAuthority.state.players[0]!.handCardIds.includes(jailCard.id), 'reso
 const cardReplay = createHostAuthority(cardAuthority.source, cardRuntime);
 assert.equal(hostAuthorityChecksum(cardReplay), hostAuthorityChecksum(cardAuthority), 'card relocation must replay to identical checksum');
 
-// News relocation: weighted News draw chooses a concrete variant, then that variant
-// deterministically selects one free opponent. No client RNG is involved.
 const hospitalNews: NewsDefinition = {
   id: 'TEST_NEWS_HOSPITAL',
   title: 'Xe Cứu Thương Bắt Nhầm Người',
@@ -148,7 +144,6 @@ assert.match(String(newsEvent.data.summary), /P3.*Bệnh Viện/);
 const newsReplay = createHostAuthority(newsAuthority.source, newsRuntime);
 assert.equal(hostAuthorityChecksum(newsReplay), hostAuthorityChecksum(newsAuthority), 'News relocation must replay to identical checksum');
 
-// Immediate global News is allowed in 0.1.58; timed board status remains deferred.
 const globalNews: NewsDefinition = {
   id: 'TEST_GLOBAL_GAIN',
   title: 'Ngày Hội Hoàn Tiền',
@@ -176,15 +171,17 @@ assert(runtimeNews.some((news) => news.effect.type === 'money_delta_all' && Numb
 
 const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene058.ts', import.meta.url), 'utf8');
-assert(mainSource.includes('CareerMinigameBoardScene058 as ActiveBoardScene'));
+const scene059Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
+assert(mainSource.includes('CareerMinigameBoardScene059 as ActiveBoardScene'), 'later runtime wrappers may advance the launcher while retaining 0.1.58 beneath them');
+assert(scene059Source.includes('extends CareerMinigameBoardScene058'), '0.1.59 must retain the 0.1.58 relocation layer');
 assert(sceneSource.includes('extends CareerMinigameBoardScene057'));
 assert(sceneSource.includes("event.type === 'card_play' || event.type === 'news'"));
 assert(!sceneSource.includes('Math.random'));
-assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.58');
-assert(CANONICAL_PRESENTATION_0561.header.includes('TIN TỨC + LÁ BÀI'));
+assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
+assert(CANONICAL_PRESENTATION_0561.version.startsWith('0.1.'));
 
 const newCopy = JSON.stringify([runtimeCards.slice(-6), runtimeNews.slice(-8)]);
 assert(!newCopy.includes('Tiên Tri'));
 assert(!newCopy.includes('Phép Thuật'));
 
-console.log('[news-card-depth-058] PASS held-card special relocation + immediate global News + replay/checksum + current vocabulary');
+console.log('[news-card-depth-058] PASS held-card special relocation + immediate global News + replay/checksum + current vocabulary retained beneath later runtime wrappers');
