@@ -163,18 +163,20 @@ jobs:
         run: npm run test:job-hud-rounded-ui-065
       - name: 0.1.65.1 UI ghost cleanup gamepad and Steam Deck web
         run: npm run test:ui-ghost-gamepad-web-0651
+      - name: 0.1.66 unified flow match length and Mini Game readability
+        run: npm run test:unified-flow-match-length-066
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.65.1 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.65.1_STEAM_DECK_HOTFIX.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.66 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.66_UNIFIED_FLOW_MATCH_LENGTH.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.65.1 Steam Deck hotfix build
+      - name: Upload MVP 0.1.66 unified flow build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.65.1-steamdeck-hotfix
+          name: mememe-playtest-0.1.66-unified-flow-match-length
           path: dist
           if-no-files-found: error
           retention-days: 14
