@@ -131,18 +131,20 @@ jobs:
         run: npm run test:special-locations-057
       - name: 0.1.58 TIN TỨC LÁ BÀI authoritative depth
         run: npm run test:news-card-depth-058
+      - name: 0.1.59 Job and five Mini Game arena depth
+        run: npm run test:job-minigame-depth-059
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.58 News and Card depth guide to package
-        run: cp docs/PLAYTEST_0.1.58_NEWS_CARD_DEPTH.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.59 Job and Mini Game depth guide to package
+        run: cp docs/PLAYTEST_0.1.59_JOB_MINIGAME_DEPTH.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.58 News and Card depth build
+      - name: Upload MVP 0.1.59 Job and five Mini Game depth build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.58-news-card-depth
+          name: mememe-playtest-0.1.59-job-five-mini-depth
           path: dist
           if-no-files-found: error
           retention-days: 14
