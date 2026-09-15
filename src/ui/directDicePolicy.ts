@@ -5,6 +5,7 @@ export interface DirectDiceVisibilityInput {
   canControl: boolean;
   isCpu: boolean;
   shellActive: boolean;
+  cardPickerOpen?: boolean;
 }
 
 export function shouldShowDirectTurnDice(input: DirectDiceVisibilityInput): boolean {
@@ -12,6 +13,7 @@ export function shouldShowDirectTurnDice(input: DirectDiceVisibilityInput): bool
     input.shellActive &&
     input.canControl &&
     !input.isCpu &&
+    !input.cardPickerOpen &&
     input.phase === 'PRE_ROLL_ACTION'
   );
 }
