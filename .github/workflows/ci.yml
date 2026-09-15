@@ -125,18 +125,20 @@ jobs:
         run: npm run test:canonical-draft-d-055
       - name: 0.1.56 SAFE DRAMA MONEY branch identity
         run: npm run test:branch-identity-056
+      - name: 0.1.56.1 canonical camera HUD and build source
+        run: npm run test:canonical-presentation-0561
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.56 branch identity guide to package
-        run: cp docs/PLAYTEST_0.1.56_BRANCH_IDENTITY.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.56.1 canonical presentation guide to package
+        run: cp docs/PLAYTEST_0.1.56.1_CANONICAL_PRESENTATION.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.56 branch identity build
+      - name: Upload MVP 0.1.56.1 canonical presentation build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.56-branch-identity
+          name: mememe-playtest-0.1.56.1-canonical-presentation
           path: dist
           if-no-files-found: error
           retention-days: 14
