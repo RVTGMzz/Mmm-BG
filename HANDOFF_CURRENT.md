@@ -5,214 +5,171 @@ PR: #1 (Draft/Open)
 
 Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
-## 1. User-validated rollback baseline
+## 1. Safety / rollback baseline
 
 MVP **0.1.48** remains the last explicitly user-accepted HOST-authoritative rollback baseline.
-
-Validated rollback artifact:
-- `mememe-playtest-0.1.48`
-- run `#1441` / `34814789556`
-- runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
-- artifact ID `10336247664`
-- SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
-
 Never regress HOST authority, replay/checksum determinism, remote Roll For Order, multiplayer Job Hub, Mini Game payout ownership, stale-token protection, movement-actor camera lock, Jail/Hospital release semantics, or final-result/podium/rematch flow.
 
 Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
 
-## 2. Current candidate — MVP 0.1.68.2
+## 2. Current candidate — MVP 0.1.69
 
-**0.1.68.2 — Canonical Mobile UI Contract Implementation**
+**0.1.69 — First Impression Polish**
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-Canonical full-match flow remains:
-`Menu → Setup → Chọn luật → Roll For Order → Trận → Podium → Rematch`
+Canonical flow:
+`Splash logo → Lobby → Setup → Chọn độ dài → Roll For Order → Trận → Podium → Rematch`
 
-This is presentation/readability work only. It deliberately adds no new gameplay RNG, economy rule, match-state mutation path, target-lap system or alternate authority path.
+This milestone is presentation/first-impression work only. It adds no gameplay RNG, no direct authoritative MatchState mutation and no alternate client authority path.
 
 ## 3. Runtime chain
 
-Current runtime:
-`CareerMinigameBoardScene0682 as ActiveBoardScene`
+Current board runtime:
+`CareerMinigameBoardScene069 as ActiveBoardScene`
 
 Inheritance:
-`0682 -> 0681 -> 068 -> 067 -> 066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`069 -> 0682 -> 0681 -> 068 -> 067 -> 066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-0.1.68.2 must remain authority-free:
+0.1.69 must remain authority-free:
 - no `Math.random`;
-- no direct MatchState mutation;
-- no new `submitIntent` path.
+- no new `submitIntent` path;
+- no direct gameplay-result ownership.
 
-## 4. One visible build identity
+## 4. Official logo and splash
 
-Source of truth:
-`src/buildInfo.ts`
+Official logo asset:
+`public/assets/mememe-logo.webp`
 
-Current visible version:
-`0.1.68.2`
+Entry scene:
+`src/scenes/SplashScene069.ts`
 
-Menu, Setup, Roll For Order and board read visible build copy from `MEMEME_BUILD`. Do not reintroduce scene-local visible version strings.
+The game now opens on the official MeMeMe logo, fades it in, then waits for deliberate player input before entering the Lobby. Do not replace this with a text-only title without explicit approval.
 
-## 5. Mandatory canonical UI / UX design contract
+## 5. First-run UI simplification
 
-Permanent project rule:
+0.1.69 removes dense tiny explanatory copy from the first-run flow.
+
+Lobby:
+- concise `CHỌN CÁCH CHƠI` hierarchy;
+- `CHƠI NHANH`, Host and Join remain available;
+- prototype-status paragraphs are removed from the main visual hierarchy.
+
+Setup:
+- concise face setup;
+- short instruction: `Chạm ảnh để chọn mặt • Có thể bỏ qua`;
+- technical implementation/privacy notes are not persistent visual copy.
+
+Match length:
+- title is `CHỌN ĐỘ DÀI`;
+- `1 / 2 / 3 LƯỢT` still maps to authoritative `1 / 2 / 3 VÒNG / NGƯỜI`;
+- cards use short labels `NHANH / CÂN BẰNG / DÀI`;
+- no second target-lap system exists.
+
+## 6. Player HUD ownership
+
+0.1.69 fixes the recurring Job-label leak by changing ownership rather than nudging coordinates.
+
+`CareerMinigameBoardScene069`:
+- disables inherited loose `ui.meta` Job copy;
+- owns a dedicated Job label inside the player-card surface;
+- idle cards stay compact and show only immediately useful information;
+- active-turn card scales to `1.14` and may reveal one extra contextual line;
+- Job text must never render above or outside the player card.
+
+This is presentation-only. Turn ownership still comes from authoritative match state.
+
+## 7. Job result cleanup
+
+0.1.69 Job result presentation:
+- uses one Job icon/art symbol only;
+- primary result is compact: `🎲 n → NHẬN VIỆC`;
+- Job/salary context stays inside the result surface;
+- inherited long Job narration is suppressed while the blocking result owns attention;
+- no long flavour paragraph may leak behind the modal.
+
+Detailed Job information remains available through the deliberate Job-detail interaction introduced in 0.1.68.2.
+
+## 8. Permanent canonical UI / UX contract
+
+Canonical rules:
 `docs/CANONICAL_UI_UX_RULES.md`
 
 Guards:
 - `tests/canonical-ui-ux-contract.ts`
 - `tests/canonical-ui-0682.ts`
+- `tests/first-impression-069.ts`
 
-All current and future MeMeMe screens, HUDs, modals, popups, cards and touch/keyboard/controller flows must obey this contract unless Ron explicitly approves an exception.
-
-Core rules:
+Permanent rules include:
 - mobile readability is the baseline;
 - summary first, detail on demand;
-- persistent HUD targets at most three meaningful readable lines;
-- idle player HUD is compact;
-- active-turn player HUD expands and may reveal one extra contextual line;
-- active state must not rely on colour alone;
-- Job Hub uses compact cards plus optional detail views;
-- blocking modal owns attention and suppresses unrelated loose narration;
-- text must remain inside its owner surface;
-- floating bubbles/tooltips must respect viewport safe bounds;
+- idle HUD compact, active HUD expanded;
+- blocking modal owns attention;
+- text stays inside the surface that owns it;
 - remove/shorten/move detail before shrinking font;
-- touch, keyboard and controller must reach equivalent core actions/details;
-- presentation work must not create gameplay RNG or authority.
+- touch/keyboard/controller parity;
+- **soft rounded surfaces are the default shape language**;
+- harsh square corners require a deliberate exception;
+- presentation wrappers remain authority-safe.
 
-## 6. 0.1.68.2 active / idle player HUD
+Future UI must not regress to dense tiny prototype copy or loose text overlays.
 
-`CareerMinigameBoardScene0682` implements the first canonical player-card behavior:
-- idle scale `0.90`, quieter alpha and typography;
-- active-turn scale `1.08`, stronger typography and animated turn transition;
-- idle employed card keeps Job title/level concise;
-- active employed card adds salary context;
-- idle unemployed card hides useless `Chưa có nghề / Lương 0 / empty counters` copy;
-- active unemployed card can show one meaningful status line.
+## 9. Historical regression guard rebasing
 
-This is presentation-only and does not alter turn ownership or game state.
+Historical tests that incorrectly required an old wrapper to remain the active runtime were rebased to accept the 0.1.69 wrapper.
 
-## 7. Job Hub summary-first / detail-on-demand
+Gameplay safeguards were retained, including:
+- parity routing;
+- camera center/movement-actor lock;
+- release D6 semantics;
+- resumed Job movement;
+- expanded-board geometry;
+- rounded-proxy cleanup;
+- gamepad/web/fullscreen behavior;
+- 1/2/3 target laps;
+- CPU release fresh-roll watchdog;
+- replay/checksum/authority invariants.
 
-`src/ui/JobChoicePicker.ts` now keeps the default A/B/C cards concise:
-- A/B/C marker;
-- authoritative D6 range;
-- Job icon/art placeholder;
-- Job name;
-- Lv1/Lv2/Lv3 salary summary;
-- one risk/identity tag.
+Do not restore old `X as ActiveBoardScene` assertions merely to make historical tests look unchanged.
 
-Detailed progression, risk odds and flavour move into a deliberate detail surface.
-
-Open detail with:
-- touch/click on a Job card;
-- keyboard A/B/C or 1/2/3;
-- controller/Steam Deck D-pad focus + A confirm.
-
-Close detail with:
-- close button;
-- outside touch/click;
-- Esc;
-- controller B.
-
-Controller B is wired as a UI-only `mememe-ui-back` event. Detail interaction does not roll D6 or choose a Job. The host remains authoritative.
-
-## 8. Modal ownership and overflow containment
-
-0.1.68.2 strengthens modal ownership above the 068/0681 guards:
-- canonical presentation or Job Hub modal owns the visual foreground;
-- unrelated loose top-level board narration is suppressed while the modal is active;
-- HUD is preserved where appropriate;
-- visibility is restored after modal close;
-- no presentation wrapper owns gameplay outcomes.
-
-Human runtime confirmation is still required because CI cannot prove pixel-perfect overlap.
-
-## 9. Reaction bubble safe lanes
-
-`src/ui/ReactionSequencer.ts` now uses constrained outer lanes:
-- width `272`;
-- height `88`;
-- logical safe margin `18`;
-- final position uses `Phaser.Math.Clamp`;
-- quote copy is limited to two lines.
-
-Goal: stop reaction bubbles from leaving the viewport, running under the mobile control rail or fighting the dominant center modal.
-
-## 10. Pregame / match length retained
-
-Canonical entry flow:
-1. Menu / Local Lobby;
-2. Face Setup;
-3. **CHỌN LUẬT CHƠI**;
-4. choose `1 / 2 / 3 LƯỢT`, corresponding to `1 / 2 / 3 VÒNG / NGƯỜI`;
-5. authoritative Roll For Order;
-6. canonical board runtime.
-
-This reuses authoritative `targetLaps`; there is no second match-length system.
-
-## 11. Mobile / Steam Deck retained
-
-- logical game remains 1280×720 with Phaser FIT;
-- dynamic mobile viewport uses `100dvh / 100dvw`;
-- scale refreshes on resize/orientation/`visualViewport`/fullscreen changes;
-- fullscreen shortcut stays icon-only under Settings: `⛶` / `↙`;
-- browser/Steam Deck gamepad navigation remains installed;
-- controller B now supports UI back/close for canonical detail surfaces.
-
-Landscape fullscreen remains the preferred mobile test mode.
-
-## 12. Endgame / rematch retained
-
-Inherited and regression-tested:
-- final result transition;
-- podium ranking/ties;
-- winner reactions/spotlight;
-- low-to-high reveal cadence;
-- result controls unlock only after reveal;
-- `CHƠI LẠI 🔁` starts a clean match;
-- `VỀ LOBBY` returns correctly.
-
-## 13. Green functional checkpoint
+## 10. Green functional checkpoint
 
 Exact functional source SHA:
-`9a7cad5e4498dc0c8bf679edb6dabaf1ddeb0308`
+`7da14cf1c2e4590e14ba79054c6e4f31fb34411b`
 
 Main push CI:
-- run `#2585` / `35068448867`;
+- run `#2623` / `35077862286`;
 - **FULL SUITE SUCCESS**;
-- compile/typecheck, replay, lockstep, authority, CPU autoplay, multiplayer Job Hub, Podium/Rematch, deterministic long-match simulation, all historical regressions, canonical UI contract, 0.1.68.2 runtime guard, package validation and artifact upload all PASS.
+- compile/typecheck, replay, lockstep, authority, CPU autoplay, multiplayer Job Hub, all historical regressions, canonical UI contract, inherited 0.1.68.2 contract, 0.1.69 first-impression gate, face-transform bounds, package validation and artifact upload all PASS.
 
 Artifact:
-- `mememe-playtest-0.1.68.2-canonical-mobile-ui`;
-- artifact ID `10434649932`;
-- size `8,602,665 bytes`;
-- SHA256 `fffa38f26a241532150112c1c86b8e19bd0f5e4fb7fd50f392256e5b313fa718`;
-- expires `2026-09-30T07:26:25Z`.
+- `mememe-playtest-0.1.69-first-impression-polish`;
+- artifact ID `10439171510`;
+- size `8,609,982 bytes`;
+- SHA256 `c2a14310193c87af3a64c276d80157744478fb48f87954b54a7c568b1e097551`;
+- expires `2026-09-30T09:11:07Z`.
 
-Steam Deck Web Playtest for the same source also passed.
+## 11. Public web deployment
 
-## 14. Public web deployment
-
-Publisher for source `9a7cad5...`:
-- `Publish compiled web mirror` run `#51` / `35068448837`;
+Publisher for source `7da14cf...`:
+- `Publish compiled web mirror` run `#70` / `35077862302`;
 - **SUCCESS**.
 
 Public mirror:
 `ronvotri/ronvotri-MeMeMe-Web-Playtest`
 
 Public commit:
-`c7a7639d46f1e1b82321e2bab9fd2be02cc7f433`
+`81a76127b8b23a9213dbb53a9ac77efb5e7464e3`
 
 Commit message:
-`Publish compiled MeMeMe web playtest 9a7cad5`
+`Publish compiled MeMeMe web playtest 7da14cf`
 
 Compiled bundle:
-- JS `assets/index-CBHNVIRa.js`;
-- CSS `assets/index-DdQGOELg.css`.
+- JS `assets/index-Bo9INSZJ.js`;
+- CSS `assets/index-vZir17UH.css`.
 
 GitHub Pages:
-- run `#19` / `35068584696`;
+- run `#21` / `35078035999`;
 - **SUCCESS**.
 
 Public URL:
@@ -220,29 +177,28 @@ Public URL:
 
 Publisher exact-SHA CI gating, current-branch-HEAD gating and concurrency protection are mandatory. Do not weaken them.
 
-## 15. Manual acceptance checklist
+## 12. Manual acceptance priorities
 
-Use `docs/PLAYTEST_0.1.68.2_CANONICAL_MOBILE_UI.md`.
+0.1.69 still needs human visual validation, especially on mobile.
 
-Priority runtime checks:
-1. idle corner cards stay compact and readable;
-2. current player card expands and reveals useful extra context;
-3. previous active card returns cleanly to compact state;
-4. Job Hub default cards are readable without dense tiny copy;
-5. touch/click/keyboard/controller opens Job detail and closing it does not affect Job authority;
-6. Job result and other blocking modals have no loose legacy text bleeding outside/behind them;
-7. reaction bubbles stay inside viewport safe lanes and do not fight the center modal;
-8. Menu → Setup → rules → Roll → match → Podium → Rematch remains intact;
-9. test 1 / 2 / 3 target laps;
-10. repeat Job and Jail/Hospital release interactions with CPU seats;
-11. mobile fullscreen / DOM overlays remain aligned;
-12. Steam Deck controller remains usable;
-13. keep watching the historical long-run token snap-back issue.
+Priority checks:
+1. Splash shows the official logo cleanly and requires deliberate input before Lobby.
+2. Lobby / Setup / match-length screens use larger readable copy and no dense prototype paragraphs.
+3. Soft rounded corners look consistent.
+4. Player Job title stays inside its card for P1/P2/P3/P4.
+5. Idle card is compact; active-turn card enlarges clearly without overlapping nearby UI.
+6. Job result shows one icon only and compact `🎲 n → NHẬN VIỆC` copy.
+7. No Job narration leaks behind/outside the result modal.
+8. Job Hub detail remains touch/keyboard/controller friendly.
+9. News/Card/reaction bubbles stay inside owner surfaces and viewport-safe lanes.
+10. Full flow completes through Podium/Rematch for 1/2/3 target laps.
+11. Mobile fullscreen and Steam Deck controls remain usable.
+12. Keep watching the historical long-run token snap-back issue.
 
-Do **not** call 0.1.68.2 user-accepted until Ron manually validates the shipped runtime.
+Do **not** call 0.1.69 user-accepted until Ron manually validates the shipped runtime.
 
-## 16. Next development direction
+## 13. Next step
 
-If 0.1.68.2 passes human runtime acceptance, use it as the canonical UI baseline and continue content depth without violating `docs/CANONICAL_UI_UX_RULES.md`.
+Test the live 0.1.69 build. Fix visual/runtime regressions as 0.1.69.x hotfixes before starting new gameplay depth.
 
 Do not merge PR #1.
