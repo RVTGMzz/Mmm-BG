@@ -1,7 +1,11 @@
-/* 0.1.66 mobile web shell.
+/* 0.1.66.1 mobile web shell hotfix.
  * Keep the Phaser game at its canonical 1280x720 logical resolution, but make
- * the parent follow the actually visible mobile viewport instead of a stale
- * layout viewport hidden behind browser chrome.
+ * only the parent follow the actually visible mobile viewport.
+ *
+ * IMPORTANT: Phaser.Scale.FIT owns the geometry of BOTH the canvas and the DOM
+ * overlay. Do not clamp, flex-center, resize, transform, or override margins on
+ * #app's direct children here, otherwise the HTML overlay drifts away from the
+ * canvas on narrow/mobile viewports.
  */
 html,
 body {
@@ -38,9 +42,6 @@ body {
   inset: 0;
   width: 100vw;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 
@@ -51,18 +52,11 @@ body {
   }
 }
 
-#app > canvas {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  margin: 0 !important;
-}
-
-/* Phaser's DOM overlay must occupy the same visible viewport as the canvas. */
-#app > div {
-  max-width: 100%;
-  max-height: 100%;
-}
+/*
+ * Do not style #app > canvas or #app > div here.
+ * Phaser's ScaleManager applies one shared FIT/CENTER_BOTH scale to the canvas
+ * and its DOM container, keeping setup cards and the game surface in lockstep.
+ */
 
 @media (pointer: coarse) and (orientation: landscape) {
   .mememe-settings {
