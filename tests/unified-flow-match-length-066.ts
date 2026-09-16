@@ -6,105 +6,33 @@ import { createInitialMatchState, configureInitialTargetLaps } from '../src/core
 import { isPlayerFinished060 } from '../src/core/pacingEconomy060';
 import { gameSession } from '../src/core/session';
 
-const names = ['P1', 'P2', 'P3', 'P4'];
-
+const names=['P1','P2','P3','P4'];
 configureInitialTargetLaps(1);
-const legacy = createInitialMatchState({ boardId: 'test', startNodeId: 1, playerNames: names, seed: 66 });
-const explicitOne = createInitialMatchState({ boardId: 'test', startNodeId: 1, playerNames: names, seed: 66, targetLaps: 1 });
-const two = createInitialMatchState({ boardId: 'test', startNodeId: 1, playerNames: names, seed: 66, targetLaps: 2 });
-const three = createInitialMatchState({ boardId: 'test', startNodeId: 1, playerNames: names, seed: 66, targetLaps: 3 });
+const legacy=createInitialMatchState({boardId:'test',startNodeId:1,playerNames:names,seed:66});
+const explicitOne=createInitialMatchState({boardId:'test',startNodeId:1,playerNames:names,seed:66,targetLaps:1});
+const two=createInitialMatchState({boardId:'test',startNodeId:1,playerNames:names,seed:66,targetLaps:2});
+const three=createInitialMatchState({boardId:'test',startNodeId:1,playerNames:names,seed:66,targetLaps:3});
+assert.equal(computeMatchChecksum(legacy),computeMatchChecksum(explicitOne)); assert.equal(legacy.players.some((player)=>Object.hasOwn(player,'targetLaps')),false); assert(two.players.every((player)=>player.targetLaps===2)); assert(three.players.every((player)=>player.targetLaps===3)); assert.notEqual(computeMatchChecksum(two),computeMatchChecksum(legacy)); assert.notEqual(computeMatchChecksum(three),computeMatchChecksum(two));
+assert.equal(isPlayerFinished060({lapsCompleted:1}),true); assert.equal(isPlayerFinished060({lapsCompleted:1,targetLaps:2}),false); assert.equal(isPlayerFinished060({lapsCompleted:2,targetLaps:2}),true); assert.equal(isPlayerFinished060({lapsCompleted:2,targetLaps:3}),false); assert.equal(isPlayerFinished060({lapsCompleted:3,targetLaps:3}),true);
+gameSession.reset(); assert.equal(gameSession.targetLaps,1); gameSession.setTargetLaps(2); assert.equal(gameSession.targetLaps,2); gameSession.setTargetLaps(3); assert.equal(gameSession.targetLaps,3);
 
-assert.equal(computeMatchChecksum(legacy), computeMatchChecksum(explicitOne), 'explicit 1 lap must keep legacy checksum shape');
-assert.equal(legacy.players.some((player) => Object.hasOwn(player, 'targetLaps')), false, 'legacy 1-lap player must omit targetLaps');
-assert(two.players.every((player) => player.targetLaps === 2));
-assert(three.players.every((player) => player.targetLaps === 3));
-assert.notEqual(computeMatchChecksum(two), computeMatchChecksum(legacy), '2-lap target must be authoritative/checksummed');
-assert.notEqual(computeMatchChecksum(three), computeMatchChecksum(two), '3-lap target must differ from 2 laps');
+const releaseResume=createInitialMatchState({boardId:'release-test',startNodeId:1,playerNames:names,seed:66066});
+releaseResume.turn.currentPlayerIndex=3; releaseResume.turn.turnNumber=4; releaseResume.turn.phase='PRE_ROLL_ACTION'; releaseResume.turn.revision=9; releaseResume.turn.lastRoll=null; releaseResume.players[3]!.specialHold=undefined;
+releaseResume.eventLog.push({seq:1,type:'special_release',turnNumber:4,playerIndex:3,phase:'MOVING',revision:8,rngCalls:4,actorId:3,data:{location:'jail',result:3,success:true,affectedPlayerIds:'3'}}); releaseResume.nextEventSeq=2;
+assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2,3],false,0),1); assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2,3],true,0),undefined); assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2,3],false,1),undefined); assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2],false,0),undefined); releaseResume.players[3]!.specialHold='jail'; assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2,3],false,0),undefined); delete releaseResume.players[3]!.specialHold;
+assert.equal(existsSync('public/START_PLAYTEST.bat'),true); assert.equal(existsSync('public/START_DRAFT_D_PREVIEW.bat'),false); assert.equal(existsSync('public/START_DRAFT_D_FULL_MAP.bat'),false);
 
-assert.equal(isPlayerFinished060({ lapsCompleted: 1 }), true);
-assert.equal(isPlayerFinished060({ lapsCompleted: 1, targetLaps: 2 }), false);
-assert.equal(isPlayerFinished060({ lapsCompleted: 2, targetLaps: 2 }), true);
-assert.equal(isPlayerFinished060({ lapsCompleted: 2, targetLaps: 3 }), false);
-assert.equal(isPlayerFinished060({ lapsCompleted: 3, targetLaps: 3 }), true);
-
-gameSession.reset();
-assert.equal(gameSession.targetLaps, 1);
-gameSession.setTargetLaps(2);
-assert.equal(gameSession.targetLaps, 2);
-gameSession.setTargetLaps(3);
-assert.equal(gameSession.targetLaps, 3);
-
-// Human runtime regression: 1 human + 3 CPUs could appear frozen after CPU release.
-// A successful release returns to PRE_ROLL_ACTION in the SAME turn with lastRoll=null;
-// once presentation is clear, 0.1.66 must explicitly wake that CPU's fresh HOST roll.
-const releaseResume = createInitialMatchState({
-  boardId: 'release-test',
-  startNodeId: 1,
-  playerNames: names,
-  seed: 66066,
-});
-releaseResume.turn.currentPlayerIndex = 3;
-releaseResume.turn.turnNumber = 4;
-releaseResume.turn.phase = 'PRE_ROLL_ACTION';
-releaseResume.turn.revision = 9;
-releaseResume.turn.lastRoll = null;
-releaseResume.players[3]!.specialHold = undefined;
-releaseResume.eventLog.push({
-  seq: 1,
-  type: 'special_release',
-  turnNumber: 4,
-  playerIndex: 3,
-  phase: 'MOVING',
-  revision: 8,
-  rngCalls: 4,
-  actorId: 3,
-  data: { location: 'jail', result: 3, success: true, affectedPlayerIds: '3' },
-});
-releaseResume.nextEventSeq = 2;
-assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume, [1, 2, 3], false, 0), 1);
-assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume, [1, 2, 3], true, 0), undefined, 'never submit under blocking presentation');
-assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume, [1, 2, 3], false, 1), undefined, 'same release event must not double-submit');
-assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume, [1, 2], false, 0), undefined, 'human/non-CPU actor must not be auto-resumed');
-releaseResume.players[3]!.specialHold = 'jail';
-assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume, [1, 2, 3], false, 0), undefined, 'hold must actually be cleared first');
-delete releaseResume.players[3]!.specialHold;
-
-assert.equal(existsSync('public/START_PLAYTEST.bat'), true);
-assert.equal(existsSync('public/START_DRAFT_D_PREVIEW.bat'), false);
-assert.equal(existsSync('public/START_DRAFT_D_FULL_MAP.bat'), false);
-
-const setup = readFileSync('src/scenes/SetupScene.ts', 'utf8');
-const scene066 = readFileSync('src/scenes/CareerMinigameBoardScene066.ts', 'utf8');
-const main = readFileSync('src/main.ts', 'utf8');
-const settings = readFileSync('src/ui/SettingsPanel.ts', 'utf8');
-const mobileCss = readFileSync('src/mobileViewport066.css', 'utf8');
-const html = readFileSync('index.html', 'utf8');
-const quickstart = readFileSync('public/PLAYTEST.txt', 'utf8');
-
-// The three options are generated from one canonical array, not duplicated HTML.
-assert(setup.includes('[1, 2, 3].map((laps)'));
-assert(setup.includes('data-laps="${laps}"'));
-assert(setup.includes('${laps} VÒNG'));
-assert.match(setup, /configureInitialTargetLaps\(gameSession\.targetLaps\)/);
-assert.match(scene066, /extends CareerMinigameBoardScene0651/);
-assert.match(scene066, /replaceAll\('💼🎲', '💼'\)/);
-assert.match(scene066, /HÒA, RA LẠI/);
-assert.match(scene066, /setOrigin\(0\.5, 0\)/);
-assert.match(scene066, /setLineSpacing\(10\)/);
-assert.match(scene066, /pendingCpuFreshRollAfterRelease066/);
-assert.match(scene066, /internals\.submitIntent\('roll', \{\}\)/);
-assert.match(main, /CareerMinigameBoardScene066 as ActiveBoardScene/);
-assert.match(main, /mobileViewport066\.css/);
-assert.match(main, /visualViewport\?\.addEventListener\('resize'/);
-assert.match(main, /game\.scale\.refresh\(\)/);
-assert.match(html, /viewport-fit=cover/);
-assert.match(html, /user-scalable=no/);
-assert.match(mobileCss, /100dvh/);
-assert.match(mobileCss, /100dvw/);
-assert.match(settings, /requestFullscreen/);
-assert.match(settings, /TOÀN MÀN HÌNH/);
-assert.match(quickstart, /Chỉ dùng START_PLAYTEST\.bat/);
-assert.match(quickstart, /1 \/ 2 \/ 3 vòng/);
-
+const setup=readFileSync('src/scenes/SetupScene.ts','utf8');
+const scene066=readFileSync('src/scenes/CareerMinigameBoardScene066.ts','utf8');
+const scene069=readFileSync('src/scenes/CareerMinigameBoardScene069.ts','utf8');
+const main=readFileSync('src/main.ts','utf8');
+const settings=readFileSync('src/ui/SettingsPanel.ts','utf8');
+const mobileCss=readFileSync('src/mobileViewport066.css','utf8');
+const html=readFileSync('index.html','utf8');
+const quickstart=readFileSync('public/PLAYTEST.txt','utf8');
+assert.match(setup,/\[1,\s*2,\s*3\]\.map\(\(laps\)/); assert(setup.includes('data-laps="${laps}"')); assert(setup.includes('${laps} VÒNG / NGƯỜI')); assert.match(setup,/configureInitialTargetLaps\(gameSession\.targetLaps\)/);
+assert.match(scene066,/extends CareerMinigameBoardScene0651/); assert.match(scene066,/replaceAll\('💼🎲', '💼'\)/); assert.match(scene066,/HÒA, RA LẠI/); assert.match(scene066,/setOrigin\(0\.5, 0\)/); assert.match(scene066,/setLineSpacing\(10\)/); assert.match(scene066,/pendingCpuFreshRollAfterRelease066/); assert.match(scene066,/internals\.submitIntent\('roll', \{\}\)/);
+assert.match(main,/CareerMinigameBoardScene069 as ActiveBoardScene/); assert.match(scene069,/extends CareerMinigameBoardScene0682/); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
+assert.match(main,/mobileViewport066\.css/); assert.match(main,/visualViewport\?\.addEventListener\('resize'/); assert.match(main,/game\.scale\.refresh\(\)/); assert.match(html,/viewport-fit=cover/); assert.match(html,/user-scalable=no/); assert.match(mobileCss,/100dvh/); assert.match(mobileCss,/100dvw/); assert.match(settings,/requestFullscreen/); assert.match(settings,/TOÀN MÀN HÌNH/); assert.match(quickstart,/Chỉ dùng START_PLAYTEST\.bat/); assert.match(quickstart,/1 \/ 2 \/ 3 vòng/);
 configureInitialTargetLaps(1);
-console.log('[unified-flow-match-length-066] PASS one launcher + 1/2/3 laps + Mini Game reflow + mobile fullscreen viewport + CPU release fresh-roll watchdog');
+console.log('[unified-flow-match-length-066] PASS 1/2/3 laps + mobile/fullscreen + CPU release watchdog retained beneath 0.1.69');
