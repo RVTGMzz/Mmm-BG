@@ -165,18 +165,20 @@ jobs:
         run: npm run test:ui-ghost-gamepad-web-0651
       - name: 0.1.66 unified flow match length and Mini Game readability
         run: npm run test:unified-flow-match-length-066
+      - name: 0.1.68 vertical slice stabilization
+        run: npm run test:vertical-slice-068
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.66 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.66_UNIFIED_FLOW_MATCH_LENGTH.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.68 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.68_VERTICAL_SLICE.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.66 unified flow build
+      - name: Upload MVP 0.1.68 vertical slice build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.66-unified-flow-match-length
+          name: mememe-playtest-0.1.68-vertical-slice
           path: dist
           if-no-files-found: error
           retention-days: 14
