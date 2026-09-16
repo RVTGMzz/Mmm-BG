@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 
 const SOURCE_DIR = 'scripts/brand-src';
 const OUTPUT = 'public/assets/mememe-logo-official.webp';
+const EXPECTED_SHA256 = '61219a2a4f25d71e097e52e4871c08a2d8f073726025ea756ef6e0fcaf40b08d';
 
 // Canonical 2026-09-12 logo payload. Chunk 05 in the old aggregate file is
 // missing one base64 character, so rebuild that segment from its four exact
@@ -58,7 +59,11 @@ if (width !== 1024 || height !== 1024) {
   throw new Error(`[materialize-brand] canonical logo dimensions mismatch: ${width}x${height} != 1024x1024`);
 }
 
+const sha256 = createHash('sha256').update(data).digest('hex');
+if (sha256 !== EXPECTED_SHA256) {
+  throw new Error(`[materialize-brand] canonical logo checksum mismatch: ${sha256} != ${EXPECTED_SHA256}`);
+}
+
 mkdirSync(dirname(OUTPUT), { recursive: true });
 writeFileSync(OUTPUT, data);
-const sha256 = createHash('sha256').update(data).digest('hex');
 console.log(`[materialize-brand] PASS ${OUTPUT} bytes=${data.length} dimensions=${width}x${height} sha256=${sha256}`);
