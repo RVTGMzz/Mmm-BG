@@ -24,11 +24,22 @@ body.mememe-splash-active .mememe-settings { opacity: 0; pointer-events: none; }
 .mememe-setup-069 .face-label { font-size:13px; }
 .mememe-setup-069 .face-action { font-size:12px; }
 .cpu-tag-069 { display:inline-block; margin:-4px 0 8px; padding:4px 9px; border-radius:999px; background:#eee3f4; color:#795796; font-size:12px; font-weight:900; }
-.mememe-setup-069 .setup-footer { border-radius:22px; padding:12px 16px; }
+.mememe-setup-069 .setup-footer { grid-template-columns:auto 1fr auto; gap:14px; border-radius:22px; padding:12px 16px; }
 .mememe-setup-069 .setup-hint { font-size:16px; font-weight:800; }
 .mememe-setup-069 .setup-status { font-size:14px; min-height:0; }
 .mememe-setup-069 .setup-status:empty { display:none; }
 .mememe-setup-069 .start-game-button { border-radius:20px; font-size:18px; }
+.mememe-setup-069 .setup-back-button {
+  min-width:118px;
+  border:3px solid #202020;
+  padding:12px 14px;
+  background:#fffaf0;
+  color:#202020;
+  cursor:pointer;
+  box-shadow:0 4px 0 #202020;
+  font:900 14px/1 Inter, system-ui, sans-serif;
+}
+.mememe-setup-069 .setup-back-button:active { transform:translateY(3px); box-shadow:0 1px 0 #202020; }
 
 .mememe-rule-select-069 { width:850px; }
 .mememe-rule-select-069 .rule-select-panel { border-radius:34px; padding:28px 32px; }
