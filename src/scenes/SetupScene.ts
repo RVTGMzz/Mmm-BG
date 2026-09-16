@@ -14,16 +14,25 @@ const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> =
   { id: 'angry', emoji: '😡', label: 'Quạu' },
 ];
 const PLAYER_ACCENTS = ['#ef4545', '#5b8def', '#f2b84b', '#61b37b'];
+const PRESERVE_SETUP_REGISTRY_KEY = 'mememe-preserve-setup';
 
 export class SetupScene extends Phaser.Scene {
   private statusElement?: HTMLParagraphElement;
+  private preserveSetup = false;
+
   constructor() { super('SetupScene'); }
+
+  init(data?: { preserve?: boolean }): void {
+    this.preserveSetup = Boolean(data?.preserve);
+  }
 
   create(): void {
     bgmController.playMenu();
-    gameSession.reset();
-    configureInitialPlayOrder(undefined);
-    configureInitialTargetLaps(1);
+    if (!this.preserveSetup) {
+      gameSession.reset();
+      configureInitialPlayOrder(undefined);
+      configureInitialTargetLaps(1);
+    }
     this.cameras.main.setBackgroundColor('#f4ead7');
     const frame = this.add.graphics();
     frame.fillStyle(0xfffbf3, 1).fillRoundedRect(45, 30, 1190, 660, 32);
@@ -39,7 +48,7 @@ export class SetupScene extends Phaser.Scene {
     root.className = 'mememe-setup mememe-setup-069';
     root.innerHTML = `
       <div class="setup-grid">${gameSession.players.map((p) => this.playerCardMarkup(p.id)).join('')}</div>
-      <div class="setup-footer"><p class="setup-hint">Chạm ảnh để chọn mặt • Có thể bỏ qua</p><button id="start-game" class="start-game-button" type="button">TIẾP TỤC →</button></div>
+      <div class="setup-footer"><button id="setup-back-mode" class="setup-back-button" type="button">← CHẾ ĐỘ</button><p class="setup-hint">Chạm ảnh để chọn mặt • Có thể bỏ qua</p><button id="start-game" class="start-game-button" type="button">TIẾP TỤC →</button></div>
       <p id="setup-status" class="setup-status"></p>`;
     const setupDom = this.add.dom(640, 410, root).setOrigin(0.5);
     const node = setupDom.node as HTMLDivElement;
@@ -50,7 +59,7 @@ export class SetupScene extends Phaser.Scene {
     rulesRoot.innerHTML = `
       <section class="rule-select-panel">
         <div class="rule-select-kicker">TRƯỚC KHI VÀO TRẬN</div><h1>CHỌN ĐỘ DÀI</h1>
-        <div class="rule-option-grid">${[1,2,3].map((laps) => `<button type="button" class="lap-option rule-option${laps === 1 ? ' selected' : ''}" data-laps="${laps}" aria-pressed="${laps === 1}"><span class="rule-option-number">${laps}</span><strong>${laps} LƯỢT</strong><small>${laps} VÒNG / NGƯỜI</small><span class="rule-option-note">${laps === 1 ? 'NHANH' : laps === 2 ? 'CÂN BẰNG' : 'DÀI'}</span></button>`).join('')}</div>
+        <div class="rule-option-grid">${[1,2,3].map((laps) => `<button type="button" class="lap-option rule-option${laps === gameSession.targetLaps ? ' selected' : ''}" data-laps="${laps}" aria-pressed="${laps === gameSession.targetLaps}"><span class="rule-option-number">${laps}</span><strong>${laps} LƯỢT</strong><small>${laps} VÒNG / NGƯỜI</small><span class="rule-option-note">${laps === 1 ? 'NHANH' : laps === 2 ? 'CÂN BẰNG' : 'DÀI'}</span></button>`).join('')}</div>
         <div class="rule-actions"><button type="button" class="rule-back">← QUAY LẠI</button><button type="button" class="rule-confirm">BẮT ĐẦU 🎲</button></div>
       </section>`;
     const rulesDom = this.add.dom(640, 360, rulesRoot).setOrigin(0.5).setVisible(false);
@@ -61,6 +70,13 @@ export class SetupScene extends Phaser.Scene {
       for (const expression of EXPRESSIONS) {
         const input = node.querySelector<HTMLInputElement>(`#face-${player.id}-${expression.id}`);
         input?.addEventListener('change', () => { void this.handleFaceSelection(node, player.id, expression.id, input); });
+        const asset = player.faces[expression.id];
+        if (asset) {
+          const slot = node.querySelector<HTMLElement>(`#slot-${player.id}-${expression.id}`);
+          const preview = node.querySelector<HTMLImageElement>(`#preview-${player.id}-${expression.id}`);
+          if (preview) preview.src = asset.dataUrl;
+          slot?.classList.add('has-image');
+        }
       }
     }
 
@@ -75,6 +91,12 @@ export class SetupScene extends Phaser.Scene {
     };
     for (const button of lapButtons) button.addEventListener('click', () => { sfxController.play('ui_confirm'); selectLaps(Number(button.dataset.laps)); });
 
+    node.querySelector<HTMLButtonElement>('#setup-back-mode')?.addEventListener('click', () => {
+      this.captureNames(node);
+      sfxController.play('ui_confirm');
+      this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, true);
+      this.scene.start('LocalLobbyScene');
+    });
     node.querySelector<HTMLButtonElement>('#start-game')?.addEventListener('click', () => {
       if (!this.captureNames(node)) return;
       sfxController.play('ui_confirm'); setupDom.setVisible(false); rulesDom.setVisible(true); selectLaps(gameSession.targetLaps);
@@ -86,8 +108,12 @@ export class SetupScene extends Phaser.Scene {
   private playerCardMarkup(playerId: number): string {
     const accent = PLAYER_ACCENTS[playerId];
     const isCpu = browserSession.isCpuSeat(playerId);
+    const player = gameSession.players[playerId];
+    const displayName = this.preserveSetup
+      ? player?.name ?? `Player ${playerId + 1}`
+      : isCpu ? `CPU ${playerId + 1}` : player?.name ?? `Player ${playerId + 1}`;
     const faceSlots = EXPRESSIONS.map((expression) => `<label class="face-slot" id="slot-${playerId}-${expression.id}" style="--player-accent:${accent}"><span class="face-emoji">${expression.emoji}</span><img id="preview-${playerId}-${expression.id}" alt="${expression.label}" /><span class="face-label">${expression.label}</span><span class="face-action">Chọn ảnh</span><input id="face-${playerId}-${expression.id}" type="file" accept="image/*" /></label>`).join('');
-    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${isCpu ? `CPU ${playerId + 1}` : `Player ${playerId + 1}`}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${isCpu ? '<div class="cpu-tag-069">CPU</div>' : ''}<div class="face-slots">${faceSlots}</div></section>`;
+    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${isCpu ? '<div class="cpu-tag-069">CPU</div>' : ''}<div class="face-slots">${faceSlots}</div></section>`;
   }
 
   private async handleFaceSelection(root: HTMLDivElement, playerId: number, expression: FaceExpression, input: HTMLInputElement): Promise<void> {
