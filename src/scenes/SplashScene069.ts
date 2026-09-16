@@ -21,16 +21,16 @@ export class SplashScene069 extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.DESTROY, () => document.body.classList.remove('mememe-splash-active'));
 
     this.cameras.main.setBackgroundColor('#f4ead7');
-    const logo = this.add.image(640, 320, LOGO_KEY_069).setAlpha(0).setScale(0.72);
-    const prompt = this.add.text(640, 560, 'CHẠM ĐỂ BẮT ĐẦU', {
+    const logo = this.add.image(640, 300, LOGO_KEY_069).setAlpha(0).setScale(0.54);
+    const prompt = this.add.text(640, 590, 'CHẠM / NHẤN ĐỂ BẮT ĐẦU', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '22px',
+      fontSize: '24px',
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5).setAlpha(0);
 
-    this.tweens.add({ targets: logo, alpha: 1, scale: 0.82, duration: 760, ease: 'Cubic.easeOut' });
-    this.tweens.add({ targets: prompt, alpha: 0.82, duration: 420, delay: 520, yoyo: true, repeat: -1, hold: 700 });
+    this.tweens.add({ targets: logo, alpha: 1, scale: 0.62, duration: 760, ease: 'Cubic.easeOut' });
+    this.tweens.add({ targets: prompt, alpha: 0.86, duration: 420, delay: 520, yoyo: true, repeat: -1, hold: 700 });
 
     const start = () => {
       if (this.started069) return;
