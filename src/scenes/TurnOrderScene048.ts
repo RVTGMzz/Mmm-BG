@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
+import { browserSession } from '../core/browserSession';
 import { TurnOrderScene } from './TurnOrderScene';
 
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -48,5 +50,25 @@ export class TurnOrderScene048 extends TurnOrderScene {
           .setY(141);
       }
     }
+
+    const back = this.add.text(92, 80, '← QUAY LẠI', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontSize: '15px',
+      fontStyle: 'bold',
+      color: '#202020',
+      backgroundColor: '#fffaf0',
+      padding: { x: 12, y: 8 },
+    })
+      .setOrigin(0, 0.5)
+      .setDepth(200)
+      .setInteractive({ useHandCursor: true });
+    back.on('pointerdown', () => {
+      sfxController.play('ui_confirm');
+      if (browserSession.current.mode === 'client') {
+        this.scene.start('LocalLobbyScene');
+        return;
+      }
+      this.scene.start('SetupScene', { preserve: true });
+    });
   }
 }
