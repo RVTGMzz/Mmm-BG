@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import './styles.css';
 import './settings.css';
 import './mobileViewport066.css';
+import './ruleSelect067.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
@@ -11,7 +12,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene066 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene066';
+import { CareerMinigameBoardScene067 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene067';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -30,6 +31,7 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene065 as ActiveBoardScene showed real Job/salary HUD data, rounded UI and hid the debug footer.
 // CareerMinigameBoardScene0651 as ActiveBoardScene fixes rounded-proxy ghosts and adds browser/Steam Deck gamepad UI control.
 // CareerMinigameBoardScene066 as ActiveBoardScene unifies the shipped flow, adds selected match length, mobile viewport handling, and release-resume protection.
+// CareerMinigameBoardScene067 as ActiveBoardScene adds the dedicated pregame rule step and canonical Job-card overlap guard.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
