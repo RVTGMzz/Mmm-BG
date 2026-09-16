@@ -18,40 +18,45 @@ const ROLE_ACCENTS: Record<ReactionSpeakerRole, number> = {
   spectator: 0xf2b84b,
 };
 
-function roleLabel(role: ReactionSpeakerRole): string {
-  switch (role) {
-    case 'caster':
-      return 'NGƯỜI DÙNG';
-    case 'target':
-      return 'MỤC TIÊU';
-    case 'subject':
-      return 'NHÂN VẬT CHÍNH';
-    case 'spectator':
-      return 'HÓNG CHUYỆN';
-  }
-}
+const BUBBLE_WIDTH_0682 = 272;
+const BUBBLE_HEIGHT_0682 = 88;
+const BUBBLE_SAFE_MARGIN_0682 = 18;
 
-function bubblePosition(role: ReactionSpeakerRole, sequence: number): { x: number; y: number } {
-  switch (role) {
-    case 'caster':
-      return { x: 250, y: 165 };
-    case 'target':
-      return { x: 1015, y: 165 };
-    case 'subject':
-      return { x: 250, y: 520 };
-    case 'spectator':
-      return { x: 1015, y: 520 - Math.min(sequence - 1, 2) * 16 };
-  }
+/**
+ * Reactions live in narrow outer lanes so they do not fight the dominant center
+ * modal. Coordinates are clamped to the logical viewport as a final safety net.
+ */
+function bubblePosition0682(
+  scene: Phaser.Scene,
+  role: ReactionSpeakerRole,
+  sequence: number,
+): { x: number; y: number } {
+  const base = role === 'caster'
+    ? { x: 155, y: 155 }
+    : role === 'target'
+      ? { x: 1125, y: 155 }
+      : role === 'subject'
+        ? { x: 155, y: 545 }
+        : { x: 1125, y: 545 - Math.min(sequence - 1, 2) * 14 };
+
+  const gameWidth = Number(scene.scale.gameSize.width) || 1280;
+  const gameHeight = Number(scene.scale.gameSize.height) || 720;
+  const halfW = BUBBLE_WIDTH_0682 / 2;
+  const halfH = BUBBLE_HEIGHT_0682 / 2;
+  return {
+    x: Phaser.Math.Clamp(base.x, halfW + BUBBLE_SAFE_MARGIN_0682, gameWidth - halfW - BUBBLE_SAFE_MARGIN_0682),
+    y: Phaser.Math.Clamp(base.y, halfH + BUBBLE_SAFE_MARGIN_0682, gameHeight - halfH - BUBBLE_SAFE_MARGIN_0682),
+  };
 }
 
 function showReactionBubble(
   scene: Phaser.Scene,
   speaker: PlayerState,
-  personality: PersonalityTag,
+  _personality: PersonalityTag,
   step: ReactionStep,
   text: string,
 ): void {
-  const position = bubblePosition(step.speakerRole, step.sequence);
+  const position = bubblePosition0682(scene, step.speakerRole, step.sequence);
   const accent = ROLE_ACCENTS[step.speakerRole];
   const container = scene.add
     .container(position.x, position.y)
@@ -59,59 +64,50 @@ function showReactionBubble(
     .setAlpha(0)
     .setScale(0.9);
 
-  const shadow = scene.add.rectangle(6, 7, 315, 96, 0x000000, 0.18);
+  const shadow = scene.add.rectangle(5, 6, BUBBLE_WIDTH_0682, BUBBLE_HEIGHT_0682, 0x000000, 0.18);
   const panel = scene.add
-    .rectangle(0, 0, 315, 96, 0xfffbf3, 0.98)
+    .rectangle(0, 0, BUBBLE_WIDTH_0682, BUBBLE_HEIGHT_0682, 0xfffbf3, 0.98)
     .setStrokeStyle(4, 0x242424, 1);
-  const accentBar = scene.add.rectangle(-153, 0, 9, 90, accent, 1);
+  const accentBar = scene.add.rectangle(-132, 0, 8, BUBBLE_HEIGHT_0682 - 6, accent, 1);
 
   const objects: Phaser.GameObjects.GameObject[] = [shadow, panel, accentBar];
   const face = gameSession.getFace(speaker.id, step.expression);
 
   if (face && scene.textures.exists(face.textureKey)) {
-    objects.push(scene.add.image(-111, 0, face.textureKey).setDisplaySize(66, 66));
+    objects.push(scene.add.image(-96, 0, face.textureKey).setDisplaySize(58, 58));
   } else {
     objects.push(
       scene.add
-        .text(-111, 0, step.expression === 'happy' ? '😆' : step.expression === 'angry' ? '😡' : '😐', {
+        .text(-96, 0, step.expression === 'happy' ? '😆' : step.expression === 'angry' ? '😡' : '😐', {
           fontFamily: 'Arial, sans-serif',
-          fontSize: '48px',
+          fontSize: '42px',
         })
         .setOrigin(0.5),
     );
   }
 
   const name = scene.add
-    .text(-66, -31, speaker.name, {
+    .text(-58, -25, speaker.name, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
+      fontSize: '14px',
       fontStyle: 'bold',
       color: '#202020',
-      fixedWidth: 198,
-    })
-    .setOrigin(0, 0.5);
-
-  const meta = scene.add
-    .text(-66, -12, `${roleLabel(step.speakerRole)} • ${personality}`, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '9px',
-      fontStyle: 'bold',
-      color: '#7b7064',
+      fixedWidth: 174,
     })
     .setOrigin(0, 0.5);
 
   const quote = scene.add
-    .text(-66, 18, text, {
+    .text(-58, 10, text, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '14px',
+      fontSize: '13px',
       color: '#36312c',
-      fixedWidth: 198,
-      wordWrap: { width: 198 },
+      fixedWidth: 174,
+      wordWrap: { width: 174, useAdvancedWrap: true },
       maxLines: 2,
     })
     .setOrigin(0, 0.5);
 
-  objects.push(name, meta, quote);
+  objects.push(name, quote);
   container.add(objects);
 
   scene.tweens.add({
@@ -128,7 +124,7 @@ function showReactionBubble(
     scene.tweens.add({
       targets: container,
       alpha: 0,
-      y: position.y - 12,
+      y: position.y - 10,
       duration: 180,
       ease: 'Sine.easeIn',
       onComplete: () => container.destroy(true),
