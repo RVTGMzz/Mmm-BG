@@ -3,10 +3,42 @@
   z-index: 12000;
   top: 12px;
   right: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   pointer-events: auto;
   color: #202020;
   font-family: Inter, ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
   user-select: none;
+}
+
+.mobile-fullscreen-shortcut {
+  display: none;
+  min-width: 72px;
+  height: 42px;
+  padding: 0 10px;
+  border: 3px solid #202020;
+  border-radius: 14px;
+  background: #ffd34d;
+  box-shadow: 0 3px 0 rgba(32, 32, 32, 0.2);
+  color: #202020;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.mobile-fullscreen-shortcut.is-active {
+  background: #fffaf0;
+}
+
+.mobile-fullscreen-shortcut:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(32, 32, 32, 0.2);
+}
+
+.mobile-fullscreen-shortcut[hidden] {
+  display: none !important;
 }
 
 .settings-trigger {
@@ -183,10 +215,27 @@
   background: #ffe2e2;
 }
 
+@media (pointer: coarse) {
+  .mobile-fullscreen-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 720px) {
   .mememe-settings {
     top: 6px;
     right: 6px;
+    gap: 6px;
+  }
+
+  .mobile-fullscreen-shortcut {
+    min-width: 66px;
+    height: 38px;
+    padding: 0 8px;
+    border-radius: 12px;
+    font-size: 10px;
   }
 
   .settings-trigger {
