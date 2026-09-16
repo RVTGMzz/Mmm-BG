@@ -15,6 +15,9 @@ const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> =
 
 const PLAYER_ACCENTS = ['#ef4545', '#5b8def', '#f2b84b', '#61b37b'];
 
+// PLAYTEST MVP 0.1.66 was the previous unified-flow baseline. 0.1.67 keeps
+// its authoritative targetLaps state and only promotes match length into a
+// dedicated pregame rules step.
 export class SetupScene extends Phaser.Scene {
   private statusElement?: HTMLParagraphElement;
 
@@ -41,7 +44,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.66', {
+    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.67', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -54,7 +57,7 @@ export class SetupScene extends Phaser.Scene {
       ? `HOST LOCAL • ROOM ${config.roomCode} • Remote Roll + Remote Job Dice`
       : cpuCount > 0
         ? `SOLO TEST • ${4 - cpuCount} người + ${cpuCount} CPU 🤖`
-        : '4 người HOTSEAT → đặt tên → chọn số vòng → Roll For Order';
+        : '4 người HOTSEAT → đặt tên → chọn luật chơi → Roll For Order';
     this.add.text(190, 79, mode, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -67,27 +70,44 @@ export class SetupScene extends Phaser.Scene {
       <div class="setup-grid">
         ${gameSession.players.map((player) => this.playerCardMarkup(player.id)).join('')}
       </div>
-      <div class="match-length-picker" style="display:flex;align-items:center;justify-content:center;gap:10px;margin:12px 0 8px;">
-        <strong style="font-size:14px;color:#332f2a;margin-right:6px;">🏁 KẾT THÚC SAU</strong>
-        ${[1, 2, 3].map((laps) => `
-          <button type="button" class="lap-option${laps === 1 ? ' selected' : ''}" data-laps="${laps}"
-            style="min-width:82px;padding:9px 14px;border:3px solid ${laps === 1 ? '#ef4545' : '#403a33'};border-radius:14px;background:${laps === 1 ? '#ffe7df' : '#fffaf1'};font-weight:900;cursor:pointer;">
-            ${laps} VÒNG
-          </button>`).join('')}
-      </div>
       <div class="setup-footer">
         <div>
           <p class="setup-hint"><strong>Ảnh mặt là tùy chọn.</strong> Chạm ảnh để crop, kéo vị trí, zoom/pinch và xoay trước khi dùng.</p>
           <p class="setup-privacy">🔒 Ảnh gốc chỉ tồn tại trong trình duyệt lúc chỉnh. Khi xác nhận, game tạo sticker runtime 320×320 và ưu tiên nén WebP; không upload ảnh lên server.</p>
         </div>
-        <button id="start-game" class="start-game-button" type="button">ROLL FOR ORDER 🎲</button>
+        <button id="start-game" class="start-game-button" type="button">TIẾP TỤC →</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.66: flow mặc định duy nhất • chọn 1 / 2 / 3 vòng • UI Mini Game dễ đọc hơn.</p>
+      <p id="setup-status" class="setup-status">0.1.67: Face Setup → Chọn luật chơi → Roll For Order.</p>
     `;
 
-    const dom = this.add.dom(640, 405, root).setOrigin(0.5);
-    const node = dom.node as HTMLDivElement;
+    const setupDom = this.add.dom(640, 405, root).setOrigin(0.5);
+    const node = setupDom.node as HTMLDivElement;
     this.statusElement = node.querySelector<HTMLParagraphElement>('#setup-status') ?? undefined;
+
+    const rulesRoot = document.createElement('div');
+    rulesRoot.className = 'mememe-rule-select';
+    rulesRoot.innerHTML = `
+      <section class="rule-select-panel">
+        <div class="rule-select-kicker">🎮 TRƯỚC KHI VÀO TRẬN</div>
+        <h1>CHỌN LUẬT CHƠI</h1>
+        <p class="rule-select-copy">Chọn độ dài trận. Mỗi người phải hoàn thành đủ số vòng đã chọn; khi cả bàn hoàn thành, game chốt B$ và xếp hạng.</p>
+        <div class="rule-option-grid">
+          ${[1, 2, 3].map((laps) => `
+            <button type="button" class="lap-option rule-option${laps === 1 ? ' selected' : ''}" data-laps="${laps}" aria-pressed="${laps === 1 ? 'true' : 'false'}">
+              <span class="rule-option-number">${laps}</span>
+              <strong>${laps} LƯỢT</strong>
+              <small>${laps} VÒNG / NGƯỜI</small>
+              <span class="rule-option-note">${laps === 1 ? 'Nhanh • phù hợp test' : laps === 2 ? 'Vừa • nhiều biến cố hơn' : 'Dài • đầy đủ hành trình'}</span>
+            </button>`).join('')}
+        </div>
+        <div class="rule-selected-summary">Đang chọn: <strong data-rule-summary>1 LƯỢT • 1 VÒNG / NGƯỜI</strong></div>
+        <div class="rule-actions">
+          <button type="button" class="rule-back">← QUAY LẠI</button>
+          <button type="button" class="rule-confirm">BẮT ĐẦU • ROLL FOR ORDER 🎲</button>
+        </div>
+      </section>
+    `;
+    const rulesDom = this.add.dom(640, 360, rulesRoot).setOrigin(0.5).setVisible(false);
 
     for (const player of gameSession.players) {
       const nameInput = node.querySelector<HTMLInputElement>(`#player-name-${player.id}`);
@@ -104,24 +124,45 @@ export class SetupScene extends Phaser.Scene {
       }
     }
 
-    const lapButtons = [...node.querySelectorAll<HTMLButtonElement>('[data-laps]')];
+    const lapButtons = [...rulesRoot.querySelectorAll<HTMLButtonElement>('[data-laps]')];
+    const ruleSummary = rulesRoot.querySelector<HTMLElement>('[data-rule-summary]');
     const selectLaps = (value: number) => {
       gameSession.setTargetLaps(value);
-      configureInitialTargetLaps(gameSession.targetLaps);
       for (const button of lapButtons) {
         const active = Number(button.dataset.laps) === gameSession.targetLaps;
         button.classList.toggle('selected', active);
-        button.style.borderColor = active ? '#ef4545' : '#403a33';
-        button.style.background = active ? '#ffe7df' : '#fffaf1';
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
       }
-      this.refreshStatus();
+      if (ruleSummary) {
+        ruleSummary.textContent = `${gameSession.targetLaps} LƯỢT • ${gameSession.targetLaps} VÒNG / NGƯỜI`;
+      }
     };
     for (const button of lapButtons) {
-      button.addEventListener('click', () => selectLaps(Number(button.dataset.laps)));
+      button.addEventListener('click', () => {
+        sfxController.play('ui_confirm');
+        selectLaps(Number(button.dataset.laps));
+      });
     }
 
     const startButton = node.querySelector<HTMLButtonElement>('#start-game');
-    startButton?.addEventListener('click', () => this.startGame(node));
+    startButton?.addEventListener('click', () => {
+      if (!this.captureNames(node)) return;
+      sfxController.play('ui_confirm');
+      setupDom.setVisible(false);
+      rulesDom.setVisible(true);
+      selectLaps(gameSession.targetLaps);
+    });
+
+    rulesRoot.querySelector<HTMLButtonElement>('.rule-back')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
+      rulesDom.setVisible(false);
+      setupDom.setVisible(true);
+      this.refreshStatus();
+    });
+
+    rulesRoot.querySelector<HTMLButtonElement>('.rule-confirm')?.addEventListener('click', () => {
+      this.startGame();
+    });
 
     this.refreshStatus();
   }
@@ -193,7 +234,7 @@ export class SetupScene extends Phaser.Scene {
     }
   }
 
-  private startGame(root: HTMLDivElement): void {
+  private captureNames(root: HTMLDivElement): boolean {
     for (const player of gameSession.players) {
       const nameInput = root.querySelector<HTMLInputElement>(`#player-name-${player.id}`);
       if (nameInput) gameSession.setPlayerName(player.id, nameInput.value);
@@ -201,10 +242,13 @@ export class SetupScene extends Phaser.Scene {
 
     const hasInvalidName = gameSession.players.some((player) => player.name.trim().length === 0);
     if (hasInvalidName) {
-      this.setStatus('Mỗi người chơi cần có tên trước khi Roll For Order.', true);
-      return;
+      this.setStatus('Mỗi người chơi cần có tên trước khi chọn luật chơi.', true);
+      return false;
     }
+    return true;
+  }
 
+  private startGame(): void {
     configureInitialTargetLaps(gameSession.targetLaps);
     sfxController.play('ui_confirm');
     this.scene.start('TurnOrderScene');
@@ -214,21 +258,20 @@ export class SetupScene extends Phaser.Scene {
     const neutralCount = gameSession.players.filter((player) => Boolean(player.faces.neutral)).length;
     const expressionCount = gameSession.players.reduce((total, player) => total + Object.keys(player.faces).length, 0);
     const cpuCount = browserSession.current.cpuSeatIds.length;
-    const lapCopy = `🏁 ${gameSession.targetLaps} vòng`;
 
     if (expressionCount === 0) {
       this.setStatus(
         browserSession.current.mode === 'host'
-          ? `Sẵn sàng • ${lapCopy}. Host sẽ chờ tab JOIN cho Remote Roll; Job Hub cũng chuyển quyền bấm cho đúng ghế client.`
+          ? 'Sẵn sàng. Bước tiếp theo chọn luật chơi; sau đó Host chờ tab JOIN cho Remote Roll và Remote Job Dice.'
           : cpuCount > 0
-            ? `Sẵn sàng • ${lapCopy} • ${cpuCount} CPU test sẽ tự chơi. Có thể bỏ qua ảnh.`
-            : `Sẵn sàng • ${lapCopy}. Bước tiếp theo: cả 4 người đổ xúc xắc xếp thứ tự đi.`,
+            ? `Sẵn sàng • ${cpuCount} CPU test sẽ tự chơi. Có thể bỏ qua ảnh; bước tiếp theo chọn luật chơi.`
+            : 'Sẵn sàng. Bước tiếp theo: chọn trận 1 / 2 / 3 lượt rồi Roll For Order.',
         false,
       );
       return;
     }
 
-    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 • tổng ${expressionCount}/12 ảnh • CPU ${cpuCount}/4 • ${lapCopy} • tiếp theo Roll For Order.`, false);
+    this.setStatus(`Đã có mặt 😐 cho ${neutralCount}/4 • tổng ${expressionCount}/12 ảnh • CPU ${cpuCount}/4 • tiếp theo chọn luật chơi.`, false);
   }
 
   private setStatus(message: string, isError: boolean): void {
