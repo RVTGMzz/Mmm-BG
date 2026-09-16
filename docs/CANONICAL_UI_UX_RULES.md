@@ -67,3 +67,10 @@ Before a UI is done: Is it comfortably readable on phone landscape? Is the curre
 0.1.69 **First Impression Polish** extends the permanent contract with owned/bounded player career labels, simplified first-run screens, compact Job results, the official logo splash, larger default copy and the soft-rounded shape language.
 
 Future content/art passes must preserve these rules instead of reintroducing dense tiny-text HUDs or harsh square UI.
+
+## 19. Official brand assets are committed binary masters
+The canonical splash logo is `public/assets/mememe-logo-main.png`, a 1024×1024 transparent PNG committed directly to the repository.
+
+Runtime splash/menu branding must reference that binary master directly. Do not regenerate the official logo from text, base64 fragments, temporary vector placeholders, downscaled WebP exports or synthetic substitutes.
+
+If the repository connector cannot safely write a binary replacement, ask for a manual GitHub upload instead of spending build time reconstructing the asset through text. After replacement, CI must verify the PNG signature, 1024×1024 dimensions and transparency before publication.
