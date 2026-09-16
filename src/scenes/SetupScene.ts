@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
+import { MEMEME_BUILD } from '../buildInfo';
 import { browserSession } from '../core/browserSession';
 import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
@@ -15,9 +16,6 @@ const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> =
 
 const PLAYER_ACCENTS = ['#ef4545', '#5b8def', '#f2b84b', '#61b37b'];
 
-// PLAYTEST MVP 0.1.66 was the previous unified-flow baseline. 0.1.67 keeps
-// its authoritative targetLaps state and only promotes match length into a
-// dedicated pregame rules step.
 export class SetupScene extends Phaser.Scene {
   private statusElement?: HTMLParagraphElement;
 
@@ -44,7 +42,7 @@ export class SetupScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(190, 47, 'FACE SETUP • PLAYTEST MVP 0.1.67', {
+    this.add.text(190, 47, MEMEME_BUILD.setupHeader, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '25px',
       fontStyle: 'bold',
@@ -77,7 +75,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
         <button id="start-game" class="start-game-button" type="button">TIẾP TỤC →</button>
       </div>
-      <p id="setup-status" class="setup-status">0.1.67: Face Setup → Chọn luật chơi → Roll For Order.</p>
+      <p id="setup-status" class="setup-status">${MEMEME_BUILD.setupStatus}</p>
     `;
 
     const setupDom = this.add.dom(640, 405, root).setOrigin(0.5);
