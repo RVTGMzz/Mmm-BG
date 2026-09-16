@@ -12,7 +12,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene068 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene068';
+import { CareerMinigameBoardScene0681 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0681';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
@@ -33,6 +33,7 @@ import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode05
 // CareerMinigameBoardScene066 as ActiveBoardScene unifies the shipped flow, adds selected match length, mobile viewport handling, and release-resume protection.
 // CareerMinigameBoardScene067 as ActiveBoardScene adds the dedicated pregame rule step and canonical Job-card overlap guard.
 // CareerMinigameBoardScene068 as ActiveBoardScene closes the vertical slice, centralizes visible build identity, and hardens modal/UI isolation.
+// CareerMinigameBoardScene0681 as ActiveBoardScene simplifies the always-on HUD and gives blocking modals clean mobile ownership.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
