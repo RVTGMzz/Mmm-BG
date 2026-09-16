@@ -56,8 +56,8 @@ export function installSettingsPanel(): void {
   root.id = 'mememe-settings';
   root.className = 'mememe-settings';
   root.innerHTML = `
-    <button class="mobile-fullscreen-shortcut" type="button" aria-label="Bật/tắt toàn màn hình" aria-pressed="false">⛶ FULL</button>
     <button class="settings-trigger" type="button" aria-label="Mở cài đặt" aria-expanded="false">⚙️</button>
+    <button class="mobile-fullscreen-shortcut" type="button" aria-label="Bật toàn màn hình" aria-pressed="false" title="Toàn màn hình">⛶</button>
     <section class="settings-panel" aria-label="Cài đặt" hidden>
       <header class="settings-head">
         <div>
@@ -144,7 +144,9 @@ export function installSettingsPanel(): void {
 
     if (mobileFullscreenShortcut) {
       mobileFullscreenShortcut.hidden = !supported;
-      mobileFullscreenShortcut.textContent = active ? '↙ THOÁT' : '⛶ FULL';
+      mobileFullscreenShortcut.textContent = active ? '↙' : '⛶';
+      mobileFullscreenShortcut.setAttribute('aria-label', active ? 'Thoát toàn màn hình' : 'Bật toàn màn hình');
+      mobileFullscreenShortcut.setAttribute('title', active ? 'Thoát toàn màn hình' : 'Toàn màn hình');
       mobileFullscreenShortcut.setAttribute('aria-pressed', active ? 'true' : 'false');
       mobileFullscreenShortcut.classList.toggle('is-active', active);
     }
