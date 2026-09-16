@@ -74,6 +74,7 @@
     "test:ui-ghost-gamepad-web-0651": "tsx tests/ui-ghost-gamepad-web-0651.ts",
     "test:unified-flow-match-length-066": "tsx tests/unified-flow-match-length-066.ts",
     "test:vertical-slice-068": "tsx tests/vertical-slice-068.ts",
+    "test:canonical-ui-ux": "tsx tests/canonical-ui-ux-contract.ts",
     "test:image": "tsx tests/image-transform.ts",
     "test:package": "node scripts/verify-playtest-package.mjs",
     "preview": "vite preview",
