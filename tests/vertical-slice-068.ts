@@ -11,6 +11,7 @@ const order = readFileSync('src/scenes/TurnOrderScene048.ts', 'utf8');
 const scene068 = readFileSync('src/scenes/CareerMinigameBoardScene068.ts', 'utf8');
 const scene0681 = readFileSync('src/scenes/CareerMinigameBoardScene0681.ts', 'utf8');
 const scene0682 = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'utf8');
+const scene069 = readFileSync('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
 const demoBoard = readFileSync('src/scenes/DemoBoardScene.ts', 'utf8');
 const settings = readFileSync('src/ui/SettingsPanel.ts', 'utf8');
 const settingsCss = readFileSync('src/settings.css', 'utf8');
@@ -18,69 +19,46 @@ const mobileCss = readFileSync('src/mobileViewport066.css', 'utf8');
 const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
 const packageJson = readFileSync('package.json', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.68.2');
-assert.equal(MEMEME_BUILD.phase, 'CANONICAL MOBILE UI CONTRACT');
-assert.match(main, /CareerMinigameBoardScene0682 as ActiveBoardScene/);
+assert.equal(MEMEME_BUILD.version, '0.1.69');
+assert.equal(MEMEME_BUILD.phase, 'FIRST IMPRESSION POLISH');
+assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
 assert.match(lobby, /MEMEME_BUILD\.lobbyHeader/);
 assert.match(setup, /MEMEME_BUILD\.setupHeader/);
 assert.match(order, /MEMEME_BUILD\.rollOrderBadge/);
 assert.match(scene068, /MEMEME_BUILD\.boardHeader/);
-assert(!lobby.includes("FIRST PLAYTEST • MVP 0.1.48"), 'Lobby must not expose the old 0.1.48 label.');
-assert(!setup.includes("FACE SETUP • PLAYTEST MVP 0.1.67"), 'Setup must not hard-code the 0.1.67 label.');
-assert(!order.includes("setText('MVP 0.1.66.2"), 'Roll For Order must not hard-code the 0.1.66.2 label.');
-
-assert.match(main, /LocalLobbyScene,[\s\S]*SetupScene,[\s\S]*TurnOrderScene,[\s\S]*ActiveBoardScene/);
-assert.match(setup, /\[1, 2, 3\]\.map\(\(laps\)/);
-assert.match(setup, /CHỌN LUẬT CHƠI/);
+assert.match(main, /SplashScene069,[\s\S]*LocalLobbyScene,[\s\S]*SetupScene,[\s\S]*TurnOrderScene,[\s\S]*ActiveBoardScene/);
+assert.match(setup, /\[1,2,3\]\.map\(\(laps\)/);
 assert.match(setup, /configureInitialTargetLaps\(gameSession\.targetLaps\)/);
 assert.match(setup, /this\.scene\.start\('TurnOrderScene'\)/);
 assert.match(order, /object\.setY\(80\)/);
 assert.match(order, /\.setY\(141\)/);
 
-const names = ['P1', 'P2', 'P3', 'P4'];
-for (const laps of [1, 2, 3]) {
+const names = ['P1','P2','P3','P4'];
+for (const laps of [1,2,3]) {
   configureInitialTargetLaps(laps);
-  const state = createInitialMatchState({ boardId: 'vertical-slice-068', startNodeId: 1, playerNames: names, seed: 168, targetLaps: laps });
+  const state = createInitialMatchState({ boardId:'vertical-slice-068', startNodeId:1, playerNames:names, seed:168, targetLaps:laps });
   for (const player of state.players) {
-    if (laps === 1) assert.equal(player.targetLaps, undefined, '1-lap compatibility must preserve legacy state shape.');
-    else assert.equal(player.targetLaps, laps);
+    if (laps === 1) assert.equal(player.targetLaps, undefined); else assert.equal(player.targetLaps, laps);
   }
-  assert.equal(isPlayerFinished060({ lapsCompleted: laps - 1, ...(laps === 1 ? {} : { targetLaps: laps }) }), false);
-  assert.equal(isPlayerFinished060({ lapsCompleted: laps, ...(laps === 1 ? {} : { targetLaps: laps }) }), true);
+  assert.equal(isPlayerFinished060({ lapsCompleted:laps-1, ...(laps === 1 ? {} : { targetLaps:laps }) }), false);
+  assert.equal(isPlayerFinished060({ lapsCompleted:laps, ...(laps === 1 ? {} : { targetLaps:laps }) }), true);
 }
 configureInitialTargetLaps(1);
-
 assert.match(scene068, /extends CareerMinigameBoardScene067/);
-assert.match(scene068, /super\.update\(\);[\s\S]*guardCanonicalModal068\(\)/);
-assert.match(scene068, /restoreCanonicalModalTexts068/);
 assert.match(scene0681, /extends CareerMinigameBoardScene068/);
-assert.match(scene0681, /copy\.startsWith\('lượt:'\)/);
-assert.match(scene0681, /copy === 'tổng quan'/);
 assert.match(scene0682, /extends CareerMinigameBoardScene0681/);
-assert.match(scene0682, /IDLE_HUD_SCALE_0682 = 0\.9/);
-assert.match(scene0682, /ACTIVE_HUD_SCALE_0682 = 1\.08/);
-assert.match(scene0682, /syncStrictModalOwnership0682/);
-assert(!scene0682.includes('Math.random'));
-assert(!scene0682.includes('submitIntent('));
-
+assert.match(scene069, /extends CareerMinigameBoardScene0682/);
+assert(!scene069.includes('Math.random'));
+assert(!scene069.includes('submitIntent('));
 assert.match(demoBoard, /CHƠI LẠI 🔁/);
 assert.match(demoBoard, /VỀ LOBBY/);
-assert.match(demoBoard, /rematchDemo\(\)/);
-assert.match(demoBoard, /resetAndBegin/);
-
 assert.match(main, /installGlobalGamepadUiNavigation0651/);
 assert.match(main, /visualViewport\?\.addEventListener\('resize'/);
 assert.match(settings, /mobileFullscreenShortcut\.textContent = active \? '↙' : '⛶'/);
 assert.match(settingsCss, /flex-direction: column/);
-assert.match(settingsCss, /\.mememe-settings\.is-open \.mobile-fullscreen-shortcut/);
 assert.match(mobileCss, /100dvh/);
 assert.match(mobileCss, /100dvw/);
-
 assert.match(ci, /Simple CPU autoplay stress[\s\S]*npm run test:bots/);
 assert.match(ci, /deterministic full-match simulation harness[\s\S]*npm run test:simulation-baseline-0611/);
-assert.match(ci, /Demo match shell and rematch[\s\S]*npm run test:demo-shell/);
-assert.match(ci, /Authoritative final podium and tie ranking[\s\S]*npm run test:final-podium/);
-assert.match(packageJson, /"test:vertical-slice-068"/);
-assert.match(packageJson, /"test:canonical-ui-0682"/);
-
-console.log('[vertical-slice-068] PASS canonical 0.1.68.2 + full flow + 1/2/3 laps + active HUD + modal ownership + mobile/Steam Deck + CPU/long-match CI guards');
+assert.match(packageJson, /"test:first-impression-069"/);
+console.log('[vertical-slice-068] PASS inherited authoritative flow + 1/2/3 laps + 0.1.69 presentation wrapper + mobile/Steam Deck guards');

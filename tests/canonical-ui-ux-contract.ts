@@ -18,10 +18,11 @@ assert.match(rules, /Floating bubbles must respect viewport edges/);
 assert.match(rules, /Reduce copy before reducing font size/);
 assert.match(rules, /Touch, controller and keyboard have feature parity/);
 assert.match(rules, /Do not encode meaning only by colour/);
+assert.match(rules, /Soft rounded surfaces are the default shape language/);
+assert.match(rules, /soft rounded corners by default/);
 assert.match(rules, /UI changes must preserve gameplay authority/);
 assert.match(rules, /0\.1\.68\.2 is the first implementation pass required to follow this contract end-to-end/);
-
+assert.match(rules, /0\.1\.69 \*\*First Impression Polish\*\*/);
 assert.match(packageJson, /"test:canonical-ui-ux"\s*:\s*"tsx tests\/canonical-ui-ux-contract\.ts"/);
 assert.match(ci, /Canonical UI UX design contract[\s\S]*npm run test:canonical-ui-ux/);
-
-console.log('[canonical-ui-ux] PASS mobile-first readability + progressive disclosure + active HUD + modal ownership + input parity + authority-safe design contract');
+console.log('[canonical-ui-ux] PASS mobile readability + disclosure + active HUD + modal ownership + soft corners + input parity + authority-safe contract');

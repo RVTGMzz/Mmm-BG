@@ -2,12 +2,9 @@ name: MeMeMe MVP CI
 
 on:
   push:
-    branches:
-      - main
-      - mememe-mvp-0.1-core
+    branches: [main, mememe-mvp-0.1-core]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   build:
@@ -16,17 +13,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: package.json
-
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-
       - name: Typecheck and build
         shell: bash
         run: |
@@ -35,7 +29,6 @@ jobs:
           code=$?
           cat build.log
           exit $code
-
       - name: Upload build diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -44,7 +37,6 @@ jobs:
           path: build.log
           if-no-files-found: error
           retention-days: 2
-
       - name: Deterministic replay fixture
         run: npm run test:replay
       - name: Lockstep peer simulator
@@ -165,24 +157,24 @@ jobs:
         run: npm run test:ui-ghost-gamepad-web-0651
       - name: 0.1.66 unified flow match length and Mini Game readability
         run: npm run test:unified-flow-match-length-066
-      - name: 0.1.68.2 vertical slice canonical mobile UI
+      - name: 0.1.68 vertical slice inherited authority flow
         run: npm run test:vertical-slice-068
       - name: Canonical UI UX design contract
         run: npm run test:canonical-ui-ux
       - name: 0.1.68.2 active HUD Job details and safe bubbles
         run: npm run test:canonical-ui-0682
+      - name: 0.1.69 first impression polish
+        run: npm run test:first-impression-069
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
-
-      - name: Add 0.1.68.2 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.68.2_CANONICAL_MOBILE_UI.md dist/PLAYTEST_GUIDE.md
-
-      - name: Upload MVP 0.1.68.2 canonical mobile UI build
+      - name: Add 0.1.69 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.69_FIRST_IMPRESSION.md dist/PLAYTEST_GUIDE.md
+      - name: Upload MVP 0.1.69 first impression build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.68.2-canonical-mobile-ui
+          name: mememe-playtest-0.1.69-first-impression-polish
           path: dist
           if-no-files-found: error
           retention-days: 14
