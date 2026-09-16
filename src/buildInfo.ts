@@ -1,4 +1,4 @@
-const version = '0.1.68.1' as const;
+const version = '0.1.68.2' as const;
 
 /**
  * Canonical visible build identity for the playable vertical slice.
@@ -9,13 +9,13 @@ const version = '0.1.68.1' as const;
  */
 export const MEMEME_BUILD = {
   version,
-  phase: 'MOBILE READABILITY + MODAL CLEANUP',
+  phase: 'CANONICAL MOBILE UI CONTRACT',
   lobbyHeader: `PLAYTEST • MVP ${version}`,
-  lobbySubtitle: 'Vertical Slice • Mobile Readability • Setup → Luật → Roll → Trận → Podium → Rematch',
+  lobbySubtitle: 'Vertical Slice • Active HUD • Job Details • Setup → Luật → Roll → Trận → Podium → Rematch',
   setupHeader: `FACE SETUP • PLAYTEST MVP ${version}`,
-  setupStatus: `${version}: Mobile readability + modal cleanup on the stabilized vertical slice.`,
-  rollOrderBadge: `MVP ${version} • AUTHORITATIVE D6 • MOBILE READABILITY`,
-  boardHeader: `CITY • MVP ${version} • MOBILE READABILITY`,
-  boardBadge: `PLAYTEST ${version} • MOBILE READABILITY + MODAL CLEANUP`,
-  artifactName: `mememe-playtest-${version}-mobile-readability`,
+  setupStatus: `${version}: Canonical mobile UI contract implementation on the stabilized vertical slice.`,
+  rollOrderBadge: `MVP ${version} • AUTHORITATIVE D6 • MOBILE UI`,
+  boardHeader: `CITY • MVP ${version} • CANONICAL MOBILE UI`,
+  boardBadge: `PLAYTEST ${version} • ACTIVE HUD + DETAIL ON DEMAND`,
+  artifactName: `mememe-playtest-${version}-canonical-mobile-ui`,
 } as const;
