@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-export type GamepadUiAction0651 = 'confirm' | 'up' | 'down' | 'left' | 'right';
+export type GamepadUiAction0651 = 'confirm' | 'back' | 'up' | 'down' | 'left' | 'right';
 
 type FocusableObject0651 = Phaser.GameObjects.GameObject & {
   active: boolean;
@@ -24,6 +24,7 @@ type Candidate0651 = {
 
 const BUTTON_ACTION_0651: Record<number, GamepadUiAction0651 | undefined> = {
   0: 'confirm',
+  1: 'back',
   12: 'up',
   13: 'down',
   14: 'left',
@@ -110,7 +111,7 @@ function currentCandidates0651(game: Phaser.Game): Candidate0651[] {
 export function directionalCandidateIndex0651(
   currentIndex: number,
   candidates: readonly Pick<Candidate0651, 'x' | 'y'>[],
-  direction: Exclude<GamepadUiAction0651, 'confirm'>,
+  direction: Exclude<GamepadUiAction0651, 'confirm' | 'back'>,
 ): number {
   if (candidates.length === 0) return -1;
   const safeIndex = currentIndex >= 0 && currentIndex < candidates.length ? currentIndex : 0;
@@ -139,16 +140,15 @@ export function directionalCandidateIndex0651(
   });
 
   if (bestIndex >= 0) return bestIndex;
-
-  // Natural wrap if there is no object farther in the requested direction.
   if (direction === 'left' || direction === 'up') return candidates.length - 1;
   return 0;
 }
 
 /**
  * Browser-level controller navigation used by the Steam Deck web playtest.
- * Standard Gamepad mapping: D-pad 12..15, A = 0. Existing pointer handlers remain
- * the single source of truth: controller focus emits pointerover/out, A emits pointerdown.
+ * Standard Gamepad mapping: D-pad 12..15, A = 0, B = 1. Existing pointer handlers
+ * remain the source of truth for confirm; B emits a scene-level UI back event so
+ * blocking detail surfaces can close without inventing gameplay state.
  */
 export function installGlobalGamepadUiNavigation0651(game: Phaser.Game): () => void {
   if (typeof window === 'undefined' || typeof navigator === 'undefined' || !navigator.getGamepads) {
@@ -173,6 +173,14 @@ export function installGlobalGamepadUiNavigation0651(game: Phaser.Game): () => v
   };
 
   const handleAction = (action: GamepadUiAction0651): void => {
+    if (action === 'back') {
+      const scenes = game.scene.getScenes(true);
+      const topScene = scenes[scenes.length - 1];
+      topScene?.events.emit('mememe-ui-back');
+      clearFocus();
+      return;
+    }
+
     const candidates = currentCandidates0651(game);
     if (candidates.length === 0) {
       clearFocus();
