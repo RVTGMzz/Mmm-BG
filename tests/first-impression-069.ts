@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { MEMEME_BUILD } from '../src/buildInfo';
 
 const main = readFileSync('src/main.ts', 'utf8');
@@ -14,8 +14,9 @@ assert.equal(MEMEME_BUILD.version, '0.1.69');
 assert.equal(MEMEME_BUILD.phase, 'FIRST IMPRESSION POLISH');
 assert.match(main, /SplashScene069,[\s\S]*LocalLobbyScene,[\s\S]*SetupScene,[\s\S]*TurnOrderScene,[\s\S]*ActiveBoardScene/);
 assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
-assert(existsSync('public/assets/mememe-logo.webp'), 'official MeMeMe logo must ship with the build');
-assert.match(splash, /assets\/mememe-logo\.webp/);
+assert(!splash.includes('assets/mememe-logo.webp'), 'splash must not render the known-corrupt black bitmap');
+assert.match(splash, /'Me³'/);
+assert.match(splash, /'MeMeMe'/);
 assert.match(splash, /CHẠM ĐỂ BẮT ĐẦU/);
 assert.match(splash, /this\.scene\.start\('LocalLobbyScene'\)/);
 assert(!splash.includes('Math.random'));
@@ -23,6 +24,9 @@ assert(!splash.includes('Math.random'));
 assert.match(board, /extends CareerMinigameBoardScene0682/);
 assert.match(board, /ui\.meta\.setText\(''\)\.setVisible\(false\)/);
 assert.match(board, /ownedJobLabels069/);
+assert.match(board, /JOB_LABEL_WIDTH_069 = 184/);
+assert.match(board, /fitJobLabel069/);
+assert.match(board, /setMaxLines\(1\)/);
 assert.match(board, /ACTIVE_SCALE_069 = 1\.14/);
 assert.match(board, /🎲\$\{roll \? ` \$\{roll\}` : ''\} → NHẬN VIỆC/);
 assert.match(board, /copy\.includes\('trúng'\)/);
@@ -42,4 +46,4 @@ assert(!setup.includes('Chọn độ dài trận. Mỗi người phải hoàn th
 assert.match(css, /border-radius:28px/);
 assert.match(css, /border-radius:34px/);
 assert.match(rules, /Soft rounded surfaces are the default shape language/);
-console.log('[first-impression-069] PASS official splash + concise first-run UI + owned HUD career label + compact Job result + soft-corner contract');
+console.log('[first-impression-069] PASS stable vector splash + bounded HUD career labels + concise first-run UI + soft-corner contract');
