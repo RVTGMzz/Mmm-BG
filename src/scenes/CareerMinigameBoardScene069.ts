@@ -3,6 +3,7 @@ import jobsJson from '../content/core/jobs_mvp.json';
 import { jobById, jobSalary, type JobDefinition } from '../core/jobs';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
+import { resolveCameraActor0632 } from '../ui/cameraTarget0632';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene0682 } from './CareerMinigameBoardScene0682';
 
@@ -92,7 +93,14 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
 
   private syncHud069(): void {
     const runtime = this.runtime069();
-    const currentId = runtime.currentPlayer()?.id;
+    // Authoritative state may already point at the next player while the previous
+    // player's move/tile animation is still on screen. Match the camera rule from
+    // 0.1.63.2 so HUD scale stays on the presentation actor until that visual ends.
+    const activeId = resolveCameraActor0632(
+      runtime.currentPlayer()?.id,
+      this.presentation069()?.currentModel,
+    );
+
     for (const player of runtime.match.players) {
       const ui = runtime.hud.get(player.id);
       const label = this.ownedJobLabels069.get(player.id);
@@ -101,7 +109,7 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       // Legacy layers may rewrite ui.meta every frame. 0.1.69 permanently removes
       // that visual owner and renders one bounded career line of its own.
       ui.meta.setText('').setVisible(false);
-      const active = player.id === currentId;
+      const active = player.id === activeId;
       ui.root.setScale(active ? ACTIVE_SCALE_069 : IDLE_SCALE_069).setAlpha(active ? 1 : 0.94);
       ui.name.setFontSize(active ? 18 : 15).setFontStyle(active ? 'bold' : 'normal');
       ui.money.setFontSize(active ? 20 : 17).setFontStyle('bold');
@@ -151,6 +159,13 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
 
     this.visitContainerTexts069(root, (text) => {
       const copy = this.normalize069(text.text);
+      // The inherited Job result still owns a narration line such as
+      // “CPU 4 đổ 5, trúng Shipper • lương Lv.1 45”. It belongs to the same modal
+      // container, so generic outside-modal leak suppression cannot see it.
+      if (copy.includes('trúng') || (copy.includes('đổ') && copy.includes('lương'))) {
+        this.hideLeakText069(text);
+        return;
+      }
       if (copy.includes('nhận việc')) {
         const roll = text.text.match(/🎲\s*([1-6])/)?.[1] ?? text.text.match(/\b([1-6])\s*→/)?.[1] ?? '';
         text.setText(`🎲${roll ? ` ${roll}` : ''} → NHẬN VIỆC`).setFontSize(30).setFixedSize(500, 44).setAlign('center');
@@ -174,15 +189,20 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       const copy = this.normalize069(text.text);
       const leak =
         copy.includes('trúng') ||
+        (copy.includes('đổ') && copy.includes('lương')) ||
         copy.includes('b$/công') ||
         copy.includes('thu nhập') ||
         copy.includes('cây đơn') ||
         copy.includes('xác di chuyển') ||
         /còn \d+ bước/.test(copy);
       if (!leak) return;
-      if (!this.hiddenLeakText069.has(text)) this.hiddenLeakText069.set(text, text.visible);
-      text.setVisible(false);
+      this.hideLeakText069(text);
     });
+  }
+
+  private hideLeakText069(text: Phaser.GameObjects.Text): void {
+    if (!this.hiddenLeakText069.has(text)) this.hiddenLeakText069.set(text, text.visible);
+    text.setVisible(false);
   }
 
   private findContainer069(predicate: (copy: string) => boolean): Phaser.GameObjects.Container | undefined {
