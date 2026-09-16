@@ -22,14 +22,17 @@ type CpuReleaseResumeInternals066 = {
  *   successful same-turn Jail/Hospital release once presentation is unblocked.
  */
 export class CareerMinigameBoardScene066 extends CareerMinigameBoardScene0651 {
-  private handledCpuReleaseEventSeq066 = 0;
+  private cpuReleaseAttemptSeq066 = 0;
+  private cpuReleaseAttemptAt066 = -Infinity;
 
   create(): void {
     super.create();
-    this.handledCpuReleaseEventSeq066 = 0;
+    this.cpuReleaseAttemptSeq066 = 0;
+    this.cpuReleaseAttemptAt066 = -Infinity;
     this.polishPresentation066();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.handledCpuReleaseEventSeq066 = 0;
+      this.cpuReleaseAttemptSeq066 = 0;
+      this.cpuReleaseAttemptAt066 = -Infinity;
     });
   }
 
@@ -47,13 +50,18 @@ export class CareerMinigameBoardScene066 extends CareerMinigameBoardScene0651 {
       internals.match,
       browserSession.current.cpuSeatIds,
       internals.presentation?.isBlocking() ?? false,
-      this.handledCpuReleaseEventSeq066,
+      0,
     );
     if (eventSeq === undefined) return;
 
-    // Mark before submission so a delayed local transport cannot submit twice.
-    // submitIntent still goes through the existing HOST authority/replay path.
-    this.handledCpuReleaseEventSeq066 = eventSeq;
+    // Do not permanently mark the release handled before HOST accepts the fresh
+    // movement roll. A transient presentation/revision race used to leave CPU turns
+    // frozen forever. Throttle duplicate frames, but retry the same release intent
+    // after 900 ms while authoritative state still says it needs a fresh D6.
+    const now = this.time.now;
+    if (this.cpuReleaseAttemptSeq066 === eventSeq && now - this.cpuReleaseAttemptAt066 < 900) return;
+    this.cpuReleaseAttemptSeq066 = eventSeq;
+    this.cpuReleaseAttemptAt066 = now;
     internals.submitIntent('roll', {});
   }
 
