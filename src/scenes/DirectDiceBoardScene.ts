@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { browserSession } from '../core/browserSession';
+import { pendingFreshRollAfterRelease066 } from '../core/cpuReleaseResume066';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import { shouldShowDirectTurnDice } from '../ui/directDicePolicy';
@@ -9,6 +10,7 @@ type DirectDiceInternals = {
   match: MatchState;
   shell: { status: 'waiting' | 'active' | 'ended' };
   cardPickerOpen: boolean;
+  presentation?: { isBlocking(): boolean };
   currentPlayer(): PlayerState | undefined;
   canControlCurrentPlayer(): boolean;
   handleRoll(): void;
@@ -21,12 +23,14 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
   private directDice?: Phaser.GameObjects.Container;
   private directDiceTween?: Phaser.Tweens.Tween;
   private rollPendingTurn?: number;
+  private handledFreshReleaseEventSeq = 0;
 
   create(): void {
     super.create();
     this.removeLegacyRollButton();
     this.createDirectDice();
     this.updateBuildLabels030();
+    this.handledFreshReleaseEventSeq = 0;
 
     this.events.on(Phaser.Scenes.Events.UPDATE, this.syncDirectDice, this);
     this.events.once('shutdown', () => {
@@ -36,6 +40,7 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
       this.directDice?.destroy();
       this.directDice = undefined;
       this.rollPendingTurn = undefined;
+      this.handledFreshReleaseEventSeq = 0;
     });
   }
 
@@ -109,12 +114,14 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
       const internals = this as unknown as DirectDiceInternals;
       const player = internals.currentPlayer();
       if (!player) return;
+      const presentationBlocking = internals.presentation?.isBlocking() ?? false;
       const allowed = shouldShowDirectTurnDice({
         phase: internals.match.turn.phase,
         canControl: internals.canControlCurrentPlayer(),
         isCpu: browserSession.isCpuSeat(player.id),
         shellActive: internals.shell.status === 'active',
         cardPickerOpen: internals.cardPickerOpen,
+        presentationBlocking,
       });
       if (!allowed || this.rollPendingTurn === internals.match.turn.turnNumber) return;
       this.rollPendingTurn = internals.match.turn.turnNumber;
@@ -128,11 +135,26 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
     const player = internals.currentPlayer();
     if (!this.directDice || !player) return;
 
+    const presentationBlocking = internals.presentation?.isBlocking() ?? false;
+
     if (
       this.rollPendingTurn !== undefined &&
       this.rollPendingTurn !== internals.match.turn.turnNumber
     ) {
       this.rollPendingTurn = undefined;
+    }
+
+    // A successful Jail/Hospital release consumes a D6 without advancing the turn.
+    // Once its modal is gone, unlock the direct die so the HUMAN actor can make the
+    // fresh movement roll in the same turn. CPU seats keep using the 0.1.66 HOST watchdog.
+    const freshReleaseEventSeq = pendingFreshRollAfterRelease066(
+      internals.match,
+      presentationBlocking,
+      this.handledFreshReleaseEventSeq,
+    );
+    if (freshReleaseEventSeq !== undefined) {
+      this.handledFreshReleaseEventSeq = freshReleaseEventSeq;
+      if (!browserSession.isCpuSeat(player.id)) this.rollPendingTurn = undefined;
     }
 
     const shouldShow =
@@ -143,6 +165,7 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
         isCpu: browserSession.isCpuSeat(player.id),
         shellActive: internals.shell.status === 'active',
         cardPickerOpen: internals.cardPickerOpen,
+        presentationBlocking,
       });
 
     if (shouldShow && !this.directDice.visible) {
