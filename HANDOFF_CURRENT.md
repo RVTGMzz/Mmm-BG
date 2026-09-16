@@ -7,196 +7,180 @@ Do **not** merge PR #1 or mark it Ready unless Ron explicitly asks.
 
 ## 1. User-validated rollback baseline
 
-MVP **0.1.48** remains the only user-accepted HOST-authoritative rollback baseline.
+MVP **0.1.48** remains the last explicitly user-accepted HOST-authoritative rollback baseline.
 
-Validated artifact:
+Validated rollback artifact:
 - `mememe-playtest-0.1.48`
 - run `#1441` / `34814789556`
 - runtime/package SHA `5c4a31d77fdca7b3cb5f66a6ef0f99753fddac9c`
 - artifact ID `10336247664`
 - SHA256 `d4fd4acb3adffb1ee5b894e9f1a87ec7f9578faae56d55869805e3d55e45ed6c`
 
-Never regress HOST authority, replay/checksum determinism, remote Roll For Order, multiplayer Job Hub, Mini Game payout ownership, audio/BGM ownership, stale-token protection, camera movement-actor lock, or READY/lap/final-result/podium flow.
+Never regress HOST authority, replay/checksum determinism, remote Roll For Order, multiplayer Job Hub, Mini Game payout ownership, stale-token protection, movement-actor camera lock, Jail/Hospital release semantics, or final-result/podium/rematch flow.
 
 Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
 
-## 2. Current candidate — MVP 0.1.66
+## 2. Current candidate — MVP 0.1.68
 
-**0.1.66 — Unified Flow + Match Length + Mini Game Readability + Mobile/Release Hotfix**
+**0.1.68 — Vertical Slice Stabilization**
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-Latest human runtime feedback driving the hotfix portion:
-1. the public mobile web build renders the 1280×720 game too small inside the phone browser instead of using the actually visible viewport well;
-2. in 1-human + 3-CPU play, the match appeared frozen after a CPU succeeded at Jail release and the `ĐƯỢC THẢ!` presentation finished.
+Purpose: stop adding new systems long enough to make one complete match reliable:
 
-0.1.66 also retains the planned unified launcher, selectable 1/2/3-lap match length and Mini Game readability work.
+`Menu → Setup → Chọn luật → Roll For Order → Trận → Podium → Rematch`
+
+0.1.68 is a stabilization/presentation pass. It deliberately adds no new gameplay RNG or alternative authority path.
 
 ## 3. Runtime chain
 
 `START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene066 as ActiveBoardScene`
+`CareerMinigameBoardScene068 as ActiveBoardScene`
 
 Inheritance:
-`066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+`068 -> 067 -> 066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
 
-Setup/header copy identifies `PLAYTEST MVP 0.1.66`.
+## 4. One visible build identity
 
-## 4. Mobile viewport / fullscreen fix
+New source of truth:
+`src/buildInfo.ts`
 
-0.1.66 keeps the game logic at 1280×720 so hitboxes, camera math and input coordinates do not get distorted, but makes the browser container follow the real visible mobile viewport.
+Current visible version:
+`0.1.68`
 
-Implemented:
-- `src/mobileViewport066.css` uses dynamic viewport units (`100dvh` / `100dvw`);
-- `index.html` uses `viewport-fit=cover`, disables accidental page zoom and opts into visible-widget resizing;
-- `src/main.ts` refreshes Phaser FIT sizing on normal resize, orientation changes, `visualViewport` resize/scroll and fullscreen changes;
-- Settings now exposes a real **TOÀN MÀN HÌNH** button using the browser Fullscreen API.
+Menu, Setup, Roll For Order and board now read their visible build copy from `MEMEME_BUILD` instead of hard-coding different historical MVP numbers.
 
-Android browsers require fullscreen to originate from a user gesture, so the Settings button is intentional rather than attempting to force fullscreen automatically.
+Do not reintroduce scene-local visible version strings.
 
-Expected manual result in landscape: the game should occupy substantially more of the usable phone screen; tapping **TOÀN MÀN HÌNH** should remove normal browser chrome where the browser permits it.
+## 5. Pregame vertical slice
 
-Regression is covered by `tests/unified-flow-match-length-066.ts`.
+Canonical entry flow:
+1. Menu / Local Lobby;
+2. Face Setup;
+3. dedicated **CHỌN LUẬT CHƠI** screen;
+4. choose `1 / 2 / 3 LƯỢT`, corresponding to `1 / 2 / 3 VÒNG / NGƯỜI`;
+5. authoritative Roll For Order;
+6. start canonical board runtime.
 
-## 5. CPU release-resume freeze protection
+The picker reuses existing authoritative `targetLaps` state. It does not create a second match-length system.
 
-Authoritative Jail/Hospital gameplay rules are **unchanged**:
-- a release D6 only decides release;
-- on success, `specialHold` clears while the player remains at TÙ/BV;
-- the release D6 is discarded;
-- the same player must then roll a fresh movement D6;
-- that fresh D6 traverses the real Jail/Hospital penalty corridor.
+## 6. JOB modal isolation
 
-Human runtime showed a presentation/autoplay handoff gap: after the release-success presentation clears, a CPU can be back at `PRE_ROLL_ACTION` with `lastRoll=null` in the same turn but fail to visibly resume, making the match look frozen.
+Human screenshots showed legacy Job/result/HUD text bleeding outside the canonical dark Job popup.
 
-New helper:
-`src/core/cpuReleaseResume066.ts`
-
-`pendingCpuFreshRollAfterRelease066(...)` only arms when all of these are true:
-- latest relevant event is a successful `special_release` for the current player;
-- current actor is a configured CPU seat;
-- phase is `PRE_ROLL_ACTION`;
-- `lastRoll === null`;
-- hold has actually been cleared;
-- presentation is no longer blocking;
-- this release event sequence has not already been handled.
-
-`CareerMinigameBoardScene066` then submits exactly one normal `roll` intent through the existing HOST-authoritative path.
+`CareerMinigameBoardScene068` now runs a presentation-only guard after inherited updates. While the canonical Job modal is active it temporarily hides matching noncanonical Job description/result/salary text outside the modal, then restores the original visibility after the modal closes.
 
 Safety:
 - no `Math.random`;
-- no second RNG stream;
-- no direct match-state mutation;
-- no HOST bypass;
-- source event sequence prevents double-submit;
-- no submit while a blocking presentation is active.
+- no direct MatchState mutation;
+- no new `submitIntent` path;
+- no gameplay/economy rule change.
 
-The historical 0.1.48 regression was updated only to allow this one guarded executable submit; broad authority protection remains intact.
+Manual screenshot/runtime confirmation is still required. CI cannot prove pixel-perfect overlap visually.
 
-## 6. Unified launcher + selectable match length
+## 7. Mobile / Steam Deck retained
 
-0.1.66 ships one normal playtest launcher:
-- keep `START_PLAYTEST.bat`;
-- do not ship the old Draft D preview/full-map launchers.
+Retained from the 0.1.66–0.1.67 hotfix chain:
+- logical game remains 1280×720 with Phaser FIT;
+- dynamic mobile viewport handling uses `100dvh / 100dvw`;
+- scale refreshes on resize/orientation/`visualViewport`/fullscreen changes;
+- mobile fullscreen shortcut is icon-only: `⛶` when windowed, `↙` when fullscreen;
+- shortcut sits under the Settings gear and hides while Settings is open;
+- browser/Steam Deck gamepad UI navigation remains installed.
 
-The historical preview engine remains in source for deterministic QA/regression only.
+Landscape fullscreen is the preferred mobile test mode, but fullscreen still requires a user gesture where browsers enforce it.
 
-Setup now offers **1 / 2 / 3 VÒNG**.
-- 1 lap preserves legacy checksum shape;
-- 2/3-lap targets are authoritative and checksummed;
-- finish/retirement logic uses each player's target laps.
+## 8. Endgame / rematch retained
 
-Mini Game presentation is reflowed for readability while retaining HOST-system payout ownership and deterministic rules.
+Inherited result flow remains authoritative and covered by regression tests:
+- final result transition;
+- podium ranking/ties;
+- reaction/winner spotlight;
+- low-to-high reveal cadence;
+- result controls unlock only after reveal;
+- `CHƠI LẠI 🔁` resets and begins a clean match;
+- `VỀ LOBBY` returns to the lobby flow.
 
-## 7. Retained 0.1.65.1 / 0.1.65 presentation-input fixes
+## 9. New 0.1.68 integration guard
 
-Still retained:
-- rounded UI proxy ghost cleanup;
-- browser/Steam Deck gamepad navigation using existing pointer handlers;
-- authoritative Job title/level/salary HUD;
-- unemployed = `Chưa có nghề` / `0 B$/vòng`;
-- hidden always-on debug footer;
-- direct dice remains suppressed while Card target flow is open.
+`tests/vertical-slice-068.ts` protects the candidate against accidental regression of:
+- canonical 0.1.68 visible version source;
+- `Menu → Setup → rules → Roll → board` scene chain;
+- real 1/2/3-lap finish semantics;
+- Job modal isolation;
+- Podium/Rematch/Lobby controls;
+- mobile fullscreen/viewport and Steam Deck gamepad wiring;
+- CI coverage for CPU stress and deterministic long-match simulation.
 
-0.1.63.2 movement-actor camera lock remains the human-confirmed camera baseline beneath this build.
+The historical 0.1.48 bugfix test was rebased only where it had obsolete visible-label assertions. Its authority/no-RNG/stale-token/release guards remain intact.
 
-## 8. Retained 0.1.64 gameplay baseline
+## 10. Green functional checkpoint before this handoff-doc commit
 
-Board/gameplay remains on the 0.1.64 deterministic foundation except for selectable target-lap count:
-- expanded ~2340×1020 board;
-- 1.5× round spaces;
-- real Jail corridor `100 -> 101 -> 102 -> 103 -> 12`;
-- real Hospital corridor `110 -> 111 -> 112 -> 113 -> 34`;
-- J1/J2/J3/H1/H2/H3 = `-20 B$` on landing;
-- Card SFX gain 0.80, Step 1.30;
-- Job mid-roll continuation retained;
-- HOST odd/even branch routing retained.
-
-The 32-match deterministic QA batch remains a regression baseline rather than a balance verdict. Current 0.1.64-derived fingerprints in CI include the release-corridor sentinels and must only be deliberately rebased after an intentional gameplay change.
-
-## 9. Green 0.1.66 code/test checkpoint
-
-Code/test HEAD before this handoff-doc commit:
-`fdecf86206d655945e5b789ae6a9efab2e245d64`
+Source SHA:
+`7aed259ce1c7fc28478095b3a2f8eb1ba3201acc`
 
 Main push CI:
-- run `#2473` / `35010767981`;
+- run `#2531` / `35058626805`;
 - **FULL SUITE SUCCESS**;
-- all authority, replay, multiplayer, historical regression, 0.1.66, face-transform and package-validation steps passed.
+- compile/typecheck, replay, lockstep, authority, CPU autoplay, Podium/Rematch, full-match simulation, historical regressions, 0.1.68 integration gate, package validation and artifact upload all PASS.
 
 Artifact:
-- `mememe-playtest-0.1.66-unified-flow-match-length`;
-- artifact ID `10414015335`;
-- size `8,597,042 bytes`;
-- SHA256 `e794a90f8c38605d57229263d9de6ca1e427f2e854e293b002db1361e4a49831`;
-- expires `2026-09-29T18:59:04Z`.
+- `mememe-playtest-0.1.68-vertical-slice`;
+- artifact ID `10431816769`;
+- size `8,599,672 bytes`;
+- SHA256 `0be10364a286b3d454df488d3efca76385487ae840356e771d2300134211944e`;
+- expires `2026-09-30T05:13:57Z`.
 
-Production Vite bundle from this checkpoint:
-- JS `assets/index-18fZ1c7p.js`;
-- CSS `assets/index-H5khdwyb.css`.
+After this handoff documentation commit, use the branch HEAD and its exact-SHA CI result as the docs-inclusive checkpoint. Do not assume a docs-only commit is green until verified.
 
-After these handoff docs are committed, run the full push CI again and record the exact docs-inclusive HEAD/run/artifact before calling the checkpoint finalized.
+## 11. Public web deployment
 
-## 10. Web deployment status
+Publisher for source `7aed259...`:
+- `Publish compiled web mirror` run `#24` / `35058626777`;
+- **SUCCESS**.
 
-Private-repo web workflow for the same green runtime SHA:
-- `MeMeMe Steam Deck Web Playtest` run `#39` / `35010767705`;
-- build/artifact SUCCESS;
-- deploy skipped because GitHub Pages is not enabled for the private repository.
-
-The public test URL Ron has been using is:
-`https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
-
-Public mirror repository:
+Public mirror:
 `ronvotri/ronvotri-MeMeMe-Web-Playtest`
 
-At the time of this handoff update, its committed `index.html` still references the older compiled bundle:
-- `assets/index-BqZUERzh.js`;
-- `assets/index-LXsjZvVl.css`.
+Public mirror commit:
+`6127238874f9ec390cada84647df23e366726bbf`
 
-A cross-repository artifact sync attempt was added but failed at artifact download because a public repository `GITHUB_TOKEN` cannot read artifacts from the private `MeMeMe-BoardGame` repository. Do not claim the public URL contains 0.1.66 until its committed `index.html` is verified to reference the 0.1.66 bundle and the Pages deployment succeeds.
+Commit message:
+`Publish compiled MeMeMe web playtest 7aed259`
 
-Do not commit temporary signed artifact URLs or credentials to either repository.
+Public bundle at that checkpoint:
+- JS `assets/index-CJFcCihn.js`;
+- CSS `assets/index-DdQGOELg.css`.
 
-## 11. Manual validation checklist for Ron
+GitHub Pages:
+- run `#17` / `35058735057`;
+- **SUCCESS**.
 
-Use the 0.1.66 artifact and, once verified deployed, the public web build.
+Public URL:
+`https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Priorities:
-1. mobile landscape fills the usable viewport much better than the screenshot from the older web build;
-2. Settings -> **TOÀN MÀN HÌNH** enters browser fullscreen where supported;
-3. reproduce several Jail/Hospital holds and confirm a CPU does not freeze after `ĐƯỢC THẢ!`;
-4. successful CPU release visibly proceeds to a fresh movement D6 only after release presentation clears;
-5. no double-roll or skipped turn after release;
-6. 1/2/3-lap picker works and the match ends at the selected target;
-7. Mini Game UI remains readable;
-8. rounded popup backings do not become orphan panels;
-9. controller/gamepad behavior still works;
-10. camera remains centered on the visible mover;
-11. continue watching the historical long-run token snap-back issue.
+Publisher has exact-SHA CI gating, current-branch-HEAD gating and concurrency protection. Do not weaken those guards.
 
-Do **not** call 0.1.66 user-accepted until Ron manually validates the runtime behavior above.
+## 12. Manual acceptance checklist
 
-0.1.49 Legacy Effect Audit remains historical input only.
+Ron should validate the web/packaged runtime, preferably mobile landscape fullscreen plus a desktop/Steam Deck pass:
+1. Menu, Setup, rules screen and Roll For Order all visibly identify 0.1.68 where version is shown;
+2. 1 / 2 / 3 LƯỢT selection works and matches 1 / 2 / 3 target laps;
+3. Roll For Order stays inside its frame;
+4. Job popup no longer leaks legacy description/result/salary text behind or outside the modal;
+5. several Job interactions do not break remaining movement;
+6. multiple Jail/Hospital release cycles do not freeze or double-roll;
+7. CPU autoplay remains healthy over a long match;
+8. mobile fullscreen icon stays below Settings and does not cover the HUD;
+9. DOM overlays stay aligned with the Phaser canvas in landscape/fullscreen;
+10. match reaches Podium at the selected target length;
+11. `CHƠI LẠI` starts a clean match and `VỀ LOBBY` returns correctly;
+12. keep watching the historical long-run token snap-back issue.
+
+Do **not** call 0.1.68 user-accepted until Ron manually validates the runtime above.
+
+## 13. Next development direction
+
+If 0.1.68 is manually accepted, use it as the new playable vertical-slice baseline. The planned next pass is content depth, not another architecture rewrite: deepen TIN TỨC / LÁ BÀI / Job / Mini Game variety while preserving this full-match flow.
 
 Do not merge PR #1.
