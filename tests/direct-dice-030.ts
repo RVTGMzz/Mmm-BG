@@ -49,4 +49,28 @@ assert.equal(
   'direct dice must stay hidden while Card hand/target/tactical picker is open',
 );
 
-console.log('[direct-dice-030] PASS direct dice only appears for the local human before rolling and stays hidden during Card selection');
+assert.equal(
+  shouldShowDirectTurnDice({
+    phase: 'PRE_ROLL_ACTION',
+    canControl: true,
+    isCpu: false,
+    shellActive: true,
+    presentationBlocking: true,
+  }),
+  false,
+  'release/result modal must block the fresh direct D6 until presentation closes',
+);
+
+assert.equal(
+  shouldShowDirectTurnDice({
+    phase: 'PRE_ROLL_ACTION',
+    canControl: true,
+    isCpu: false,
+    shellActive: true,
+    presentationBlocking: false,
+  }),
+  true,
+  'fresh direct D6 may return after the blocking release presentation closes',
+);
+
+console.log('[direct-dice-030] PASS direct dice is local-human only, presentation-safe and can return after release');
