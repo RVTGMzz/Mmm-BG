@@ -51,11 +51,7 @@ for (const slot of MINI_GAME_SLOTS_059) {
     ECONOMY_060.miniGameRpsTotal,
   );
 }
-assert.equal(
-  new Set(MINI_GAME_SLOTS_059.map((slot) => slot.majorityRewards.join(','))).size,
-  5,
-  'Each canonical Mini Game space must keep a distinct majority/minority stake profile.',
-);
+assert.equal(new Set(MINI_GAME_SLOTS_059.map((slot) => slot.majorityRewards.join(','))).size, 5, 'Each canonical Mini Game space must keep a distinct majority/minority stake profile.');
 
 const allInType = miniGameRewardType059('majority_minority', 'MINIGAME_SLOT_02');
 assert.equal(allInType, 'majority_minority@MINIGAME_SLOT_02');
@@ -74,12 +70,7 @@ assert.equal(jobDepthProfile059(idol).riskLabel, 'BIẾN ĐỘNG');
 assert.equal(jobDepthProfile059(thief).riskLabel, 'PHI PHÁP');
 assert.equal(jobDepthProfile059(thief).jailPercent, 12);
 
-const arrestState = createInitialMatchState({
-  boardId: BOARD.id,
-  startNodeId: BOARD.startNodeId,
-  playerNames: ['Career Risk'],
-  seed: 5901,
-});
+const arrestState = createInitialMatchState({ boardId: BOARD.id, startNodeId: BOARD.startNodeId, playerNames: ['Career Risk'], seed: 5901 });
 const criminal = arrestState.players[0]!;
 criminal.nodeId = 7;
 applyJobSelection(criminal, thief);
@@ -92,52 +83,27 @@ assert.equal(criminal.jobId, undefined);
 assert.equal(criminal.jobLevel, undefined);
 
 const slot2Board: BoardDefinition = {
-  id: 'minigame-slot2-059',
-  name: '0.1.59 slot 2 authority fixture',
-  startNodeId: 0,
-  nodes: [
-    { id: 0, x: 0, y: 0, type: 'normal' },
-    { id: 1, x: 10, y: 0, type: 'normal', feature: 'minigame', contentId: 'MINIGAME_SLOT_02' },
-  ],
+  id: 'minigame-slot2-059', name: '0.1.59 slot 2 authority fixture', startNodeId: 0,
+  nodes: [{ id: 0, x: 0, y: 0, type: 'normal' }, { id: 1, x: 10, y: 0, type: 'normal', feature: 'minigame', contentId: 'MINIGAME_SLOT_02' }],
   edges: [{ from: 0, to: 1, route: 'main' }],
 };
-const authority = createEmptyHostAuthority(
-  { boardId: slot2Board.id, startNodeId: 0, playerNames: ['P1', 'P2', 'P3', 'P4'], seed: 5902 },
-  { board: slot2Board, cards: [], news: [] },
-);
-const rollReceipt = submitClientIntent(authority, {
-  intentId: '059-mini-roll',
-  clientId: '059-test',
-  actorId: 0,
-  type: 'roll',
-  observedCommandSeq: hostAuthorityCommandSeq(authority),
-  data: {},
-});
+const authority = createEmptyHostAuthority({ boardId: slot2Board.id, startNodeId: 0, playerNames: ['P1', 'P2', 'P3', 'P4'], seed: 5902 }, { board: slot2Board, cards: [], news: [] });
+const rollReceipt = submitClientIntent(authority, { intentId: '059-mini-roll', clientId: '059-test', actorId: 0, type: 'roll', observedCommandSeq: hostAuthorityCommandSeq(authority), data: {} });
 assert.equal(rollReceipt.status, 'accepted');
 const sourceEvent = authority.state.eventLog.find((event) => event.type === 'minigame_tile');
 assert(sourceEvent);
 const payoutReceipt = submitClientIntent(authority, {
-  intentId: '059-mini-payout',
-  clientId: 'host-system',
-  actorId: authority.state.players[authority.state.turn.currentPlayerIndex]!.id,
-  type: 'resolve_minigame',
-  observedCommandSeq: hostAuthorityCommandSeq(authority),
-  data: {
-    sourceEventSeq: sourceEvent.seq,
-    gameType: allInType,
-    rankingPlayerIds: '0,1,2,3',
-  },
+  intentId: '059-mini-payout', clientId: 'host-system', actorId: authority.state.players[authority.state.turn.currentPlayerIndex]!.id,
+  type: 'resolve_minigame', observedCommandSeq: hostAuthorityCommandSeq(authority),
+  data: { sourceEventSeq: sourceEvent.seq, gameType: allInType, rankingPlayerIds: '0,1,2,3' },
 });
 assert.equal(payoutReceipt.status, 'accepted');
-assert.deepEqual(
-  authority.state.players.map((player) => player.money),
-  [235, 210, 205, 200],
-  'Slot 2 host-owned payout must use the tuned winner-heavy 35/10/5/0 profile.',
-);
+assert.deepEqual(authority.state.players.map((player) => player.money), [235, 210, 205, 200], 'Slot 2 host-owned payout must use the tuned winner-heavy 35/10/5/0 profile.');
 
 const scene059 = await readFile('src/scenes/CareerMinigameBoardScene059.ts', 'utf8');
 const scene060 = await readFile('src/scenes/CareerMinigameBoardScene060.ts', 'utf8');
 const scene061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'utf8');
+const scene069 = await readFile('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const canonical = await readFile('src/ui/canonicalPresentation0561.ts', 'utf8');
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
@@ -147,7 +113,10 @@ assert(!scene059.includes('Math.random'), '0.1.59 presentation wrapper must not 
 assert(!scene059.includes('submitIntent('), '0.1.59 scene must not become a second gameplay authority.');
 assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene061.includes('extends CareerMinigameBoardScene060'));
-assert(main.includes('CareerMinigameBoardScene061 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(scene069.includes('extends CareerMinigameBoardScene0682'));
+assert(!scene069.includes('Math.random'));
+assert(!scene069.includes('submitIntent('));
 assert(canonical.includes("version: '0.1.61'"));
 
-console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under 0.1.60 tuned payouts and 0.1.61 telemetry wrapper');
+console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under tuned payouts and 0.1.69 presentation wrapper');
