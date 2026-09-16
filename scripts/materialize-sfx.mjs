@@ -16,40 +16,6 @@ const SOURCES = [
   },
 ];
 
-const BRAND_LOGO = {
-  name: 'mememe-logo',
-  files: [
-    'mememe-logo.00.b64',
-    'mememe-logo.01.b64',
-    'mememe-logo.02a.b64',
-    'mememe-logo.02b.b64',
-    'mememe-logo.02c0.b64',
-    'mememe-logo.02c1.b64',
-    'mememe-logo.02c2.b64',
-    'mememe-logo.02c30.b64',
-    'mememe-logo.02c31.b64',
-    'mememe-logo.02c40.b64',
-    'mememe-logo.02c41.b64',
-    'mememe-logo.02d.b64',
-    'mememe-logo.03.b64',
-    'mememe-logo.04.b64',
-    'mememe-logo.05a.b64',
-    'mememe-logo.05b.b64',
-    'mememe-logo.05c.b64',
-    'mememe-logo.05d.b64',
-    'mememe-logo.tail00.b64',
-    'mememe-logo.tail01.b64',
-    'mememe-logo.tail02.b64',
-    'mememe-logo.tail03.b64',
-    'mememe-logo.tail04.b64',
-    'mememe-logo.tail05.b64',
-    'mememe-logo.tail06.b64',
-    'mememe-logo.tail07.b64',
-  ],
-  size: 71414,
-  sha256: '1e08e684e60bd8a5921eb5cf4404844e26e183b2a8a75fabddb1858b3d78f73f',
-};
-
 function sha256(buffer) {
   return createHash('sha256').update(buffer).digest('hex');
 }
@@ -120,49 +86,8 @@ async function materialize(source) {
   );
 }
 
-async function materializeBrandLogo(source) {
-  const chunks = [];
-  for (const file of source.files) {
-    chunks.push(await readFile(`scripts/brand-src/${file}`, 'utf8'));
-  }
-
-  const encoded = chunks.join('').replace(/\s+/g, '');
-  const invalid = [];
-  for (let index = 0; index < encoded.length; index += 1) {
-    const char = encoded[index];
-    if (!/[A-Za-z0-9+/=]/.test(char)) invalid.push({ index, char, codePoint: char.codePointAt(0) });
-  }
-  if (invalid.length > 0) {
-    throw new Error(
-      `${source.name}.webp invalid base64 chars: ${invalid
-        .slice(0, 8)
-        .map((item) => `index=${item.index} char=${JSON.stringify(item.char)} codePoint=${item.codePoint}`)
-        .join('; ')}`,
-    );
-  }
-
-  const data = Buffer.from(encoded, 'base64');
-  const digest = sha256(data);
-
-  if (data.length !== source.size) {
-    throw new Error(
-      `${source.name}.webp size mismatch: expected ${source.size}, got ${data.length}; encodedLength=${encoded.length}`,
-    );
-  }
-  if (digest !== source.sha256) {
-    throw new Error(`${source.name}.webp SHA256 mismatch: expected ${source.sha256}, got ${digest}`);
-  }
-  if (
-    data.subarray(0, 4).toString('ascii') !== 'RIFF' ||
-    data.subarray(8, 12).toString('ascii') !== 'WEBP'
-  ) {
-    throw new Error(`${source.name}.webp invalid WebP container`);
-  }
-
-  await mkdir('public/assets', { recursive: true });
-  await writeFile(`public/assets/${source.name}.webp`, data);
-  console.log(`[materialize-brand] ${source.name}.webp bytes=${data.length} sha256=${digest} webp=PASS`);
-}
-
+// Brand bitmap materialization is intentionally disabled for this hotfix.
+// The transferred WebP source was byte-corrupted and rendered as a black square.
+// SplashScene069 now draws a deterministic vector/text brand lockup instead, so
+// CI cannot accidentally republish the broken bitmap while gameplay fixes ship.
 for (const source of SOURCES) await materialize(source);
-await materializeBrandLogo(BRAND_LOGO);
