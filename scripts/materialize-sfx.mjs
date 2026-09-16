@@ -115,11 +115,27 @@ async function materializeBrandLogo(source) {
   }
 
   const encoded = chunks.join('').replace(/\s+/g, '');
+  const invalid = [];
+  for (let index = 0; index < encoded.length; index += 1) {
+    const char = encoded[index];
+    if (!/[A-Za-z0-9+/=]/.test(char)) invalid.push({ index, char, codePoint: char.codePointAt(0) });
+  }
+  if (invalid.length > 0) {
+    throw new Error(
+      `${source.name}.webp invalid base64 chars: ${invalid
+        .slice(0, 8)
+        .map((item) => `index=${item.index} char=${JSON.stringify(item.char)} codePoint=${item.codePoint}`)
+        .join('; ')}`,
+    );
+  }
+
   const data = Buffer.from(encoded, 'base64');
   const digest = sha256(data);
 
   if (data.length !== source.size) {
-    throw new Error(`${source.name}.webp size mismatch: expected ${source.size}, got ${data.length}`);
+    throw new Error(
+      `${source.name}.webp size mismatch: expected ${source.size}, got ${data.length}; encodedLength=${encoded.length}`,
+    );
   }
   if (digest !== source.sha256) {
     throw new Error(`${source.name}.webp SHA256 mismatch: expected ${source.sha256}, got ${digest}`);
