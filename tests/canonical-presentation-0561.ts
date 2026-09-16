@@ -17,6 +17,7 @@ const scene059Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardSc
 const scene060Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
 const scene061Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061.ts', import.meta.url), 'utf8');
 const scene062Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene062.ts', import.meta.url), 'utf8');
+const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
 const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.meta.url), 'utf8');
 
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
@@ -25,74 +26,39 @@ assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
 assert(CANONICAL_PRESENTATION_0561.normalFollowZoom > CANONICAL_PRESENTATION_0561.branchDecisionZoom);
 assert(CANONICAL_PRESENTATION_0561.branchDecisionZoom > CANONICAL_PRESENTATION_0561.overviewZoom);
 
-assert.deepEqual(
-  CANONICAL_HUD_POSITIONS_0561.map((position) => position.corner),
-  ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
-  'P1/P2/P3/P4 must stay locked to the four canonical screen corners.',
-);
+assert.deepEqual(CANONICAL_HUD_POSITIONS_0561.map((position) => position.corner), ['top-left','top-right','bottom-left','bottom-right'], 'P1/P2/P3/P4 must stay locked to the four canonical screen corners.');
 assert.equal(canonicalHudPosition0561(0).corner, 'top-left');
 assert.equal(canonicalHudPosition0561(1).corner, 'top-right');
 assert.equal(canonicalHudPosition0561(2).corner, 'bottom-left');
 assert.equal(canonicalHudPosition0561(3).corner, 'bottom-right');
-
 assert.equal(BOARD.id, 'city-mvp-graph-01', 'Presentation pass must not fork authoritative board identity.');
 assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 44);
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
-assert(
-  mainSource.includes("CareerMinigameBoardScene062 as ActiveBoardScene"),
-  'Canonical START_PLAYTEST runtime must advance through the 0.1.62 human-feedback wrapper.',
-);
-assert(
-  scene062Source.includes('extends CareerMinigameBoardScene061'),
-  '0.1.62 must preserve 0.1.61 telemetry and the full validated presentation chain.',
-);
-assert(
-  scene061Source.includes('extends CareerMinigameBoardScene060'),
-  '0.1.61 report wrapper must preserve 0.1.60 and the full validated presentation chain.',
-);
-assert(
-  scene060Source.includes('extends CareerMinigameBoardScene059'),
-  '0.1.60 pacing/economy wrapper must retain 0.1.59 and the full validated presentation chain.',
-);
-assert(
-  scene059Source.includes('extends CareerMinigameBoardScene058'),
-  '0.1.59 Job/Mini wrapper must preserve 0.1.58 and the full validated presentation chain.',
-);
-assert(
-  scene058Source.includes('extends CareerMinigameBoardScene057'),
-  '0.1.58 depth wrapper must preserve 0.1.57 authority and the canonical presentation chain.',
-);
-assert(
-  scene057Source.includes('extends CareerMinigameBoardScene0561'),
-  '0.1.57 must preserve the canonical 0.1.56.1 presentation wrapper.',
-);
-assert(
-  sceneSource.includes('extends CareerMinigameBoardScene056'),
-  '0.1.56.1 must inherit the validated 0.1.56 gameplay/authority chain.',
-);
+assert(mainSource.includes('CareerMinigameBoardScene069 as ActiveBoardScene'), 'Canonical runtime may advance presentation wrappers while preserving the validated chain.');
+assert(scene069Source.includes('extends CareerMinigameBoardScene0682'), '0.1.69 must remain above the validated presentation/authority chain.');
+assert(!scene069Source.includes('Math.random'), '0.1.69 presentation must not add RNG.');
+assert(!scene069Source.includes('submitIntent('), '0.1.69 presentation must not mutate gameplay authority.');
+assert(scene062Source.includes('extends CareerMinigameBoardScene061'), '0.1.62 must preserve 0.1.61 telemetry and the full validated presentation chain.');
+assert(scene061Source.includes('extends CareerMinigameBoardScene060'));
+assert(scene060Source.includes('extends CareerMinigameBoardScene059'));
+assert(scene059Source.includes('extends CareerMinigameBoardScene058'));
+assert(scene058Source.includes('extends CareerMinigameBoardScene057'));
+assert(scene057Source.includes('extends CareerMinigameBoardScene0561'));
+assert(sceneSource.includes('extends CareerMinigameBoardScene056'));
 assert(sceneSource.includes("'canonical-ui-0561'"), 'Canonical runtime needs a separate fixed UI camera.');
 assert(sceneSource.includes('startFollow(token'), 'Normal gameplay camera must follow the active token.');
 assert(sceneSource.includes('setOverviewMode'), 'Full-map view must be an explicit Overview mode.');
-assert(sceneSource.includes('showBranchPicker'), 'Legacy 0.1.56.1 wrapper keeps its historical manual picker for replay compatibility.');
+assert(sceneSource.includes('showBranchPicker'));
 assert(sceneSource.includes("phase !== 'BRANCH_CHOICE'"));
-assert(!sceneSource.includes('pickParityEdge'), 'Parity authority must stay outside presentation.');
-assert(!sceneSource.includes('0.1.25'), 'Canonical presentation must not encode the leaked 0.1.25 label.');
-assert(!scene059Source.includes('Math.random'), '0.1.59 must not add presentation RNG.');
-assert(!scene059Source.includes('submitIntent('), '0.1.59 scene must keep gameplay authority outside presentation.');
-assert(!scene060Source.includes('Math.random'), '0.1.60 must not add presentation RNG.');
-assert(!scene060Source.includes('submitIntent('), '0.1.60 scene must keep gameplay authority outside presentation.');
-assert(!scene061Source.includes('Math.random'), '0.1.61 must not add presentation RNG.');
-assert(!scene061Source.includes('submitIntent('), '0.1.61 scene must keep gameplay authority outside presentation.');
-assert(!scene062Source.includes('Math.random'), '0.1.62 presentation must not add a second RNG stream.');
-assert(!scene062Source.includes('submitIntent('), '0.1.62 presentation must not mutate gameplay authority.');
-
-assert(
-  !pickerSource.includes('1280, 720'),
-  'Historical Branch picker must not restore a full-screen dim surface that hides route context.',
-);
+assert(!sceneSource.includes('pickParityEdge'));
+assert(!sceneSource.includes('0.1.25'));
+assert(!scene059Source.includes('Math.random')); assert(!scene059Source.includes('submitIntent('));
+assert(!scene060Source.includes('Math.random')); assert(!scene060Source.includes('submitIntent('));
+assert(!scene061Source.includes('Math.random')); assert(!scene061Source.includes('submitIntent('));
+assert(!scene062Source.includes('Math.random')); assert(!scene062Source.includes('submitIntent('));
+assert(!pickerSource.includes('1280, 720'), 'Historical Branch picker must not restore a full-screen dim surface that hides route context.');
 assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
-
-console.log('[canonical-presentation-0561] PASS canonical camera/HUD retained through 0.1.62 wrapper; legacy picker remains dormant compatibility code');
+console.log('[canonical-presentation-0561] PASS canonical camera/HUD retained through 0.1.69 presentation wrapper; authority chain preserved');
