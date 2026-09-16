@@ -19,7 +19,7 @@ assert.match(main, /SplashScene069,[\s\S]*LocalLobbyScene,[\s\S]*SetupScene,[\s\
 assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
 assert.match(packageJson, /materialize:brand/);
 assert.match(packageJson, /prebuild[^\n]*materialize:brand/);
-assert.match(brandMaterializer, /encoded\.length !== 95_219/);
+assert.match(brandMaterializer, /encoded\.length !== 95_220/);
 assert.match(brandMaterializer, /data\.length !== 71_414/);
 assert.match(brandMaterializer, /width !== 1024 \|\| height !== 1024/);
 assert(existsSync('public/assets/mememe-logo-official.webp'), 'canonical MeMeMe logo must be materialized before tests/package');
