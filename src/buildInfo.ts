@@ -1,4 +1,4 @@
-const version = '0.1.68' as const;
+const version = '0.1.68.1' as const;
 
 /**
  * Canonical visible build identity for the playable vertical slice.
@@ -9,13 +9,13 @@ const version = '0.1.68' as const;
  */
 export const MEMEME_BUILD = {
   version,
-  phase: 'VERTICAL SLICE STABILIZATION',
+  phase: 'MOBILE READABILITY + MODAL CLEANUP',
   lobbyHeader: `PLAYTEST • MVP ${version}`,
-  lobbySubtitle: 'Vertical Slice • Setup → Luật → Roll → Trận → Podium → Rematch',
+  lobbySubtitle: 'Vertical Slice • Mobile Readability • Setup → Luật → Roll → Trận → Podium → Rematch',
   setupHeader: `FACE SETUP • PLAYTEST MVP ${version}`,
-  setupStatus: `${version}: Menu → Face Setup → Chọn luật chơi → Roll For Order → Trận → Podium → Rematch.`,
-  rollOrderBadge: `MVP ${version} • AUTHORITATIVE D6 • VERTICAL SLICE`,
-  boardHeader: `CITY • MVP ${version} • VERTICAL SLICE`,
-  boardBadge: `PLAYTEST ${version} • END-TO-END STABILIZATION`,
-  artifactName: `mememe-playtest-${version}-vertical-slice`,
+  setupStatus: `${version}: Mobile readability + modal cleanup on the stabilized vertical slice.`,
+  rollOrderBadge: `MVP ${version} • AUTHORITATIVE D6 • MOBILE READABILITY`,
+  boardHeader: `CITY • MVP ${version} • MOBILE READABILITY`,
+  boardBadge: `PLAYTEST ${version} • MOBILE READABILITY + MODAL CLEANUP`,
+  artifactName: `mememe-playtest-${version}-mobile-readability`,
 } as const;
