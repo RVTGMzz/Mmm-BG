@@ -24,6 +24,7 @@ const board062 = await readFile('src/scenes/CareerMinigameBoardScene062.ts', 'ut
 const board0651 = await readFile('src/scenes/CareerMinigameBoardScene0651.ts', 'utf8');
 const board066 = await readFile('src/scenes/CareerMinigameBoardScene066.ts', 'utf8');
 const board068 = await readFile('src/scenes/CareerMinigameBoardScene068.ts', 'utf8');
+const board0681 = await readFile('src/scenes/CareerMinigameBoardScene0681.ts', 'utf8');
 const releaseGuard066 = await readFile('src/core/cpuReleaseResume066.ts', 'utf8');
 const picker = await readFile('src/ui/CardHandPicker.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
@@ -70,6 +71,9 @@ assert(board066.includes('extends CareerMinigameBoardScene0651'), '0.1.66 must k
 assert(!board066.includes('Math.random'), '0.1.66 wrapper must add no client RNG');
 assert(board068.includes('extends CareerMinigameBoardScene067'), '0.1.68 must remain a presentation-only wrapper above the validated chain');
 assert(!board068.includes('Math.random'), '0.1.68 wrapper must add no client RNG');
+assert(board0681.includes('extends CareerMinigameBoardScene068'), '0.1.68.1 must remain presentation-only above 0.1.68');
+assert(!board0681.includes('Math.random'), '0.1.68.1 readability wrapper must add no client RNG');
+assert(!board0681.includes('submitIntent('), '0.1.68.1 readability wrapper must remain authority-free');
 
 // 0.1.66 human runtime found a CPU stall after a successful same-turn Jail/Hospital release.
 // Permit exactly the guarded fresh-roll wake-up through the existing HOST intent path.
@@ -83,10 +87,10 @@ assert(!releaseGuard066.includes('submitIntent('), 'guard helper must remain pur
 assert(picker.includes('CHỌN LÁ BÀI') && picker.includes('DÙNG LÁ NÀY'));
 assert(!picker.includes('CHỌN PHÉP THUẬT'));
 assert(main.includes('TurnOrderScene048'));
-assert(main.includes('CareerMinigameBoardScene068 as ActiveBoardScene'));
-assert.equal(MEMEME_BUILD.version, '0.1.68');
+assert(main.includes('CareerMinigameBoardScene0681 as ActiveBoardScene'));
+assert.equal(MEMEME_BUILD.version, '0.1.68.1');
 assert(lobby.includes('MEMEME_BUILD.lobbyHeader'), 'Lobby must use the canonical visible build source.');
 assert(setup.includes('MEMEME_BUILD.setupHeader'), 'Setup must use the canonical visible build source.');
 assert(lobby.includes('TIN TỨC / LÁ BÀI'), 'Current vocabulary must retain TIN TỨC / LÁ BÀI.');
 
-console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + guarded CPU release wake-up + vocabulary retained through 0.1.68');
+console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + guarded CPU release wake-up + vocabulary retained through 0.1.68.1');
