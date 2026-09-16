@@ -16,6 +16,28 @@ const SOURCES = [
   },
 ];
 
+const BRAND_LOGO = {
+  name: 'mememe-logo',
+  files: [
+    'mememe-logo.00.b64',
+    'mememe-logo.01.b64',
+    'mememe-logo.02.b64',
+    'mememe-logo.03.b64',
+    'mememe-logo.04.b64',
+    'mememe-logo.05.b64',
+    'mememe-logo.tail00.b64',
+    'mememe-logo.tail01.b64',
+    'mememe-logo.tail02.b64',
+    'mememe-logo.tail03.b64',
+    'mememe-logo.tail04.b64',
+    'mememe-logo.tail05.b64',
+    'mememe-logo.tail06.b64',
+    'mememe-logo.tail07.b64',
+  ],
+  size: 71414,
+  sha256: '1e08e684e60bd8a5921eb5cf4404844e26e183b2a8a75fabddb1858b3d78f73f',
+};
+
 function sha256(buffer) {
   return createHash('sha256').update(buffer).digest('hex');
 }
@@ -86,4 +108,33 @@ async function materialize(source) {
   );
 }
 
+async function materializeBrandLogo(source) {
+  const chunks = [];
+  for (const file of source.files) {
+    chunks.push(await readFile(`scripts/brand-src/${file}`, 'utf8'));
+  }
+
+  const encoded = chunks.join('').replace(/\s+/g, '');
+  const data = Buffer.from(encoded, 'base64');
+  const digest = sha256(data);
+
+  if (data.length !== source.size) {
+    throw new Error(`${source.name}.webp size mismatch: expected ${source.size}, got ${data.length}`);
+  }
+  if (digest !== source.sha256) {
+    throw new Error(`${source.name}.webp SHA256 mismatch: expected ${source.sha256}, got ${digest}`);
+  }
+  if (
+    data.subarray(0, 4).toString('ascii') !== 'RIFF' ||
+    data.subarray(8, 12).toString('ascii') !== 'WEBP'
+  ) {
+    throw new Error(`${source.name}.webp invalid WebP container`);
+  }
+
+  await mkdir('public/assets', { recursive: true });
+  await writeFile(`public/assets/${source.name}.webp`, data);
+  console.log(`[materialize-brand] ${source.name}.webp bytes=${data.length} sha256=${digest} webp=PASS`);
+}
+
 for (const source of SOURCES) await materialize(source);
+await materializeBrandLogo(BRAND_LOGO);
