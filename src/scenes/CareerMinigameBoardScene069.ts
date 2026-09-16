@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import jobsJson from '../content/core/jobs_mvp.json';
+import { browserSession } from '../core/browserSession';
 import { jobById, jobSalary, type JobDefinition } from '../core/jobs';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
@@ -22,12 +23,16 @@ type HudHandle069 = {
 type Runtime069 = {
   match: MatchState;
   hud: Map<number, HudHandle069>;
+  handButton?: Phaser.GameObjects.Rectangle;
+  handButtonText?: Phaser.GameObjects.Text;
   currentPlayer(): PlayerState | undefined;
+  canControlCurrentPlayer(): boolean;
 };
 
 type Presentation069 = {
   active?: Phaser.GameObjects.Container;
   currentModel?: PresentationEventModel;
+  isBlocking?(): boolean;
 };
 
 /**
@@ -42,6 +47,7 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
     super.create();
     this.installOwnedHudLabels069();
     this.syncHud069();
+    this.syncCardHandVisibility069();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restore069());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restore069());
   }
@@ -49,6 +55,7 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
   update(): void {
     super.update();
     this.syncHud069();
+    this.syncCardHandVisibility069();
     this.polishJobHub069();
     this.polishJobResult069();
   }
@@ -79,8 +86,6 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
   }
 
   private fitJobLabel069(label: Phaser.GameObjects.Text, copy: string, active: boolean): void {
-    // Keep every career line inside the same 184 px HUD slot. The longest current
-    // title is "Nhân viên văn phòng"; active salary copy needs one extra shrink step.
     const length = [...copy].length;
     const fontSize = length >= 31 ? 9 : length >= 27 ? 10 : length >= 23 ? 11 : active ? 12 : 12;
     label
@@ -93,9 +98,6 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
 
   private syncHud069(): void {
     const runtime = this.runtime069();
-    // Authoritative state may already point at the next player while the previous
-    // player's move/tile animation is still on screen. Match the camera rule from
-    // 0.1.63.2 so HUD scale stays on the presentation actor until that visual ends.
     const activeId = resolveCameraActor0632(
       runtime.currentPlayer()?.id,
       this.presentation069()?.currentModel,
@@ -106,8 +108,6 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       const label = this.ownedJobLabels069.get(player.id);
       if (!ui || !label) continue;
 
-      // Legacy layers may rewrite ui.meta every frame. 0.1.69 permanently removes
-      // that visual owner and renders one bounded career line of its own.
       ui.meta.setText('').setVisible(false);
       const active = player.id === activeId;
       ui.root.setScale(active ? ACTIVE_SCALE_069 : IDLE_SCALE_069).setAlpha(active ? 1 : 0.94);
@@ -124,6 +124,28 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       const copy = active ? `${job.title} L${level} • ${salary}/v` : job.title;
       this.fitJobLabel069(label, copy, active);
     }
+  }
+
+  private syncCardHandVisibility069(): void {
+    const runtime = this.runtime069();
+    const player = runtime.currentPlayer();
+    const blocking = this.presentation069()?.isBlocking?.() ?? false;
+    const humanTurn = Boolean(
+      player &&
+      runtime.canControlCurrentPlayer() &&
+      !browserSession.isCpuSeat(player.id),
+    );
+    const visible = humanTurn && !blocking;
+
+    if (runtime.handButton) {
+      runtime.handButton.setVisible(visible);
+      if (visible) {
+        if (!runtime.handButton.input?.enabled) runtime.handButton.setInteractive({ useHandCursor: true });
+      } else if (runtime.handButton.input?.enabled) {
+        runtime.handButton.disableInteractive();
+      }
+    }
+    runtime.handButtonText?.setVisible(visible);
   }
 
   private polishJobHub069(): void {
@@ -156,24 +178,44 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
     const job = player?.jobStatus === 'employed' ? jobById(JOBS_069, player.jobId) : undefined;
     const level = job && player ? Math.max(1, Math.min(job.maxLevel, Math.floor(player.jobLevel ?? 1))) : 0;
     const salary = job && level > 0 ? jobSalary(job, level) : 0;
+    const normalizedJobTitle = job ? this.normalize069(job.title) : '';
+    const normalizedJobIcon = job ? this.normalize069(job.icon) : '';
 
     this.visitContainerTexts069(root, (text) => {
       const copy = this.normalize069(text.text);
-      // The inherited Job result still owns a narration line such as
-      // “CPU 4 đổ 5, trúng Shipper • lương Lv.1 45”. It belongs to the same modal
-      // container, so generic outside-modal leak suppression cannot see it.
       if (copy.includes('trúng') || (copy.includes('đổ') && copy.includes('lương'))) {
         this.hideLeakText069(text);
         return;
       }
+      if (normalizedJobIcon && copy === normalizedJobIcon) {
+        this.hideLeakText069(text);
+        return;
+      }
+      if (copy.endsWith('• job')) {
+        text
+          .setPosition(0, -78)
+          .setOrigin(0.5)
+          .setFixedSize(500, 28)
+          .setAlign('center');
+        return;
+      }
       if (copy.includes('nhận việc')) {
         const roll = text.text.match(/🎲\s*([1-6])/)?.[1] ?? text.text.match(/\b([1-6])\s*→/)?.[1] ?? '';
-        text.setText(`🎲${roll ? ` ${roll}` : ''} → NHẬN VIỆC`).setFontSize(30).setFixedSize(500, 44).setAlign('center');
-      } else if (text.x <= -150 && text.y >= 8) {
         text
-          .setText(job ? `${job.icon} ${job.title} • ${salary} B$/vòng` : 'Đã nhận nghề')
+          .setText(`🎲${roll ? ` ${roll}` : ''} → NHẬN VIỆC`)
+          .setPosition(0, -12)
+          .setOrigin(0.5)
+          .setFontSize(30)
+          .setFixedSize(500, 44)
+          .setAlign('center');
+      } else if ((normalizedJobTitle && copy.includes(normalizedJobTitle)) || (text.x <= -150 && text.y >= 8)) {
+        text
+          .setText(job ? `${job.title} • ${salary} B$/vòng` : 'Đã nhận nghề')
+          .setPosition(0, 48)
+          .setOrigin(0.5)
           .setFontSize(18)
           .setFixedSize(410, 32)
+          .setAlign('center')
           .setWordWrapWidth(410, true)
           .setMaxLines(1);
       }
