@@ -23,7 +23,9 @@ body.mememe-splash-active .mememe-settings { opacity: 0; pointer-events: none; }
 .mememe-setup-069 .face-slot { border-radius:20px; }
 .mememe-setup-069 .face-label { font-size:13px; }
 .mememe-setup-069 .face-action { font-size:12px; }
-.cpu-tag-069 { display:inline-block; margin:-4px 0 8px; padding:4px 9px; border-radius:999px; background:#eee3f4; color:#795796; font-size:12px; font-weight:900; }
+.player-role-row-069 { min-height:30px; display:flex; align-items:center; margin:-4px 0 8px; }
+.cpu-tag-069 { display:inline-block; margin:0; padding:4px 9px; border-radius:999px; background:#eee3f4; color:#795796; font-size:12px; font-weight:900; }
+.player-role-placeholder-069 { visibility:hidden; padding:4px 9px; font-size:12px; font-weight:900; }
 .mememe-setup-069 .setup-footer { grid-template-columns:auto 1fr auto; gap:14px; border-radius:22px; padding:12px 16px; }
 .mememe-setup-069 .setup-hint { font-size:16px; font-weight:800; }
 .mememe-setup-069 .setup-status { font-size:14px; min-height:0; }
