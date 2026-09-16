@@ -165,22 +165,24 @@ jobs:
         run: npm run test:ui-ghost-gamepad-web-0651
       - name: 0.1.66 unified flow match length and Mini Game readability
         run: npm run test:unified-flow-match-length-066
-      - name: 0.1.68.1 mobile readability and modal cleanup
+      - name: 0.1.68.2 vertical slice canonical mobile UI
         run: npm run test:vertical-slice-068
       - name: Canonical UI UX design contract
         run: npm run test:canonical-ui-ux
+      - name: 0.1.68.2 active HUD Job details and safe bubbles
+        run: npm run test:canonical-ui-0682
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
 
-      - name: Add 0.1.68.1 playtest guide to package
-        run: cp docs/PLAYTEST_0.1.68.1_MOBILE_READABILITY.md dist/PLAYTEST_GUIDE.md
+      - name: Add 0.1.68.2 playtest guide to package
+        run: cp docs/PLAYTEST_0.1.68.2_CANONICAL_MOBILE_UI.md dist/PLAYTEST_GUIDE.md
 
-      - name: Upload MVP 0.1.68.1 mobile readability build
+      - name: Upload MVP 0.1.68.2 canonical mobile UI build
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-playtest-0.1.68.1-mobile-readability
+          name: mememe-playtest-0.1.68.2-canonical-mobile-ui
           path: dist
           if-no-files-found: error
           retention-days: 14
