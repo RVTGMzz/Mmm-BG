@@ -56,6 +56,7 @@ export function installSettingsPanel(): void {
   root.id = 'mememe-settings';
   root.className = 'mememe-settings';
   root.innerHTML = `
+    <button class="mobile-fullscreen-shortcut" type="button" aria-label="Bật/tắt toàn màn hình" aria-pressed="false">⛶ FULL</button>
     <button class="settings-trigger" type="button" aria-label="Mở cài đặt" aria-expanded="false">⚙️</button>
     <section class="settings-panel" aria-label="Cài đặt" hidden>
       <header class="settings-head">
@@ -115,6 +116,7 @@ export function installSettingsPanel(): void {
   const bgmStatus = root.querySelector<HTMLElement>('.settings-bgm-status');
   const sfxToggle = root.querySelector<HTMLButtonElement>('.settings-sfx-toggle');
   const fullscreenToggle = root.querySelector<HTMLButtonElement>('.settings-fullscreen-toggle');
+  const mobileFullscreenShortcut = root.querySelector<HTMLButtonElement>('.mobile-fullscreen-shortcut');
 
   const setOpen = (open: boolean) => {
     if (!panel || !trigger) return;
@@ -126,16 +128,31 @@ export function installSettingsPanel(): void {
   };
 
   const refreshFullscreenButton = () => {
-    if (!fullscreenToggle) return;
     const target = document.documentElement as LegacyFullscreenElement;
     const supported = Boolean(document.fullscreenEnabled || target.requestFullscreen || target.webkitRequestFullscreen);
-    fullscreenToggle.disabled = !supported;
-    fullscreenToggle.classList.toggle('is-off', !supported);
-    fullscreenToggle.textContent = !supported
-      ? 'KHÔNG HỖ TRỢ'
-      : isFullscreenActive()
-        ? '↙ THOÁT FULL'
-        : '⛶ TOÀN MÀN HÌNH';
+    const active = isFullscreenActive();
+
+    if (fullscreenToggle) {
+      fullscreenToggle.disabled = !supported;
+      fullscreenToggle.classList.toggle('is-off', !supported);
+      fullscreenToggle.textContent = !supported
+        ? 'KHÔNG HỖ TRỢ'
+        : active
+          ? '↙ THOÁT FULL'
+          : '⛶ TOÀN MÀN HÌNH';
+    }
+
+    if (mobileFullscreenShortcut) {
+      mobileFullscreenShortcut.hidden = !supported;
+      mobileFullscreenShortcut.textContent = active ? '↙ THOÁT' : '⛶ FULL';
+      mobileFullscreenShortcut.setAttribute('aria-pressed', active ? 'true' : 'false');
+      mobileFullscreenShortcut.classList.toggle('is-active', active);
+    }
+  };
+
+  const runFullscreenToggle = () => {
+    sfxController.play('ui_confirm');
+    void toggleFullscreen().finally(refreshFullscreenButton);
   };
 
   trigger?.addEventListener('click', () => {
@@ -166,10 +183,8 @@ export function installSettingsPanel(): void {
     bgmController.setVolume(Number(bgmVolume.value) / 100);
   });
   sfxToggle?.addEventListener('click', () => sfxController.toggleMuted());
-  fullscreenToggle?.addEventListener('click', () => {
-    sfxController.play('ui_confirm');
-    void toggleFullscreen().finally(refreshFullscreenButton);
-  });
+  fullscreenToggle?.addEventListener('click', runFullscreenToggle);
+  mobileFullscreenShortcut?.addEventListener('click', runFullscreenToggle);
   document.addEventListener('fullscreenchange', refreshFullscreenButton);
   document.addEventListener('webkitfullscreenchange', refreshFullscreenButton as EventListener);
   refreshFullscreenButton();
