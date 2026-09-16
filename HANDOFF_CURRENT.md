@@ -20,35 +20,33 @@ Never regress HOST authority, replay/checksum determinism, remote Roll For Order
 
 Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
 
-## 2. Current candidate — MVP 0.1.68
+## 2. Current candidate — MVP 0.1.68.x
 
-**0.1.68 — Vertical Slice Stabilization**
+Current presentation/stabilization family: **0.1.68.x**.
 
 Manual status: **PENDING RON ACCEPTANCE**.
 
-Purpose: stop adding new systems long enough to make one complete match reliable:
+Purpose: stop adding new systems long enough to make one complete match reliable and readable:
 
 `Menu → Setup → Chọn luật → Roll For Order → Trận → Podium → Rematch`
 
-0.1.68 is a stabilization/presentation pass. It deliberately adds no new gameplay RNG or alternative authority path.
+The 0.1.68.x line is stabilization/presentation work. It deliberately adds no new gameplay RNG or alternative authority path.
 
 ## 3. Runtime chain
 
-`START_PLAYTEST.bat` activates:
-`CareerMinigameBoardScene068 as ActiveBoardScene`
+`START_PLAYTEST.bat` activates the current 0.1.68.x presentation wrapper above the validated authority chain.
 
-Inheritance:
+Core inheritance remains rooted in:
 `068 -> 067 -> 066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048 -> validated authority chain`
+
+Later 0.1.68.x presentation wrappers must remain authority-free.
 
 ## 4. One visible build identity
 
-New source of truth:
+Source of truth:
 `src/buildInfo.ts`
 
-Current visible version:
-`0.1.68`
-
-Menu, Setup, Roll For Order and board now read their visible build copy from `MEMEME_BUILD` instead of hard-coding different historical MVP numbers.
+Menu, Setup, Roll For Order and board read visible build copy from `MEMEME_BUILD` instead of hard-coding different historical MVP numbers.
 
 Do not reintroduce scene-local visible version strings.
 
@@ -68,7 +66,7 @@ The picker reuses existing authoritative `targetLaps` state. It does not create 
 
 Human screenshots showed legacy Job/result/HUD text bleeding outside the canonical dark Job popup.
 
-`CareerMinigameBoardScene068` now runs a presentation-only guard after inherited updates. While the canonical Job modal is active it temporarily hides matching noncanonical Job description/result/salary text outside the modal, then restores the original visibility after the modal closes.
+0.1.68.x presentation wrappers must suppress unrelated legacy/result/HUD text while a blocking Job or other canonical modal owns focus, then restore normal HUD visibility after the modal closes.
 
 Safety:
 - no `Math.random`;
@@ -80,7 +78,7 @@ Manual screenshot/runtime confirmation is still required. CI cannot prove pixel-
 
 ## 7. Mobile / Steam Deck retained
 
-Retained from the 0.1.66–0.1.67 hotfix chain:
+Retained from the 0.1.66–0.1.68.x chain:
 - logical game remains 1280×720 with Phaser FIT;
 - dynamic mobile viewport handling uses `100dvh / 100dvw`;
 - scale refreshes on resize/orientation/`visualViewport`/fullscreen changes;
@@ -101,73 +99,36 @@ Inherited result flow remains authoritative and covered by regression tests:
 - `CHƠI LẠI 🔁` resets and begins a clean match;
 - `VỀ LOBBY` returns to the lobby flow.
 
-## 9. New 0.1.68 integration guard
+## 9. 0.1.68 integration guards
 
-`tests/vertical-slice-068.ts` protects the candidate against accidental regression of:
-- canonical 0.1.68 visible version source;
+The 0.1.68 test family protects against accidental regression of:
+- canonical visible version source;
 - `Menu → Setup → rules → Roll → board` scene chain;
 - real 1/2/3-lap finish semantics;
-- Job modal isolation;
+- Job/modal isolation;
 - Podium/Rematch/Lobby controls;
 - mobile fullscreen/viewport and Steam Deck gamepad wiring;
 - CI coverage for CPU stress and deterministic long-match simulation.
 
-The historical 0.1.48 bugfix test was rebased only where it had obsolete visible-label assertions. Its authority/no-RNG/stale-token/release guards remain intact.
+The historical 0.1.48 bugfix test is rebased only where obsolete visible-label assertions need to follow the current build. Its authority/no-RNG/stale-token/release guards remain intact.
 
-## 10. Green functional checkpoint before this handoff-doc commit
-
-Source SHA:
-`7aed259ce1c7fc28478095b3a2f8eb1ba3201acc`
-
-Main push CI:
-- run `#2531` / `35058626805`;
-- **FULL SUITE SUCCESS**;
-- compile/typecheck, replay, lockstep, authority, CPU autoplay, Podium/Rematch, full-match simulation, historical regressions, 0.1.68 integration gate, package validation and artifact upload all PASS.
-
-Artifact:
-- `mememe-playtest-0.1.68-vertical-slice`;
-- artifact ID `10431816769`;
-- size `8,599,672 bytes`;
-- SHA256 `0be10364a286b3d454df488d3efca76385487ae840356e771d2300134211944e`;
-- expires `2026-09-30T05:13:57Z`.
-
-After this handoff documentation commit, use the branch HEAD and its exact-SHA CI result as the docs-inclusive checkpoint. Do not assume a docs-only commit is green until verified.
-
-## 11. Public web deployment
-
-Publisher for source `7aed259...`:
-- `Publish compiled web mirror` run `#24` / `35058626777`;
-- **SUCCESS**.
+## 10. Public web deployment
 
 Public mirror:
 `ronvotri/ronvotri-MeMeMe-Web-Playtest`
-
-Public mirror commit:
-`6127238874f9ec390cada84647df23e366726bbf`
-
-Commit message:
-`Publish compiled MeMeMe web playtest 7aed259`
-
-Public bundle at that checkpoint:
-- JS `assets/index-CJFcCihn.js`;
-- CSS `assets/index-DdQGOELg.css`.
-
-GitHub Pages:
-- run `#17` / `35058735057`;
-- **SUCCESS**.
 
 Public URL:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
 Publisher has exact-SHA CI gating, current-branch-HEAD gating and concurrency protection. Do not weaken those guards.
 
-## 12. Manual acceptance checklist
+## 11. Manual acceptance checklist
 
 Ron should validate the web/packaged runtime, preferably mobile landscape fullscreen plus a desktop/Steam Deck pass:
-1. Menu, Setup, rules screen and Roll For Order all visibly identify 0.1.68 where version is shown;
+1. Menu, Setup, rules screen and Roll For Order use the current canonical build identity;
 2. 1 / 2 / 3 LƯỢT selection works and matches 1 / 2 / 3 target laps;
 3. Roll For Order stays inside its frame;
-4. Job popup no longer leaks legacy description/result/salary text behind or outside the modal;
+4. Job/result/news/card modals do not leak unrelated text behind or outside the modal;
 5. several Job interactions do not break remaining movement;
 6. multiple Jail/Hospital release cycles do not freeze or double-roll;
 7. CPU autoplay remains healthy over a long match;
@@ -177,10 +138,50 @@ Ron should validate the web/packaged runtime, preferably mobile landscape fullsc
 11. `CHƠI LẠI` starts a clean match and `VỀ LOBBY` returns correctly;
 12. keep watching the historical long-run token snap-back issue.
 
-Do **not** call 0.1.68 user-accepted until Ron manually validates the runtime above.
+Do **not** call the 0.1.68.x family user-accepted until Ron manually validates the runtime.
 
-## 13. Next development direction
+## 12. Mandatory canonical UI / UX design contract
 
-If 0.1.68 is manually accepted, use it as the new playable vertical-slice baseline. The planned next pass is content depth, not another architecture rewrite: deepen TIN TỨC / LÁ BÀI / Job / Mini Game variety while preserving this full-match flow.
+**This section is a permanent project rule, not a temporary 0.1.68 fix.**
+
+Canonical source:
+`docs/CANONICAL_UI_UX_RULES.md`
+
+CI guard:
+`tests/canonical-ui-ux-contract.ts`
+
+Every current and future MeMeMe screen, HUD, modal, popup, card, touch flow, keyboard flow and controller/Steam Deck flow must follow that contract unless Ron explicitly approves an exception.
+
+Core rules include:
+- mobile readability is the baseline;
+- summary first, detail on demand;
+- normal persistent HUD targets at most three readable information lines;
+- idle player cards stay compact;
+- active-turn player card expands and may reveal one extra contextual line;
+- active state cannot rely on colour alone;
+- Job Hub default cards stay concise and detailed Job data opens deliberately via touch/click/controller/keyboard;
+- blocking modal owns attention and suppresses unrelated HUD/narration;
+- no text may leak outside its owner surface;
+- floating bubbles/tooltips must remain inside viewport safe bounds;
+- shorten/remove/move detail before reducing font size;
+- touch, controller and keyboard must reach equivalent core actions/details;
+- presentation work must not introduce RNG, alternate authority paths or duplicate gameplay state.
+
+When a new UI becomes crowded, **do not shrink text first**. Remove duplicate information, shorten copy, move details behind interaction, reorganize layout, and only then adjust typography modestly.
+
+This contract exists specifically to prevent MeMeMe from returning to dense tiny-text HUDs and requiring another global readability rewrite later.
+
+## 13. Next development direction — 0.1.68.2
+
+Before content-depth work, implement the canonical UI contract end-to-end in **0.1.68.2**:
+- compact idle player HUD;
+- expanded active-turn player HUD;
+- compact Job Hub cards;
+- Job detail popup opened deliberately by touch/click/controller/keyboard;
+- strict modal ownership/overlay suppression;
+- reaction/floating bubble viewport containment and text clamping;
+- cleanup of remaining text that jumps outside its frame.
+
+After 0.1.68.2 is manually accepted, continue content depth without violating the canonical UI/UX contract.
 
 Do not merge PR #1.
