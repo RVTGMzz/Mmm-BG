@@ -1,4 +1,4 @@
-MeMeMe MVP 0.1.66 — UNIFIED FLOW + MATCH LENGTH
+MeMeMe MVP 0.1.68 — VERTICAL SLICE STABILIZATION
 
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
@@ -8,21 +8,24 @@ QUICK START — WINDOWS
 
 CHỈ CÒN 1 FLOW MẶC ĐỊNH
 - Chỉ dùng START_PLAYTEST.bat.
+- Flow chuẩn: Menu → Setup → Chọn luật → Roll For Order → Trận → Podium → Rematch.
 - Hai launcher Draft D preview/full-map cũ không còn ship trong gói tester.
 - KHÔNG double-click index.html trực tiếp.
 - Nếu thanh địa chỉ bắt đầu bằng file:///C:/... thì browser có thể chặn ES module/local asset.
 
-TRƯỚC TRẬN — CHỌN SỐ VÒNG
-- Chọn 1 / 2 / 3 vòng ở màn Setup.
+TRƯỚC TRẬN — CHỌN LUẬT CHƠI
+- Sau FACE SETUP, bấm TIẾP TỤC để mở màn CHỌN LUẬT CHƠI riêng.
+- Chọn 1 / 2 / 3 LƯỢT, tương ứng 1 / 2 / 3 vòng cho mỗi người.
 - Mặc định = 1 vòng để giữ hành vi playtest cũ.
 - Đây là luật thật: chỉ khi tất cả người chơi hoàn thành đủ số vòng đã chọn thì game mới chốt kết quả B$.
 
-0.1.66 FOCUS
-- JOB popup không còn icon xúc xắc dư khi đã có icon nghề/cặp biểu tượng khác.
-- Mini Game tie/ranking text được reflow để heading và danh sách không chồng nhau.
-- Camera movement-actor lock giữ nguyên vì đã được xác nhận tốt.
+0.1.68 FOCUS
+- Một visible build version duy nhất cho Menu / Setup / Roll For Order / board.
+- Popup JOB phải che sạch legacy Job/HUD copy trong lúc modal đang mở.
+- Mobile landscape/fullscreen dùng icon ⛶ dưới nút Settings; khi fullscreen icon đổi thành ↙.
+- Podium → CHƠI LẠI phải reset trận sạch; VỀ LOBBY quay đúng menu.
+- CPU stress + deterministic full-match simulation + 1/2/3-lap guard chạy trong CI.
 - TIN TỨC / LÁ BÀI giữ nguyên tên.
-- 1/3/5 = rẽ TRÁI, 2/4/6 = rẽ PHẢI, HOST tự quyết định.
 
 JAIL / HOSPITAL
 - Thả thành công: đứng nguyên ở TÙ/BV.
@@ -35,7 +38,7 @@ JOB
 - Job Dice: 1–2 = A, 3–4 = B, 5–6 = C.
 
 PRESENTATION SYNC
-- ROLL -> MOVE -> ARRIVE -> EFFECT -> HUD B$ UPDATE.
+- ROLL → MOVE → ARRIVE → EFFECT → HUD B$ UPDATE.
 - Không được cộng/trừ tiền trước khi token tới ô.
 - Khi chọn LÁ BÀI / mục tiêu, xúc xắc movement phải ẩn.
 
@@ -47,6 +50,11 @@ GAMEPAD / STEAM DECK
 - D-pad: di chuyển lựa chọn UI Phaser.
 - A: xác nhận lựa chọn hiện tại.
 - Chuột/touch vẫn dùng song song.
+
+MOBILE
+- Ưu tiên landscape.
+- Icon ⛶ dưới ⚙️ yêu cầu browser fullscreen bằng thao tác người dùng.
+- Browser nào không cho orientation lock vẫn phải giữ responsive viewport dùng được.
 
 AUDIO
 - Card SFX = 80% mức cũ.
