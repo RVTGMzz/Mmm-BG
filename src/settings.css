@@ -4,7 +4,8 @@
   top: 12px;
   right: 12px;
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
   pointer-events: auto;
   color: #202020;
@@ -14,22 +15,23 @@
 
 .mobile-fullscreen-shortcut {
   display: none;
-  min-width: 72px;
+  width: 42px;
+  min-width: 42px;
   height: 42px;
-  padding: 0 10px;
+  padding: 0;
   border: 3px solid #202020;
   border-radius: 14px;
-  background: #ffd34d;
+  background: rgba(255, 250, 240, 0.96);
   box-shadow: 0 3px 0 rgba(32, 32, 32, 0.2);
   color: #202020;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 19px;
   font-weight: 1000;
   line-height: 1;
 }
 
 .mobile-fullscreen-shortcut.is-active {
-  background: #fffaf0;
+  background: rgba(255, 250, 240, 0.96);
 }
 
 .mobile-fullscreen-shortcut:active {
@@ -37,7 +39,8 @@
   box-shadow: 0 1px 0 rgba(32, 32, 32, 0.2);
 }
 
-.mobile-fullscreen-shortcut[hidden] {
+.mobile-fullscreen-shortcut[hidden],
+.mememe-settings.is-open .mobile-fullscreen-shortcut {
   display: none !important;
 }
 
@@ -230,18 +233,16 @@
     gap: 6px;
   }
 
-  .mobile-fullscreen-shortcut {
-    min-width: 66px;
-    height: 38px;
-    padding: 0 8px;
-    border-radius: 12px;
-    font-size: 10px;
-  }
-
+  .mobile-fullscreen-shortcut,
   .settings-trigger {
     width: 38px;
+    min-width: 38px;
     height: 38px;
     border-radius: 12px;
+  }
+
+  .mobile-fullscreen-shortcut {
+    font-size: 17px;
   }
 
   .settings-panel {
