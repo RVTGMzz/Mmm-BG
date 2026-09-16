@@ -113,7 +113,8 @@ export class SetupScene extends Phaser.Scene {
       ? player?.name ?? `Player ${playerId + 1}`
       : isCpu ? `CPU ${playerId + 1}` : player?.name ?? `Player ${playerId + 1}`;
     const faceSlots = EXPRESSIONS.map((expression) => `<label class="face-slot" id="slot-${playerId}-${expression.id}" style="--player-accent:${accent}"><span class="face-emoji">${expression.emoji}</span><img id="preview-${playerId}-${expression.id}" alt="${expression.label}" /><span class="face-label">${expression.label}</span><span class="face-action">Chọn ảnh</span><input id="face-${playerId}-${expression.id}" type="file" accept="image/*" /></label>`).join('');
-    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${isCpu ? '<div class="cpu-tag-069">CPU</div>' : ''}<div class="face-slots">${faceSlots}</div></section>`;
+    const roleRow = `<div class="player-role-row-069">${isCpu ? '<span class="cpu-tag-069">CPU</span>' : '<span class="player-role-placeholder-069" aria-hidden="true">CPU</span>'}</div>`;
+    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${roleRow}<div class="face-slots">${faceSlots}</div></section>`;
   }
 
   private async handleFaceSelection(root: HTMLDivElement, playerId: number, expression: FaceExpression, input: HTMLInputElement): Promise<void> {
