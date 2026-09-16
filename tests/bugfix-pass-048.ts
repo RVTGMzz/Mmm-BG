@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { MEMEME_BUILD } from '../src/buildInfo';
 import { movementStepDisposition } from '../src/ui/movementVisualPolicy';
 
 assert.equal(movementStepDisposition({ x: 10, y: 10 }, { x: 10, y: 10 }, { x: 90, y: 10 }), 'animate');
@@ -22,6 +23,7 @@ const board061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'ut
 const board062 = await readFile('src/scenes/CareerMinigameBoardScene062.ts', 'utf8');
 const board0651 = await readFile('src/scenes/CareerMinigameBoardScene0651.ts', 'utf8');
 const board066 = await readFile('src/scenes/CareerMinigameBoardScene066.ts', 'utf8');
+const board068 = await readFile('src/scenes/CareerMinigameBoardScene068.ts', 'utf8');
 const releaseGuard066 = await readFile('src/core/cpuReleaseResume066.ts', 'utf8');
 const picker = await readFile('src/ui/CardHandPicker.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
@@ -66,6 +68,8 @@ assert(!board062.includes('submitIntent('));
 assert(board0651.includes('extends CareerMinigameBoardScene065'));
 assert(board066.includes('extends CareerMinigameBoardScene0651'), '0.1.66 must keep the validated chain back to 0.1.48');
 assert(!board066.includes('Math.random'), '0.1.66 wrapper must add no client RNG');
+assert(board068.includes('extends CareerMinigameBoardScene067'), '0.1.68 must remain a presentation-only wrapper above the validated chain');
+assert(!board068.includes('Math.random'), '0.1.68 wrapper must add no client RNG');
 
 // 0.1.66 human runtime found a CPU stall after a successful same-turn Jail/Hospital release.
 // Permit exactly the guarded fresh-roll wake-up through the existing HOST intent path.
@@ -79,9 +83,10 @@ assert(!releaseGuard066.includes('submitIntent('), 'guard helper must remain pur
 assert(picker.includes('CHỌN LÁ BÀI') && picker.includes('DÙNG LÁ NÀY'));
 assert(!picker.includes('CHỌN PHÉP THUẬT'));
 assert(main.includes('TurnOrderScene048'));
-assert(main.includes('CareerMinigameBoardScene066 as ActiveBoardScene'));
-assert(lobby.includes('MVP 0.1.48'), 'Lobby baseline breadcrumb must remain visible');
-assert(setup.includes('PLAYTEST MVP 0.1.66'), 'Setup intentionally advances to the current 0.1.66 build label');
-assert(lobby.includes('TIN TỨC / LÁ BÀI giữ nguyên tên cũ'));
+assert(main.includes('CareerMinigameBoardScene068 as ActiveBoardScene'));
+assert.equal(MEMEME_BUILD.version, '0.1.68');
+assert(lobby.includes('MEMEME_BUILD.lobbyHeader'), 'Lobby must use the canonical visible build source.');
+assert(setup.includes('MEMEME_BUILD.setupHeader'), 'Setup must use the canonical visible build source.');
+assert(lobby.includes('TIN TỨC / LÁ BÀI'), 'Current vocabulary must retain TIN TỨC / LÁ BÀI.');
 
-console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + guarded CPU release wake-up + vocabulary retained through 0.1.66');
+console.log('[bugfix-pass-048] PASS money cue + true D6 + BGM isolation + stale token guard + guarded CPU release wake-up + vocabulary retained through 0.1.68');
