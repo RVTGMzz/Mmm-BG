@@ -3,7 +3,7 @@ import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 
 const LOGO_KEY_069 = 'mememe-official-logo-069';
-const LOGO_URL_069 = 'assets/mememe-logo.webp?v=official-0692';
+const LOGO_URL_069 = 'assets/mememe-logo-official.webp?v=canonical-1024-0693';
 
 export class SplashScene069 extends Phaser.Scene {
   private started069 = false;
@@ -13,9 +13,9 @@ export class SplashScene069 extends Phaser.Scene {
   }
 
   preload(): void {
-    // The tracked 7.5 KB asset is the official logo. The old 71 KB materialized
-    // transfer was the corrupt source of the black square and is no longer built.
-    // Version the request so phones cannot reuse that older black bitmap from cache.
+    // Build materializes the canonical 1024x1024 logo from the preserved
+    // brand-src payload. Do not point this scene back at the broken 500x500
+    // export in public/assets/mememe-logo.webp.
     this.load.image(LOGO_KEY_069, LOGO_URL_069);
   }
 
