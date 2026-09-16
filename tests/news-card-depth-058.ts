@@ -174,7 +174,11 @@ const sceneSource = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene
 const scene059Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
 const scene060Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
 const scene061Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061.ts', import.meta.url), 'utf8');
-assert(mainSource.includes('CareerMinigameBoardScene061 as ActiveBoardScene'), 'later runtime wrappers may advance the launcher while retaining 0.1.58 beneath them');
+const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
+assert(mainSource.includes('CareerMinigameBoardScene069 as ActiveBoardScene'), 'later presentation wrappers may advance the launcher while retaining 0.1.58 beneath them');
+assert(scene069Source.includes('extends CareerMinigameBoardScene0682'), '0.1.69 must remain above the retained authority/presentation chain');
+assert(!scene069Source.includes('Math.random'));
+assert(!scene069Source.includes('submitIntent('));
 assert(scene061Source.includes('extends CareerMinigameBoardScene060'), '0.1.61 must retain the 0.1.60 pacing layer');
 assert(scene060Source.includes('extends CareerMinigameBoardScene059'), '0.1.60 must retain 0.1.59 beneath the pacing layer');
 assert(scene059Source.includes('extends CareerMinigameBoardScene058'), '0.1.59 must retain the 0.1.58 relocation layer');
@@ -188,4 +192,4 @@ const newCopy = JSON.stringify([runtimeCards.slice(-6), runtimeNews.slice(-8)]);
 assert(!newCopy.includes('Tiên Tri'));
 assert(!newCopy.includes('Phép Thuật'));
 
-console.log('[news-card-depth-058] PASS held-card special relocation + immediate global News + replay/checksum + vocabulary retained beneath 0.1.61');
+console.log('[news-card-depth-058] PASS held-card special relocation + immediate global News + replay/checksum + vocabulary retained through 0.1.69');
