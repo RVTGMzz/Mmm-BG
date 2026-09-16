@@ -9,6 +9,7 @@ import { CareerMinigameBoardScene0682 } from './CareerMinigameBoardScene0682';
 const JOBS_069 = jobsJson as JobDefinition[];
 const IDLE_SCALE_069 = 0.9;
 const ACTIVE_SCALE_069 = 1.14;
+const JOB_LABEL_WIDTH_069 = 184;
 
 type HudHandle069 = {
   root: Phaser.GameObjects.Container;
@@ -67,12 +68,26 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
         fontSize: '12px',
         fontStyle: 'bold',
         color: '#5a5148',
-        fixedWidth: 184,
+        fixedWidth: JOB_LABEL_WIDTH_069,
+        fixedHeight: 18,
         maxLines: 1,
       }).setOrigin(0, 0);
       ui.root.add(label);
       this.ownedJobLabels069.set(playerId, label);
     }
+  }
+
+  private fitJobLabel069(label: Phaser.GameObjects.Text, copy: string, active: boolean): void {
+    // Keep every career line inside the same 184 px HUD slot. The longest current
+    // title is "Nhân viên văn phòng"; active salary copy needs one extra shrink step.
+    const length = [...copy].length;
+    const fontSize = length >= 31 ? 9 : length >= 27 ? 10 : length >= 23 ? 11 : active ? 12 : 12;
+    label
+      .setText(copy)
+      .setFontSize(fontSize)
+      .setFixedSize(JOB_LABEL_WIDTH_069, 18)
+      .setMaxLines(1)
+      .setVisible(true);
   }
 
   private syncHud069(): void {
@@ -98,10 +113,8 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       }
       const level = Math.max(1, Math.min(job.maxLevel, Math.floor(player.jobLevel ?? 1)));
       const salary = jobSalary(job, level);
-      label
-        .setText(active ? `${job.title} L${level} • ${salary}/vòng` : job.title)
-        .setVisible(true)
-        .setFontSize(active ? 13 : 12);
+      const copy = active ? `${job.title} L${level} • ${salary}/v` : job.title;
+      this.fitJobLabel069(label, copy, active);
     }
   }
 
