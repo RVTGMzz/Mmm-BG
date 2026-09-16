@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
+import { MEMEME_BUILD } from '../buildInfo';
 import {
   browserSession,
   generateRoomCode,
@@ -34,14 +35,14 @@ export class LocalLobbyScene extends Phaser.Scene {
       })
       .setOrigin(0, 0);
 
-    this.add.text(228, 73, 'FIRST PLAYTEST • MVP 0.1.48', {
+    this.add.text(228, 73, MEMEME_BUILD.lobbyHeader, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '28px',
       fontStyle: 'bold',
       color: '#202020',
     });
 
-    this.add.text(228, 109, 'Bugfix pass • Money SFX • D6 face • Mini Game BGM • Token sync.', {
+    this.add.text(228, 109, MEMEME_BUILD.lobbySubtitle, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#6d655b',
@@ -96,10 +97,10 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
       </div>
       <div style="margin-top:12px;padding:10px 14px;border:2px solid #202020;border-radius:14px;background:#fff4d6;font-size:12px;line-height:1.45;font-weight:700;">
-        🛠️ 0.1.48: ô TIN TỨC / LÁ BÀI giữ nguyên tên cũ. Bộ Tiên Tri / Phép Thuật Bửu Bối gửi chỉ là reference content để audit và gợi ý effect, không đổi tên hệ thống.
+        🧩 ${MEMEME_BUILD.version}: Vertical Slice đang khóa flow Menu → Setup → Chọn luật → Roll For Order → Trận → Podium → Rematch. Tên hệ thống giữ nguyên TIN TỨC / LÁ BÀI.
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady
-        ? '✅ Bugfix pass + Remote Roll + Multiplayer Job Hub + Presentation Parity + Safe Final Podium sẵn sàng.'
+        ? `✅ ${MEMEME_BUILD.version}: SOLO/CPU, HOST/JOIN và end-to-end playtest sẵn sàng.`
         : '⚠️ Không có BroadcastChannel: CPU/HOTSEAT vẫn chơi bình thường, chỉ tắt 2-tab.'}</p>
     `;
 
