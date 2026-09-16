@@ -2,9 +2,10 @@ import type { MatchState } from './matchState';
 
 /**
  * Shared same-turn fresh movement D6 detector after a successful Jail/Hospital
- * release. The release D6 only decides whether the hold is cleared. Once the
- * blocking presentation closes, the same actor must be allowed to roll a new D6
- * without advancing turnNumber.
+ * release. The release event does not have to remain the final event in the log:
+ * presentation/network bookkeeping may append events before the blocking modal
+ * closes. Search backward for the newest successful release owned by the current
+ * actor in the current turn instead of coupling gameplay recovery to eventLog.at(-1).
  */
 export function pendingFreshRollAfterRelease066(
   match: MatchState,
@@ -15,17 +16,20 @@ export function pendingFreshRollAfterRelease066(
     return undefined;
   }
 
-  const latest = match.eventLog.at(-1);
-  if (!latest || latest.type !== 'special_release' || latest.data.success !== true) return undefined;
-  if (latest.seq <= handledReleaseEventSeq) return undefined;
-
-  const actorId = latest.actorId;
-  if (actorId === undefined || actorId !== match.turn.currentPlayerIndex) return undefined;
+  const actorId = match.turn.currentPlayerIndex;
+  const release = [...match.eventLog].reverse().find((event) =>
+    event.turnNumber === match.turn.turnNumber &&
+    event.type === 'special_release' &&
+    event.data.success === true &&
+    event.actorId === actorId &&
+    event.seq > handledReleaseEventSeq,
+  );
+  if (!release) return undefined;
 
   const actor = match.players.find((player) => player.id === actorId);
   if (!actor || actor.specialHold !== undefined) return undefined;
 
-  return latest.seq;
+  return release.seq;
 }
 
 /**
@@ -41,7 +45,6 @@ export function pendingCpuFreshRollAfterRelease066(
   const eventSeq = pendingFreshRollAfterRelease066(match, presentationBlocking, handledReleaseEventSeq);
   if (eventSeq === undefined) return undefined;
 
-  const actorId = match.eventLog.at(-1)?.actorId;
-  if (actorId === undefined || !cpuSeatIds.includes(actorId)) return undefined;
+  if (!cpuSeatIds.includes(match.turn.currentPlayerIndex)) return undefined;
   return eventSeq;
 }
