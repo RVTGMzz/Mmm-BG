@@ -1,24 +1,20 @@
 name: Publish compiled web mirror
 
 on:
-  workflow_run:
-    workflows:
-      - MeMeMe MVP CI
-    types:
-      - completed
+  push:
+    branches:
+      - mememe-mvp-0.1-core
   workflow_dispatch:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   PUBLIC_REPO: ronvotri/ronvotri-MeMeMe-Web-Playtest
 
 jobs:
   publish:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'mememe-mvp-0.1-core')
     runs-on: ubuntu-latest
     steps:
       - name: Check mirror credential
@@ -34,11 +30,38 @@ jobs:
             echo 'MEMEME_WEB_DEPLOY_TOKEN is not configured yet; compiled mirror publish is skipped safely.'
           fi
 
+      - name: Wait for exact-SHA main CI success
+        if: steps.mirror-token.outputs.ready == 'true' && github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&event=push&per_page=20")"
+            status="$(printf '%s' "$payload" | jq -r '.workflow_runs[] | select(.name == "MeMeMe MVP CI") | .status' | head -n1)"
+            conclusion="$(printf '%s' "$payload" | jq -r '.workflow_runs[] | select(.name == "MeMeMe MVP CI") | .conclusion // ""' | head -n1)"
+
+            if [ "$status" = 'completed' ]; then
+              if [ "$conclusion" = 'success' ]; then
+                echo "Exact-SHA main CI passed for ${GITHUB_SHA}."
+                exit 0
+              fi
+              echo "Exact-SHA main CI completed with conclusion: ${conclusion:-unknown}. Refusing public publish."
+              exit 1
+            fi
+
+            echo "Waiting for exact-SHA main CI (${attempt}/60), current status: ${status:-not-found-yet}"
+            sleep 10
+          done
+          echo 'Timed out waiting for exact-SHA main CI.'
+          exit 1
+
       - name: Checkout exact private source
         if: steps.mirror-token.outputs.ready == 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - name: Setup Node
         if: steps.mirror-token.outputs.ready == 'true'
@@ -75,7 +98,6 @@ jobs:
           rm -rf public-mirror/assets
           cp dist/index.html public-mirror/index.html
           cp -R dist/assets public-mirror/assets
-          printf '\n' >> public-mirror/index.html
           sed -i '1i<!-- Copyright © 2026 MeMeMe. All rights reserved. Compiled playtest build only. -->' public-mirror/index.html
 
       - name: Commit public mirror
