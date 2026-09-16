@@ -167,6 +167,8 @@ jobs:
         run: npm run test:unified-flow-match-length-066
       - name: 0.1.68.1 mobile readability and modal cleanup
         run: npm run test:vertical-slice-068
+      - name: Canonical UI UX design contract
+        run: npm run test:canonical-ui-ux
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
