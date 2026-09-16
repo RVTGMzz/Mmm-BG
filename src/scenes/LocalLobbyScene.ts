@@ -4,6 +4,8 @@ import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
 import { browserSession, generateRoomCode, normalizeRoomCode } from '../core/browserSession';
 
+const PRESERVE_SETUP_REGISTRY_KEY = 'mememe-preserve-setup';
+
 function cpuSeatsForMode(mode: string): number[] {
   if (mode === '1p3cpu') return [1, 2, 3];
   if (mode === '2p2cpu') return [2, 3];
@@ -58,12 +60,17 @@ export class LocalLobbyScene extends Phaser.Scene {
       status.textContent = message;
       status.classList.toggle('error', error);
     };
+    const consumePreserveSetup = () => {
+      const preserve = this.registry.get(PRESERVE_SETUP_REGISTRY_KEY) === true;
+      this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, false);
+      return preserve;
+    };
 
     node.querySelector<HTMLButtonElement>('#lobby-solo')?.addEventListener('click', () => {
       sfxController.play('ui_confirm');
       const mode = node.querySelector<HTMLSelectElement>('#solo-mode')?.value ?? '1p3cpu';
       browserSession.configureSolo(cpuSeatsForMode(mode));
-      this.scene.start('SetupScene');
+      this.scene.start('SetupScene', { preserve: consumePreserveSetup() });
     });
     node.querySelector<HTMLButtonElement>('#lobby-host')?.addEventListener('click', () => {
       sfxController.play('ui_confirm');
@@ -72,7 +79,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       const room = normalizeRoomCode(input?.value ?? '') || generateRoomCode();
       browserSession.configureHost(room);
       setStatus(`Phòng ${room} đã sẵn sàng.`);
-      this.scene.start('SetupScene');
+      this.scene.start('SetupScene', { preserve: consumePreserveSetup() });
     });
     node.querySelector<HTMLButtonElement>('#lobby-join')?.addEventListener('click', () => {
       sfxController.play('ui_confirm');
@@ -82,6 +89,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       if (!room) return setStatus('Nhập mã phòng.', true);
       try {
         browserSession.configureClient(room, seatId);
+        this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, false);
         this.scene.start('TurnOrderScene');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : String(error), true);
