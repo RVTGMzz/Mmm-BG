@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { MEMEME_BUILD } from '../buildInfo';
 import { TurnOrderScene } from './TurnOrderScene';
 
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -13,9 +14,8 @@ type TurnOrderRuntime048 = {
  * Unicode 🎲 is a fixed artwork and does not encode the authoritative D6 value, so
  * the settled frame now uses ⚀..⚅ plus the number instead.
  *
- * 0.1.66.2 also keeps the title stack inside the canonical frame. The legacy base
- * scene placed the title centre at y=55 while the frame itself begins at y=50,
- * which made the heading visibly cross the top border once FIT scaling was applied.
+ * The title stack remains inside the canonical frame, while 0.1.68 sources its
+ * visible build badge from the shared build identity instead of a scene-local version.
  */
 export class TurnOrderScene048 extends TurnOrderScene {
   create(): void {
@@ -44,7 +44,7 @@ export class TurnOrderScene048 extends TurnOrderScene {
 
       if (object.text.includes('MVP 0.1.45 • REMOTE ROLL FOR ORDER')) {
         object
-          .setText('MVP 0.1.66.2 • AUTHORITATIVE D6 • MOBILE UI HOTFIX')
+          .setText(MEMEME_BUILD.rollOrderBadge)
           .setY(141);
       }
     }
