@@ -9,6 +9,7 @@ const lobby = readFileSync('src/scenes/LocalLobbyScene.ts', 'utf8');
 const setup = readFileSync('src/scenes/SetupScene.ts', 'utf8');
 const order = readFileSync('src/scenes/TurnOrderScene048.ts', 'utf8');
 const scene068 = readFileSync('src/scenes/CareerMinigameBoardScene068.ts', 'utf8');
+const scene0681 = readFileSync('src/scenes/CareerMinigameBoardScene0681.ts', 'utf8');
 const demoBoard = readFileSync('src/scenes/DemoBoardScene.ts', 'utf8');
 const settings = readFileSync('src/ui/SettingsPanel.ts', 'utf8');
 const settingsCss = readFileSync('src/settings.css', 'utf8');
@@ -17,9 +18,9 @@ const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
 const packageJson = readFileSync('package.json', 'utf8');
 
 // One visible build identity for the whole vertical slice.
-assert.equal(MEMEME_BUILD.version, '0.1.68');
-assert.equal(MEMEME_BUILD.phase, 'VERTICAL SLICE STABILIZATION');
-assert.match(main, /CareerMinigameBoardScene068 as ActiveBoardScene/);
+assert.equal(MEMEME_BUILD.version, '0.1.68.1');
+assert.equal(MEMEME_BUILD.phase, 'MOBILE READABILITY + MODAL CLEANUP');
+assert.match(main, /CareerMinigameBoardScene0681 as ActiveBoardScene/);
 assert.match(lobby, /MEMEME_BUILD\.lobbyHeader/);
 assert.match(setup, /MEMEME_BUILD\.setupHeader/);
 assert.match(order, /MEMEME_BUILD\.rollOrderBadge/);
@@ -51,13 +52,21 @@ for (const laps of [1, 2, 3]) {
 }
 configureInitialTargetLaps(1);
 
-// Canonical Job modal wins over legacy sentence/HUD text every frame and restores it afterwards.
+// 0.1.68 canonical Job modal guard remains inherited and 0.1.68.1 adds readable HUD/modal ownership.
 assert.match(scene068, /extends CareerMinigameBoardScene067/);
 assert.match(scene068, /super\.update\(\);[\s\S]*guardCanonicalModal068\(\)/);
 assert.match(scene068, /copy\.includes\('trúng'\)/);
 assert.match(scene068, /copy\.includes\('b\$\/vòng'\)/);
 assert.match(scene068, /text\.setVisible\(false\)/);
 assert.match(scene068, /restoreCanonicalModalTexts068/);
+assert.match(scene0681, /extends CareerMinigameBoardScene068/);
+assert.match(scene0681, /setFontSize\(16\)/);
+assert.match(scene0681, /setFontSize\(18\)/);
+assert.match(scene0681, /setText\(`\$\{job\.icon\} \$\{job\.title\} L\$\{level\} • \$\{salary\}\/vòng/);
+assert.match(scene0681, /copy\.startsWith\('lượt:'\)/);
+assert.match(scene0681, /copy === 'tổng quan'/);
+assert.match(scene0681, /copy\.includes\('thu nhập'\)/);
+assert.match(scene0681, /copy\.includes\('xác di chuyển tiếp tục'\)/);
 
 // Podium/result controls and rematch/lobby exits remain wired in the inherited authoritative shell.
 assert.match(demoBoard, /CHƠI LẠI 🔁/);
@@ -74,12 +83,12 @@ assert.match(settingsCss, /\.mememe-settings\.is-open \.mobile-fullscreen-shortc
 assert.match(mobileCss, /100dvh/);
 assert.match(mobileCss, /100dvw/);
 
-// 0.1.68 CI must exercise CPU stress, long-match simulation, endgame/rematch and this integration guard.
+// CI must exercise CPU stress, long-match simulation, endgame/rematch and this integration guard.
 assert.match(ci, /Simple CPU autoplay stress[\s\S]*npm run test:bots/);
 assert.match(ci, /deterministic full-match simulation harness[\s\S]*npm run test:simulation-baseline-0611/);
 assert.match(ci, /Demo match shell and rematch[\s\S]*npm run test:demo-shell/);
 assert.match(ci, /Authoritative final podium and tie ranking[\s\S]*npm run test:final-podium/);
 assert.match(packageJson, /"test:vertical-slice-068"/);
-assert.match(ci, /0\.1\.68 vertical slice stabilization[\s\S]*npm run test:vertical-slice-068/);
+assert.match(ci, /0\.1\.68\.1 mobile readability and modal cleanup[\s\S]*npm run test:vertical-slice-068/);
 
-console.log('[vertical-slice-068] PASS canonical version + full entry/endgame flow + 1/2/3 laps + Job modal isolation + mobile/Steam Deck + CPU/long-match CI guards');
+console.log('[vertical-slice-068] PASS canonical 0.1.68.1 + full flow + 1/2/3 laps + readable HUD + modal cleanup + mobile/Steam Deck + CPU/long-match CI guards');
