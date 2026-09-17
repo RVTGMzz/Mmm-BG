@@ -11,8 +11,11 @@ const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf
 const scene064 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene064.ts', import.meta.url), 'utf8');
 const scene065 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene065.ts', import.meta.url), 'utf8');
 const scene069 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
+const scene0701 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
 const camera0632 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0632.ts', import.meta.url), 'utf8');
-assert(mainSource.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(scene0701.includes('extends CareerMinigameBoardScene069'));
+assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682')); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
 assert(scene065.includes('extends CareerMinigameBoardScene064'));
 assert(scene064.includes('extends CareerMinigameBoardScene0634'));
@@ -35,4 +38,4 @@ assert.equal(roll(authority).status,'accepted'); assert.equal(authority.state.pl
 assert.equal(roll(authority).status,'accepted'); assert.equal(authority.state.players[0]!.nodeId,100); assert.equal(authority.state.players[0]!.specialHold,undefined); assert.equal(authority.state.players[0]!.money,200); assert.equal(authority.state.turn.phase,'PRE_ROLL_ACTION'); assert.equal(authority.state.turn.lastRoll,null);
 assert.equal(roll(authority).status,'accepted'); assert.equal(authority.state.players[0]!.nodeId,101); assert.equal(authority.state.players[0]!.money,180); assert(authority.state.eventLog.some((event)=>event.type==='money_tile'&&event.data.nodeId===101&&event.data.amount===-20));
 assert.equal(SFX_GAIN_064.card_draw,0.8); assert.equal(SFX_GAIN_064.card_play,0.8); assert.equal(SFX_GAIN_064.step,1.3);
-console.log(`[expanded-board-release-audio-064] PASS retained beneath 0.1.69 width=${Math.round(Math.max(...xs)-Math.min(...xs))} minGap=${minimumGap.toFixed(1)}px`);
+console.log(`[expanded-board-release-audio-064] PASS retained beneath 0.1.70.1 width=${Math.round(Math.max(...xs)-Math.min(...xs))} minGap=${minimumGap.toFixed(1)}px`);
