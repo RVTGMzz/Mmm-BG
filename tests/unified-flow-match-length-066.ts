@@ -35,6 +35,7 @@ assert.equal(existsSync('public/START_PLAYTEST.bat'),true); assert.equal(existsS
 const setup=readFileSync('src/scenes/SetupScene.ts','utf8');
 const scene066=readFileSync('src/scenes/CareerMinigameBoardScene066.ts','utf8');
 const scene069=readFileSync('src/scenes/CareerMinigameBoardScene069.ts','utf8');
+const scene0701=readFileSync('src/scenes/CareerMinigameBoardScene0701.ts','utf8');
 const directDice=readFileSync('src/scenes/DirectDiceBoardScene.ts','utf8');
 const releaseFlow=readFileSync('src/core/releaseFlow0701.ts','utf8');
 const main=readFileSync('src/main.ts','utf8');
@@ -46,7 +47,7 @@ assert.match(setup,/\[1,\s*2,\s*3\]\.map\(\(laps\)/); assert(setup.includes('dat
 assert.match(scene066,/extends CareerMinigameBoardScene0651/); assert.match(scene066,/replaceAll\('💼🎲', '💼'\)/); assert.match(scene066,/HÒA, RA LẠI/); assert.match(scene066,/setOrigin\(0\.5, 0\)/); assert.match(scene066,/setLineSpacing\(10\)/); assert.match(scene066,/pendingCpuFreshRollAfterRelease066/); assert.match(scene066,/internals\.submitIntent\('roll', \{\}\)/); assert.match(scene066,/now - this\.cpuReleaseAttemptAt066 < 900/);
 assert.match(directDice,/pendingFreshMovementRollAfterRelease0701/); assert.match(directDice,/this\.rollPendingTurn = undefined/); assert.match(directDice,/presentationBlocking/); assert(!directDice.includes('handledFreshReleaseEventSeq'));
 assert.match(releaseFlow,/event\.actorId === actor\.id/); assert.match(releaseFlow,/match\.turn\.lastRoll !== null/); assert.match(releaseFlow,/actor\.specialHold !== undefined/);
-assert.match(main,/CareerMinigameBoardScene069 as ActiveBoardScene/); assert.match(scene069,/extends CareerMinigameBoardScene0682/); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
+assert.match(main,/CareerMinigameBoardScene0701 as ActiveBoardScene/); assert.match(scene0701,/extends CareerMinigameBoardScene069/); assert(!scene0701.includes('Math.random')); assert.match(scene069,/extends CareerMinigameBoardScene0682/); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
 assert.match(main,/mobileViewport066\.css/); assert.match(main,/visualViewport\?\.addEventListener\('resize'/); assert.match(main,/game\.scale\.refresh\(\)/); assert.match(html,/viewport-fit=cover/); assert.match(html,/user-scalable=no/); assert.match(mobileCss,/100dvh/); assert.match(mobileCss,/100dvw/); assert.match(settings,/requestFullscreen/); assert.match(settings,/TOÀN MÀN HÌNH/); assert.match(quickstart,/Chỉ dùng START_PLAYTEST\.bat/); assert.match(quickstart,/1 \/ 2 \/ 3 vòng/);
 configureInitialTargetLaps(1);
-console.log('[unified-flow-match-length-066] PASS 1/2/3 laps + mobile/fullscreen + authoritative release detector + retry-safe CPU fresh D6');
+console.log('[unified-flow-match-length-066] PASS 1/2/3 laps + mobile/fullscreen + authoritative release detector + retry-safe CPU fresh D6 under 0.1.70.1');
