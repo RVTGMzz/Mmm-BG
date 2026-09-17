@@ -26,7 +26,7 @@ releaseResume.eventLog.push({seq:1,type:'special_release',turnNumber:4,playerInd
 releaseResume.eventLog.push({seq:2,type:'release_followup',turnNumber:4,playerIndex:3,phase:'PRE_ROLL_ACTION',revision:9,rngCalls:4,actorId:3,data:{note:'presentation-ready'}}); releaseResume.nextEventSeq=3;
 assert.equal(pendingFreshMovementRollAfterRelease0701(releaseResume),1,'authoritative release state must owe one fresh movement D6');
 assert.equal(pendingFreshRollAfterRelease066(releaseResume,false,0),1,'historical human/CPU wrapper delegates to the authoritative detector');
-assert.equal(pendingFreshRollAfterRelease066(releaseResume,true,0),undefined,'historical wrapper may still delay controls while presentation blocks');
+assert.equal(pendingFreshRollAfterRelease066(releaseResume,true,0),1,'0.1.70.1 fresh movement D6 must survive presentation blocking');
 assert.equal(pendingFreshRollAfterRelease066(releaseResume,false,1),undefined,'handled release event must not retrigger historical wrapper');
 assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2,3],false,0),1);
 assert.equal(pendingCpuFreshRollAfterRelease066(releaseResume,[1,2,3],true,0),1,'0.1.70.1 CPU fresh movement D6 must survive presentation blocking');
@@ -52,4 +52,4 @@ assert.match(releaseFlow,/event\.actorId === actor\.id/); assert.match(releaseFl
 assert.match(main,/CareerMinigameBoardScene0701 as ActiveBoardScene/); assert.match(scene0701,/extends CareerMinigameBoardScene069/); assert(!scene0701.includes('Math.random')); assert.match(scene069,/extends CareerMinigameBoardScene0682/); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
 assert.match(main,/mobileViewport066\.css/); assert.match(main,/visualViewport\?\.addEventListener\('resize'/); assert.match(main,/game\.scale\.refresh\(\)/); assert.match(html,/viewport-fit=cover/); assert.match(html,/user-scalable=no/); assert.match(mobileCss,/100dvh/); assert.match(mobileCss,/100dvw/); assert.match(settings,/requestFullscreen/); assert.match(settings,/TOÀN MÀN HÌNH/); assert.match(quickstart,/Chỉ dùng START_PLAYTEST\.bat/); assert.match(quickstart,/1 \/ 2 \/ 3 vòng/);
 configureInitialTargetLaps(1);
-console.log('[unified-flow-match-length-066] PASS 1/2/3 laps + mobile/fullscreen + authoritative release detector + CPU fresh D6 survives modal blocking under 0.1.70.1');
+console.log('[unified-flow-match-length-066] PASS 1/2/3 laps + mobile/fullscreen + authoritative release detector + fresh D6 survives modal blocking under 0.1.70.1');
