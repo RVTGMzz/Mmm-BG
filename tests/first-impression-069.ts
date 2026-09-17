@@ -5,6 +5,7 @@ import { MEMEME_BUILD } from '../src/buildInfo';
 const main = readFileSync('src/main.ts', 'utf8');
 const splash = readFileSync('src/scenes/SplashScene069.ts', 'utf8');
 const board = readFileSync('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
+const board0701 = readFileSync('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
 const lobby = readFileSync('src/scenes/LocalLobbyScene.ts', 'utf8');
 const setup = readFileSync('src/scenes/SetupScene.ts', 'utf8');
 const turnOrder = readFileSync('src/scenes/TurnOrderScene048.ts', 'utf8');
@@ -15,7 +16,9 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as { script
 const runtimePatch = Number(MEMEME_BUILD.version.split('.')[2] ?? 0);
 assert(Number.isInteger(runtimePatch) && runtimePatch >= 69, '0.1.69 presentation guard must accept later canonical runtimes');
 assert.match(main, /SplashScene069,[\s\S]*LocalLobbyScene,[\s\S]*SetupScene,[\s\S]*TurnOrderScene,[\s\S]*ActiveBoardScene/);
-assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardScene0701 as ActiveBoardScene/);
+assert.match(board0701, /extends CareerMinigameBoardScene069/);
+assert(!board0701.includes('Math.random'));
 
 const logoPath = 'public/assets/mememe-logo-main.png';
 assert(existsSync(logoPath), 'official MeMeMe 1024 PNG must be committed directly in public/assets');
@@ -84,4 +87,4 @@ assert.match(rules, /mememe-logo-main\.png/);
 
 const prebuild = packageJson.scripts?.prebuild ?? '';
 assert(!prebuild.includes('materialize:brand'), 'normal build must not regenerate the manually committed official logo');
-console.log('[first-impression-069] PASS committed logo + aligned setup + centered Job result + human-turn card UI + presentation-actor HUD');
+console.log('[first-impression-069] PASS committed logo + aligned setup + centered Job result + human-turn card UI + presentation-actor HUD beneath 0.1.70.1 launcher');
