@@ -10,7 +10,13 @@ const reactions = readFileSync('src/ui/ReactionSequencer.ts', 'utf8');
 const gamepad = readFileSync('src/ui/gamepadUiNavigation0651.ts', 'utf8');
 const rules = readFileSync('docs/CANONICAL_UI_UX_RULES.md', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.69');
+// Historical 0.1.68.2 UI guard: later canonical builds may advance the visible
+// version while retaining this HUD/detail/safe-bubble contract.
+const versionParts = MEMEME_BUILD.version.split('.').map(Number);
+assert.equal(versionParts[0], 0);
+assert.equal(versionParts[1], 1);
+assert(versionParts[2] >= 69, `canonical runtime regressed below 0.1.69: ${MEMEME_BUILD.version}`);
+assert(MEMEME_BUILD.phase.length > 0, 'canonical build phase must stay visible');
 assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
 assert.match(scene069, /extends CareerMinigameBoardScene0682/);
 assert.match(scene, /extends CareerMinigameBoardScene0681/);
@@ -30,4 +36,4 @@ assert(!reactions.includes('Math.random'));
 assert.match(rules, /Idle player HUD is compact; active player HUD expands/);
 assert.match(rules, /Job Hub uses compact cards plus optional details/);
 assert.match(rules, /Soft rounded surfaces are the default shape language/);
-console.log('[canonical-ui-0682] PASS inherited active/idle HUD + Job details + safe reaction lanes under 0.1.69');
+console.log(`[canonical-ui-0682] PASS inherited active/idle HUD + Job details + safe reaction lanes under canonical ${MEMEME_BUILD.version}`);
