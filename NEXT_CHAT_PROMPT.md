@@ -3,103 +3,106 @@
 Tiếp tục MeMeMe Board Game từ `HANDOFF_CURRENT.md` trên branch `mememe-mvp-0.1-core`.
 
 Đọc theo thứ tự:
-
 1. `HANDOFF_CURRENT.md`
-2. `docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
-3. `docs/UI_FINAL_PLAYER_HUD.md`
-4. `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
-5. `docs/GAME_DESIGN_CURRENT.md`
-6. `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
-7. `docs/MVP_0.1.56_BRANCH_IDENTITY.md`
-8. `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+2. `docs/LATEST_HANDOFF.md`
+3. `src/core/releaseFlow0701.ts`
+4. `src/core/cpuReleaseResume066.ts`
+5. `tests/unified-flow-match-length-066.ts`
+6. `src/scenes/DirectDiceBoardScene.ts`
+7. `src/scenes/CareerMinigameBoardScene0701.ts`
+8. `src/scenes/TurnOrderScene0701.ts`
+9. `src/main.ts`
 
-Sau đó inspect:
-- `src/scenes/FinalMapPreviewScene052.ts`
-- `src/scenes/CareerMinigameBoardScene056.ts`
-- `src/scenes/PresentationParityBoardScene.ts`
-- `src/scenes/DemoBoardScene.ts`
-- `src/main.ts`
+## Current milestone
 
-## Trạng thái cần nhớ
+**0.1.70.1 — Release Flow Repair + UI Density Pass**
 
-- 0.1.48 vẫn là user-validated authoritative rollback baseline.
-- 0.1.56 Branch Identity gameplay/CI green.
-- Artifact 0.1.56: `mememe-playtest-0.1.56-branch-identity`
-- Run: `#1846 / 34908302700`
-- Code SHA: `dfa391e50666802dfc91ae2e3c585da39837bac1`
-- Artifact ID: `10373547363`
-- SHA256: `8f3f47d169118766edd47b5f8e8e64665ee0547db9b969b960db09a5191f8d44`
+Do not resume 0.1.71 yet.
+Do not merge PR #1.
 
-Nhưng Ron đã manual-test `START_PLAYTEST.bat` và **không chấp nhận presentation hiện tại**.
+## User runtime feedback
 
-## Lỗi presentation đã xác nhận
+Ron repeatedly reproduced:
+- successful **ĐƯỢC THẢ! / XUẤT VIỆN!**;
+- then the game freezes instead of receiving a new movement D6.
 
-- header/badge vẫn leak `0.1.25`;
-- normal gameplay hiện full board thay vì close camera;
-- camera quá xa;
-- chưa có HUD 4 góc final;
-- 44 ô Draft D bị dồn/chồng trong old 1280×720 shell;
-- event/card overlay che quá nhiều map;
-- old `MeMeMe CITY / DEMO MATCH` copy còn sót.
+Historical clue:
+- early versions did not freeze like this;
+- later the rule changed from effectively using the release die to requiring a **fresh movement D6 after release**.
 
-Root cause:
-- `START_PLAYTEST.bat` và `main.ts` không launch nhầm.
-- `CareerMinigameBoardScene056` chỉ wrap `CareerMinigameBoardScene048`.
-- authoritative scene chain vẫn render qua old `DemoBoardScene` / `PresentationParityBoardScene`.
-- camera/HUD tốt hơn đang tồn tại ở preview `FinalMapPreviewScene052` nhưng chưa được extract/reuse vào canonical runtime.
-- version label đang mutate bằng chained exact-string replacement nên downstream update có thể fail.
+Canonical contract:
 
-## Immediate milestone
+`release-check D6 -> success -> consume check -> clear hold -> same turn PRE_ROLL_ACTION + lastRoll=null -> NEW movement D6 -> move`
 
-Làm **0.1.56.1 — Canonical Presentation Consolidation** trước 0.1.57.
+Human and CPU must share the same authoritative transition.
 
-Mục tiêu:
-- giữ nguyên authoritative gameplay/state;
-- `START_PLAYTEST.bat` phải là build đẹp/tốt nhất;
-- close active-token camera;
-- smooth follow movement;
-- branch junction zoom-out vừa đủ thấy cả 2 hướng rồi zoom lại;
-- fixed screen-space HUD: P1 TL / P2 TR / P3 BL / P4 BR;
-- explicit Overview/full-map only;
-- clean Draft D greybox tile rendering, không giant circle chồng nhau;
-- integrate Job/Mini Game identity gọn;
-- TIN TỨC/LÁ BÀI overlay nhỏ/gọn hơn, giữ board context;
-- one authoritative visible build/version source, bỏ chained label mutation.
+## Current exact CI blocker
 
-Không duplicate gameplay state từ preview. Chỉ extract/reuse presentation ideas.
+Source HEAD before handoff docs:
+`ab47514ae85a3f4e89431e64dec3b9f0ab48ce9d`
 
-Phải giữ green:
-- replay/checksum;
-- HOST authority;
-- multiplayer parity;
-- remote Roll For Order;
-- Job Hub;
-- Mini Game payout ownership;
-- stale token guard;
-- audio/BGM;
-- READY/lap/final result;
-- branch rules 0.1.56.
+PR CI:
+- run #2917
+- id `35286379481`
 
-## Locked gameplay rules
+Build/typecheck PASS.
+Everything through 0.1.65.1 PASS.
 
-Draft D:
-- 44 main spaces `M01..M44`;
-- 3 forward equal-step junctions;
-- 5 Mini Games `M09/M17/M26/M35/M44`;
-- Branch A AN TOÀN = Normal×3;
-- Branch B DRAMA = TIN TỨC/LÁ BÀI/TIN TỨC;
-- Branch C TIỀN = +25/-20/+25 B$;
-- other route = PHỐ CHÍNH.
+Failure:
+`0.1.66 unified flow match length and Mini Game readability`
 
-Special locations for later 0.1.57:
-- Jail releases on `1/3/5`;
-- Hospital releases exactly on `2/4/5`;
-- release die only checks release;
-- success traverses 3 exit spaces then fresh movement D6 same turn;
-- Jail/Hospital players cannot join Mini Games;
-- 1 eligible participant = auto rank #1;
-- 0 eligible = skip/no payout;
-- Lottery = D6×20 B$.
+At:
+`tests/unified-flow-match-length-066.ts`
 
+Assertion:
+`pendingFreshRollAfterRelease066(releaseResume, true, 0)`
+
+Expected `1`, got `undefined`.
+
+Root mismatch:
+`src/core/cpuReleaseResume066.ts`
+
+Historical general helper still does:
+`if (presentationBlocking) return undefined;`
+
+But 0.1.70.1 authoritative detector:
+`pendingFreshMovementRollAfterRelease0701(...)`
+
+is intentionally presentation-independent.
+
+CPU helper already ignores presentation blocking.
+
+## Immediate task
+
+Fix the compatibility mismatch cleanly.
+
+Preferred architecture:
+- authority reports that a fresh movement D6 is owed regardless of presentation;
+- UI decides when human roll control can be shown/clicked;
+- CPU resumes from the same authoritative state;
+- do not add another watchdog or authority source;
+- preserve HOST/replay/checksum determinism.
+
+Then run full CI through the 0.1.70.1 gate.
+
+Only after exact HEAD CI + publisher + public mirror + Pages are all green, give Ron a test URL.
+
+## Manual test matrix after publish
+
+- Human Jail success -> fresh D6 -> movement
+- Human Hospital success -> fresh D6 -> movement
+- CPU Jail success -> fresh D6 -> movement
+- CPU Hospital success -> fresh D6 -> movement
+
+Also verify:
+- failed release ends turn;
+- release face is not reused;
+- Career Traits remain correct;
+- no text leaks outside modals;
+- Roll For Order is rounded/denser;
+- Mini Game ranking is fuller/clearer;
+- bottom-center blank `compactCard` is gone on CPU turns.
+
+0.1.48 remains the last explicitly user-accepted rollback baseline.
 Keep **TIN TỨC / LÁ BÀI**.
-Do not merge PR #1 unless Ron explicitly asks.
+Do not call Runtime PASS until Ron confirms.
