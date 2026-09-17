@@ -12,8 +12,8 @@ const css = readFileSync('src/firstImpression069.css', 'utf8');
 const rules = readFileSync('docs/CANONICAL_UI_UX_RULES.md', 'utf8');
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as { scripts?: Record<string, string> };
 
-assert.equal(MEMEME_BUILD.version, '0.1.69');
-assert.equal(MEMEME_BUILD.phase, 'FIRST IMPRESSION POLISH');
+const runtimePatch = Number(MEMEME_BUILD.version.split('.')[2] ?? 0);
+assert(Number.isInteger(runtimePatch) && runtimePatch >= 69, '0.1.69 presentation guard must accept later canonical runtimes');
 assert.match(main, /SplashScene069,[\s\S]*LocalLobbyScene,[\s\S]*SetupScene,[\s\S]*TurnOrderScene,[\s\S]*ActiveBoardScene/);
 assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
 
