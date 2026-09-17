@@ -179,6 +179,8 @@ export function applyNewsEffect(
       const offset = Math.abs(Math.floor(news.effect.targetOffset));
       const target = candidates[offset % candidates.length]!;
       const destination = specialHoldNodeId057(news.effect.location);
+      if (target.jobStatus === 'employed' && target.jobId) target.specialHoldSourceJobId = target.jobId;
+      else delete target.specialHoldSourceJobId;
       target.nodeId = destination;
       target.specialHold = news.effect.location;
       const place = news.effect.location === 'jail' ? 'Đồn Cảnh Sát' : 'Bệnh Viện';
