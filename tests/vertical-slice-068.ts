@@ -19,8 +19,13 @@ const mobileCss = readFileSync('src/mobileViewport066.css', 'utf8');
 const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
 const packageJson = readFileSync('package.json', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.69');
-assert.equal(MEMEME_BUILD.phase, 'FIRST IMPRESSION POLISH');
+// Historical 0.1.68 vertical-slice guard: the canonical runtime may advance beyond
+// 0.1.69, but it must never regress below the first-impression wrapper generation.
+const versionParts = MEMEME_BUILD.version.split('.').map(Number);
+assert.equal(versionParts[0], 0);
+assert.equal(versionParts[1], 1);
+assert(versionParts[2] >= 69, `canonical runtime regressed below 0.1.69: ${MEMEME_BUILD.version}`);
+assert(MEMEME_BUILD.phase.length > 0, 'canonical build phase must stay visible');
 assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
 assert.match(lobby, /MEMEME_BUILD\.lobbyHeader/);
 assert.match(setup, /MEMEME_BUILD\.setupHeader/);
@@ -61,4 +66,4 @@ assert.match(mobileCss, /100dvw/);
 assert.match(ci, /Simple CPU autoplay stress[\s\S]*npm run test:bots/);
 assert.match(ci, /deterministic full-match simulation harness[\s\S]*npm run test:simulation-baseline-0611/);
 assert.match(packageJson, /"test:first-impression-069"/);
-console.log('[vertical-slice-068] PASS inherited authoritative flow + 1/2/3 laps + 0.1.69 presentation wrapper + mobile/Steam Deck guards');
+console.log(`[vertical-slice-068] PASS inherited authoritative flow + 1/2/3 laps + canonical ${MEMEME_BUILD.version} presentation wrapper + mobile/Steam Deck guards`);
