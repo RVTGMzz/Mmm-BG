@@ -11,18 +11,18 @@ import { installGlobalGamepadUiNavigation0651 } from './ui/gamepadUiNavigation06
 import { SplashScene069 } from './scenes/SplashScene069';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
-import { TurnOrderScene048 as TurnOrderScene } from './scenes/TurnOrderScene048';
+import { TurnOrderScene0701 as TurnOrderScene } from './scenes/TurnOrderScene0701';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene069 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene069';
+import { CareerMinigameBoardScene0701 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0701';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
 import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
 import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode054';
 
-// Current presentation chain: 069 -> 0682 -> 0681 -> 068 -> validated authority chain.
-// 0.1.69 owns first-impression presentation only; gameplay authority remains inherited.
+// Current presentation chain: 0701 -> 069 -> 0682 -> validated authority chain.
+// 0.1.70.1 repairs release resume ownership and UI density without changing HOST RNG.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
