@@ -18,7 +18,10 @@ const OUTLIERS = [
   {
     seed: 611102,
     reason: '0.1.64-longest-match',
-    checksum: '1dd42c7c',
+    // 0.1.70 adds specialHoldSourceJobId to authoritative state so the Thief trait
+    // survives arrest. Gameplay metrics below remain locked; only the checksum is
+    // intentionally rebased for the new canonical state schema.
+    checksum: '56c6487d',
     turns: 92,
     commands: 145,
     submitted: 128,
