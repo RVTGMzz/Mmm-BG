@@ -8,6 +8,13 @@ import {
   type TacticalCardChoice,
 } from './cards';
 import {
+  careerReleaseFaces070,
+  careerReleaseRuleLabel070,
+  careerReleaseSucceeds070,
+  careerTraitForJob070,
+  careerTraitJobIdForHold070,
+} from './careerTraits070';
+import {
   formatCommandValidationError,
   validateMatchCommandEnvelope,
 } from './commandValidation';
@@ -47,7 +54,6 @@ import {
   specialHoldForGate057,
   specialHoldNodeId057,
   specialReleasePath057,
-  specialReleaseSucceeds057,
 } from './specialLocations057';
 import { TurnPhaseMachine } from './turnPhase';
 import type { BoardDefinition, BoardEdge, PlayerState } from './types';
@@ -184,6 +190,8 @@ function enterSpecialHold057(ctx: ReplayContext, player: PlayerState, location: 
   const fromNodeId = player.nodeId;
   const toNodeId = specialHoldNodeId057(location);
   getBoardNode(ctx.board, toNodeId);
+  if (player.jobStatus === 'employed' && player.jobId) player.specialHoldSourceJobId = player.jobId;
+  else delete player.specialHoldSourceJobId;
   player.specialHold = location;
   player.nodeId = toNodeId;
 
@@ -197,15 +205,21 @@ function enterSpecialHold057(ctx: ReplayContext, player: PlayerState, location: 
   }, player.id);
 
   const rule = SPECIAL_LOCATION_057[location];
+  const releaseRule = careerReleaseRuleLabel070(location, player);
+  const traitJobId = careerTraitJobIdForHold070(player);
+  const trait = careerTraitForJob070(traitJobId);
   appendMatchEvent(ctx.state, 'special_hold', {
     location,
     nodeId: toNodeId,
     title: location === 'jail' ? 'BỊ GIỮ TẠI ĐỒN' : 'NHẬP VIỆN',
     impact: rule.icon,
     description: location === 'jail'
-      ? 'Lượt sau đổ xúc xắc: 1 / 3 / 5 để được thả.'
-      : 'Lượt sau đổ xúc xắc: đúng 2 / 4 / 5 để xuất viện.',
-    summary: 'Trượt điều kiện thì ở lại và kết thúc lượt. Thành công sẽ thoát hành lang rồi đổ một D6 di chuyển MỚI trong cùng lượt.',
+      ? `Lượt sau đổ xúc xắc: ${releaseRule} để được thả.`
+      : `Lượt sau đổ xúc xắc: ${releaseRule} để xuất viện.`,
+    summary: 'Trượt điều kiện thì ở lại và kết thúc lượt. Thành công sẽ đổ một D6 di chuyển MỚI trong cùng lượt.',
+    traitId: trait?.id ?? null,
+    traitName: trait?.name ?? null,
+    traitJobId: traitJobId ?? null,
     affectedPlayerIds: String(player.id),
   }, player.id);
 }
@@ -530,18 +544,25 @@ function replaySpecialReleaseRoll057(ctx: ReplayContext, command: MatchCommand, 
   }, player.id);
   transition(ctx, 'MOVING');
 
-  const success = specialReleaseSucceeds057(location, result);
+  const releaseFaces = careerReleaseFaces070(location, player);
+  const traitJobId = careerTraitJobIdForHold070(player);
+  const trait = careerTraitForJob070(traitJobId);
+  const success = careerReleaseSucceeds070(location, result, player);
   appendMatchEvent(ctx.state, 'special_release', {
     location,
     result,
     success,
+    releaseFaces: releaseFaces.join(','),
+    traitId: trait?.id ?? null,
+    traitName: trait?.name ?? null,
+    traitJobId: traitJobId ?? null,
     title: success
       ? location === 'jail' ? 'ĐƯỢC THẢ!' : 'XUẤT VIỆN!'
       : location === 'jail' ? 'CHƯA ĐƯỢC THẢ' : 'CHƯA ĐƯỢC XUẤT VIỆN',
     impact: success ? '✅' : '⛔',
     description: success
-      ? 'Thoát hành lang xong sẽ đổ một D6 di chuyển MỚI trong cùng lượt.'
-      : 'Trượt điều kiện. Ở lại vị trí giữ và kết thúc lượt.',
+      ? `Đổ ${result}, đạt luật ${releaseFaces.join(' / ')}. Đổ một D6 di chuyển MỚI trong cùng lượt.`
+      : `Đổ ${result}, chưa đạt luật ${releaseFaces.join(' / ')}. Ở lại và kết thúc lượt.`,
     affectedPlayerIds: String(player.id),
   }, player.id);
 
@@ -567,6 +588,7 @@ function replaySpecialReleaseRoll057(ctx: ReplayContext, command: MatchCommand, 
   });
 
   delete player.specialHold;
+  delete player.specialHoldSourceJobId;
   // Release D6 is only the escape/recovery check. It must never become movement.
   ctx.state.turn.lastRoll = null;
   transition(ctx, 'PRE_ROLL_ACTION');
