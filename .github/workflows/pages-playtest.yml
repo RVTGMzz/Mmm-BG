@@ -19,7 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      pages_status: ${{ steps.pages.outcome }}
+      pages_ready: ${{ steps.pages.outcome == 'success' && steps.pages_artifact.outcome == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,6 +38,8 @@ jobs:
         run: npm run build
 
       - name: Upload standalone Steam Deck web artifact
+        id: standalone_artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: mememe-steamdeck-web-dist
@@ -56,9 +58,11 @@ jobs:
           find dist-web/assets -maxdepth 1 -type f -printf '%f %s bytes\n'
 
       - name: Upload compact public web mirror artifact
+        id: mirror_artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: mememe-web-mirror-0.1.66
+          name: mememe-web-mirror-dist
           path: dist-web
           if-no-files-found: error
           retention-days: 14
@@ -69,17 +73,25 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload GitHub Pages artifact
+        id: pages_artifact
         if: steps.pages.outcome == 'success'
+        continue-on-error: true
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
-      - name: Pages enablement note
-        if: steps.pages.outcome != 'success'
-        run: echo "GitHub Pages is not enabled yet. The compact public mirror artifact is still uploaded for syncing to ronvotri-MeMeMe-Web-Playtest."
+      - name: Artifact and Pages status note
+        if: always()
+        run: |
+          echo "standalone_artifact=${{ steps.standalone_artifact.outcome }}"
+          echo "mirror_artifact=${{ steps.mirror_artifact.outcome }}"
+          echo "pages_config=${{ steps.pages.outcome }}"
+          echo "pages_artifact=${{ steps.pages_artifact.outcome }}"
+          echo "Artifact uploads are best-effort so storage quota cannot block a valid build."
+          echo "The canonical public web mirror is published independently by publish-web-mirror.yml."
 
   deploy:
-    if: needs.build.outputs.pages_status == 'success'
+    if: needs.build.outputs.pages_ready == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
