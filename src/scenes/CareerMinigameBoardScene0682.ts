@@ -140,15 +140,31 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
     const canonical = new Set<Phaser.GameObjects.GameObject>();
     this.collectObjects0682(blockingRoot, canonical);
     const hud = this.collectHudObjects0682();
+    const blockingDepth = blockingRoot.depth;
 
     this.visitTexts0682((text) => {
       if (!text.visible || canonical.has(text) || hud.has(text)) return;
-      // Loose board copy is the source of the visible text leaks reported on mobile.
-      // Nested reaction/modal text has an owner container and is handled by its own layout.
-      if (text.parentContainer) return;
+
+      // Top-level loose copy is always non-canonical while a blocking surface owns
+      // attention. Nested legacy overlays used to bypass this guard entirely because
+      // they had a parentContainer, which is how card descriptions leaked outside
+      // the canonical modal on mobile. Keep only nested UI whose root container is at
+      // least as high as the active modal (for example reaction bubbles at depth 910).
+      if (text.parentContainer && this.rootContainerDepth0682(text) >= blockingDepth) return;
+
       if (!this.hiddenLooseText0682.has(text)) this.hiddenLooseText0682.set(text, text.visible);
       text.setVisible(false);
     });
+  }
+
+  private rootContainerDepth0682(text: Phaser.GameObjects.Text): number {
+    let owner = text.parentContainer;
+    let depth = text.depth;
+    while (owner) {
+      depth = Math.max(depth, owner.depth);
+      owner = owner.parentContainer;
+    }
+    return depth;
   }
 
   private findTopLevelContainer0682(
