@@ -118,13 +118,29 @@ export class CareerMinigameBoardScene0633 extends CareerMinigameBoardScene0632 {
 
       this.tweens.killTweensOf(visual.token);
       return new Promise((resolve) => {
+        let settled = false;
+        let fallback: Phaser.Time.TimerEvent | undefined;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          fallback?.remove(false);
+          if (visual.token.active) visual.token.setPosition(targetX, targetY);
+          resolve();
+        };
+
+        // A later authoritative visual sync may kill this tween. Historically that
+        // left this Promise unresolved forever, which kept presentationBlocking=true
+        // and froze the fresh D6 after a successful release. Bound the presentation
+        // step so both human and CPU release flows always regain control.
+        fallback = this.time.delayedCall(650, finish);
         this.tweens.add({
           targets: visual.token,
           x: targetX,
           y: targetY,
           duration: 430,
           ease: 'Sine.easeInOut',
-          onComplete: () => resolve(),
+          onComplete: finish,
+          onStop: finish,
         });
       });
     };
