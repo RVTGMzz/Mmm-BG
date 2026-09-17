@@ -2,107 +2,74 @@
 
 Tiếp tục MeMeMe Board Game từ `HANDOFF_CURRENT.md` trên branch `mememe-mvp-0.1-core`.
 
-Đọc theo thứ tự:
+Đọc:
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `src/core/releaseFlow0701.ts`
-4. `src/core/cpuReleaseResume066.ts`
-5. `tests/unified-flow-match-length-066.ts`
+3. Ron's newest runtime feedback
+4. `src/core/releaseFlow0701.ts`
+5. `src/core/cpuReleaseResume066.ts`
 6. `src/scenes/DirectDiceBoardScene.ts`
 7. `src/scenes/CareerMinigameBoardScene0701.ts`
-8. `src/scenes/TurnOrderScene0701.ts`
-9. `src/main.ts`
 
 ## Current milestone
 
 **0.1.70.1 — Release Flow Repair + UI Density Pass**
 
+Status: **release candidate published, waiting for Ron's human runtime test**.
+
 Do not resume 0.1.71 yet.
 Do not merge PR #1.
 
-## User runtime feedback
+## What was fixed
 
-Ron repeatedly reproduced:
-- successful **ĐƯỢC THẢ! / XUẤT VIỆN!**;
-- then the game freezes instead of receiving a new movement D6.
+Canonical rule:
 
-Historical clue:
-- early versions did not freeze like this;
-- later the rule changed from effectively using the release die to requiring a **fresh movement D6 after release**.
+`release-check D6 -> success -> clear hold -> same turn PRE_ROLL_ACTION + lastRoll=null -> NEW movement D6 -> move`
 
-Canonical contract:
+The historical `pendingFreshRollAfterRelease066(...)` compatibility path no longer lets `presentationBlocking` veto the authoritative fresh-roll obligation.
 
-`release-check D6 -> success -> consume check -> clear hold -> same turn PRE_ROLL_ACTION + lastRoll=null -> NEW movement D6 -> move`
+Human controls remain presentation-safe in `DirectDiceBoardScene`.
 
-Human and CPU must share the same authoritative transition.
+Runtime-affecting fix commit:
+`f07ad68298bb6737e92a73dcb9a9f075160229c6`
 
-## Current exact CI blocker
+## Validation already completed
 
-Source HEAD before handoff docs:
-`ab47514ae85a3f4e89431e64dec3b9f0ab48ce9d`
+- push CI #2924: SUCCESS
+- PR CI #2925: SUCCESS
+- 0.1.66 unified-flow gate: PASS
+- 0.1.70.1 gate: PASS
+- publisher #221: SUCCESS
+- publisher exact-SHA + current-HEAD guards: PASS
+- public mirror matches rebuilt compiled source
+- public Pages #32 build/deploy: SUCCESS
 
-PR CI:
-- run #2917
-- id `35286379481`
+Public test URL:
+`https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Build/typecheck PASS.
-Everything through 0.1.65.1 PASS.
+The public mirror did not need a new commit because the rebuilt runtime bundle is byte-equivalent to the already deployed mirror. The final compatibility fix affected the historical helper/test contract, not emitted runtime bytes.
 
-Failure:
-`0.1.66 unified flow match length and Mini Game readability`
+## Next authority is Ron's runtime feedback
 
-At:
-`tests/unified-flow-match-length-066.ts`
-
-Assertion:
-`pendingFreshRollAfterRelease066(releaseResume, true, 0)`
-
-Expected `1`, got `undefined`.
-
-Root mismatch:
-`src/core/cpuReleaseResume066.ts`
-
-Historical general helper still does:
-`if (presentationBlocking) return undefined;`
-
-But 0.1.70.1 authoritative detector:
-`pendingFreshMovementRollAfterRelease0701(...)`
-
-is intentionally presentation-independent.
-
-CPU helper already ignores presentation blocking.
-
-## Immediate task
-
-Fix the compatibility mismatch cleanly.
-
-Preferred architecture:
-- authority reports that a fresh movement D6 is owed regardless of presentation;
-- UI decides when human roll control can be shown/clicked;
-- CPU resumes from the same authoritative state;
-- do not add another watchdog or authority source;
-- preserve HOST/replay/checksum determinism.
-
-Then run full CI through the 0.1.70.1 gate.
-
-Only after exact HEAD CI + publisher + public mirror + Pages are all green, give Ron a test URL.
-
-## Manual test matrix after publish
-
+Test matrix:
 - Human Jail success -> fresh D6 -> movement
 - Human Hospital success -> fresh D6 -> movement
 - CPU Jail success -> fresh D6 -> movement
 - CPU Hospital success -> fresh D6 -> movement
 
 Also verify:
-- failed release ends turn;
-- release face is not reused;
+- failed release ends turn normally;
+- release face is never reused;
 - Career Traits remain correct;
-- no text leaks outside modals;
-- Roll For Order is rounded/denser;
-- Mini Game ranking is fuller/clearer;
-- bottom-center blank `compactCard` is gone on CPU turns.
+- release modal self-closes;
+- no narration/card text leaks outside modal;
+- Roll For Order remains denser/rounded;
+- Mini Game ranking remains readable;
+- CPU turn no longer shows the old bottom-center blank card box.
 
-0.1.48 remains the last explicitly user-accepted rollback baseline.
+If any case fails, debug 0.1.70.1 from the runtime feedback. Do not move to 0.1.71.
+If all four pass, record Ron's human acceptance before advancing.
+
+0.1.48 remains the last explicitly user-accepted rollback baseline until Ron accepts 0.1.70.1.
 Keep **TIN TỨC / LÁ BÀI**.
-Do not call Runtime PASS until Ron confirms.
+Do not call Runtime PASS before Ron confirms.

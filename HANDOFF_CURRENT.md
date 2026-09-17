@@ -9,27 +9,11 @@ PR: #1 (Draft/Open)
 
 **MVP 0.1.70.1 — Release Flow Repair + UI Density Pass**
 
-Status: **IN DEVELOPMENT / PENDING HUMAN ACCEPTANCE**
+Status: **RELEASE CANDIDATE PUBLISHED / PENDING HUMAN ACCEPTANCE**
 
 Last explicitly user-accepted rollback baseline remains **0.1.48**.
 
-Do not resume 0.1.71 until 0.1.70.1 release flow is manually validated.
-
-Source HEAD before this handoff:
-`ab47514ae85a3f4e89431e64dec3b9f0ab48ce9d`
-
-## Runtime problem being fixed
-
-Ron repeatedly reproduced a freeze after a successful Jail/Hospital release:
-- successful release face;
-- **ĐƯỢC THẢ! / XUẤT VIỆN!** appears;
-- game can stall instead of receiving the fresh movement D6.
-
-Historical clue from Ron:
-- early builds did not freeze like this;
-- later rule changed from effectively moving with the release die to requiring a **new movement D6 after release**.
-
-Treat this as a release-flow regression, not only a modal/tween bug.
+Do not resume 0.1.71 until Ron manually validates the 0.1.70.1 release flow.
 
 ## Canonical release contract
 
@@ -46,144 +30,94 @@ Requirements:
 - authority owes exactly one fresh movement D6;
 - modal/presentation must never own or veto that obligation;
 - human and CPU share the same authoritative transition;
-- UI may delay control visibility until presentation is safe.
+- UI may delay human control visibility until presentation is safe.
 
 Failure:
 
 `release D6 -> fail -> remain held -> end turn normally`
 
-## Current runtime
+## 0.1.70.1 authority fix
 
-`src/main.ts` now launches:
-- `TurnOrderScene0701 as TurnOrderScene`
-- `CareerMinigameBoardScene0701 as ActiveBoardScene`
-
-Presentation chain:
-
-`0701 -> 069 -> 0682 -> 0681 -> 068 -> 067 -> 066 -> 0651 -> 065 -> 064 -> 0634 -> 0633 -> 0632 -> 0631 -> 063 -> 062 -> 061 -> 060 -> 059 -> 058 -> 057 -> 0561 -> 056 -> 048`
-
-## Authoritative release detector
-
-Source:
+Authoritative detector:
 `src/core/releaseFlow0701.ts`
-
-Function:
 `pendingFreshMovementRollAfterRelease0701(match)`
 
-It returns the successful release event seq when:
-- turn phase is `PRE_ROLL_ACTION`;
-- `lastRoll === null`;
-- current actor has no `specialHold`;
-- same actor has a successful `special_release` event in current turn.
+Compatibility wrapper:
+`src/core/cpuReleaseResume066.ts`
 
-It intentionally ignores presentation state.
+Resolved blocker:
+- removed the historical authority-level `presentationBlocking` veto from `pendingFreshRollAfterRelease066(...)`;
+- compatibility detection now reports the owed fresh movement D6 even while presentation is blocking;
+- CPU path remains presentation-independent;
+- human control remains presentation-safe in `src/scenes/DirectDiceBoardScene.ts` through `shouldShowDirectTurnDice(... presentationBlocking ...)`;
+- no new watchdog or second authority source was added.
 
-## Exact current CI blocker
+Last runtime-affecting source commit:
+`f07ad68298bb6737e92a73dcb9a9f075160229c6`
 
-PR CI:
-- run **#2917**
-- id `35286379481`
-- source HEAD `ab47514ae85a3f4e89431e64dec3b9f0ab48ce9d`
+## Validation
 
-Build/typecheck PASS.
+Exact-source CI for `f07ad682...`:
+- push CI **#2924** / id `35287713667`: **SUCCESS**
+- PR CI **#2925** / id `35287716025`: **SUCCESS**
 
-All gates through **0.1.65.1** PASS, including:
+Confirmed PASS in the full chain:
+- build/typecheck;
 - replay / lockstep / HOST authority;
-- bot special-release checks;
-- 0.1.57 fresh-D6 special-location authority;
-- 0.1.63.3 release/presentation synchronization;
-- 0.1.64 sentinel;
-- 0.1.65 / 0.1.65.1 UI guards.
+- all prior release-flow sentinels;
+- **0.1.66 unified flow match length and Mini Game readability**;
+- **0.1.70.1 release flow repair + UI density**;
+- package validation.
 
-Current failure:
-`0.1.66 unified flow match length and Mini Game readability`
+Publisher:
+- **Publish compiled web mirror #221**
+- id `35287713683`
+- **SUCCESS**
+- exact-SHA CI guard PASS;
+- current-branch-HEAD guard PASS;
+- exact private source build PASS.
 
-Regression:
-`tests/unified-flow-match-length-066.ts`
+The publisher reported:
+`Public compiled mirror already matches this build.`
 
-Failing assertion:
-`pendingFreshRollAfterRelease066(releaseResume, true, 0)`
+That is expected. From the currently deployed source checkpoint `2b88563763f326834f7950364a1c3dc2df1eb9ea` to `f07ad682...`, only handoff/test files and the historical compatibility helper changed. The runtime bundle is byte-equivalent, so the mirror correctly required no new commit.
 
-Expected `1`, actual `undefined`.
-
-Reason:
-`src/core/cpuReleaseResume066.ts` still has this historical early return in the general helper:
-
-`if (presentationBlocking) return undefined;`
-
-CPU helper already ignores presentation blocking and delegates to the 0.1.70.1 authoritative detector.
-
-### Immediate next action
-
-Make the compatibility path agree with the 0.1.70.1 authority contract:
-- authority reports the owed fresh movement D6 regardless of modal visibility;
-- actual human input visibility remains presentation-safe in `DirectDiceBoardScene`;
-- do not add another watchdog or second authority path.
-
-Then rerun full CI. Do not weaken the guard merely to make CI green.
-
-## Career Traits retained from 0.1.70
-
-Source:
-`src/core/careerTraits070.ts`
-
-Release faces:
-- baseline Jail: `1/3/5`
-- baseline Hospital: `2/4/6`
-- Police Jail: `1/3/4/5`
-- Doctor Hospital: `2/4/5/6`
-- Thief Jail: `1/5`
-- Cascader Hospital: `2/6`
-
-The Job pool remains 12 Jobs.
-
-Keep `specialHoldSourceJobId` authoritative so Thief's restrictive release trait persists after arrest clears the active illegal Job.
-
-## 0.1.70.1 UI work already in source
-
-- rounded/denser Roll For Order via `TurnOrderScene0701`;
-- larger order dice/results and less dead lower space;
-- denser rounded Mini Game ranking;
-- old bottom-center `compactCard` hidden on CPU turns;
-- `compactCard` visible only on interactive human turns;
-- special-release modal has a bounded feedback window in `CareerMinigameBoardScene0701`.
-
-Permanent UI contract:
-`docs/CANONICAL_UI_UX_RULES.md`
-
-Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
-
-## Publish status
-
-The prior published 0.1.70 hotfix still failed release runtime testing.
-
-**0.1.70.1 is not yet a final published test candidate at this handoff.**
-
-Do not give Ron a new test link until:
-1. exact branch HEAD full CI PASS;
-2. 0.1.70.1 gate PASS;
-3. publisher PASS;
-4. public mirror matches exact compiled source;
-5. Pages deployment SUCCESS.
+## Public mirror / Pages
 
 Public mirror:
 `ronvotri/ronvotri-MeMeMe-Web-Playtest`
 
-Public URL:
+Current compiled mirror commit:
+`5299576ee1c1555d1ec6cd6775aa3b224b831347`
+
+Mirror commit message:
+`Publish compiled MeMeMe web playtest 2b88563`
+
+Because publisher #221 rebuilt `f07ad682...` and found no diff, this mirror is the exact compiled web output for the validated candidate.
+
+Public Pages:
+- workflow **Deploy MeMeMe Web Playtest to GitHub Pages #32**
+- run id `35261101327`
+- build **SUCCESS**
+- deploy **SUCCESS**
+
+Public test URL:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-## Manual acceptance after publish
+## Runtime status
 
-Ron must test:
-- human Jail success -> fresh D6 -> movement;
-- human Hospital success -> fresh D6 -> movement;
-- CPU Jail success -> fresh D6 -> movement;
-- CPU Hospital success -> fresh D6 -> movement.
+**Do not call Runtime PASS yet.**
+
+Ron must manually validate:
+- Human Jail success -> fresh D6 -> movement
+- Human Hospital success -> fresh D6 -> movement
+- CPU Jail success -> fresh D6 -> movement
+- CPU Hospital success -> fresh D6 -> movement
 
 Also verify:
 - failed release ends turn normally;
-- release D6 is never reused;
-- Career Trait faces remain correct;
+- release D6 is never reused as movement;
+- Career Trait release faces remain correct;
 - modal self-closes and never freezes;
 - no narration/card text leaks outside modal;
 - Roll For Order density/rounding looks balanced;
@@ -192,19 +126,47 @@ Also verify:
 
 Only Ron's runtime confirmation may close the release bug.
 
+## Runtime / presentation retained
+
+Active runtime:
+- `TurnOrderScene0701 as TurnOrderScene`
+- `CareerMinigameBoardScene0701 as ActiveBoardScene`
+
+0.1.70 Career Traits remain authoritative:
+- baseline Jail: `1/3/5`
+- baseline Hospital: `2/4/6`
+- Police Jail: `1/3/4/5`
+- Doctor Hospital: `2/4/5/6`
+- Thief Jail: `1/5`
+- Cascader Hospital: `2/6`
+
+Keep `specialHoldSourceJobId` authoritative.
+
+0.1.70.1 UI work retained:
+- rounded/denser Roll For Order;
+- larger order dice/results and less dead lower space;
+- denser rounded Mini Game ranking;
+- old bottom-center `compactCard` hidden on CPU turns;
+- `compactCard` visible only on interactive human turns;
+- bounded special-release feedback modal.
+
+Permanent UI contract:
+`docs/CANONICAL_UI_UX_RULES.md`
+
+Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
+
 ## Next-session read order
 
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
 3. `NEXT_CHAT_PROMPT.md`
-4. `src/core/releaseFlow0701.ts`
-5. `src/core/cpuReleaseResume066.ts`
-6. `tests/unified-flow-match-length-066.ts`
+4. Ron's newest runtime feedback
+5. `src/core/releaseFlow0701.ts`
+6. `src/core/cpuReleaseResume066.ts`
 7. `src/scenes/DirectDiceBoardScene.ts`
 8. `src/scenes/CareerMinigameBoardScene0701.ts`
-9. `src/scenes/TurnOrderScene0701.ts`
-10. `src/main.ts`
 
-Then fix the exact 0.1.66 compatibility mismatch, run full CI, publish only after green, and ask Ron to test the four release cases.
+If Ron reports a failure, treat his runtime result as authority and debug 0.1.70.1 without starting 0.1.71.
+If Ron reports all four release cases PASS, record human acceptance before considering any later milestone.
 
 **Do not merge PR #1.**
