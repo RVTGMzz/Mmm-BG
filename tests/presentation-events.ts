@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createInitialMatchState, type MatchEvent } from '../src/core/matchState';
 import { buildPresentationModel } from '../src/ui/presentationModel';
+import { presentationTimingForModel } from '../src/ui/presentationFlowPolicy';
+import type { BrowserSessionConfig } from '../src/core/browserSession';
 
 const match = createInitialMatchState({
   boardId: 'presentation-test',
@@ -157,10 +159,32 @@ assert.equal(draw.kind, 'card_draw');
 assert.equal(draw.rarity, 'SSR');
 assert.equal(draw.reactions.length, 0);
 
+const cpuRelease = buildPresentationModel(
+  event(13, 'special_release', 2, {
+    location: 'hospital',
+    result: 5,
+    success: true,
+    affectedPlayerIds: '2',
+  }),
+  match.players,
+);
+assert(cpuRelease, 'successful CPU release should create a presentation model');
+assert.equal(cpuRelease.tileType, 'special_release');
+const deliberatelyStaleSoloSession: BrowserSessionConfig = {
+  mode: 'solo',
+  roomCode: '',
+  clientId: 'solo',
+  seatId: 0,
+  cpuSeatIds: [],
+};
+const releaseTiming = presentationTimingForModel(cpuRelease, deliberatelyStaleSoloSession, 4, 900);
+assert.equal(releaseTiming.mode, 'auto', 'special release must never become a manual acknowledgement gate');
+assert.ok((releaseTiming.autoCloseMs ?? 0) >= cpuRelease.holdMs, 'special release must have a bounded auto-close');
+
 assert.equal(
-  buildPresentationModel(event(13, 'money_tile', 0, { amount: 50 }), match.players),
+  buildPresentationModel(event(14, 'money_tile', 0, { amount: 50 }), match.players),
   undefined,
   'raw money delta stays outside cinematic queue because tile_land owns landing feedback',
 );
 
-console.log('[presentation-events] PASS city landing identity + Card/News/Reaction models are deterministic and spectator-aware');
+console.log('[presentation-events] PASS city landing identity + Card/News/Reaction + special-release auto-close pacing are deterministic');
