@@ -50,4 +50,10 @@ export interface PlayerState {
   jobStatus?: JobStatus;
   /** 0.1.57 authoritative holding state. Omitted means the player is free on the board. */
   specialHold?: SpecialHoldLocation;
+  /**
+   * 0.1.70 remembers the career that was active when a special hold started.
+   * This matters for traits such as Thief: arrest clears the Job immediately, but the
+   * stricter release rule must remain active until that Jail stay ends.
+   */
+  specialHoldSourceJobId?: string;
 }
