@@ -104,6 +104,7 @@ const scene059 = await readFile('src/scenes/CareerMinigameBoardScene059.ts', 'ut
 const scene060 = await readFile('src/scenes/CareerMinigameBoardScene060.ts', 'utf8');
 const scene061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'utf8');
 const scene069 = await readFile('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
+const scene0701 = await readFile('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
 const main = await readFile('src/main.ts', 'utf8');
 const canonical = await readFile('src/ui/canonicalPresentation0561.ts', 'utf8');
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
@@ -113,10 +114,12 @@ assert(!scene059.includes('Math.random'), '0.1.59 presentation wrapper must not 
 assert(!scene059.includes('submitIntent('), '0.1.59 scene must not become a second gameplay authority.');
 assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene061.includes('extends CareerMinigameBoardScene060'));
-assert(main.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(scene0701.includes('extends CareerMinigameBoardScene069'));
+assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682'));
 assert(!scene069.includes('Math.random'));
 assert(!scene069.includes('submitIntent('));
 assert(canonical.includes("version: '0.1.61'"));
 
-console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under tuned payouts and 0.1.69 presentation wrapper');
+console.log('[job-minigame-depth-059] PASS 0.1.59 Job/arena identity retained under tuned payouts and 0.1.70.1 presentation wrapper');
