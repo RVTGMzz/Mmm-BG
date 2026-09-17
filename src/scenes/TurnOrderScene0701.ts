@@ -49,7 +49,7 @@ export class TurnOrderScene0701 extends TurnOrderScene048 {
     }
 
     for (const object of this.children.list) {
-      if (object instanceof Phaser.GameObjects.Circle && Math.abs(object.y - 218) < 4) {
+      if (object instanceof Phaser.GameObjects.Arc && Math.abs(object.y - 218) < 4) {
         object.setY(224).setDepth(3);
       }
       if (object instanceof Phaser.GameObjects.Text && /^P[1-4]$/.test(object.text.trim()) && Math.abs(object.y - 218) < 4) {
