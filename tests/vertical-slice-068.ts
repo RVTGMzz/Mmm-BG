@@ -12,6 +12,7 @@ const scene068 = readFileSync('src/scenes/CareerMinigameBoardScene068.ts', 'utf8
 const scene0681 = readFileSync('src/scenes/CareerMinigameBoardScene0681.ts', 'utf8');
 const scene0682 = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'utf8');
 const scene069 = readFileSync('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
+const scene0701 = readFileSync('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
 const demoBoard = readFileSync('src/scenes/DemoBoardScene.ts', 'utf8');
 const settings = readFileSync('src/ui/SettingsPanel.ts', 'utf8');
 const settingsCss = readFileSync('src/settings.css', 'utf8');
@@ -26,7 +27,9 @@ assert.equal(versionParts[0], 0);
 assert.equal(versionParts[1], 1);
 assert(versionParts[2] >= 69, `canonical runtime regressed below 0.1.69: ${MEMEME_BUILD.version}`);
 assert(MEMEME_BUILD.phase.length > 0, 'canonical build phase must stay visible');
-assert.match(main, /CareerMinigameBoardScene069 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardScene0701 as ActiveBoardScene/);
+assert.match(scene0701, /extends CareerMinigameBoardScene069/);
+assert(!scene0701.includes('Math.random'));
 assert.match(lobby, /MEMEME_BUILD\.lobbyHeader/);
 assert.match(setup, /MEMEME_BUILD\.setupHeader/);
 assert.match(order, /MEMEME_BUILD\.rollOrderBadge/);
