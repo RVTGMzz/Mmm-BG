@@ -20,6 +20,8 @@ const jobs = jobsJson as JobDefinition[];
 const replaySource = readFileSync('src/core/replay.ts', 'utf8');
 const traitSource = readFileSync('src/core/careerTraits070.ts', 'utf8');
 const activeSceneSource = readFileSync('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
+const cpuReleaseSource = readFileSync('src/core/cpuReleaseResume066.ts', 'utf8');
+const board066Source = readFileSync('src/scenes/CareerMinigameBoardScene066.ts', 'utf8');
 const turnOrderSource = readFileSync('src/scenes/TurnOrderScene0701.ts', 'utf8');
 
 function player(overrides: Partial<PlayerState> = {}): PlayerState {
@@ -108,8 +110,12 @@ releaseMatch.turn.lastRoll = 4;
 assert.equal(pendingFreshMovementRollAfterRelease0701(releaseMatch), undefined, 'fresh movement roll consumes the pending release state');
 
 assert.match(activeSceneSource, /presentation\.finishCurrent\(false\)/, 'release modal needs a bounded non-authoritative close');
-assert.match(activeSceneSource, /runtime\.submitIntent\('roll', \{\}\)/, 'CPU release resume must use normal HOST roll intent');
+assert(!activeSceneSource.includes("submitIntent('roll'"), '0.1.70.1 scene must not create a second CPU release-roll owner');
+assert.match(cpuReleaseSource, /pendingFreshMovementRollAfterRelease0701\(match\)/);
+assert.match(board066Source, /internals\.submitIntent\('roll', \{\}\)/, 'single CPU resume owner must submit the normal HOST roll intent');
+assert.match(activeSceneSource, /compactCard.*setVisible\(visible\)/s, 'legacy Card rectangle must disappear outside human turns');
+assert.match(activeSceneSource, /fillRoundedRect\(card\.x - 75/, 'visible Card control must use a rounded skin');
 assert.match(turnOrderSource, /fillRoundedRect/, 'Roll For Order cards must use rounded presentation');
 assert.match(turnOrderSource, /valueTexts.*setY\(365\)/s, 'Roll For Order D6 results must be enlarged and reflowed');
 
-console.log('[career-traits-070] PASS traits + 0.1.70.1 fresh-release authority + rounded dense UI guards');
+console.log('[career-traits-070] PASS traits + 0.1.70.1 fresh-release single-owner flow + rounded dense UI guards');
