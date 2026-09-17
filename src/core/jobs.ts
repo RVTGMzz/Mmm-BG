@@ -132,9 +132,10 @@ export function resolveCareerCheck(
   const previousLevel = Math.max(1, Math.min(job.maxLevel, Math.floor(player.jobLevel ?? 1)));
 
   if (job.risk === 'crime' && random() < clampChance(job.jailChance)) {
-    // 0.1.59 closes the old "future milestone" stub: getting caught is now a real
-    // authoritative Jail hold. The illegal Job is lost immediately; specialHold
-    // remains the single source of truth for release eligibility and Mini Game exclusion.
+    // 0.1.70 captures the source career before clearJob(). A Thief loses the Job
+    // immediately when arrested, but its stricter Jail release trait stays active
+    // for this hold and is cleared only after a successful release.
+    player.specialHoldSourceJobId = job.id;
     clearJob(player);
     player.specialHold = 'jail';
     player.nodeId = 100;
@@ -144,7 +145,7 @@ export function resolveCareerCheck(
       previousLevel,
       level: 0,
       title: `${job.icon} BỊ TÓM!`,
-      summary: `${player.name} bị bắt khi làm ${job.title}: mất nghề và bị đưa thẳng về Đồn. Lượt sau phải đổ 1 / 3 / 5 để thoát.`,
+      summary: `${player.name} bị bắt khi làm ${job.title}: mất nghề và bị đưa thẳng về Đồn. Trait nghề vẫn áp dụng cho lần giam này.`,
     };
   }
 
