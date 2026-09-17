@@ -10,12 +10,17 @@ import {
   careerReleaseSucceeds070,
   careerTraitForJob070,
 } from '../src/core/careerTraits070';
+import { pendingCpuFreshRollAfterRelease066 } from '../src/core/cpuReleaseResume066';
+import { pendingFreshMovementRollAfterRelease0701 } from '../src/core/releaseFlow0701';
+import { createInitialMatchState, appendMatchEvent } from '../src/core/matchState';
 import { resolveCareerCheck, type JobDefinition } from '../src/core/jobs';
 import type { PlayerState } from '../src/core/types';
 
 const jobs = jobsJson as JobDefinition[];
 const replaySource = readFileSync('src/core/replay.ts', 'utf8');
 const traitSource = readFileSync('src/core/careerTraits070.ts', 'utf8');
+const activeSceneSource = readFileSync('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
+const turnOrderSource = readFileSync('src/scenes/TurnOrderScene0701.ts', 'utf8');
 
 function player(overrides: Partial<PlayerState> = {}): PlayerState {
   return {
@@ -31,8 +36,8 @@ function player(overrides: Partial<PlayerState> = {}): PlayerState {
   };
 }
 
-assert.equal(MEMEME_BUILD.version, '0.1.70');
-assert.equal(MEMEME_BUILD.phase, 'CAREER TRAITS');
+assert.equal(MEMEME_BUILD.version, '0.1.70.1');
+assert.match(MEMEME_BUILD.phase, /RELEASE FLOW REPAIR/);
 assert.deepEqual(DEFAULT_RELEASE_FACES_070.jail, [1, 3, 5]);
 assert.deepEqual(DEFAULT_RELEASE_FACES_070.hospital, [2, 4, 6]);
 
@@ -75,14 +80,36 @@ assert(jobs.some((job) => job.id === 'JOB_POLICE' && job.title === 'Cảnh sát'
 assert(jobs.some((job) => job.id === 'JOB_STUNT' && job.title === 'Cascader'));
 assert.equal(jobs.length, 12, '0.1.70 canonical Job pool should contain 12 Jobs');
 assert.equal(allCareerTraits070().length, jobs.length, 'every canonical Job needs a registered Career Trait identity');
-for (const job of jobs) {
-  assert(careerTraitForJob070(job.id), `missing Career Trait registry entry for ${job.id}`);
-}
+for (const job of jobs) assert(careerTraitForJob070(job.id), `missing Career Trait registry entry for ${job.id}`);
 
 assert.match(replaySource, /careerReleaseSucceeds070\(location, result, player\)/);
-assert.match(replaySource, /careerReleaseFaces070\(location, player\)/);
+assert.match(replaySource, /ctx\.state\.turn\.lastRoll = null/);
+assert.match(replaySource, /transition\(ctx, 'PRE_ROLL_ACTION'\)/);
+assert.match(replaySource, /Đổ một D6 di chuyển MỚI trong cùng lượt/);
 assert.match(replaySource, /specialHoldSourceJobId/);
-assert(!replaySource.includes('specialReleaseSucceeds057(location, result)'), '0.1.70 runtime authority must use Career Trait release policy');
+assert(!replaySource.includes('specialReleaseSucceeds057(location, result)'), 'runtime authority must use Career Trait release policy');
 assert(!traitSource.includes('Math.random'), 'Career Trait policy must not introduce client-side RNG');
 
-console.log('[career-traits-070] PASS baseline + Police + Doctor + Thief + Cascader authoritative release rules');
+// 0.1.70.1: authoritative fresh-roll state must be detectable independently from presentation.
+const releaseMatch = createInitialMatchState({ boardId: 'release-0701', startNodeId: 0, playerNames: ['P1', 'CPU2'], seed: 701 });
+releaseMatch.turn.phase = 'PRE_ROLL_ACTION';
+releaseMatch.turn.lastRoll = null;
+releaseMatch.turn.currentPlayerIndex = 1;
+releaseMatch.turn.turnNumber = 7;
+appendMatchEvent(releaseMatch, 'special_release', { location: 'jail', result: 3, success: true }, 1);
+const releaseSeq = pendingFreshMovementRollAfterRelease0701(releaseMatch);
+assert.equal(releaseSeq, releaseMatch.eventLog.at(-1)?.seq);
+assert.equal(
+  pendingCpuFreshRollAfterRelease066(releaseMatch, [1], true, 0),
+  releaseSeq,
+  'CPU fresh movement D6 must not be vetoed by presentationBlocking',
+);
+releaseMatch.turn.lastRoll = 4;
+assert.equal(pendingFreshMovementRollAfterRelease0701(releaseMatch), undefined, 'fresh movement roll consumes the pending release state');
+
+assert.match(activeSceneSource, /presentation\.finishCurrent\(false\)/, 'release modal needs a bounded non-authoritative close');
+assert.match(activeSceneSource, /runtime\.submitIntent\('roll', \{\}\)/, 'CPU release resume must use normal HOST roll intent');
+assert.match(turnOrderSource, /fillRoundedRect/, 'Roll For Order cards must use rounded presentation');
+assert.match(turnOrderSource, /valueTexts.*setY\(365\)/s, 'Roll For Order D6 results must be enlarged and reflowed');
+
+console.log('[career-traits-070] PASS traits + 0.1.70.1 fresh-release authority + rounded dense UI guards');
