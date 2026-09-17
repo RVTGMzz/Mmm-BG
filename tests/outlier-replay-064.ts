@@ -14,6 +14,9 @@ const runtime = {
   news: newsJson as NewsDefinition[],
 };
 
+// This test file keeps its historical 0.1.64 filename because CI/package paths already
+// consume it, but the canonical outlier fingerprints below are intentionally rebased
+// for 0.1.70 Career Traits. The gameplay update changes Job draws and special-release odds.
 const OUTLIERS = [
   {
     seed: 611102,
@@ -40,24 +43,24 @@ const OUTLIERS = [
   {
     seed: 611112,
     reason: '0.1.70-largest-money-spread',
-    checksum: 'DIAGNOSTIC',
-    turns: 0,
-    commands: 0,
-    submitted: 0,
-    moneyTotal: 0,
-    spread: 0,
-    movement: 0,
-    release: 0,
-    cards: 0,
-    news: 0,
-    mini: 0,
-    miniPayout: 0,
-    jobs: 0,
-    lotteryCount: 0,
-    lotteryPayout: 0,
-    finishOrderPlayerIds: [0, 1, 2, 3],
-    finalMoney: [0, 0, 0, 0],
-    finishOrderBySeat: [0, 0, 0, 0],
+    checksum: 'a5aa724b',
+    turns: 76,
+    commands: 124,
+    submitted: 110,
+    moneyTotal: 1885,
+    spread: 399,
+    movement: 68,
+    release: 15,
+    cards: 14,
+    news: 8,
+    mini: 10,
+    miniPayout: 380,
+    jobs: 3,
+    lotteryCount: 2,
+    lotteryPayout: 180,
+    finishOrderPlayerIds: [1, 2, 0, 3],
+    finalMoney: [432, 341, 372, 740],
+    finishOrderBySeat: [3, 1, 2, 4],
   },
 ] as const;
 
@@ -90,9 +93,6 @@ function fingerprintLine(entry: (typeof runs)[number]): string[] {
     `finishPlaces=${report.players.map((player) => player.finishOrder ?? 0).join(',')}`,
   ];
 }
-
-console.log('[outlier-replay-064] 0.1.70 candidate fingerprints before locked assertions');
-for (const entry of runs) console.log(fingerprintLine(entry).join(' | '));
 
 for (const { fixture, run } of runs) {
   const { report } = run;
