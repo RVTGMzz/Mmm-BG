@@ -1,8 +1,6 @@
 import Phaser from 'phaser';
 import { browserSession } from '../core/browserSession';
-import { pendingFreshMovementRollAfterRelease0701 } from '../core/releaseFlow0701';
-import type { ClientIntentType } from '../core/authority';
-import type { MatchEventValue, MatchState } from '../core/matchState';
+import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene069 } from './CareerMinigameBoardScene069';
@@ -16,37 +14,46 @@ type Presentation0701 = {
 type Runtime0701 = {
   match: MatchState;
   presentation?: Presentation0701;
-  submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
   currentPlayer(): PlayerState | undefined;
+  canControlCurrentPlayer(): boolean;
+  compactCard?: Phaser.GameObjects.Rectangle;
+  compactCardText?: Phaser.GameObjects.Text;
 };
 
 /**
  * 0.1.70.1 Release Flow Repair + UI Density Pass.
  *
  * Release authority already clears the hold and returns to PRE_ROLL_ACTION with
- * lastRoll=null. This layer makes presentation strictly non-authoritative:
- * - the release modal may never hold a CPU fresh-roll forever;
- * - a release modal is force-bounded even if an inherited timer/tween stalls;
+ * lastRoll=null. Presentation stays strictly non-authoritative:
+ * - the release modal is force-bounded even if an inherited timer/tween stalls;
+ * - CPU fresh-roll authority stays in the single 0.1.66 compatibility wrapper,
+ *   now backed by releaseFlow0701 and independent from modal blocking;
+ * - the legacy Card slot is visible only on an interactive human turn;
  * - Mini Game ranking uses a denser rounded result card instead of a blank wall.
  */
 export class CareerMinigameBoardScene0701 extends CareerMinigameBoardScene069 {
   private releaseModelSeq0701 = 0;
   private releaseModelSeenAt0701 = -Infinity;
-  private cpuFreshRollSubmittedSeq0701 = 0;
+  private compactCardSkin0701?: Phaser.GameObjects.Graphics;
   private readonly roundedRankingRoots0701 = new WeakSet<Phaser.GameObjects.Container>();
 
   create(): void {
     super.create();
     this.releaseModelSeq0701 = 0;
     this.releaseModelSeenAt0701 = -Infinity;
-    this.cpuFreshRollSubmittedSeq0701 = 0;
+    this.installCompactCardSkin0701();
+    this.syncCompactCard0701();
     this.updateBuildLabels0701();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.compactCardSkin0701?.destroy();
+      this.compactCardSkin0701 = undefined;
+    });
   }
 
   update(): void {
     super.update();
     this.repairReleasePresentation0701();
-    this.resumeCpuFreshMovementRoll0701();
+    this.syncCompactCard0701();
     this.polishMiniGameRanking0701();
   }
 
@@ -69,31 +76,55 @@ export class CareerMinigameBoardScene0701 extends CareerMinigameBoardScene069 {
       this.releaseModelSeenAt0701 = this.time.now;
     }
 
-    // The release card is feedback only. If any inherited timing/tween path fails,
-    // force it closed after the intended reading window so it cannot own the turn.
+    // Release success is feedback, never turn authority. If any inherited timer or
+    // tween stalls, close this exact card after the intended reading window.
     if (presentation.isBlocking() && this.time.now - this.releaseModelSeenAt0701 >= 1850) {
       presentation.finishCurrent(false);
     }
   }
 
-  private resumeCpuFreshMovementRoll0701(): void {
+  private installCompactCardSkin0701(): void {
     const runtime = this.runtime0701();
-    const releaseSeq = pendingFreshMovementRollAfterRelease0701(runtime.match);
-    if (releaseSeq === undefined || this.cpuFreshRollSubmittedSeq0701 === releaseSeq) return;
+    const card = runtime.compactCard;
+    if (!card) return;
+    card.setAlpha(0.001);
+    this.compactCardSkin0701 = this.add.graphics().setDepth(card.depth);
+    runtime.compactCardText?.setDepth(card.depth + 1);
+  }
 
+  private syncCompactCard0701(): void {
+    const runtime = this.runtime0701();
     const player = runtime.currentPlayer();
-    if (!player || !browserSession.isCpuSeat(player.id)) return;
-
-    const model = runtime.presentation?.currentModel;
-    const releaseCardVisible = model?.tileType === 'special_release';
-    if (releaseCardVisible && this.releaseModelSeq0701 === model.eventSeq) {
-      // Let the success card breathe briefly, but never wait for presentationBlocking
-      // to become false. Authority can accept the fresh movement D6 independently.
-      if (this.time.now - this.releaseModelSeenAt0701 < 900) return;
+    const card = runtime.compactCard;
+    const text = runtime.compactCardText;
+    const skin = this.compactCardSkin0701;
+    if (!player || !card || !text) {
+      skin?.setVisible(false);
+      return;
     }
 
-    this.cpuFreshRollSubmittedSeq0701 = releaseSeq;
-    runtime.submitIntent('roll', {});
+    const blocking = runtime.presentation?.isBlocking() ?? false;
+    const humanTurn = runtime.canControlCurrentPlayer() && !browserSession.isCpuSeat(player.id);
+    const visible = humanTurn && !blocking;
+    card.setVisible(visible).setAlpha(visible ? 0.001 : 0);
+    text.setVisible(visible);
+    skin?.setVisible(visible);
+
+    if (!visible) {
+      if (card.input?.enabled) card.disableInteractive();
+      return;
+    }
+    if (!card.input?.enabled) card.setInteractive({ useHandCursor: true });
+
+    const canUse = runtime.match.turn.phase === 'PRE_ROLL_ACTION' && player.handCardIds.length > 0;
+    const fill = canUse ? 0xb997d6 : 0xd8d2c7;
+    if (skin) {
+      skin.clear();
+      skin.fillStyle(fill, 1);
+      skin.fillRoundedRect(card.x - 75, card.y - 20, 150, 40, 16);
+      skin.lineStyle(3, 0x242424, 1);
+      skin.strokeRoundedRect(card.x - 75, card.y - 20, 150, 40, 16);
+    }
   }
 
   private polishMiniGameRanking0701(): void {
