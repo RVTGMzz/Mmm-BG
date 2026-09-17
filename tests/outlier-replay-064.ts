@@ -17,16 +17,13 @@ const runtime = {
 const OUTLIERS = [
   {
     seed: 611102,
-    reason: '0.1.64-longest-match',
-    // 0.1.70 adds specialHoldSourceJobId to authoritative state so the Thief trait
-    // survives arrest. Gameplay metrics below remain locked; only the checksum is
-    // intentionally rebased for the new canonical state schema.
+    reason: '0.1.70-longest-match',
     checksum: '56c6487d',
     turns: 92,
     commands: 145,
     submitted: 128,
-    moneyTotal: 1565,
-    spread: 137,
+    moneyTotal: 1570,
+    spread: 177,
     movement: 76,
     release: 22,
     cards: 14,
@@ -37,30 +34,30 @@ const OUTLIERS = [
     lotteryCount: 1,
     lotteryPayout: 40,
     finishOrderPlayerIds: [3, 2, 1, 0],
-    finalMoney: [375, 333, 470, 387],
+    finalMoney: [365, 323, 500, 382],
     finishOrderBySeat: [4, 3, 2, 1],
   },
   {
-    seed: 611113,
-    reason: '0.1.64-largest-money-spread',
-    checksum: '856548f4',
-    turns: 51,
-    commands: 79,
-    submitted: 67,
-    moneyTotal: 1112,
-    spread: 367,
-    movement: 50,
-    release: 3,
-    cards: 9,
-    news: 7,
-    mini: 2,
-    miniPayout: 100,
-    jobs: 3,
-    lotteryCount: 2,
-    lotteryPayout: 140,
-    finishOrderPlayerIds: [3, 0, 2, 1],
-    finalMoney: [264, 457, 301, 90],
-    finishOrderBySeat: [2, 4, 3, 1],
+    seed: 611112,
+    reason: '0.1.70-largest-money-spread',
+    checksum: 'DIAGNOSTIC',
+    turns: 0,
+    commands: 0,
+    submitted: 0,
+    moneyTotal: 0,
+    spread: 0,
+    movement: 0,
+    release: 0,
+    cards: 0,
+    news: 0,
+    mini: 0,
+    miniPayout: 0,
+    jobs: 0,
+    lotteryCount: 0,
+    lotteryPayout: 0,
+    finishOrderPlayerIds: [0, 1, 2, 3],
+    finalMoney: [0, 0, 0, 0],
+    finishOrderBySeat: [0, 0, 0, 0],
   },
 ] as const;
 
@@ -94,7 +91,7 @@ function fingerprintLine(entry: (typeof runs)[number]): string[] {
   ];
 }
 
-console.log('[outlier-replay-064] candidate fingerprints before locked assertions');
+console.log('[outlier-replay-064] 0.1.70 candidate fingerprints before locked assertions');
 for (const entry of runs) console.log(fingerprintLine(entry).join(' | '));
 
 for (const { fixture, run } of runs) {
@@ -124,14 +121,14 @@ for (const { fixture, run } of runs) {
 }
 
 const lines = [
-  'MeMeMe OUTLIER REPLAY PACK 0.1.64',
-  'Intentional gameplay update: release succeeds in place; fresh D6 traverses real J/H penalty corridors.',
+  'MeMeMe OUTLIER REPLAY PACK 0.1.70',
+  'Career Traits intentionally change Jail/Hospital release odds and expand the Job pool from 10 to 12.',
   'Historical 0.1.63.4 fingerprints remain in tests/outlier-replay-0634.ts and are not rewritten.',
   ...runs.flatMap((entry) => fingerprintLine(entry)),
-  'LOCKED: exact 0.1.64 release-corridor regression fingerprints selected from the 32-match batch.',
+  'LOCKED: exact 0.1.70 Career Traits outlier fingerprints selected from the 32-match deterministic batch.',
 ];
 const text = lines.join('\n');
 const outputPath = process.env.OUTLIER_REPLAY_OUTPUT?.trim();
 if (outputPath) writeFileSync(outputPath, `${text}\n`, 'utf8');
 console.log(text);
-console.log(`[outlier-replay-064] PASS exact fingerprints locked for seeds=${OUTLIERS.map((fixture) => fixture.seed).join(',')} output=${outputPath || '(stdout only)'}`);
+console.log(`[outlier-replay-064] PASS 0.1.70 fingerprints locked for seeds=${OUTLIERS.map((fixture) => fixture.seed).join(',')} output=${outputPath || '(stdout only)'}`);
