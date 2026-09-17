@@ -21,13 +21,13 @@ type PlayerVisualRuntime0633 = { token: Phaser.GameObjects.Container };
 type PresentationRuntime0633 = {
   currentModel?: PresentationEventModel;
   isBlocking(): boolean;
+  finishCurrent(animate?: boolean): void;
 };
 
 type UiSyncRuntime0633 = {
   match: MatchState;
   visuals: Map<number, PlayerVisualRuntime0633>;
   syncCanonicalHud(force: boolean): void;
-  rollPendingTurn?: number;
   showDeltaToast(lines: string[]): void;
   animateMoveStep(
     internals: { visuals: Map<number, PlayerVisualRuntime0633> },
@@ -41,25 +41,18 @@ type UiSyncRuntime0633 = {
  * Human feedback exposed two related presentation races:
  * 1) authoritative money/effects could already be visible while the token was still
  *    waiting for its queued dice + movement animation;
- * 2) Jail/Hospital release corridor move_step events looked like normal movement,
- *    obscuring that the release D6 is discarded and a fresh D6 is required.
+ * 2) Jail/Hospital release corridor move_step events looked like normal movement.
  *
- * Gameplay authority and RNG stay unchanged. This scene only aligns what the player
- * sees with the already-authoritative event order.
+ * 0.1.70.1 keeps this layer presentation-only. Fresh release-roll authority now lives
+ * in releaseFlow0701/DirectDiceBoardScene so this scene never mutates dice state.
  */
 export class CareerMinigameBoardScene0633 extends CareerMinigameBoardScene0632 {
-  private releaseFreshRollArmed0633 = false;
-
   create(): void {
     super.create();
     this.installPresentedStateSync0633();
+    this.installBoundedPresentationClose0633();
     this.installReleaseCorridorPresentation0633();
     this.updateBuildLabels0633();
-  }
-
-  update(): void {
-    super.update();
-    this.syncFreshRollAfterRelease0633();
   }
 
   private presentation0633(): PresentationRuntime0633 | undefined {
@@ -84,6 +77,32 @@ export class CareerMinigameBoardScene0633 extends CareerMinigameBoardScene0632 {
       );
       if (movementStillPresenting) return;
       originalSyncCanonicalHud(force);
+    };
+  }
+
+  /**
+   * Bound animated modal closes. MatchPresentationLayer historically relied only on
+   * a tween onComplete callback. If another presentation/UI sync stopped that tween,
+   * active/currentModel stayed alive and isBlocking() remained true forever. That
+   * prevented both the human direct die and the CPU resume path after release.
+   *
+   * Keep normal animation, but after 320 ms force the same close without animation
+   * only when the exact same model is still blocking.
+   */
+  private installBoundedPresentationClose0633(): void {
+    const presentation = this.presentation0633();
+    if (!presentation) return;
+    const originalFinishCurrent = presentation.finishCurrent.bind(presentation);
+
+    presentation.finishCurrent = (animate = true) => {
+      const model = presentation.currentModel;
+      originalFinishCurrent(animate);
+      if (!animate || !model) return;
+
+      this.time.delayedCall(320, () => {
+        if (presentation.currentModel !== model || !presentation.isBlocking()) return;
+        originalFinishCurrent(false);
+      });
     };
   }
 
@@ -144,29 +163,6 @@ export class CareerMinigameBoardScene0633 extends CareerMinigameBoardScene0632 {
         });
       });
     };
-  }
-
-  private syncFreshRollAfterRelease0633(): void {
-    const runtime = this as unknown as UiSyncRuntime0633;
-    const presentation = this.presentation0633();
-    const model = presentation?.currentModel;
-
-    if (
-      model?.tileType === 'special_release' &&
-      runtime.match.turn.phase === 'PRE_ROLL_ACTION' &&
-      runtime.match.turn.lastRoll === null
-    ) {
-      this.releaseFreshRollArmed0633 = true;
-    }
-
-    if (!this.releaseFreshRollArmed0633 || presentation?.isBlocking()) return;
-
-    // DirectDiceBoardScene historically keyed its pending click only by turnNumber.
-    // A successful release intentionally stays in the same turn, so clear that one
-    // pending marker only after the release presentation finishes. The next D6 is a
-    // genuinely new roll and cannot double-submit during the release animation.
-    runtime.rollPendingTurn = undefined;
-    this.releaseFreshRollArmed0633 = false;
   }
 
   private updateBuildLabels0633(): void {

@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { browserSession } from '../core/browserSession';
-import { pendingFreshRollAfterRelease066 } from '../core/cpuReleaseResume066';
+import { pendingFreshMovementRollAfterRelease0701 } from '../core/releaseFlow0701';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import { shouldShowDirectTurnDice } from '../ui/directDicePolicy';
@@ -23,14 +23,12 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
   private directDice?: Phaser.GameObjects.Container;
   private directDiceTween?: Phaser.Tweens.Tween;
   private rollPendingTurn?: number;
-  private handledFreshReleaseEventSeq = 0;
 
   create(): void {
     super.create();
     this.removeLegacyRollButton();
     this.createDirectDice();
     this.updateBuildLabels030();
-    this.handledFreshReleaseEventSeq = 0;
 
     this.events.on(Phaser.Scenes.Events.UPDATE, this.syncDirectDice, this);
     this.events.once('shutdown', () => {
@@ -40,7 +38,6 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
       this.directDice?.destroy();
       this.directDice = undefined;
       this.rollPendingTurn = undefined;
-      this.handledFreshReleaseEventSeq = 0;
     });
   }
 
@@ -144,17 +141,14 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
       this.rollPendingTurn = undefined;
     }
 
-    // A successful Jail/Hospital release consumes a D6 without advancing the turn.
-    // Once its modal is gone, unlock the direct die so the HUMAN actor can make the
-    // fresh movement roll in the same turn. CPU seats keep using the 0.1.66 HOST watchdog.
-    const freshReleaseEventSeq = pendingFreshRollAfterRelease066(
-      internals.match,
-      presentationBlocking,
-      this.handledFreshReleaseEventSeq,
-    );
-    if (freshReleaseEventSeq !== undefined) {
-      this.handledFreshReleaseEventSeq = freshReleaseEventSeq;
-      if (!browserSession.isCpuSeat(player.id)) this.rollPendingTurn = undefined;
+    // 0.1.70.1: reset the same-turn click lock from authoritative release state,
+    // independently of presentation timing. The die still cannot appear/click while
+    // presentationBlocking is true because shouldShowDirectTurnDice owns visibility.
+    // This removes the race where the release modal closed after the detector window
+    // and the human actor stayed locked to the escape D6 forever.
+    const freshReleaseEventSeq = pendingFreshMovementRollAfterRelease0701(internals.match);
+    if (freshReleaseEventSeq !== undefined && !browserSession.isCpuSeat(player.id)) {
+      this.rollPendingTurn = undefined;
     }
 
     const shouldShow =
