@@ -25,8 +25,15 @@ import { replayMatchCommands } from '../src/core/replay';
 import type { BoardDefinition } from '../src/core/types';
 
 const JOBS = jobsJson as JobDefinition[];
-assert.equal(JOBS.length, 10, 'Job pool must contain exactly 10 careers');
-assert.equal(new Set(JOBS.map((job) => job.id)).size, 10, 'Job IDs must be unique');
+const LEGACY_JOB_IDS_031 = [
+  'JOB_OFFICE', 'JOB_BARISTA', 'JOB_CHEF', 'JOB_DRIVER', 'JOB_SHIPPER',
+  'JOB_STREAMER', 'JOB_ENGINEER', 'JOB_DOCTOR', 'JOB_IDOL', 'JOB_THIEF',
+] as const;
+assert(JOBS.length >= 10, 'Job pool must retain at least the original 10 careers');
+assert.equal(new Set(JOBS.map((job) => job.id)).size, JOBS.length, 'Job IDs must remain unique as the pool expands');
+for (const legacyId of LEGACY_JOB_IDS_031) {
+  assert(JOBS.some((job) => job.id === legacyId), `legacy Job ${legacyId} must remain in the canonical pool`);
+}
 assert(JOBS.some((job) => job.id === 'JOB_THIEF' && job.risk === 'crime' && job.jailChance > 0));
 for (const job of JOBS) {
   assert.equal(job.salaryByLevel.length, job.maxLevel, `${job.id} salary curve must cover every level`);
@@ -292,4 +299,4 @@ const duplicateReward = submitClientIntent(miniAuthority, {
 });
 assert.equal(duplicateReward.status, 'rejected', 'same Mini Game source event cannot pay twice');
 
-console.log('[job-minigame-031] PASS Job salary + mandatory stop + D6 A/B/C + real criminal Jail hold + Roll For Order + legacy/default Mini Game rewards');
+console.log('[job-minigame-031] PASS Job salary + expandable pool + mandatory stop + D6 A/B/C + real criminal Jail hold + Roll For Order + legacy/default Mini Game rewards');
