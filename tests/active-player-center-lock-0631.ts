@@ -5,9 +5,12 @@ const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf
 const scene0631Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0631.ts', import.meta.url), 'utf8');
 const scene063Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene063.ts', import.meta.url), 'utf8');
 const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
+const scene0701Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
 const authoritySource = readFileSync(new URL('../src/core/authority.ts', import.meta.url), 'utf8');
 
-assert(mainSource.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(scene0701Source.includes('extends CareerMinigameBoardScene069'));
+assert(!scene0701Source.includes('Math.random'));
 assert(scene069Source.includes('extends CareerMinigameBoardScene0682'));
 assert(!scene069Source.includes('submitIntent('));
 assert(!scene069Source.includes('Math.random'));
@@ -27,4 +30,4 @@ assert(!scene0631Source.includes('submitIntent('));
 assert(!scene0631Source.includes('Math.random'));
 assert(authoritySource.includes('autoResolveParityBranches062'));
 assert(scene0631Source.includes('ACTIVE TOKEN LUÔN Ở GIỮA'));
-console.log('[active-player-center-lock-0631] PASS historical center-lock retained beneath 0.1.69 wrapper');
+console.log('[active-player-center-lock-0631] PASS historical center-lock retained beneath 0.1.70.1 wrapper');
