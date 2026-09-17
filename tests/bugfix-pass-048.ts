@@ -10,6 +10,7 @@ const bgm=await readFile('src/audio/bgmController.ts','utf8');
 const money=await readFile('src/scenes/TurnStakesBoardScene.ts','utf8');
 const presentation=await readFile('src/ui/MatchPresentationLayer.ts','utf8');
 const dice=await readFile('src/scenes/TurnOrderScene048.ts','utf8');
+const dice0701=await readFile('src/scenes/TurnOrderScene0701.ts','utf8');
 const board048=await readFile('src/scenes/CareerMinigameBoardScene048.ts','utf8');
 const board056=await readFile('src/scenes/CareerMinigameBoardScene056.ts','utf8');
 const board0561=await readFile('src/scenes/CareerMinigameBoardScene0561.ts','utf8');
@@ -25,6 +26,7 @@ const board068=await readFile('src/scenes/CareerMinigameBoardScene068.ts','utf8'
 const board0681=await readFile('src/scenes/CareerMinigameBoardScene0681.ts','utf8');
 const board0682=await readFile('src/scenes/CareerMinigameBoardScene0682.ts','utf8');
 const board069=await readFile('src/scenes/CareerMinigameBoardScene069.ts','utf8');
+const board0701=await readFile('src/scenes/CareerMinigameBoardScene0701.ts','utf8');
 const releaseGuard066=await readFile('src/core/cpuReleaseResume066.ts','utf8');
 const picker=await readFile('src/ui/CardHandPicker.ts','utf8');
 const main=await readFile('src/main.ts','utf8');
@@ -37,6 +39,7 @@ assert(bgm.includes("playMiniGame(): void")&&bgm.includes("this.setTrack('city_s
 assert(money.includes('presentationOwnsMoneyCue')); assert(money.includes('packetMoneyCue'));
 assert(presentation.includes("model.kind === 'tile_land' && model.tileType === 'money'"));
 assert(dice.includes('DICE_FACES')&&dice.includes('`${face} ${result}`')); assert(!dice.includes('`🎲 ${result}`'));
+assert(dice0701.includes('extends TurnOrderScene048'),'current Roll For Order scene must retain the validated 0.1.48 authority ceremony');
 assert(board048.includes('extends CareerMinigameBoardScene046')); assert(board048.includes("disposition !== 'animate'")); assert(!board048.includes('submitIntent(')); assert(!board048.includes('Math.random'));
 assert(board056.includes('extends CareerMinigameBoardScene048')); assert(!board056.includes('Math.random'));
 assert(board0561.includes('extends CareerMinigameBoardScene056')); assert(!board0561.includes('Math.random')); assert(board0561.includes('showBranchPicker'));
@@ -52,9 +55,10 @@ assert(board068.includes('extends CareerMinigameBoardScene067')); assert(!board0
 assert(board0681.includes('extends CareerMinigameBoardScene068')); assert(!board0681.includes('Math.random')); assert(!board0681.includes('submitIntent('));
 assert(board0682.includes('extends CareerMinigameBoardScene0681')); assert(!board0682.includes('Math.random')); assert(!board0682.includes('submitIntent('));
 assert(board069.includes('extends CareerMinigameBoardScene0682')); assert(!board069.includes('Math.random')); assert(!board069.includes('submitIntent('));
+assert(board0701.includes('extends CareerMinigameBoardScene069')); assert(!board0701.includes('Math.random'));
 const executableSubmitCalls066=board066.match(/internals\.submitIntent\(/g)??[]; assert.equal(executableSubmitCalls066.length,1); assert(board066.includes("internals.submitIntent('roll', {})")); assert(board066.includes('pendingCpuFreshRollAfterRelease066')); assert(!releaseGuard066.includes('Math.random')); assert(!releaseGuard066.includes('submitIntent('));
 assert(picker.includes('CHỌN LÁ BÀI')&&picker.includes('DÙNG LÁ NÀY')); assert(!picker.includes('CHỌN PHÉP THUẬT'));
-assert(main.includes('TurnOrderScene048')); assert(main.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(main.includes('TurnOrderScene0701 as TurnOrderScene')); assert(main.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
 const runtimePatch048=Number(MEMEME_BUILD.version.split('.')[2]??0); assert(Number.isInteger(runtimePatch048)&&runtimePatch048>=69,'0.1.48 retained presentation guard must allow later canonical runtimes');
 assert(lobby.includes('MEMEME_BUILD.lobbyHeader')); assert(setup.includes('MEMEME_BUILD.setupHeader')); assert(handoff.includes('TIN TỨC / LÁ BÀI'));
 console.log('[bugfix-pass-048] PASS authority/audio/dice/stale-token/release guards retained through current canonical runtime');
