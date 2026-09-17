@@ -21,6 +21,9 @@ assert(sceneSource.includes('RELEASE_CORRIDOR_FROM_0633'));
 assert(sceneSource.includes('RELEASE_GATE_NODE_0633'));
 assert(sceneSource.includes('return Promise.resolve()'));
 assert(sceneSource.includes('duration: 430'));
+assert(sceneSource.includes('fallback = this.time.delayedCall(650, finish)'));
+assert(sceneSource.includes('onStop: finish'));
+assert(sceneSource.includes('if (settled) return'));
 assert(sceneSource.includes('releaseFreshRollArmed0633'));
 assert(sceneSource.includes('runtime.rollPendingTurn = undefined'));
 assert(sceneSource.includes("runtime.match.turn.phase === 'PRE_ROLL_ACTION'"));
@@ -33,4 +36,4 @@ const match = createInitialMatchState({ boardId: 'release-presentation-0633', st
 const releaseEvent: MatchEvent = { seq:10,type:'special_release',turnNumber:2,playerIndex:0,phase:'MOVING',revision:4,rngCalls:2,actorId:0,data:{location:'jail',result:3,success:true,title:'ĐƯỢC THẢ!',impact:'✅',description:'Thoát hành lang xong sẽ đổ một D6 di chuyển MỚI trong cùng lượt.',affectedPlayerIds:'0'} };
 const model = buildPresentationModel(releaseEvent, match.players);
 assert(model); assert.equal(model.kind,'tile_land'); assert.equal(model.tileType,'special_release'); assert.equal(model.roll,3); assert.match(model.description,/CHỈ dùng để thoát/); assert.match(model.description,/D6 MỚI/);
-console.log('[presentation-release-sync-0633] PASS historical release/presentation synchronization retained beneath 0.1.69 wrapper');
+console.log('[presentation-release-sync-0633] PASS bounded release presentation + fresh D6 synchronization retained beneath current wrapper');
