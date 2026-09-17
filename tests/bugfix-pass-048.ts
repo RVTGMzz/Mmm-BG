@@ -54,6 +54,7 @@ assert(board0682.includes('extends CareerMinigameBoardScene0681')); assert(!boar
 assert(board069.includes('extends CareerMinigameBoardScene0682')); assert(!board069.includes('Math.random')); assert(!board069.includes('submitIntent('));
 const executableSubmitCalls066=board066.match(/internals\.submitIntent\(/g)??[]; assert.equal(executableSubmitCalls066.length,1); assert(board066.includes("internals.submitIntent('roll', {})")); assert(board066.includes('pendingCpuFreshRollAfterRelease066')); assert(!releaseGuard066.includes('Math.random')); assert(!releaseGuard066.includes('submitIntent('));
 assert(picker.includes('CHỌN LÁ BÀI')&&picker.includes('DÙNG LÁ NÀY')); assert(!picker.includes('CHỌN PHÉP THUẬT'));
-assert(main.includes('TurnOrderScene048')); assert(main.includes('CareerMinigameBoardScene069 as ActiveBoardScene')); assert.equal(MEMEME_BUILD.version,'0.1.69');
+assert(main.includes('TurnOrderScene048')); assert(main.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+const runtimePatch048=Number(MEMEME_BUILD.version.split('.')[2]??0); assert(Number.isInteger(runtimePatch048)&&runtimePatch048>=69,'0.1.48 retained presentation guard must allow later canonical runtimes');
 assert(lobby.includes('MEMEME_BUILD.lobbyHeader')); assert(setup.includes('MEMEME_BUILD.setupHeader')); assert(handoff.includes('TIN TỨC / LÁ BÀI'));
-console.log('[bugfix-pass-048] PASS authority/audio/dice/stale-token/release guards retained through 0.1.69');
+console.log('[bugfix-pass-048] PASS authority/audio/dice/stale-token/release guards retained through current canonical runtime');
