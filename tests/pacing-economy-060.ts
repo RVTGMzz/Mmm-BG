@@ -92,13 +92,15 @@ const scene061 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061
 const scene060 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene060.ts', import.meta.url), 'utf8');
 const scene059 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene059.ts', import.meta.url), 'utf8');
 const scene069 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
+const scene0701 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
 const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 assert(scene061.includes('extends CareerMinigameBoardScene060'));
 assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
 assert(scene060.includes('B$ ĐÃ KHÓA'));
 assert(!scene060.includes('Math.random')); assert(!scene060.includes('submitIntent(')); assert(!scene061.includes('Math.random')); assert(!scene061.includes('submitIntent('));
-assert(main.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(scene0701.includes('extends CareerMinigameBoardScene069')); assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682')); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
 assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
-console.log('[pacing-economy-060] PASS finish-stop + retired turns + locked final B$ + tuned economy retained through 0.1.69 presentation wrapper');
+console.log('[pacing-economy-060] PASS finish-stop + retired turns + locked final B$ + tuned economy retained through 0.1.70.1 presentation wrapper');
