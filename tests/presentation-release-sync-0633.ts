@@ -11,9 +11,12 @@ const directDiceSource = readFileSync(new URL('../src/scenes/DirectDiceBoardScen
 const cpuResumeSource = readFileSync(new URL('../src/core/cpuReleaseResume066.ts', import.meta.url), 'utf8');
 const releaseFlowSource = readFileSync(new URL('../src/core/releaseFlow0701.ts', import.meta.url), 'utf8');
 const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
+const scene0701Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
 const replaySource = readFileSync(new URL('../src/core/replay.ts', import.meta.url), 'utf8');
 
-assert(mainSource.includes('CareerMinigameBoardScene069 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(scene0701Source.includes('extends CareerMinigameBoardScene069'));
+assert(!scene0701Source.includes('Math.random'));
 assert(scene069Source.includes('extends CareerMinigameBoardScene0682'));
 assert(!scene069Source.includes('submitIntent(')); assert(!scene069Source.includes('Math.random'));
 assert(wrapperSource.includes('extends CareerMinigameBoardScene0633'));
@@ -57,4 +60,4 @@ assert.equal(pendingFreshMovementRollAfterRelease0701(match), undefined, 'actor 
 delete match.players[0]!.specialHold;
 match.turn.lastRoll = 4;
 assert.equal(pendingFreshMovementRollAfterRelease0701(match), undefined, 'already-consumed fresh D6 must not retrigger');
-console.log('[presentation-release-sync-0633] PASS single authoritative release detector + bounded modal/corridor presentation close');
+console.log('[presentation-release-sync-0633] PASS 0.1.70.1 launcher + single authoritative release detector + bounded modal/corridor presentation close');
