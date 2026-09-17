@@ -54,6 +54,7 @@ function relatesToAny(model: PresentationEventModel, seatIds: readonly number[])
 /**
  * 0.1.60 pacing policy:
  * - dice/movement remain automatic timeline beats;
+ * - special-release results are always automatic because they contain no player choice;
  * - dedicated 4-CPU stress mode stays very fast;
  * - one-human-vs-CPU events that affect the human remain manual/acknowledgeable;
  * - passive multiplayer/CPU notices close ~15–20% sooner than the 0.1.19 policy;
@@ -67,6 +68,17 @@ export function presentationTimingForModel(
 ): PresentationTimingPolicy {
   if (model.kind === 'dice_roll' || model.kind === 'move_step') {
     return { mode: 'auto', skipAfterMs: Number.POSITIVE_INFINITY, autoCloseMs: model.holdMs };
+  }
+
+  // Jail/Hospital release results are status feedback only. They must never become
+  // manual acknowledgement gates, otherwise a stale/misclassified CPU seat can leave
+  // the release modal blocking forever and the fresh same-turn D6 never appears.
+  if (model.kind === 'tile_land' && model.tileType === 'special_release') {
+    return {
+      mode: 'auto',
+      skipAfterMs: Number.POSITIVE_INFINITY,
+      autoCloseMs: Math.max(900, model.holdMs),
+    };
   }
 
   if (shouldAutoAdvancePresentation(session.cpuSeatIds, playerCount)) {
