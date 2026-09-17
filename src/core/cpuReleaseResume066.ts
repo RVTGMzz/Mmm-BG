@@ -3,15 +3,15 @@ import { pendingFreshMovementRollAfterRelease0701 } from './releaseFlow0701';
 
 /**
  * Historical 0.1.66 compatibility wrapper around the 0.1.70.1 authoritative
- * release detector. Human-facing legacy callers may still ask for a presentation
- * gate, but the authoritative release state itself is independent from UI timing.
+ * release detector. Presentation state is intentionally ignored here: this helper
+ * reports whether authority owes a fresh movement D6, while DirectDiceBoardScene
+ * remains responsible for presentation-safe human input visibility.
  */
 export function pendingFreshRollAfterRelease066(
   match: MatchState,
-  presentationBlocking: boolean,
+  _presentationBlocking: boolean,
   handledReleaseEventSeq = 0,
 ): number | undefined {
-  if (presentationBlocking) return undefined;
   const eventSeq = pendingFreshMovementRollAfterRelease0701(match);
   if (eventSeq === undefined || eventSeq <= handledReleaseEventSeq) return undefined;
   return eventSeq;
