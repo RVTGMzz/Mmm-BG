@@ -77,6 +77,26 @@ function runTwice(seed: number) {
 
 const runs = OUTLIERS.map((fixture) => ({ fixture, run: runTwice(fixture.seed) }));
 
+function fingerprintLine(entry: (typeof runs)[number]): string[] {
+  const { fixture, run } = entry;
+  const { report } = run;
+  return [
+    `seed=${fixture.seed} reason=${fixture.reason}`,
+    `checksum=${report.checksum}`,
+    `turns=${report.turnsObserved} commands=${report.commandCount} submitted=${run.submittedCommands} hostAuto=${report.commandCount - run.submittedCommands}`,
+    `moneyTotal=${report.finalMoneyTotal} spread=${report.finalMoneySpread}`,
+    `movement=${report.movementRolls} release=${report.releaseRolls} cards=${report.cardsPlayed} news=${report.newsTriggered}`,
+    `mini=${report.miniGamesTriggered} miniResolved=${run.miniGameResolutions} miniPayout=${report.miniGameRewardTotal}`,
+    `jobs=${report.jobsSelected} lottery=${report.lotteryCount}/${report.lotteryRewardTotal}B$`,
+    `finishIds=${report.finishOrderPlayerIds.join(',')}`,
+    `finalMoney=${report.players.map((player) => player.finalMoney).join(',')}`,
+    `finishPlaces=${report.players.map((player) => player.finishOrder ?? 0).join(',')}`,
+  ];
+}
+
+console.log('[outlier-replay-064] candidate fingerprints before locked assertions');
+for (const entry of runs) console.log(fingerprintLine(entry).join(' | '));
+
 for (const { fixture, run } of runs) {
   const { report } = run;
   assert.equal(report.checksum, fixture.checksum, `seed ${fixture.seed} checksum drifted`);
@@ -101,23 +121,6 @@ for (const { fixture, run } of runs) {
   assert.deepEqual(report.players.map((player) => player.finishOrder), [...fixture.finishOrderBySeat], `seed ${fixture.seed} per-seat finish place drifted`);
   assert(run.submittedCommands < 1600, `seed ${fixture.seed} reached simulation safety ceiling`);
   assert(report.players.every((player) => player.lapsCompleted >= 1), `seed ${fixture.seed} must finish one lap for every player`);
-}
-
-function fingerprintLine(entry: (typeof runs)[number]): string[] {
-  const { fixture, run } = entry;
-  const { report } = run;
-  return [
-    `seed=${fixture.seed} reason=${fixture.reason}`,
-    `checksum=${report.checksum}`,
-    `turns=${report.turnsObserved} commands=${report.commandCount} submitted=${run.submittedCommands} hostAuto=${report.commandCount - run.submittedCommands}`,
-    `moneyTotal=${report.finalMoneyTotal} spread=${report.finalMoneySpread}`,
-    `movement=${report.movementRolls} release=${report.releaseRolls} cards=${report.cardsPlayed} news=${report.newsTriggered}`,
-    `mini=${report.miniGamesTriggered} miniResolved=${run.miniGameResolutions} miniPayout=${report.miniGameRewardTotal}`,
-    `jobs=${report.jobsSelected} lottery=${report.lotteryCount}/${report.lotteryRewardTotal}B$`,
-    `finishIds=${report.finishOrderPlayerIds.join(',')}`,
-    `finalMoney=${report.players.map((player) => player.finalMoney).join(',')}`,
-    `finishPlaces=${report.players.map((player) => player.finishOrder ?? 0).join(',')}`,
-  ];
 }
 
 const lines = [
