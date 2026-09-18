@@ -20,6 +20,8 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
   private enteringMatch = false;
   private polling = false;
   private exitingRoom = false;
+  private lobbyDom?: Phaser.GameObjects.DOMElement;
+  private heartbeatTimer?: Phaser.Time.TimerEvent;
 
   constructor() { super('OnlineRoomLobbyScene'); }
 
@@ -57,7 +59,9 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
         <p id="online-room-status">Đang đồng bộ phòng...</p>
       </footer>`;
     this.root = root;
-    this.add.dom(640, 360, root).setOrigin(0.5);
+    this.lobbyDom = this.add.dom(640, 360, root).setOrigin(0.5);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanupLobbyUi07042());
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.cleanupLobbyUi07042());
 
     const config = browserSession.current;
     root.querySelector<HTMLElement>('#online-room-code')!.textContent = config.roomCode;
@@ -144,11 +148,12 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
       } catch {
         // Leaving the local scene must remain possible even if the network is already gone.
       }
+      this.cleanupLobbyUi07042();
       this.scene.start('LocalLobbyScene');
     });
 
     void this.refresh();
-    this.time.addEvent({ delay: 3000, loop: true, callback: () => { void this.refresh(); } });
+    this.heartbeatTimer = this.time.addEvent({ delay: 3000, loop: true, callback: () => { void this.refresh(); } });
   }
 
   private async refresh(): Promise<void> {
@@ -197,7 +202,19 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
   private scheduleLobbyExit0704(delay: number): void {
     if (this.exitingRoom) return;
     this.exitingRoom = true;
-    this.time.delayedCall(delay, () => this.scene.start('LocalLobbyScene'));
+    this.time.delayedCall(delay, () => {
+      this.cleanupLobbyUi07042();
+      this.scene.start('LocalLobbyScene');
+    });
+  }
+
+  private cleanupLobbyUi07042(): void {
+    this.heartbeatTimer?.remove(false);
+    this.heartbeatTimer = undefined;
+    this.lobbyDom?.destroy();
+    this.lobbyDom = undefined;
+    this.root?.remove();
+    this.root = undefined;
   }
 
   private localPlayer() {
@@ -280,11 +297,9 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
       gameSession.setPlayerName(seatId, human?.name ?? (state.cpuSeatIds.includes(seatId) ? `CPU ${seatId + 1}` : `Player ${seatId + 1}`));
     }
     sfxController.play('ui_confirm');
-    if (browserSession.current.mode === 'host') {
-      this.scene.start('SetupScene', { preserve: true });
-    } else {
-      this.scene.start('TurnOrderScene');
-    }
+    this.cleanupLobbyUi07042();
+    // Every online human owns their own avatar setup. CPU seats are never edited here.
+    this.scene.start('SetupScene', { preserve: true });
   }
 
   private setStatus(message: string, error = false): void {
