@@ -168,6 +168,8 @@ jobs:
         run: npm run test:first-impression-069
       - name: 0.1.70.1 release flow repair + UI density
         run: npm run test:career-traits-070
+      - name: 0.1.70.1 readable modal copy and overflow regression
+        run: npm run test:ui-copy-overflow-0701
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package
