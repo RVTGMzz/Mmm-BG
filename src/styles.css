@@ -742,3 +742,41 @@ canvas {
   .face-editor-landscape .face-editor-actions button { padding: 7px 6px; font-size: 10px; }
   .face-editor-landscape .face-editor-note { margin-top: 7px; font-size: 8px; }
 }
+
+.face-batch-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+.face-batch-button {
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 6px 7px;
+  border: 2px solid #202020;
+  border-radius: 12px;
+  background: #ffd34d;
+  color: #202020;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 1000;
+  line-height: 1.05;
+}
+.face-batch-button.secondary { background: #fff; }
+.face-batch-button span { font-size: 9px; }
+.face-batch-button small {
+  color: #6f675c;
+  font-size: 8px;
+  font-weight: 800;
+}
+.face-batch-button input[type='file'] { display: none; }
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .face-batch-actions { gap: 4px; margin-top: 6px; }
+  .face-batch-button { min-height: 36px; padding: 4px 5px; }
+  .face-batch-button span { font-size: 8px; }
+  .face-batch-button small { font-size: 7px; }
+}
