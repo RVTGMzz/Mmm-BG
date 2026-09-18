@@ -171,6 +171,7 @@ export default {
         return json({
           ok: true,
           roomCode,
+          roomName: normalizeRoomName07041(body.roomName, "Phòng MeMeMe"),
           hostToken,
           websocketUrl: websocketUrl(request, roomCode, hostToken),
           lobby
