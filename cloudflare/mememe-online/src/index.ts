@@ -89,6 +89,12 @@ function normalizeName(value: unknown, fallback: string): string {
   return cleaned || fallback;
 }
 
+function normalizeRoomName07041(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const cleaned = value.trim().replace(/[<>]/g, "").replace(/\s+/g, " ").slice(0, 32);
+  return cleaned || fallback;
+}
+
 function normalizeSettings(value: unknown): RoomSettings {
   const source = value && typeof value === "object" ? value as Record<string, unknown> : {};
   return {
@@ -133,7 +139,7 @@ export default {
       return json({
         ok: true,
         service: "mememe-online",
-        milestone: "0.1.70.4",
+        milestone: "0.1.70.4.1",
         transport: "websocket-durable-object",
         lobbyAuthority: true
       }, {}, origin);
@@ -152,7 +158,9 @@ export default {
             roomCode,
             hostToken,
             hostName: normalizeName(body.hostName, "Host"),
-            settings: normalizeSettings(body.settings)
+            roomName: normalizeRoomName07041(body.roomName, "Phòng MeMeMe"),
+            settings: normalizeSettings(body.settings),
+            deviceId: String(body.deviceId ?? "").trim().slice(0, 120)
           })
         });
 
@@ -218,7 +226,22 @@ export default {
 
 export class MeMeMeRoom extends DurableObject<Env> {
   private async readPlayers(): Promise<LobbyPlayerStored[]> {
-    return await this.ctx.storage.get<LobbyPlayerStored[]>("players") ?? [];
+    const stored = await this.ctx.storage.get<LobbyPlayerStored[]>("players") ?? [];
+    const now = Date.now();
+    let migrated = false;
+    const players = stored.map((player) => {
+      if (typeof player.lastSeenAt === "number" && typeof player.activeDeviceId === "string") return player;
+      migrated = true;
+      return {
+        ...player,
+        activeDeviceId: typeof player.activeDeviceId === "string" ? player.activeDeviceId : "",
+        lastSeenAt: typeof player.lastSeenAt === "number"
+          ? player.lastSeenAt
+          : (typeof player.joinedAt === "number" ? player.joinedAt : now)
+      };
+    });
+    if (migrated) await this.ctx.storage.put("players", players);
+    return players;
   }
 
   private async readSettings(): Promise<RoomSettings> {
@@ -232,6 +255,15 @@ export class MeMeMeRoom extends DurableObject<Env> {
   private async validHostToken(token: string): Promise<boolean> {
     const expected = await this.ctx.storage.get<string>("hostTokenHash");
     return Boolean(expected && token && await sha256Hex(token) === expected);
+  }
+
+  /**
+   * CPU Fill never reserves lobby seats. CPU rows are presentation-only until Start.
+   * A real human always takes the first free seat in P2 -> P3 -> P4 order.
+   */
+  private firstFreeHumanSeat07041(players: LobbyPlayerStored[]): number | undefined {
+    const humanSeats = new Set(players.filter((player) => player.role === "client").map((player) => player.seatId));
+    return [1, 2, 3].find((seat) => !humanSeats.has(seat));
   }
 
   private async maintainLobby0704(): Promise<LobbyPlayerStored[]> {
@@ -267,6 +299,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
   private async publicLobby(): Promise<Record<string, unknown>> {
     const roomCode = await this.ctx.storage.get<string>("roomCode");
+    const roomName = await this.ctx.storage.get<string>("roomName") ?? "Phòng MeMeMe";
     const settings = await this.readSettings();
     const players = await this.maintainLobby0704();
     const started = await this.ctx.storage.get<boolean>("started") ?? false;
@@ -277,6 +310,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return {
       ok: Boolean(roomCode),
       roomCode: roomCode ?? "",
+      roomName,
       settings,
       players: players
         .map(({ clientId, seatId, name, ready, role, lastSeenAt }) => ({
@@ -304,6 +338,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
       const hostToken = String(body.hostToken ?? "");
       if (!roomCode || !hostToken) return internalJson({ ok: false, error: "missing_room_bootstrap" }, 400);
       const settings = normalizeSettings(body.settings);
+      const roomName = normalizeRoomName07041(body.roomName, "Phòng MeMeMe");
       const deviceId = String(body.deviceId ?? "").trim().slice(0, 120);
       const now = Date.now();
       const players: LobbyPlayerStored[] = [{
@@ -319,6 +354,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
       }];
       await this.ctx.storage.put({
         roomCode,
+        roomName,
         hostTokenHash: await sha256Hex(hostToken),
         settings,
         players,
@@ -371,9 +407,9 @@ export class MeMeMeRoom extends DurableObject<Env> {
         });
       }
 
-      const used = new Set(players.map((player) => player.seatId));
-      const seatId = [1, 2, 3].find((seat) => !used.has(seat));
-      if (seatId === undefined) return internalJson({ ok: false, error: "room_full" }, 409);
+      // CPU Fill is only a future Start placeholder. It must never make Join return room_full.
+      const seatId = this.firstFreeHumanSeat07041(players);
+      if (seatId === undefined) return internalJson({ ok: false, error: "room_full_humans" }, 409);
       const token = makeSecret();
       players.push({
         clientId,
@@ -387,7 +423,11 @@ export class MeMeMeRoom extends DurableObject<Env> {
         lastSeenAt: Date.now()
       });
       players.sort((a, b) => a.seatId - b.seatId);
-      await this.ctx.storage.put("players", players);
+      const staleCpuSeatIds = await this.ctx.storage.get<number[]>("cpuSeatIds") ?? [];
+      await this.ctx.storage.put({
+        players,
+        cpuSeatIds: staleCpuSeatIds.filter((cpuSeatId) => cpuSeatId !== seatId)
+      });
       return internalJson({
         ok: true,
         roomCode: normalizeRoomCode(String(await this.ctx.storage.get("roomCode") ?? "")),
