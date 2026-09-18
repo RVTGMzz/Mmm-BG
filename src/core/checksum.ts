@@ -1,0 +1,67 @@
+import type { MatchState } from './matchState';
+
+function canonicalMatchPayload(match: MatchState): string {
+  return JSON.stringify({
+    schemaVersion: match.schemaVersion,
+    boardId: match.boardId,
+    seed: match.seed,
+    startingMoney: match.startingMoney,
+    ...(match.playOrder ? { playOrder: [...match.playOrder] } : {}),
+    rng: {
+      seed: match.rng.seed,
+      state: match.rng.state,
+      calls: match.rng.calls,
+    },
+    turn: {
+      currentPlayerIndex: match.turn.currentPlayerIndex,
+      turnNumber: match.turn.turnNumber,
+      lastRoll: match.turn.lastRoll,
+      phase: match.turn.phase,
+      revision: match.turn.revision,
+    },
+    players: [...match.players]
+      .sort((a, b) => a.id - b.id)
+      .map((player) => ({
+        id: player.id,
+        name: player.name,
+        nodeId: player.nodeId,
+        money: player.money,
+        cardBlockTurns: player.cardBlockTurns,
+        handCardIds: [...player.handCardIds],
+        cardsPlayedThisTurn: player.cardsPlayedThisTurn,
+        lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
+        ...(player.targetLaps && player.targetLaps > 1
+          ? { targetLaps: Math.max(2, Math.min(3, Math.floor(player.targetLaps))) }
+          : {}),
+        jobId: player.jobId,
+        jobLevel: player.jobLevel,
+        jobStatus: player.jobStatus,
+        specialHold: player.specialHold,
+      })),
+    pendingJobOfferIds: match.pendingJobOfferIds ? [...match.pendingJobOfferIds] : undefined,
+    pendingJobPlayerId: match.pendingJobPlayerId,
+    pendingJobMovement: match.pendingJobMovement
+      ? {
+          roll: match.pendingJobMovement.roll,
+          nextStep: match.pendingJobMovement.nextStep,
+          remainingSteps: match.pendingJobMovement.remainingSteps,
+        }
+      : undefined,
+  });
+}
+
+/**
+ * FNV-1a 32-bit checksum over gameplay-critical serializable state.
+ * Presentation event/command logs are intentionally excluded.
+ */
+export function computeMatchChecksum(match: MatchState): string {
+  const input = canonicalMatchPayload(match);
+  let hash = 0x811c9dc5;
+
+  for (let i = 0; i < input.length; i += 1) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+
+  return hash.toString(16).padStart(8, '0');
+}

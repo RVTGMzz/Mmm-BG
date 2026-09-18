@@ -1,0 +1,164 @@
+/* 0.1.66.1 mobile web shell hotfix.
+ * Keep the Phaser game at its canonical 1280x720 logical resolution, but make
+ * only the parent follow the actually visible mobile viewport.
+ *
+ * IMPORTANT: Phaser.Scale.FIT owns the geometry of BOTH the canvas and the DOM
+ * overlay. Do not clamp, flex-center, resize, transform, or override margins on
+ * #app's direct children here, otherwise the HTML overlay drifts away from the
+ * canvas on narrow/mobile viewports.
+ */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #f4ead7;
+}
+
+@supports (height: 100dvh) {
+  html,
+  body {
+    width: 100dvw;
+    height: 100dvh;
+    min-width: 100dvw;
+    min-height: 100dvh;
+  }
+}
+
+body {
+  position: fixed;
+  inset: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  #app {
+    width: 100dvw;
+    height: 100dvh;
+  }
+}
+
+/*
+ * Do not style #app > canvas or #app > div here.
+ * Phaser's ScaleManager applies one shared FIT/CENTER_BOTH scale to the canvas
+ * and its DOM container, keeping setup cards and the game surface in lockstep.
+ */
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .mememe-settings {
+    top: max(6px, env(safe-area-inset-top));
+    right: max(6px, env(safe-area-inset-right));
+  }
+
+  .settings-trigger {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.settings-fullscreen-toggle {
+  min-width: 132px;
+}
+
+/* 0.1.70.3.1 phone landscape authority.
+ * A normal web tab cannot force hardware orientation before user activation,
+ * so portrait is blocked with an explicit rotate/fullscreen gate.
+ */
+.mememe-landscape-guard {
+  position: fixed;
+  z-index: 40000;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
+           max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  background: #f4ead7;
+  color: #202020;
+  pointer-events: auto;
+}
+.mememe-landscape-guard.is-visible { display: grid; }
+.mememe-landscape-card {
+  width: min(440px, calc(100vw - 36px));
+  box-sizing: border-box;
+  padding: 24px;
+  border: 4px solid #202020;
+  border-radius: 28px;
+  background: #fffaf0;
+  box-shadow: 0 7px 0 rgba(32,32,32,.18);
+  text-align: center;
+}
+.mememe-landscape-phone { font-size: 54px; line-height: 1; }
+.mememe-landscape-card strong { display: block; margin-top: 12px; font-size: 22px; }
+.mememe-landscape-card span { display: block; margin: 8px 0 16px; font-size: 14px; font-weight: 800; }
+.mememe-landscape-card button {
+  width: 100%;
+  border: 4px solid #202020;
+  border-radius: 16px;
+  padding: 13px 12px;
+  background: #ffd34d;
+  color: #202020;
+  box-shadow: 0 4px 0 #202020;
+  font: 1000 14px/1 Inter, system-ui, sans-serif;
+}
+.mememe-landscape-card small { display: block; margin-top: 13px; color: #6d655b; font-size: 11px; line-height: 1.35; }
+body.mememe-phone-portrait { touch-action: none; }
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .face-editor-landscape-overlay {
+    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+}
+
+/* 0.1.70.3.2 rotate-before-intro button authority */
+.mememe-landscape-guard-simple {
+  background: #f4ead7;
+}
+.mememe-landscape-card-simple {
+  appearance: none;
+  width: min(360px, calc(100vw - 40px));
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 28px 24px;
+  border: 4px solid #202020;
+  border-radius: 28px;
+  background: #fffaf0;
+  color: #202020;
+  box-shadow: 0 7px 0 rgba(32,32,32,.18);
+  cursor: pointer;
+  font-family: inherit;
+}
+.mememe-landscape-card-simple .mememe-landscape-phone {
+  display: block;
+  font-size: 56px;
+  line-height: 1;
+}
+.mememe-landscape-card-simple strong {
+  display: block;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 1000;
+}
+.mememe-landscape-card-simple:active {
+  transform: translateY(3px);
+  box-shadow: 0 4px 0 rgba(32,32,32,.18);
+}
+.mememe-landscape-card-simple:disabled {
+  opacity: .72;
+  cursor: wait;
+}

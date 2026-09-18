@@ -1,6 +1,6 @@
 # MeMeMe — Current Game Design
 
-> Đây là bản thiết kế hiện tại được chắt lọc từ brainstorm. Mọi mục được gắn nhãn để tránh biến “ý tưởng từng được đề xuất” thành “quyết định đã chốt”.
+> Bản thiết kế hiện tại. Chỉ các mục ghi **Đã chốt** mới được coi là quyết định hiện hành.
 
 ## A. Đã chốt
 
@@ -15,159 +15,266 @@
 - Mobile là điểm vào thực tế
 - **Landscape-first** để không phải đập UI khi đi PC/console
 
+### Final board / camera direction — Draft D current
+- Board final working topology có **44 ô trên main loop**: `M01..M44`.
+- `M44 -> M01` là lap/salary crossing duy nhất.
+- Map không còn là một oval/loop đơn giản; Draft D dùng silhouette bất đối xứng và **3 junction rẽ nhánh thật**.
+- Mỗi junction có `RẼ TRÁI / RẼ PHẢI`, cả hai hướng đều tiến về phía trước và nhập lại trước section kế tiếp.
+- Current working branch distance giữa split và merge là bằng nhau để lựa chọn thay đổi content exposure, không giấu lợi thế khoảng cách.
+- Không dùng full-map view làm camera gameplay thường trực.
+- Tới lượt ai, camera chuyển/zoom về token người đó và follow khi di chuyển.
+- Full-map là review/overview có chủ đích.
+
+Current sources:
+- `docs/MAP_ARCHITECTURE_44_DRAFT_D.md`
+- `docs/MAP_BRANCHING_RULE_D2.md`
+- `docs/MAP_CAMERA_HUD_DRAFT_D1.md`
+- `docs/UI_FINAL_PLAYER_HUD.md`
+- `docs/START_PLAYTEST_UI_AUDIT_0.1.56.md`
+- `docs/GAMEPLAY_UPGRADE_ROADMAP_0.1.54_PLUS.md`
+- `docs/MVP_0.1.56_BRANCH_IDENTITY.md`
+- `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`
+
+### Canonical presentation implementation status — IMPORTANT
+
+The visual/camera rules above are **design-locked**, but Ron's manual 0.1.56 test proved that current `START_PLAYTEST.bat` does not yet satisfy them.
+
+Current 0.1.56 gameplay is authoritative/CI-green, but its presentation still inherits the old fixed-screen `DemoBoardScene` shell. That is now an explicit blocker, not an accepted compromise.
+
+Immediate implementation milestone:
+**0.1.56.1 — Canonical Presentation Consolidation**.
+
+It must bring the close camera, four-corner HUD, explicit Overview and readable Draft D greybox into standard authoritative gameplay before 0.1.57 adds deeper systems.
+
+### Branching rule
+Canonical gameplay trong `START_PLAYTEST.bat`:
+- human active player tự chọn **RẼ TRÁI / RẼ PHẢI**;
+- route choice phải HOST-authoritative;
+- không đi ngược;
+- không cycle;
+- không dead-end;
+- luôn merge phía trước và tiếp tục hướng về READY.
+
+Preview QA:
+- `START_DRAFT_D_PREVIEW.bat` mặc định **AUTO BRANCH**;
+- cùng seed cho cùng branch sequence;
+- có toggle **AUTO / THỦ CÔNG**;
+- AUTO chỉ là QA convenience, không phải luật người chơi final.
+
+### Branch gameplay identity — 0.1.56 locked
+Ba alternate corridor có bản sắc rõ ràng, còn lựa chọn kia tại mỗi junction là **PHỐ CHÍNH** với nhịp mixed.
+
+- **Branch A — AN TOÀN 🛡️**: `A1 / A2 / A3` đều là Normal. Không có money swing, TIN TỨC hay LÁ BÀI trực tiếp trong corridor.
+- **Branch B — DRAMA 🎭**: `B1 = TIN TỨC`, `B2 = LÁ BÀI`, `B3 = TIN TỨC`. Đây là corridor biến động/content interaction cao.
+- **Branch C — TIỀN 💰**: `C1 = +25 B$`, `C2 = -20 B$`, `C3 = +25 B$`. Mọi điểm dừng trong corridor đều tác động trực tiếp tới ví.
+- Cả ba alternate corridor vẫn có cùng step count tới merge như PHỐ CHÍNH. 0.1.56 không dùng shortcut để tạo lợi thế ẩn.
+- Branch picker phải hiển thị tên flavor + mô tả rủi ro để người chơi hiểu lựa chọn mà không cần mở full map.
+
+### Four anchors
+- `M01` = **READY**
+- `M12` = **JAIL_GATE**
+- `M23` = **LOTTERY**
+- `M34` = **HOSPITAL_GATE**
+
+### Jail / Hospital topology
+- Có đúng **1 JAIL** ở phía trong map.
+- Có đúng **1 HOSPITAL** ở phía trong map.
+- Landing `M12 JAIL_GATE` đưa player thẳng vào `JAIL`.
+- Landing `M34 HOSPITAL_GATE` đưa player thẳng vào `HOSPITAL`.
+- TIN TỨC / LÁ BÀI / effect được duyệt cũng có thể đưa player trực tiếp tới hai location này.
+
+Jail exit route:
+`JAIL -> J1 -> J2 -> J3 -> M13`
+
+Hospital exit route:
+`HOSPITAL -> H1 -> H2 -> H3 -> M35`
+
+Mỗi lối ra có đúng **3 ô**. Sáu ô exit không tính vào 44 ô main loop và không tạo lap crossing mới.
+
+### Jail release rule
+- Khi tới lượt player đang ở `JAIL`, roll 1 D6 release check.
+- Ra **1 / 3 / 5** → được ra.
+- Ra số khác → vẫn ở Jail, **lượt kết thúc**, lượt sau roll lại.
+- Xác suất thoát mỗi lần thử: 50%.
+- Khi thoát thành công, token đi qua `J1 -> J2 -> J3 -> M13`.
+- Sau đó player **phải đổ một movement D6 mới** để đi tiếp trong cùng lượt.
+- Release die **chỉ dùng để xét thoát**, tuyệt đối không được tái sử dụng làm movement distance.
+
+### Hospital release rule
+- Khi tới lượt player đang ở `HOSPITAL`, roll 1 D6 release check.
+- Ra **2 / 4 / 5** → được ra.
+- Ra số khác → vẫn ở Hospital, **lượt kết thúc**, lượt sau roll lại.
+- Xác suất thoát mỗi lần thử: 50%.
+- Bộ số là đúng `2 / 4 / 5`, không đổi thành rule số chẵn.
+- Khi thoát thành công, token đi qua `H1 -> H2 -> H3 -> M35`.
+- Sau đó player **phải đổ một movement D6 mới** để đi tiếp trong cùng lượt.
+- Release die **chỉ dùng để xét thoát**, tuyệt đối không được tái sử dụng làm movement distance.
+
+### Mini Game eligibility rule
+- Player đang ở **JAIL hoặc HOSPITAL không được tham gia Mini Game**.
+- Participant list phải được xác định từ authoritative holding state tại thời điểm Mini Game bắt đầu.
+- Nếu còn **2+ người hợp lệ** → chạy Mini Game bình thường.
+- Nếu còn đúng **1 người hợp lệ** → người đó **auto hạng 1**; không mở gameplay Mini Game giả tạo chỉ có một người.
+- Nếu còn **0 người hợp lệ** → Mini Game **skip, không payout**.
+- Rule eligibility này là luật core và không được thay đổi khi 0.1.59 mở rộng thêm loại Mini Game.
+
+### Lottery rule
+- `M23 LOTTERY` roll 1 D6.
+- Thưởng = **D6 × 20 B$**.
+- Payout: `20 / 40 / 60 / 80 / 100 / 120 B$`.
+- Expected payout hiện tại: `70 B$` trước khi cân economy sâu hơn.
+- RNG và wallet mutation phải HOST-authoritative khi implement.
+
+### Working 44-space content distribution — 5 Mini Game spaces locked
+Draft D phải có **5 ô Mini Game** để hệ thống này còn đủ đất phát triển sâu hơn về sau.
+
+Working distribution:
+- Job Hub: `M08`
+- Mini Game: **`M09 / M17 / M26 / M35 / M44`**
+- TIN TỨC: `M06 / M14 / M21 / M28 / M36 / M43`
+- LÁ BÀI: `M04 / M10 / M16 / M22 / M27 / M32 / M41`
+- Money +: `M03 / M13 / M25 / M39`
+- Money -: `M07 / M18 / M30 / M40`
+- các ô còn lại = Normal/breathing
+
+Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tránh dồn toàn bộ Mini Game về một nửa bản đồ.
+
+### Approved visual direction
+- Thành phố/island board rực rỡ nhìn từ trên cao.
+- Đường board uốn tự nhiên qua thành phố, không cần toàn bộ ô cùng một hình tròn.
+- Có khoảng thở giữa các ô; tránh dày đặc và tránh hàng thẳng dài.
+- Landmark lớn giúp định hướng khi camera zoom gần.
+- District sign dùng như mốc thị giác.
+- Jail/Hospital nằm phía trong, có exit route 3 ô.
+- Trung tâm thành phố phải còn khoảng thở, không phủ kín bằng ô.
+- Ảnh concept AI chỉ định hướng bố cục/mood; numbering và text AI không authoritative.
+- Canonical combined visual reference: `docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png`.
+- Normal gameplay phải ưu tiên local board view; full map chỉ là Overview.
+- Greybox có thể chưa đẹp final, nhưng không được dồn/chồng đến mức khó đọc như current 0.1.56 standard shell.
+
+### Final 4-player HUD direction
+- P1 top-left
+- P2 top-right
+- P3 bottom-left
+- P4 bottom-right
+- mỗi HUD tối thiểu avatar + tên + B$
+- active player nổi bật
+- HUD cố định screen-space, không di chuyển/zoom theo board camera
+- chi tiết contract: `docs/UI_FINAL_PLAYER_HUD.md`
+- current 0.1.56 `START_PLAYTEST` chưa implement đúng contract này; 0.1.56.1 phải sửa.
+
+### Launcher roles
+- `START_PLAYTEST.bat` = gameplay chuẩn / canonical authoritative integration target; sau 0.1.56 manual review, file này phải luôn là trải nghiệm tích hợp tốt nhất chứ không phải debug shell.
+- `START_DRAFT_D_PREVIEW.bat` = sandbox map/camera; 0.1.54 mặc định AUTO BRANCH seed `5454`, có MANUAL toggle.
+- `START_DRAFT_D_FULL_MAP.bat` = full topology review.
+- Legacy `START_FINAL_MAP_PREVIEW.bat` không còn ship trong tester package từ 0.1.54.
+
 ### Content names
-- `Lá Bài` thay cho `Thần chú`
-- `Tin Tức` thay cho `Tiên tri`
+- **LÁ BÀI** thay cho tên legacy
+- **TIN TỨC** thay cho tên legacy
 - Nội dung chia `Core` và `Map-specific`
 - Rarity: `N / R / SR / SSR`
-- Có `Impact_Level` riêng để cân bằng mức độ ảnh hưởng
+- Có `Impact_Level` riêng
 
 ### Personalization
-- Tên người chơi được chèn động vào system log và dialogue
-- Khuôn mặt thật được ghép động vào avatar/card/situation art
-- Reaction được random từ pool theo event/personality
-- MVP ưu tiên auto-reaction, không bắt người chơi chọn câu đáp
+- Tên player chèn động vào system log/dialogue
+- Khuôn mặt thật có thể ghép vào avatar/card/situation art
+- Reaction random từ pool theo event/personality
+- MVP ưu tiên auto-reaction
 - Audio ưu tiên non-verbal/generic để dễ localization
 
 ### Production philosophy
-- Bắt đầu bằng MVP ít content
+- Bắt đầu MVP ít content
 - Test system trước, fill chiều sâu sau
-- Data-driven, không hard-code content
+- Data-driven, tránh hard-code content
+- Không cần final art sớm, nhưng **camera/HUD/readability phải theo kịp topology** để playtest gameplay có ý nghĩa.
 
-## B. Hướng rất mạnh nhưng cần PoC trước khi khóa
+## B. Hướng mạnh nhưng cần PoC
 
 ### Face input
-Khả năng dùng 3 nhóm mặt:
-1. Neutral
-2. Positive
-3. Negative
+Khả năng dùng 3 nhóm mặt: neutral / positive / negative.
 
-Cần test:
-- người chơi có chịu chụp 3 ảnh không;
-- crop thủ công hay auto;
-- lưu local hay sync;
-- chất lượng ảnh tối thiểu;
-- fallback nếu từ chối camera.
+Cần test consent, crop, storage, quality và fallback nếu người chơi từ chối camera.
 
 ### Art style
-Hướng phù hợp nhất với concept:
-- 2D cozy;
-- paper cutout / sticker / collage;
-- outline mạnh;
-- pastel/cream nền nhẹ;
-- các điểm nhấn đỏ, vàng, xanh, tím theo brand;
-- body vẽ 2D, face thật cố ý hơi “lệch pha” để tạo hài.
+Hướng hiện tại nghiêng về stylized toy/collage city, sticker-like HUD/characters, outline rõ, màu tươi nhưng vẫn ưu tiên readability.
 
 ### Async reaction
-Gameplay logic và presentation tách nhau:
-- effect resolve ngay;
-- reaction chạy song song;
-- turn tiếp có thể bắt đầu trước khi reaction biến mất.
+Effect resolve và reaction presentation tách nhau. Cần test readability trên màn hình nhỏ.
 
-Cần test readability trên màn hình nhỏ.
+## C. Chưa chốt / chưa hoàn thiện runtime
 
-## C. Chưa chốt
+### Canonical presentation implementation — immediate blocker
 
-### Board topology
-Brainstorm từng có nhiều hướng:
-- giữ board legacy khoảng 45–48 node;
-- rút xuống khoảng 30–32 node;
-- route city-block/subway;
-- loop số 8;
-- shuffle tile;
-- shuffle toàn bộ effect tile;
-- chỉ shuffle tile thường.
+Design direction đã chốt, nhưng current `START_PLAYTEST.bat` vẫn render qua old fixed-screen shell.
 
-**Chưa có một phương án final.**
+Phải hoàn thiện ở 0.1.56.1:
+- world camera + fixed UI camera hoặc kiến trúc tương đương;
+- close follow active token;
+- four-corner HUD;
+- explicit Overview;
+- branch decision framing;
+- cleaner Draft D greybox markers;
+- event/card safe framing;
+- one source of truth cho visible build/version label.
+
+Không được duplicate gameplay state từ preview để làm việc này.
+
+### Draft D final art / pacing follow-up
+Canonical Draft D gameplay integration đã có từ 0.1.55. Những phần còn cần playtest/tuning:
+- final art coordinates;
+- final district names;
+- final landmark sprites;
+- final palette/materials;
+- actual match duration;
+- payload positions có cần rebalance sau playtest hay không.
+
+### Branch balance
+Bản sắc AN TOÀN / DRAMA / TIỀN đã chốt ở 0.1.56, nhưng **độ mạnh tương đối** giữa ba flavor chưa phải final. Giá trị reward/risk sẽ được cân sâu ở 0.1.60 sau khi có runtime playtest thực tế.
 
 ### Dynamic board trigger
-Từng có ý tưởng “leader/queen hoàn thành một vòng thì board xáo lại”.
-Cần chốt:
-- ai trigger;
-- shuffle cái gì;
-- có ảnh hưởng path graph hay chỉ tile payload;
-- có phá readability hay không.
+Ý tưởng board thay đổi sau một mốc vòng vẫn chưa khóa.
 
 ### Win condition
-Legacy có:
-- `Tranh ngôi đoạt vị`
-- `Sống còn`
-
-MeMeMe chưa chốt mode launch.
+Legacy có nhiều mode; MeMeMe chưa khóa mode launch cuối.
 
 ### Town-building / attack
-Brainstorm có nhắc hướng hybrid kiểu town-building / social attack.
-Đây là ý tưởng mở rộng, **không nên coi là core MVP nếu chưa prototype board loop đủ vui**.
+Là hướng mở rộng, không coi là core MVP trước khi board loop chứng minh đủ vui.
 
 ### Network stack
-Phaser.js, PeerJS, Socket.io từng được đề xuất.
-Không coi đây là tech decision final.
+Không coi framework/protocol cụ thể là tech decision final nếu chưa được khóa riêng.
 
-## D. Core gameplay hypothesis cho MVP
+## D. Core gameplay hypothesis
 
-Một lượt thử nghiệm:
-
-1. Active player bấm Roll.
-2. Dice ra kết quả.
-3. Player token di chuyển trên graph.
-4. Nếu qua branch node, rule path chọn nhánh.
-5. Tile payload trigger.
-6. Nếu là `Lá Bài/Tin Tức`, loader chọn entry theo pool.
-7. Effect resolver thay đổi state.
-8. Presentation layer:
-   - card/news art;
-   - face slot compositing;
-   - system log;
-   - reaction sequencer.
-9. Turn manager chuyển người kế tiếp.
+1. Active player bắt đầu lượt.
+2. Nếu đang Jail/Hospital: HOST resolve **release D6 chỉ để xét thoát**.
+3. Fail release → kết thúc lượt; success → chạy exit route và phải **roll movement D6 mới** trong cùng lượt.
+4. HOST xác nhận movement dice.
+5. Token di chuyển trên authoritative Draft D route.
+6. Tại junction, active human gửi intent **RẼ TRÁI / RẼ PHẢI**, HOST resolve route; branch picker cho biết PHỐ CHÍNH hoặc flavor AN TOÀN / DRAMA / TIỀN.
+7. Tile payload trigger.
+8. `JAIL_GATE/HOSPITAL_GATE` chuyển player vào holding location tương ứng.
+9. `LOTTERY` HOST roll D6 và cộng `D6 × 20 B$`.
+10. Mini Game lấy participant list sau khi loại mọi player đang ở Jail/Hospital; 1 người hợp lệ = auto hạng 1; 0 người = skip.
+11. LÁ BÀI / TIN TỨC dùng current pool/effect resolver; effect hợp lệ có thể gửi player vào JAIL/HOSPITAL.
+12. Presentation layer xử lý camera, art, reaction, audio mà không tạo gameplay state thứ hai.
+13. Turn manager chuyển người tiếp theo.
 
 ## E. Face-card rendering model
 
-Đề xuất schema asset:
-
-```json
-{
-  "art_id": "card_swap_money",
-  "base_texture": "cards/card_swap_money.png",
-  "face_slots": [
-    {
-      "role": "caster",
-      "x": 0.31,
-      "y": 0.43,
-      "scale": 0.85,
-      "rotation_deg": -4,
-      "emotion": "positive"
-    },
-    {
-      "role": "target",
-      "x": 0.70,
-      "y": 0.45,
-      "scale": 0.82,
-      "rotation_deg": 3,
-      "emotion": "negative"
-    }
-  ]
-}
-```
-
-Tọa độ normalized 0..1 để asset dễ scale đa độ phân giải.
+Asset schema dùng normalized coordinates 0..1 cho face slots để scale đa độ phân giải.
 
 ## F. Rarity philosophy
 
-Rarity không đồng nghĩa 1:1 với “damage”.
-
-- `N`: thường xuyên, dễ hiểu, ít đảo game
-- `R`: tạo ưu thế rõ
+Rarity không đồng nghĩa 1:1 với damage:
+- `N`: thường xuyên, dễ hiểu
+- `R`: ưu thế rõ
 - `SR`: swing lớn
-- `SSR`: moment hiếm, có thể lật mặt trận
-
-Nên dùng weight theo **pool**, không gắn một con số cố định vào rarity cho mọi map. Ví dụ 1% SSR có thể đúng ở một pool nhưng chưa phải chuẩn toàn game.
+- `SSR`: moment hiếm, có thể lật trận
 
 ## G. Localization
 
-Từ đầu:
-- UI text qua key;
-- reaction text qua key/template;
-- `{PlayerA}`, `{PlayerB}`, `{Amount}`, `{Tile}` là variable;
-- SFX không chứa câu thoại ngôn ngữ cụ thể ở MVP;
-- không bake text vào art nếu text cần dịch.
+- UI/reaction text qua key/template
+- `{PlayerA}`, `{PlayerB}`, `{Amount}`, `{Tile}` là variable
+- SFX MVP tránh câu thoại gắn ngôn ngữ
+- không bake text vào art nếu text cần dịch

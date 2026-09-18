@@ -1,0 +1,440 @@
+import cardReactionsJson from '../content/core/card_reactions_023.json';
+import cardsJson from '../content/core/cards_mvp.json';
+import reactionsJson from '../content/core/reactions_mvp_demo.json';
+import { browserSession } from '../core/browserSession';
+import type { CardDefinition } from '../core/cards';
+import type { MatchEvent } from '../core/matchState';
+import {
+  formatReactionText,
+  type ReactionEventDefinition,
+  type ReactionSpeakerRole,
+} from '../core/reactions';
+import type { FaceExpression } from '../core/session';
+import { cpuQuirkForTurn, cpuQuirkLine } from '../core/testBot';
+import type { PlayerState } from '../core/types';
+import { npcChatDurationMs } from './npcChatPolicy';
+import { friendlyVisibleCopy0701 } from './friendlyVisibleCopy0701';
+import { tileIdentityCopy } from './tileIdentity';
+
+const REACTIONS = [
+  ...(reactionsJson as ReactionEventDefinition[]),
+  ...(cardReactionsJson as ReactionEventDefinition[]),
+];
+const CARDS = cardsJson as CardDefinition[];
+
+export type PresentationKind =
+  | 'dice_roll'
+  | 'move_step'
+  | 'tile_land'
+  | 'ready_bonus'
+  | 'card_draw'
+  | 'card_blocked'
+  | 'card_play'
+  | 'news';
+
+export interface PresentationReactionLine {
+  sequence: number;
+  delayMs: number;
+  durationMs: number;
+  speakerId?: number;
+  speakerName: string;
+  speakerRole: ReactionSpeakerRole;
+  expression: FaceExpression;
+  text: string;
+}
+
+export interface PresentationEventModel {
+  eventSeq: number;
+  kind: PresentationKind;
+  eyebrow: string;
+  title: string;
+  rarity: string;
+  impact: string;
+  description: string;
+  summary: string;
+  actorId?: number;
+  actorName: string;
+  targetId?: number;
+  targetName?: string;
+  reactionEventId?: string;
+  reactions: PresentationReactionLine[];
+  holdMs: number;
+  tileType?: string;
+  amount?: number;
+  affectedPlayerIds: number[];
+  roll?: number;
+  step?: number;
+  fromNodeId?: number;
+  toNodeId?: number;
+}
+
+function dataString(event: MatchEvent, key: string): string {
+  const value = event.data[key];
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+function dataNumber(event: MatchEvent, key: string, allowNegative = false): number | undefined {
+  const value = Number(event.data[key]);
+  if (!Number.isFinite(value)) return undefined;
+  if (!allowNegative && value < 0) return undefined;
+  return value;
+}
+
+function parsePlayerIds(raw: string): number[] {
+  const ids = raw
+    .split(',')
+    .map((value) => Number(value.trim()))
+    .filter((value) => Number.isInteger(value) && value >= 0);
+  return [...new Set(ids)];
+}
+
+function affectedPlayerIds(event: MatchEvent, targetId?: number): number[] {
+  const explicit = parsePlayerIds(dataString(event, 'affectedPlayerIds'));
+  if (explicit.length > 0) return explicit;
+  const fallback = [event.actorId, targetId].filter((value): value is number => value !== undefined && value >= 0);
+  return [...new Set(fallback)];
+}
+
+function playerById(players: PlayerState[], id: number | undefined): PlayerState | undefined {
+  if (id === undefined) return undefined;
+  return players.find((player) => player.id === id);
+}
+
+function playerName(players: PlayerState[], id: number | undefined, fallback = 'MeMeMe'): string {
+  return playerById(players, id)?.name ?? (id === undefined ? fallback : `P${id + 1}`);
+}
+
+function speakerIdForRole(role: ReactionSpeakerRole, event: MatchEvent): number | undefined {
+  switch (role) {
+    case 'caster':
+    case 'subject':
+      return event.actorId;
+    case 'target':
+      return dataNumber(event, 'targetId');
+    case 'spectator':
+      return dataNumber(event, 'spectatorId');
+  }
+}
+
+function cardReactionEventId(event: MatchEvent): string | undefined {
+  const cardId = dataString(event, 'cardId');
+  const card = CARDS.find((entry) => entry.id === cardId);
+  if (!card) return undefined;
+
+  switch (card.effect.type) {
+    case 'steal_money':
+      return 'CARD_STEAL_023';
+    case 'block_cards':
+      return 'CARD_BLOCK_023';
+    case 'percent_loss_all_others':
+      return 'CARD_GROUP_CURSE_023';
+    case 'swap_money':
+      return 'CARD_SWAP_023';
+  }
+}
+
+function reactionLines(
+  event: MatchEvent,
+  players: PlayerState[],
+  reactionEventIdOverride?: string,
+): PresentationReactionLine[] {
+  const reactionEventId = reactionEventIdOverride ?? dataString(event, 'reactionEventId');
+  if (!reactionEventId) return [];
+
+  const definition = REACTIONS.find((entry) => entry.id === reactionEventId);
+  if (!definition) return [];
+
+  const actorName = playerName(players, event.actorId);
+  const targetId = dataNumber(event, 'targetId');
+  const spectatorId = dataNumber(event, 'spectatorId');
+  const targetName = playerName(players, targetId, actorName);
+  const spectatorName = playerName(players, spectatorId, 'Cả bàn');
+  const amount = Math.abs(Number(event.data.amount ?? 0));
+
+  const variables: Record<string, string | number> = {
+    amount: Number.isFinite(amount) ? amount : 0,
+    caster: actorName,
+    subject: actorName,
+    target: targetName,
+    spectator: spectatorName,
+  };
+
+  return [...definition.steps]
+    .sort((left, right) => left.sequence - right.sequence)
+    .map((step) => {
+      const speakerId = speakerIdForRole(step.speakerRole, event);
+      const speakerName = playerName(players, speakerId, step.speakerRole === 'spectator' ? 'Cả bàn' : actorName);
+      const variantIndex = speakerId === undefined || step.variants.length === 0
+        ? 0
+        : Math.abs(speakerId) % step.variants.length;
+      const variant = step.variants[variantIndex] ?? step.variants[0];
+      const isNpc = speakerId !== undefined && browserSession.isCpuSeat(speakerId);
+
+      return {
+        sequence: step.sequence,
+        delayMs: step.delayMs,
+        durationMs: npcChatDurationMs(step.durationMs, isNpc),
+        speakerId,
+        speakerName,
+        speakerRole: step.speakerRole,
+        expression: step.expression,
+        text: variant ? friendlyVisibleCopy0701(formatReactionText(variant.text, variables)) : '',
+      };
+    })
+    .filter((line) => line.text.trim().length > 0);
+}
+
+function maybeNpcQuirkLine(event: MatchEvent, players: PlayerState[]): PresentationReactionLine | undefined {
+  const actorId = event.actorId;
+  if (actorId === undefined || !browserSession.isCpuSeat(actorId)) return undefined;
+  const cardId = dataString(event, 'cardId');
+  if (!cardId || !cpuQuirkForTurn(event.turnNumber, actorId, cardId)) return undefined;
+  return {
+    sequence: 0,
+    delayMs: 120,
+    durationMs: npcChatDurationMs(1800, true),
+    speakerId: actorId,
+    speakerName: playerName(players, actorId),
+    speakerRole: 'caster',
+    expression: 'angry',
+    text: cpuQuirkLine(event.turnNumber, actorId),
+  };
+}
+
+function baseModel(event: MatchEvent, players: PlayerState[]): Pick<PresentationEventModel, 'eventSeq' | 'actorId' | 'actorName' | 'affectedPlayerIds'> {
+  const targetId = dataNumber(event, 'targetId');
+  return {
+    eventSeq: event.seq,
+    actorId: event.actorId,
+    actorName: playerName(players, event.actorId),
+    affectedPlayerIds: affectedPlayerIds(event, targetId),
+  };
+}
+
+function tileLandingModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
+  const base = baseModel(event, players);
+  const nodeId = dataNumber(event, 'nodeId') ?? -1;
+  const tileType = dataString(event, 'tileType') || 'normal';
+  const amount = dataNumber(event, 'value', true) ?? 0;
+  const copy = tileIdentityCopy(tileType, nodeId, amount);
+
+  return {
+    ...base,
+    kind: 'tile_land',
+    eyebrow: `${base.actorName} • ĐÁP Ô`,
+    title: copy.title,
+    rarity: '',
+    impact: copy.impact,
+    description: copy.description,
+    summary: '',
+    reactions: [],
+    holdMs: copy.holdMs,
+    tileType,
+    amount,
+  };
+}
+
+function functionTileModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel {
+  const base = baseModel(event, players);
+  const isMiniGame = event.type === 'minigame_tile';
+  const isJob = event.type.startsWith('job_') || event.type === 'job_tile';
+  const description = friendlyVisibleCopy0701(dataString(event, 'description'));
+  const summary = friendlyVisibleCopy0701(dataString(event, 'summary'));
+  return {
+    ...base,
+    kind: 'tile_land',
+    eyebrow: `${base.actorName} • ${isMiniGame ? 'MINI GAME' : isJob ? 'JOB' : 'SỰ KIỆN'}`,
+    title: dataString(event, 'title') || (isMiniGame ? 'MINI GAME' : 'JOB'),
+    rarity: '',
+    impact: dataString(event, 'impact') || (isMiniGame ? '🎮' : '💼'),
+    description: [description, summary].filter(Boolean).join('\n'),
+    summary: '',
+    reactions: [],
+    holdMs: event.type === 'job_offer' ? 1800 : 2600,
+    tileType: isMiniGame ? 'minigame' : 'job',
+  };
+}
+
+export function buildPresentationModel(event: MatchEvent, players: PlayerState[]): PresentationEventModel | undefined {
+  const base = baseModel(event, players);
+  const targetId = dataNumber(event, 'targetId');
+  const targetName = targetId === undefined ? undefined : playerName(players, targetId);
+  const title = dataString(event, 'title');
+  const rarity = dataString(event, 'rarity');
+  const impact = dataString(event, 'impact');
+  const description = friendlyVisibleCopy0701(dataString(event, 'description'));
+  const summary = friendlyVisibleCopy0701(dataString(event, 'summary'));
+  const reactionEventId = dataString(event, 'reactionEventId') || undefined;
+
+  if (event.type === 'dice_roll' || event.type === 'job_dice_roll') {
+    const roll = dataNumber(event, 'result') ?? 1;
+    const isJobDie = event.type === 'job_dice_roll';
+    return {
+      ...base,
+      kind: 'dice_roll',
+      eyebrow: `${base.actorName} • ${isJobDie ? 'XÚC XẮC JOB' : 'XÚC XẮC'}`,
+      title: String(roll),
+      rarity: '',
+      impact: '🎲',
+      description: '',
+      summary: '',
+      reactions: [],
+      holdMs: isJobDie ? 980 : 780,
+      roll,
+    };
+  }
+
+  if (event.type === 'special_release') {
+    const success = event.data.success === true;
+    const roll = dataNumber(event, 'result') ?? 1;
+    const location = dataString(event, 'location');
+    const place = location === 'hospital' ? 'BỆNH VIỆN' : 'ĐỒN CẢNH SÁT';
+    return {
+      ...base,
+      kind: 'tile_land',
+      eyebrow: `${base.actorName} • ${place}`,
+      title: title || (success ? 'ĐƯỢC THẢ!' : 'CHƯA ĐƯỢC THẢ'),
+      rarity: '',
+      impact: impact || (success ? '✅' : '⛔'),
+      description: success
+        ? `Xúc xắc ${roll} vừa rồi CHỈ dùng để thoát. Ra khỏi ${place === 'BỆNH VIỆN' ? 'Bệnh viện' : 'Đồn'} xong sẽ đổ một D6 MỚI để di chuyển.`
+        : (description || 'Chưa đạt điều kiện. Ở lại và kết thúc lượt.'),
+      summary: '',
+      reactions: [],
+      holdMs: success ? 1500 : 1700,
+      tileType: 'special_release',
+      roll,
+    };
+  }
+
+  if (event.type === 'move_step') {
+    return {
+      ...base,
+      kind: 'move_step',
+      eyebrow: '',
+      title: '',
+      rarity: '',
+      impact: '',
+      description: '',
+      summary: '',
+      reactions: [],
+      holdMs: 230,
+      roll: dataNumber(event, 'roll'),
+      step: dataNumber(event, 'step'),
+      fromNodeId: dataNumber(event, 'fromNodeId'),
+      toNodeId: dataNumber(event, 'toNodeId'),
+    };
+  }
+
+  if (
+    event.type === 'minigame_tile' ||
+    event.type === 'job_tile' ||
+    event.type === 'job_offer' ||
+    event.type === 'job_selected' ||
+    event.type === 'job_progress'
+  ) {
+    return functionTileModel(event, players);
+  }
+
+  if (event.type === 'tile_land') {
+    if (dataString(event, 'featureType')) return undefined;
+    return tileLandingModel(event, players);
+  }
+
+  if (event.type === 'ready_pass') {
+    const amount = dataNumber(event, 'amount', true) ?? 0;
+    const jobTitle = dataString(event, 'jobTitle');
+    const jobIcon = dataString(event, 'jobIcon');
+    const jobLevel = dataNumber(event, 'jobLevel') ?? 0;
+    return {
+      ...base,
+      kind: 'ready_bonus',
+      eyebrow: `${base.actorName} • LƯƠNG QUA CỔNG`,
+      title: amount > 0 ? `+${amount} B$` : '0 B$',
+      rarity: '',
+      impact: amount > 0 ? '💼💰' : '💼',
+      description: jobTitle
+        ? `${jobIcon} ${jobTitle} Lv.${jobLevel} trả lương khi qua cổng.`
+        : 'Chưa có Job đang hoạt động nên vòng này không nhận lương.',
+      summary: '',
+      reactions: [],
+      holdMs: 1800,
+      amount,
+    };
+  }
+
+  if (event.type === 'card_draw') {
+    return {
+      ...base,
+      kind: 'card_draw',
+      eyebrow: 'LÁ BÀI • RÚT ĐƯỢC',
+      title: title || dataString(event, 'cardId') || 'Lá Bài',
+      rarity,
+      impact,
+      description,
+      summary: '',
+      reactions: [],
+      holdMs: 2600,
+    };
+  }
+
+  if (event.type === 'card_draw_blocked') {
+    return {
+      ...base,
+      kind: 'card_blocked',
+      eyebrow: 'LÁ BÀI • GIỚI HẠN TAY',
+      title: 'Không thể rút thêm',
+      rarity: '',
+      impact: '✋',
+      description: 'Tay bài đã chạm giới hạn MVP.',
+      summary: '',
+      reactions: [],
+      holdMs: 2000,
+    };
+  }
+
+  if (event.type === 'card_play') {
+    const resolvedReactionEventId = cardReactionEventId(event) ?? reactionEventId;
+    const reactions = reactionLines(event, players, resolvedReactionEventId);
+    const quirk = maybeNpcQuirkLine(event, players);
+    if (quirk) reactions.unshift(quirk);
+    return {
+      ...base,
+      kind: 'card_play',
+      eyebrow: 'LÁ BÀI • KÍCH HOẠT',
+      title: title || dataString(event, 'cardId') || 'Lá Bài',
+      rarity,
+      impact,
+      description,
+      summary,
+      targetId,
+      targetName,
+      reactionEventId: resolvedReactionEventId,
+      reactions,
+      holdMs: 3500,
+      amount: dataNumber(event, 'amount', true),
+    };
+  }
+
+  if (event.type === 'news') {
+    return {
+      ...base,
+      kind: 'news',
+      eyebrow: 'TIN TỨC • BREAKING',
+      title: title || dataString(event, 'newsId') || 'Tin Tức',
+      rarity,
+      impact,
+      description,
+      summary,
+      targetId,
+      targetName,
+      reactionEventId,
+      reactions: reactionLines(event, players),
+      holdMs: 3800,
+      amount: dataNumber(event, 'amount', true),
+    };
+  }
+
+  return undefined;
+}

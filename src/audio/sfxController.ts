@@ -1,0 +1,274 @@
+export type SfxCue =
+  | 'dice_roll'
+  | 'coin_gain'
+  | 'coin_loss'
+  | 'card_draw'
+  | 'card_play'
+  | 'news'
+  | 'reaction'
+  | 'ready'
+  | 'land'
+  | 'ui_confirm'
+  | 'step'
+  | 'victory';
+
+interface SfxState {
+  muted: boolean;
+}
+
+type SfxListener = (state: SfxState) => void;
+
+const STORAGE_KEY = 'mememe.sfx.preferences.v1';
+const SFX_BASE_PATH = 'audio/sfx';
+
+const SFX_ASSETS: Partial<Record<SfxCue, string>> = {
+  dice_roll: 'dice.ogg',
+  coin_gain: 'money_gain.ogg',
+  coin_loss: 'money_loss.ogg',
+  card_draw: 'card.ogg',
+  news: 'news.ogg',
+  ui_confirm: 'choice.ogg',
+  step: 'step.ogg',
+  victory: 'victory.ogg',
+};
+
+/** 0.1.64 human mix feedback: Card -20%, footsteps +30%. */
+export const SFX_GAIN_064: Partial<Record<SfxCue, number>> = {
+  card_draw: 0.8,
+  card_play: 0.8,
+  step: 1.3,
+};
+
+function loadMuted(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    return Boolean((JSON.parse(raw) as Partial<SfxState>).muted);
+  } catch {
+    return false;
+  }
+}
+
+function assetUrl(file: string): string {
+  return `${SFX_BASE_PATH}/${file}`;
+}
+
+export class SfxController {
+  private context?: AudioContext;
+  private muted = loadMuted();
+  private readonly listeners = new Set<SfxListener>();
+  private readonly prepared = new Map<SfxCue, HTMLAudioElement>();
+  private readonly activeAssets = new Set<HTMLAudioElement>();
+
+  /** Preload user-supplied SFX without requiring a scene to own the assets. */
+  start(): void {
+    if (typeof Audio === 'undefined') return;
+    for (const cue of Object.keys(SFX_ASSETS) as SfxCue[]) this.prepareCue(cue);
+  }
+
+  getState(): SfxState {
+    return { muted: this.muted };
+  }
+
+  subscribe(listener: SfxListener): () => void {
+    this.listeners.add(listener);
+    listener(this.getState());
+    return () => this.listeners.delete(listener);
+  }
+
+  toggleMuted(): void {
+    this.muted = !this.muted;
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ muted: this.muted }));
+      }
+    } catch {
+      // Storage denial never blocks gameplay.
+    }
+    if (this.muted) {
+      for (const audio of this.activeAssets) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      this.activeAssets.clear();
+    }
+    this.emit();
+  }
+
+  play(cue: SfxCue): void {
+    if (this.muted || typeof window === 'undefined') return;
+    const file = SFX_ASSETS[cue];
+    if (file && typeof Audio !== 'undefined') {
+      const template = this.prepareCue(cue);
+      if (template) {
+        const gainMultiplier = SFX_GAIN_064[cue] ?? 1;
+        const audio = template.cloneNode(true) as HTMLAudioElement;
+        audio.preload = 'auto';
+        audio.muted = false;
+        audio.volume = Math.min(1, gainMultiplier);
+
+        // HTMLMediaElement.volume caps at 1.0. Route only >1 cues through a
+        // WebAudio GainNode so the requested +30% step mix is real rather than
+        // silently clamped to the old ceiling.
+        const boosted = gainMultiplier > 1
+          ? this.routeBoostedAsset064(audio, gainMultiplier)
+          : undefined;
+
+        const cleanup = () => {
+          this.activeAssets.delete(audio);
+          boosted?.();
+        };
+        audio.addEventListener('ended', cleanup, { once: true });
+        audio.addEventListener('error', cleanup, { once: true });
+        this.activeAssets.add(audio);
+        void audio.play().catch(() => {
+          cleanup();
+          this.playFallback(cue);
+        });
+        return;
+      }
+    }
+    this.playFallback(cue);
+  }
+
+  private routeBoostedAsset064(audio: HTMLAudioElement, multiplier: number): (() => void) | undefined {
+    const context = this.ensureContext();
+    if (!context) return undefined;
+    try {
+      const source = context.createMediaElementSource(audio);
+      const gain = context.createGain();
+      gain.gain.value = multiplier;
+      source.connect(gain);
+      gain.connect(context.destination);
+      void context.resume().catch(() => undefined);
+      return () => {
+        try {
+          source.disconnect();
+          gain.disconnect();
+        } catch {
+          // Already disconnected during browser cleanup.
+        }
+      };
+    } catch {
+      // If a browser refuses MediaElementSource routing, the element still plays
+      // at volume 1.0 instead of failing the SFX entirely.
+      return undefined;
+    }
+  }
+
+  private prepareCue(cue: SfxCue): HTMLAudioElement | undefined {
+    if (typeof Audio === 'undefined') return undefined;
+    const cached = this.prepared.get(cue);
+    if (cached) return cached;
+    const file = SFX_ASSETS[cue];
+    if (!file) return undefined;
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.autoplay = false;
+    audio.src = assetUrl(file);
+    try {
+      audio.load();
+    } catch {
+      // Some browsers defer preload until the first play().
+    }
+    this.prepared.set(cue, audio);
+    return audio;
+  }
+
+  private playFallback(cue: SfxCue): void {
+    if (this.muted || typeof window === 'undefined') return;
+    const context = this.ensureContext();
+    if (!context) return;
+    void context.resume().catch(() => undefined);
+
+    const now = context.currentTime;
+    switch (cue) {
+      case 'dice_roll':
+        this.tone(190, 150, now, 0.055, 0.055, 'triangle');
+        this.tone(230, 170, now + 0.075, 0.05, 0.05, 'triangle');
+        this.tone(270, 190, now + 0.15, 0.05, 0.045, 'triangle');
+        this.tone(420, 300, now + 0.23, 0.09, 0.055, 'sine');
+        break;
+      case 'coin_gain':
+        this.tone(660, 940, now, 0.12, 0.11, 'sine');
+        this.tone(940, 1180, now + 0.07, 0.1, 0.08, 'sine');
+        break;
+      case 'coin_loss':
+        this.tone(360, 180, now, 0.18, 0.12, 'triangle');
+        break;
+      case 'card_draw':
+        this.tone(420, 920, now, 0.2, 0.072, 'triangle');
+        break;
+      case 'card_play':
+        this.tone(520, 1200, now, 0.16, 0.096, 'sawtooth');
+        break;
+      case 'news':
+        this.tone(520, 520, now, 0.08, 0.1, 'square');
+        this.tone(680, 680, now + 0.11, 0.1, 0.08, 'square');
+        break;
+      case 'reaction':
+        this.tone(900, 720, now, 0.07, 0.05, 'sine');
+        break;
+      case 'ready':
+        this.tone(520, 780, now, 0.12, 0.09, 'sine');
+        this.tone(660, 980, now + 0.08, 0.14, 0.07, 'sine');
+        break;
+      case 'land':
+        this.tone(180, 140, now, 0.06, 0.04, 'triangle');
+        break;
+      case 'ui_confirm':
+        this.tone(760, 860, now, 0.05, 0.04, 'sine');
+        break;
+      case 'step':
+        this.tone(135, 105, now, 0.055, 0.0338, 'triangle');
+        break;
+      case 'victory':
+        this.tone(520, 780, now, 0.14, 0.09, 'sine');
+        this.tone(660, 980, now + 0.12, 0.16, 0.08, 'sine');
+        this.tone(780, 1240, now + 0.25, 0.22, 0.07, 'sine');
+        break;
+    }
+  }
+
+  private ensureContext(): AudioContext | undefined {
+    if (this.context) return this.context;
+    const AudioContextCtor = window.AudioContext
+      ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextCtor) return undefined;
+    this.context = new AudioContextCtor();
+    return this.context;
+  }
+
+  private tone(
+    startHz: number,
+    endHz: number,
+    startTime: number,
+    duration: number,
+    gainValue: number,
+    type: OscillatorType,
+  ): void {
+    const context = this.context;
+    if (!context) return;
+
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(startHz, startTime);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, endHz), startTime + duration);
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.exponentialRampToValueAtTime(gainValue, startTime + Math.min(0.025, duration / 3));
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration + 0.02);
+  }
+
+  private emit(): void {
+    const state = this.getState();
+    for (const listener of this.listeners) listener(state);
+  }
+}
+
+export const sfxController = new SfxController();

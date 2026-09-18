@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "mememe-online",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-18",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MEMEME_ROOMS",
+        "class_name": "MeMeMeRoom"
+      }
+    ]
+  },
+  "exports": {
+    "MeMeMeRoom": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "observability": {
+    "enabled": true
+  }
+}

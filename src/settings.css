@@ -1,0 +1,251 @@
+.mememe-settings {
+  position: fixed;
+  z-index: 12000;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+  color: #202020;
+  font-family: Inter, ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+  user-select: none;
+}
+
+.mobile-fullscreen-shortcut {
+  display: none;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 3px solid #202020;
+  border-radius: 14px;
+  background: rgba(255, 250, 240, 0.96);
+  box-shadow: 0 3px 0 rgba(32, 32, 32, 0.2);
+  color: #202020;
+  cursor: pointer;
+  font-size: 19px;
+  font-weight: 1000;
+  line-height: 1;
+}
+
+.mobile-fullscreen-shortcut.is-active {
+  background: rgba(255, 250, 240, 0.96);
+}
+
+.mobile-fullscreen-shortcut:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(32, 32, 32, 0.2);
+}
+
+.mobile-fullscreen-shortcut[hidden],
+.mememe-settings.is-open .mobile-fullscreen-shortcut {
+  display: none !important;
+}
+
+.settings-trigger {
+  width: 42px;
+  height: 42px;
+  border: 3px solid #202020;
+  border-radius: 14px;
+  background: rgba(255, 250, 240, 0.96);
+  box-shadow: 0 3px 0 rgba(32, 32, 32, 0.2);
+  color: #202020;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.settings-trigger:hover {
+  transform: translateY(-1px);
+}
+
+.settings-trigger:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(32, 32, 32, 0.2);
+}
+
+.settings-panel {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: min(330px, calc(100vw - 24px));
+  box-sizing: border-box;
+  padding: 14px;
+  border: 3px solid #202020;
+  border-radius: 20px;
+  background: rgba(255, 250, 240, 0.985);
+  box-shadow: 0 8px 0 rgba(32, 32, 32, 0.18);
+}
+
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.settings-head strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 1000;
+  letter-spacing: 0.04em;
+}
+
+.settings-head span {
+  display: block;
+  margin-top: 2px;
+  color: #746a5d;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.settings-close {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #202020;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.settings-section {
+  padding: 11px;
+  border: 2px solid #d8cdbd;
+  border-radius: 14px;
+  background: #fffdf8;
+}
+
+.settings-section + .settings-section {
+  margin-top: 10px;
+}
+
+.settings-section-title {
+  margin-bottom: 9px;
+  color: #7a7064;
+  font-size: 9px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-row + .settings-row {
+  margin-top: 10px;
+}
+
+.settings-copy strong,
+.settings-copy span {
+  display: block;
+}
+
+.settings-copy strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.settings-copy span {
+  margin-top: 2px;
+  color: #786f64;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.settings-toggle {
+  min-width: 78px;
+  height: 31px;
+  padding: 0 9px;
+  border: 2px solid #202020;
+  border-radius: 10px;
+  background: #ffd34d;
+  color: #202020;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 1000;
+}
+
+.settings-toggle.is-off {
+  background: #d8d2c7;
+  color: #645d55;
+}
+
+.settings-volume-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 10px;
+  margin: 10px 0 12px;
+  color: #5f574d;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.settings-volume-row input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: #ef4545;
+  cursor: pointer;
+}
+
+.settings-volume-value {
+  color: #202020;
+}
+
+.settings-future p {
+  margin: 0;
+  color: #81776c;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.mememe-settings.has-audio-error .settings-trigger,
+.mememe-settings.has-audio-error .settings-panel {
+  background: #ffe2e2;
+}
+
+@media (pointer: coarse) {
+  .mobile-fullscreen-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .mememe-settings {
+    top: 6px;
+    right: 6px;
+    gap: 6px;
+  }
+
+  .mobile-fullscreen-shortcut,
+  .settings-trigger {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+
+  .mobile-fullscreen-shortcut {
+    font-size: 17px;
+  }
+
+  .settings-panel {
+    top: 44px;
+  }
+}

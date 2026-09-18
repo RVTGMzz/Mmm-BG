@@ -1,0 +1,50 @@
+[
+  {
+    "id": "MINIGAME_SLOT_01",
+    "kind": "minigame",
+    "title": "Mini Game 1",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_02",
+    "kind": "minigame",
+    "title": "Mini Game 2",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_03",
+    "kind": "minigame",
+    "title": "Mini Game 3",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_04",
+    "kind": "minigame",
+    "title": "Mini Game 4",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "MINIGAME_SLOT_05",
+    "kind": "minigame",
+    "title": "Mini Game 5",
+    "status": "rules_locked",
+    "icon": "🎮",
+    "notes": "Draft D Mini Game slot. Hiện dùng chung rules MVP; giữ ID riêng để 0.1.59 có thể mở rộng loại game/identity theo vị trí."
+  },
+  {
+    "id": "JOB_HUB_01",
+    "kind": "job",
+    "title": "Job Hub",
+    "status": "playable",
+    "icon": "💼",
+    "notes": "Ô bắt buộc ở điểm hội tụ ngã ba. Người chưa có việc chọn 1 trong 3 nghề random từ pool 10. Người đã có nghề kiểm tra thăng, hạ hoặc mất việc; nghề nguy hiểm có thêm biến cố đặc biệt. Odds 0.1.31 là tuning provisional trong jobs_mvp.json."
+  }
+]

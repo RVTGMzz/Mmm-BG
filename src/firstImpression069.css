@@ -1,0 +1,67 @@
+/* 0.1.69 First Impression Polish — concise copy, larger type, soft corners. */
+body.mememe-splash-active .mememe-settings { opacity: 0; pointer-events: none; }
+
+.mememe-lobby-069 { width: 940px; }
+.lobby-head-069 { display:flex; align-items:baseline; justify-content:space-between; margin:0 4px 22px; }
+.lobby-head-069 h1 { margin:0; font-size:32px; line-height:1; }
+.lobby-head-069 span { color:#756c61; font-size:15px; font-weight:900; }
+.mememe-lobby-069 .lobby-grid { gap:18px; }
+.mememe-lobby-069 .lobby-card { min-height:280px; padding:22px; border-radius:28px; }
+.mememe-lobby-069 .lobby-icon { font-size:42px; }
+.mememe-lobby-069 .lobby-card h2 { font-size:25px; }
+.mememe-lobby-069 .lobby-card p { min-height:0; font-size:16px; font-weight:750; }
+.mememe-lobby-069 .lobby-card label { font-size:12px; }
+.mememe-lobby-069 .lobby-card input,
+.mememe-lobby-069 .lobby-card select { border-radius:16px; padding:11px 12px; font-size:17px; }
+.mememe-lobby-069 .lobby-card button { border-radius:18px; padding:15px 12px; font-size:17px; }
+.mememe-lobby-069 .lobby-status { margin-top:12px; font-size:14px; }
+.mememe-lobby-069 .lobby-status:empty { display:none; }
+
+.mememe-setup-069 { width:1120px; }
+.mememe-setup-069 .player-setup-card { border-radius:26px; padding:14px; }
+.mememe-setup-069 .player-name-input { border-radius:15px; font-size:17px; }
+.mememe-setup-069 .face-slot { border-radius:20px; }
+.mememe-setup-069 .face-label { font-size:13px; }
+.mememe-setup-069 .face-action { font-size:12px; }
+.player-role-row-069 { min-height:30px; display:flex; align-items:center; margin:-4px 0 8px; }
+.cpu-tag-069 { display:inline-block; margin:0; padding:4px 9px; border-radius:999px; background:#eee3f4; color:#795796; font-size:12px; font-weight:900; }
+.player-role-placeholder-069 { visibility:hidden; padding:4px 9px; font-size:12px; font-weight:900; }
+.mememe-setup-069 .setup-footer { grid-template-columns:auto 1fr auto; gap:14px; border-radius:22px; padding:12px 16px; }
+.mememe-setup-069 .setup-hint { font-size:16px; font-weight:800; }
+.mememe-setup-069 .setup-status { font-size:14px; min-height:0; }
+.mememe-setup-069 .setup-status:empty { display:none; }
+.mememe-setup-069 .start-game-button { border-radius:20px; font-size:18px; }
+.mememe-setup-069 .setup-back-button {
+  min-width:118px;
+  border:3px solid #202020;
+  padding:12px 14px;
+  background:#fffaf0;
+  color:#202020;
+  cursor:pointer;
+  box-shadow:0 4px 0 #202020;
+  font:900 14px/1 Inter, system-ui, sans-serif;
+}
+.mememe-setup-069 .setup-back-button:active { transform:translateY(3px); box-shadow:0 1px 0 #202020; }
+
+.mememe-rule-select-069 { width:850px; }
+.mememe-rule-select-069 .rule-select-panel { border-radius:34px; padding:28px 32px; }
+.mememe-rule-select-069 .rule-select-kicker { font-size:13px; }
+.mememe-rule-select-069 h1 { margin:8px 0 24px; font-size:38px; }
+.mememe-rule-select-069 .rule-select-copy,
+.mememe-rule-select-069 .rule-selected-summary { display:none; }
+.mememe-rule-select-069 .rule-option { min-height:205px; border-radius:28px; }
+.mememe-rule-select-069 .rule-option strong { font-size:24px; }
+.mememe-rule-select-069 .rule-option small { font-size:13px; }
+.mememe-rule-select-069 .rule-option-note { margin-top:12px; font-size:14px; font-weight:900; }
+.mememe-rule-select-069 .rule-actions button { min-height:58px; border-radius:20px; font-size:17px; }
+
+/* Permanent shape language: ordinary surfaces stay soft, not harsh square boxes. */
+.mememe-lobby-069 button, .mememe-lobby-069 input, .mememe-lobby-069 select,
+.mememe-setup-069 button, .mememe-setup-069 input,
+.mememe-rule-select-069 button { border-radius:16px; }
+
+.mememe-lobby-069 .lobby-actions { gap:10px; }
+.mememe-lobby-069 .lobby-actions button { padding:14px 8px; font-size:15px; }
+
+.online-room-lobby button, .online-room-lobby input { border-radius:16px; }
+.online-room-lobby .online-room-panel { border-radius:28px; }

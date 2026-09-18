@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
+const scene063Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene063.ts', import.meta.url), 'utf8');
+const scene062Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene062.ts', import.meta.url), 'utf8');
+const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
+const scene0701Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
+const authoritySource = readFileSync(new URL('../src/core/authority.ts', import.meta.url), 'utf8');
+
+assert(mainSource.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
+assert(scene0701Source.includes('extends CareerMinigameBoardScene069'));
+assert(!scene0701Source.includes('Math.random'));
+assert(scene069Source.includes('extends CareerMinigameBoardScene0682'));
+assert(!scene069Source.includes('submitIntent('));
+assert(!scene069Source.includes('Math.random'));
+assert(scene063Source.includes('extends CareerMinigameBoardScene062'));
+assert(scene063Source.includes('const TOKEN_SCALE_063 = 0.82'));
+assert(scene063Source.includes('return 27'));
+assert(scene063Source.includes('return 31'));
+assert(scene063Source.includes('circle.setRadius(this.tileRadius063(node))'));
+assert(scene063Source.includes('visual.token.setScale(TOKEN_SCALE_063)'));
+assert(scene063Source.includes('const FOLLOW_LERP_063 = 0.075'));
+assert(scene063Source.includes('startFollow(token, false, FOLLOW_LERP_063, FOLLOW_LERP_063)'));
+assert(scene063Source.includes('const LANDING_CONTENT_SCALE_063 = 1.18'));
+assert(scene063Source.includes('const CINEMATIC_CONTENT_SCALE_063 = 1.14'));
+assert(scene063Source.includes('inflatePresentationContents063'));
+assert(scene063Source.includes('visitDisplayTree063'));
+assert(scene063Source.includes('CITY • MVP 0.1.63 • UI READABILITY + SMOOTH FOLLOW'));
+assert(scene063Source.includes('PLAYTEST 0.1.63 • LẺ ← TRÁI • CHẴN → PHẢI'));
+assert(!scene063Source.includes('submitIntent('));
+assert(!scene063Source.includes('Math.random'));
+assert(scene062Source.includes('LẺ ← TRÁI • CHẴN → PHẢI'));
+assert(authoritySource.includes('autoResolveParityBranches062'));
+console.log('[ui-smooth-polish-063] PASS historical 0.1.63 polish retained beneath 0.1.70.1 wrapper');
