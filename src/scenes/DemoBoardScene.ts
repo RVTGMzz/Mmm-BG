@@ -182,11 +182,13 @@ export class DemoBoardScene extends Phaser.Scene {
       this.unsubscribeGame = this.clientSession.subscribe((event) => this.handleGameEvent(event));
       this.clientSession.start();
 
+      // Online auth is bound to the lobby clientId. Channel isolation already keeps
+      // demo-shell separate, so do not invent a shell-* identity that the Worker rejects.
       const shellTransport = createBrowserSessionTransport<DemoShellMessage>(
         'demo-shell',
-        `shell-${config.clientId}`,
+        config.clientId,
       );
-      this.shellClient = new DemoShellClientSession(`shell-${config.clientId}`, shellTransport);
+      this.shellClient = new DemoShellClientSession(config.clientId, shellTransport);
       this.unsubscribeShell = this.shellClient.subscribe((shell) => this.applyShell(shell));
       this.shellClient.start();
       this.writeLog(`🛰️ P${config.seatId + 1} đang kết nối phòng ${config.roomCode}...`);
