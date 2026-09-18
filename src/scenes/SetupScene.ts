@@ -72,6 +72,18 @@ export class SetupScene extends Phaser.Scene {
     for (const player of gameSession.players) {
       const nameInput = node.querySelector<HTMLInputElement>(`#player-name-${player.id}`);
       nameInput?.addEventListener('input', () => gameSession.setPlayerName(player.id, nameInput.value));
+
+      const batchInput = node.querySelector<HTMLInputElement>(`#face-batch-${player.id}`);
+      const oneForAllInput = node.querySelector<HTMLInputElement>(`#face-one-${player.id}`);
+      batchInput?.parentElement?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
+      oneForAllInput?.parentElement?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
+      batchInput?.addEventListener('change', () => {
+        void this.handleFaceBatchSelection(node, player.id, batchInput, false);
+      });
+      oneForAllInput?.addEventListener('change', () => {
+        void this.handleFaceBatchSelection(node, player.id, oneForAllInput, true);
+      });
+
       for (const expression of EXPRESSIONS) {
         const input = node.querySelector<HTMLInputElement>(`#face-${player.id}-${expression.id}`);
         const slotLabel = node.querySelector<HTMLElement>(`#slot-${player.id}-${expression.id}`);
@@ -122,8 +134,9 @@ export class SetupScene extends Phaser.Scene {
       ? player?.name ?? `Player ${playerId + 1}`
       : isCpu ? `CPU ${playerId + 1}` : player?.name ?? `Player ${playerId + 1}`;
     const faceSlots = EXPRESSIONS.map((expression) => `<label class="face-slot" id="slot-${playerId}-${expression.id}" style="--player-accent:${accent}"><span class="face-emoji">${expression.emoji}</span><img id="preview-${playerId}-${expression.id}" alt="${expression.label}" /><span class="face-label">${expression.label}</span><span class="face-action">Chọn ảnh</span><input id="face-${playerId}-${expression.id}" type="file" accept="image/*" /></label>`).join('');
+    const batchActions = `<div class="face-batch-actions"><label class="face-batch-button"><span>📚 CHỌN 3 ẢNH</span><small>1 lần mở thư viện</small><input id="face-batch-${playerId}" type="file" accept="image/*" multiple /></label><label class="face-batch-button secondary"><span>🪄 1 ẢNH CHO CẢ 3</span><small>Chỉnh một lần</small><input id="face-one-${playerId}" type="file" accept="image/*" /></label></div>`;
     const roleRow = `<div class="player-role-row-069">${isCpu ? '<span class="cpu-tag-069">CPU</span>' : '<span class="player-role-placeholder-069" aria-hidden="true">CPU</span>'}</div>`;
-    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${roleRow}<div class="face-slots">${faceSlots}</div></section>`;
+    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${roleRow}<div class="face-slots">${faceSlots}</div>${batchActions}</section>`;
   }
 
   private async handleFaceSelection(root: HTMLDivElement, playerId: number, expression: FaceExpression, input: HTMLInputElement): Promise<void> {
@@ -133,11 +146,74 @@ export class SetupScene extends Phaser.Scene {
     const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression}`);
     slot?.classList.add('loading'); this.setStatus('Đang chỉnh ảnh…', false);
     try {
-      const edited = await FaceImageEditor.open(file); if (!edited) { this.setStatus('', false); return; }
+      const expressionMeta = EXPRESSIONS.find((item) => item.id === expression);
+      const edited = await FaceImageEditor.open(file, expressionMeta?.label); if (!edited) { this.setStatus('', false); return; }
       gameSession.setFace(playerId, expression, { dataUrl: edited.dataUrl, textureKey: faceTextureKey(playerId, expression), originalName: file.name });
       if (preview) preview.src = edited.dataUrl; slot?.classList.add('has-image'); this.setStatus('✓ Đã lưu mặt', false);
     } catch (error) { this.setStatus(error instanceof Error ? error.message : 'Không xử lý được ảnh.', true); }
     finally { slot?.classList.remove('loading'); input.value = ''; }
+  }
+
+  private async handleFaceBatchSelection(
+    root: HTMLDivElement,
+    playerId: number,
+    input: HTMLInputElement,
+    oneForAll: boolean,
+  ): Promise<void> {
+    const files = [...(input.files ?? [])];
+    if (files.length === 0) return;
+
+    await waitForMobileLandscapeAfterPicker07032();
+    this.setStatus(oneForAll ? 'Đang chỉnh 1 ảnh cho cả 3 biểu cảm…' : `Đã nhận ${Math.min(files.length, 3)} ảnh • chỉnh lần lượt trong MeMeMe`, false);
+
+    try {
+      if (oneForAll) {
+        const edited = await FaceImageEditor.open(files[0], 'Cả 3 biểu cảm');
+        if (!edited) { this.setStatus('', false); return; }
+        for (const expression of EXPRESSIONS) {
+          gameSession.setFace(playerId, expression.id, {
+            dataUrl: edited.dataUrl,
+            textureKey: faceTextureKey(playerId, expression.id),
+            originalName: files[0].name,
+          });
+          const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression.id}`);
+          const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression.id}`);
+          if (preview) preview.src = edited.dataUrl;
+          slot?.classList.add('has-image');
+        }
+        this.setStatus('✓ Một ảnh đã áp dụng cho cả 3 biểu cảm', false);
+        return;
+      }
+
+      const selected = files.slice(0, 3);
+      for (let index = 0; index < selected.length; index += 1) {
+        const expression = EXPRESSIONS[index];
+        const file = selected[index];
+        this.setStatus(`Đang chỉnh ${index + 1}/${selected.length}: ${expression.label}`, false);
+        const edited = await FaceImageEditor.open(file, `${index + 1}/${selected.length} • ${expression.label}`);
+        if (!edited) continue;
+
+        gameSession.setFace(playerId, expression.id, {
+          dataUrl: edited.dataUrl,
+          textureKey: faceTextureKey(playerId, expression.id),
+          originalName: file.name,
+        });
+        const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression.id}`);
+        const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression.id}`);
+        if (preview) preview.src = edited.dataUrl;
+        slot?.classList.add('has-image');
+      }
+
+      if (selected.length < 3) {
+        this.setStatus(`✓ Đã lưu ${selected.length} ảnh. Muốn đủ 3, có thể chạm ô còn thiếu.`, false);
+      } else {
+        this.setStatus('✓ Đã lưu đủ 3 ảnh • chỉ mở thư viện một lần', false);
+      }
+    } catch (error) {
+      this.setStatus(error instanceof Error ? error.message : 'Không xử lý được bộ ảnh.', true);
+    } finally {
+      input.value = '';
+    }
   }
 
   private captureNames(root: HTMLDivElement): boolean {
