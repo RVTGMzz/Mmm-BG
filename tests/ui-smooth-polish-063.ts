@@ -8,7 +8,7 @@ const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardSc
 const scene0701Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
 const authoritySource = readFileSync(new URL('../src/core/authority.ts', import.meta.url), 'utf8');
 
-assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 assert(scene0701Source.includes('extends CareerMinigameBoardScene069'));
 assert(!scene0701Source.includes('Math.random'));
 assert(scene069Source.includes('extends CareerMinigameBoardScene0682'));
