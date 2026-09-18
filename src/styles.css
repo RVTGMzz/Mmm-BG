@@ -914,3 +914,34 @@ canvas {
 .online-player-row.presence-disconnected .online-ready-state {
   opacity: .68;
 }
+
+
+/* 0.1.70.4.2 each online human edits only their own profile */
+.mememe-setup.online-own-profile {
+  width: min(620px, calc(100vw - 36px));
+}
+.mememe-setup.online-own-profile .setup-grid {
+  grid-template-columns: minmax(0, 1fr);
+  justify-content: center;
+}
+.mememe-setup.online-own-profile .player-setup-card {
+  width: 100%;
+}
+.mememe-setup.online-own-profile .setup-footer {
+  grid-template-columns: 1fr auto;
+}
+.mememe-setup.online-own-profile .player-name-input[readonly] {
+  background: #f3ede3;
+  color: #5f574d;
+}
+@media (pointer: coarse) and (orientation: landscape) {
+  .mememe-setup.online-own-profile {
+    width: min(680px, calc(100vw - 18px));
+  }
+  .mememe-setup.online-own-profile .player-setup-card {
+    padding: 10px;
+  }
+  .mememe-setup.online-own-profile .face-slot {
+    height: 112px;
+  }
+}

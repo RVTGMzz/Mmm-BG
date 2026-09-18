@@ -180,6 +180,8 @@ jobs:
         run: npm run test:online-hardening-0704
       - name: 0.1.70.4.1 human over CPU seating and custom room codes
         run: npm run test:online-human-cpu-room-07041
+      - name: 0.1.70.4.2 online participation ownership
+        run: npm run test:online-participation-07042
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
