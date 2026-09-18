@@ -52,6 +52,7 @@ export class LocalLobbyScene extends Phaser.Scene {
         <section class="lobby-card join-card online-card">
           <div class="lobby-icon">🌐</div><h2>ONLINE</h2><p>Khác máy • qua Internet</p>
           <label>TÊN CỦA BẠN<input id="online-name" maxlength="18" value="Player" /></label>
+          <label>TÊN PHÒNG<input id="online-room-name" maxlength="32" placeholder="VD: Xóm MeMeMe tối nay" /></label>
           <label>MÃ PHÒNG<input id="online-room" maxlength="8" placeholder="ME12AB" /></label>
           <div class="online-host-options">
             <label><input id="online-camera" type="checkbox" /> 📷 Cho phép Camera Call</label>
@@ -115,15 +116,16 @@ export class LocalLobbyScene extends Phaser.Scene {
       setStatus('🌐 Đang tạo phòng online...');
       try {
         const hostName = node.querySelector<HTMLInputElement>('#online-name')?.value ?? 'Host';
+        const roomName = node.querySelector<HTMLInputElement>('#online-room-name')?.value ?? '';
         const room = await createOnlineRoom0703(hostName, {
           cameraAllowed: node.querySelector<HTMLInputElement>('#online-camera')?.checked ?? false,
           voiceAllowed: node.querySelector<HTMLInputElement>('#online-voice')?.checked ?? false,
           cpuFill: node.querySelector<HTMLInputElement>('#online-cpu')?.checked ?? true,
-        });
+        }, roomName);
         browserSession.configureOnlineHost(room.roomCode, room.hostToken, MEMEME_ONLINE_BASE_URL);
         const input = node.querySelector<HTMLInputElement>('#online-room');
         if (input) input.value = room.roomCode;
-        setStatus(`✅ Phòng online ${room.roomCode} đã tạo.`);
+        setStatus(`✅ ${room.roomName || roomName || 'Phòng MeMeMe'} • mã ${room.roomCode} đã tạo.`);
         this.scene.start('OnlineRoomLobbyScene', { hostName });
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'Không tạo được phòng online.', true);
