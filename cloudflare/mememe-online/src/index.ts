@@ -133,7 +133,7 @@ export default {
       return json({
         ok: true,
         service: "mememe-online",
-        milestone: "0.1.70.4.2",
+        milestone: "0.1.70.4.3",
         transport: "websocket-durable-object",
         lobbyAuthority: true
       }, {}, origin);

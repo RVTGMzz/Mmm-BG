@@ -3,6 +3,7 @@ import { browserSession } from '../core/browserSession';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import type { PresentationEventModel } from '../ui/presentationModel';
+import { onlineGroupMedia07043 } from '../ui/OnlineGroupMedia07043';
 import { CareerMinigameBoardScene069 } from './CareerMinigameBoardScene069';
 
 type Presentation0701 = {
@@ -44,7 +45,9 @@ export class CareerMinigameBoardScene0701 extends CareerMinigameBoardScene069 {
     this.installCompactCardSkin0701();
     this.syncCompactCard0701();
     this.updateBuildLabels0701();
+    if (browserSession.isOnline) onlineGroupMedia07043.start();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      onlineGroupMedia07043.stop();
       this.compactCardSkin0701?.destroy();
       this.compactCardSkin0701 = undefined;
     });
@@ -185,9 +188,9 @@ export class CareerMinigameBoardScene0701 extends CareerMinigameBoardScene069 {
     this.visitDisplayTree0701(this.children.list, (object) => {
       if (!(object instanceof Phaser.GameObjects.Text)) return;
       if (object.text.startsWith('CITY • MVP 0.1.70')) {
-        object.setText('CITY • MVP 0.1.70.1 • RELEASE FLOW REPAIR');
+        object.setText('CITY • MVP 0.1.70.4.3 • ONLINE RUNTIME REPAIR');
       } else if (object.text.startsWith('PLAYTEST 0.1.70')) {
-        object.setText('PLAYTEST 0.1.70.1 • FRESH RELEASE D6 + UI DENSITY');
+        object.setText('PLAYTEST 0.1.70.4.3 • GROUP MEDIA + SHELL SYNC');
       }
     });
   }
