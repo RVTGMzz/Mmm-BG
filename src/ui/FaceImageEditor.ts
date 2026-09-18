@@ -1,15 +1,19 @@
 import {
   clampFaceTransform,
+  DEFAULT_FACE_STYLE_PRESET,
   DEFAULT_FACE_TRANSFORM,
   encodeFaceSticker,
   loadFaceImage,
   renderFacePreview,
+  type FaceStylePreset,
   type FaceTransform,
 } from '../systems/faces';
+import { tryLockMobileLandscape07031 } from './mobileLandscape07031';
 
 export interface FaceImageEditorResult {
   dataUrl: string;
   transform: FaceTransform;
+  stylePreset: FaceStylePreset;
 }
 
 function distance(a: PointerEvent, b: PointerEvent): number {
@@ -18,42 +22,55 @@ function distance(a: PointerEvent, b: PointerEvent): number {
 
 export class FaceImageEditor {
   static async open(file: File): Promise<FaceImageEditorResult | undefined> {
+    void tryLockMobileLandscape07031(false);
     const image = await loadFaceImage(file);
 
     return new Promise((resolve) => {
       const overlay = document.createElement('div');
-      overlay.className = 'face-editor-overlay';
+      overlay.className = 'face-editor-overlay face-editor-landscape-overlay';
       overlay.innerHTML = `
-        <section class="face-editor" role="dialog" aria-modal="true" aria-label="Chỉnh ảnh khuôn mặt">
+        <section class="face-editor face-editor-landscape" role="dialog" aria-modal="true" aria-label="Chỉnh ảnh khuôn mặt">
           <div class="face-editor-head">
             <div>
               <strong>CHỈNH ẢNH</strong>
-              <span>Kéo ảnh để canh • cuộn/pinch để zoom</span>
+              <span>Kéo để canh mặt • pinch/cuộn để zoom • mặc định dùng GAME SOFT</span>
             </div>
             <button class="face-editor-close" type="button" aria-label="Đóng">×</button>
           </div>
-          <div class="face-editor-stage-wrap">
-            <canvas class="face-editor-canvas" width="360" height="360"></canvas>
-            <div class="face-editor-guide" aria-hidden="true"></div>
+          <div class="face-editor-landscape-body">
+            <div class="face-editor-stage-wrap">
+              <canvas class="face-editor-canvas" width="360" height="360"></canvas>
+              <div class="face-editor-guide" aria-hidden="true"></div>
+            </div>
+            <div class="face-editor-side">
+              <div class="face-editor-filter">
+                <span class="face-editor-section-label">STYLE ẢNH</span>
+                <div class="face-editor-filter-options">
+                  <button type="button" data-face-preset="game-soft" class="selected" aria-pressed="true">🎮 GAME SOFT</button>
+                  <button type="button" data-face-preset="original" aria-pressed="false">ẢNH GỐC</button>
+                </div>
+                <small>GAME SOFT chỉ cân sáng, tương phản và màu nhẹ để avatar đồng đều hơn. Có thể thay preset này khi làm lại visual game.</small>
+              </div>
+              <div class="face-editor-controls">
+                <label>ZOOM <span class="face-editor-zoom-value">100%</span>
+                  <input class="face-editor-zoom" type="range" min="100" max="300" step="1" value="100" />
+                </label>
+                <label>XOAY <span class="face-editor-rotate-value">0°</span>
+                  <input class="face-editor-rotate" type="range" min="-180" max="180" step="1" value="0" />
+                </label>
+              </div>
+              <div class="face-editor-actions secondary">
+                <button class="face-editor-rotate-left" type="button">↶ -90°</button>
+                <button class="face-editor-reset" type="button">↺ RESET</button>
+                <button class="face-editor-rotate-right" type="button">↷ +90°</button>
+              </div>
+              <div class="face-editor-actions">
+                <button class="face-editor-cancel" type="button">HỦY</button>
+                <button class="face-editor-confirm" type="button">DÙNG ẢNH NÀY ✓</button>
+              </div>
+              <p class="face-editor-note">Avatar vẫn xuất 320×320 WebP. Giao diện chỉnh ảnh ưu tiên landscape nhưng vùng crop vẫn vuông để khớp avatar tròn trong game.</p>
+            </div>
           </div>
-          <div class="face-editor-controls">
-            <label>ZOOM <span class="face-editor-zoom-value">100%</span>
-              <input class="face-editor-zoom" type="range" min="100" max="300" step="1" value="100" />
-            </label>
-            <label>XOAY <span class="face-editor-rotate-value">0°</span>
-              <input class="face-editor-rotate" type="range" min="-180" max="180" step="1" value="0" />
-            </label>
-          </div>
-          <div class="face-editor-actions secondary">
-            <button class="face-editor-rotate-left" type="button">↶ -90°</button>
-            <button class="face-editor-reset" type="button">↺ RESET</button>
-            <button class="face-editor-rotate-right" type="button">↷ +90°</button>
-          </div>
-          <div class="face-editor-actions">
-            <button class="face-editor-cancel" type="button">HỦY</button>
-            <button class="face-editor-confirm" type="button">DÙNG ẢNH NÀY ✓</button>
-          </div>
-          <p class="face-editor-note">Ảnh runtime sẽ được resize 320×320 và nén WebP khi trình duyệt hỗ trợ. File gốc không được đưa vào gameplay.</p>
         </section>
       `;
       document.body.appendChild(overlay);
@@ -69,6 +86,7 @@ export class FaceImageEditor {
       const reset = overlay.querySelector<HTMLButtonElement>('.face-editor-reset');
       const rotateLeft = overlay.querySelector<HTMLButtonElement>('.face-editor-rotate-left');
       const rotateRight = overlay.querySelector<HTMLButtonElement>('.face-editor-rotate-right');
+      const presetButtons = [...overlay.querySelectorAll<HTMLButtonElement>('[data-face-preset]')];
       if (!canvas || !zoom || !rotate) {
         overlay.remove();
         resolve(undefined);
@@ -76,6 +94,7 @@ export class FaceImageEditor {
       }
 
       let transform: FaceTransform = { ...DEFAULT_FACE_TRANSFORM };
+      let stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET;
       const pointers = new Map<number, PointerEvent>();
       let lastDrag: { x: number; y: number } | undefined;
       let pinchDistance = 0;
@@ -83,11 +102,16 @@ export class FaceImageEditor {
 
       const draw = () => {
         transform = clampFaceTransform(transform);
-        renderFacePreview(canvas, image, transform);
+        renderFacePreview(canvas, image, transform, stylePreset);
         zoom.value = String(Math.round(transform.zoom * 100));
         rotate.value = String(Math.round(transform.rotation));
         if (zoomValue) zoomValue.textContent = `${Math.round(transform.zoom * 100)}%`;
         if (rotateValue) rotateValue.textContent = `${Math.round(transform.rotation)}°`;
+        for (const button of presetButtons) {
+          const selected = button.dataset.facePreset === stylePreset;
+          button.classList.toggle('selected', selected);
+          button.setAttribute('aria-pressed', selected ? 'true' : 'false');
+        }
       };
 
       const cleanup = () => {
@@ -105,6 +129,13 @@ export class FaceImageEditor {
       };
       window.addEventListener('keydown', onKeyDown);
 
+      for (const button of presetButtons) {
+        button.addEventListener('click', () => {
+          stylePreset = button.dataset.facePreset === 'original' ? 'original' : 'game-soft';
+          draw();
+        });
+      }
+
       zoom.addEventListener('input', () => {
         transform.zoom = Number(zoom.value) / 100;
         draw();
@@ -115,6 +146,7 @@ export class FaceImageEditor {
       });
       reset?.addEventListener('click', () => {
         transform = { ...DEFAULT_FACE_TRANSFORM };
+        stylePreset = DEFAULT_FACE_STYLE_PRESET;
         draw();
       });
       rotateLeft?.addEventListener('click', () => {
@@ -186,7 +218,11 @@ export class FaceImageEditor {
       });
       confirm?.addEventListener('click', () => {
         const resolved = clampFaceTransform(transform);
-        finish({ dataUrl: encodeFaceSticker(image, resolved), transform: resolved });
+        finish({
+          dataUrl: encodeFaceSticker(image, resolved, stylePreset),
+          transform: resolved,
+          stylePreset,
+        });
       });
 
       draw();

@@ -8,6 +8,7 @@ import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { installGlobalGamepadUiNavigation0651 } from './ui/gamepadUiNavigation0651';
+import { installMobileLandscapeGuard07031 } from './ui/mobileLandscape07031';
 import { SplashScene069 } from './scenes/SplashScene069';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { OnlineRoomLobbyScene } from './scenes/OnlineRoomLobbyScene';
@@ -68,6 +69,7 @@ const config: Phaser.Types.Core.GameConfig = {
 bgmController.start();
 sfxController.start();
 installSettingsPanel();
+installMobileLandscapeGuard07031();
 const game = new Phaser.Game(config);
 installGlobalGamepadUiNavigation0651(game);
 

@@ -1,4 +1,13 @@
 export const FACE_RUNTIME_SIZE = 320;
+
+export type FaceStylePreset = 'game-soft' | 'original';
+export const DEFAULT_FACE_STYLE_PRESET: FaceStylePreset = 'game-soft';
+
+const FACE_STYLE_FILTERS: Record<FaceStylePreset, string> = {
+  'game-soft': 'brightness(1.04) contrast(1.12) saturate(1.10)',
+  original: 'none',
+};
+
 const OUTER_RADIUS_RATIO = 0.484375;
 const WHITE_RADIUS_RATIO = 0.453125;
 const FACE_RADIUS_RATIO = 0.40234375;
@@ -62,6 +71,7 @@ export function drawFaceSticker(
   image: HTMLImageElement,
   transform: FaceTransform,
   size: number,
+  stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET,
 ): void {
   const resolved = clampFaceTransform(transform);
   const center = size / 2;
@@ -91,7 +101,10 @@ export function drawFaceSticker(
     center + resolved.offsetY * offsetScale,
   );
   ctx.rotate((resolved.rotation * Math.PI) / 180);
+  const previousFilter = ctx.filter;
+  ctx.filter = FACE_STYLE_FILTERS[stylePreset];
   ctx.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+  ctx.filter = previousFilter;
   ctx.restore();
 }
 
@@ -99,16 +112,18 @@ export function renderFacePreview(
   canvas: HTMLCanvasElement,
   image: HTMLImageElement,
   transform: FaceTransform,
+  stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET,
 ): void {
   const size = Math.max(1, Math.floor(Math.min(canvas.width, canvas.height)));
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  drawFaceSticker(ctx, image, transform, size);
+  drawFaceSticker(ctx, image, transform, size, stylePreset);
 }
 
 export function encodeFaceSticker(
   image: HTMLImageElement,
   transform: FaceTransform,
+  stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET,
 ): string {
   const canvas = document.createElement('canvas');
   canvas.width = FACE_RUNTIME_SIZE;
@@ -116,7 +131,7 @@ export function encodeFaceSticker(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Trình duyệt không hỗ trợ Canvas 2D.');
 
-  drawFaceSticker(ctx, image, transform, FACE_RUNTIME_SIZE);
+  drawFaceSticker(ctx, image, transform, FACE_RUNTIME_SIZE, stylePreset);
 
   // WebP keeps the circular alpha edge while reducing memory/network payload.
   // Browsers without WebP canvas support automatically fall back to PNG.
@@ -126,9 +141,10 @@ export function encodeFaceSticker(
 export async function buildFaceSticker(
   file: File,
   transform: FaceTransform = DEFAULT_FACE_TRANSFORM,
+  stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET,
 ): Promise<string> {
   const image = await loadFaceImage(file);
-  return encodeFaceSticker(image, transform);
+  return encodeFaceSticker(image, transform, stylePreset);
 }
 
 export function faceTextureKey(playerId: number, expression: string): string {

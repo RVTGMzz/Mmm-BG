@@ -73,3 +73,53 @@ body {
 .settings-fullscreen-toggle {
   min-width: 132px;
 }
+
+/* 0.1.70.3.1 phone landscape authority.
+ * A normal web tab cannot force hardware orientation before user activation,
+ * so portrait is blocked with an explicit rotate/fullscreen gate.
+ */
+.mememe-landscape-guard {
+  position: fixed;
+  z-index: 40000;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
+           max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  background: #f4ead7;
+  color: #202020;
+  pointer-events: auto;
+}
+.mememe-landscape-guard.is-visible { display: grid; }
+.mememe-landscape-card {
+  width: min(440px, calc(100vw - 36px));
+  box-sizing: border-box;
+  padding: 24px;
+  border: 4px solid #202020;
+  border-radius: 28px;
+  background: #fffaf0;
+  box-shadow: 0 7px 0 rgba(32,32,32,.18);
+  text-align: center;
+}
+.mememe-landscape-phone { font-size: 54px; line-height: 1; }
+.mememe-landscape-card strong { display: block; margin-top: 12px; font-size: 22px; }
+.mememe-landscape-card span { display: block; margin: 8px 0 16px; font-size: 14px; font-weight: 800; }
+.mememe-landscape-card button {
+  width: 100%;
+  border: 4px solid #202020;
+  border-radius: 16px;
+  padding: 13px 12px;
+  background: #ffd34d;
+  color: #202020;
+  box-shadow: 0 4px 0 #202020;
+  font: 1000 14px/1 Inter, system-ui, sans-serif;
+}
+.mememe-landscape-card small { display: block; margin-top: 13px; color: #6d655b; font-size: 11px; line-height: 1.35; }
+body.mememe-phone-portrait { touch-action: none; }
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .face-editor-landscape-overlay {
+    padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+}
