@@ -1,8 +1,8 @@
-name: MeMeMe MVP CI
+name: MMM MVP CI
 
 on:
   push:
-    branches: [main, mememe-mvp-0.1-core]
+    branches: [main, mmm-mvp-0.1-core]
   pull_request:
     branches: [main]
 
@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mememe-build-diagnostics
+          name: mmm-build-diagnostics
           path: build.log
           if-no-files-found: error
           retention-days: 2
@@ -200,7 +200,7 @@ jobs:
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mememe-playtest-0.1.70.1-release-flow-ui-density
+          name: mmm-playtest-0.1.70.1-release-flow-ui-density
           path: dist
           if-no-files-found: error
           retention-days: 14
