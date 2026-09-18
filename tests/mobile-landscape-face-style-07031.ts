@@ -28,7 +28,7 @@ assert.match(guard, /waitForMobileLandscapeAfterPicker07032/);
 assert.match(guard, /recoverMobileLandscapeSilently07033/);
 assert.match(guard, /No rotate dialog is shown again/);
 assert.match(guard, /initialLandscapePending07033/);
-assert.match(guard, /rotate first, then reveal the splash\/intro/i);
+assert.match(guard, /Only the first launch is allowed to block on portrait/i);
 assert.match(guard, /orientation\.lock\('landscape'\)/);
 assert.match(guard, /requestFullscreen/);
 assert.match(guard, /portrait07031/);
