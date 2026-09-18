@@ -181,21 +181,24 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
     const normalizedJobTitle = job ? this.normalize069(job.title) : '';
     const normalizedJobIcon = job ? this.normalize069(job.icon) : '';
 
+    const jobDetailCopy = job
+      ? [
+          `${job.icon} ${job.title} • ${salary} B$/vòng`,
+          model.summary || model.description,
+        ].filter(Boolean).join('\n')
+      : [model.description, model.summary].filter((value, index, list) => Boolean(value) && list.indexOf(value) === index).join('\n');
+
     this.visitContainerTexts069(root, (text) => {
       const copy = this.normalize069(text.text);
-      if (copy.includes('trúng') || (copy.includes('đổ') && copy.includes('lương'))) {
-        this.hideLeakText069(text);
-        return;
-      }
       if (normalizedJobIcon && copy === normalizedJobIcon) {
         this.hideLeakText069(text);
         return;
       }
       if (copy.endsWith('• job')) {
         text
-          .setPosition(0, -78)
+          .setPosition(0, -82)
           .setOrigin(0.5)
-          .setFixedSize(500, 28)
+          .setFixedSize(520, 28)
           .setAlign('center');
         return;
       }
@@ -203,21 +206,25 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
         const roll = text.text.match(/🎲\s*([1-6])/)?.[1] ?? text.text.match(/\b([1-6])\s*→/)?.[1] ?? '';
         text
           .setText(`🎲${roll ? ` ${roll}` : ''} → NHẬN VIỆC`)
-          .setPosition(0, -12)
+          .setPosition(0, -28)
           .setOrigin(0.5)
           .setFontSize(30)
-          .setFixedSize(500, 44)
+          .setFixedSize(520, 52)
           .setAlign('center');
-      } else if ((normalizedJobTitle && copy.includes(normalizedJobTitle)) || (text.x <= -150 && text.y >= 8)) {
+        return;
+      }
+      if ((normalizedJobTitle && copy.includes(normalizedJobTitle)) || (text.x <= -150 && text.y >= 8)) {
         text
-          .setText(job ? `${job.title} • ${salary} B$/vòng` : 'Đã nhận nghề')
-          .setPosition(0, 48)
-          .setOrigin(0.5)
-          .setFontSize(18)
-          .setFixedSize(410, 32)
+          .setText(jobDetailCopy || 'Kết quả nghề đã được áp dụng.')
+          .setVisible(true)
+          .setPosition(0, 22)
+          .setOrigin(0.5, 0)
+          .setFontSize(16)
+          .setFixedSize(500, 92)
           .setAlign('center')
-          .setWordWrapWidth(410, true)
-          .setMaxLines(1);
+          .setLineSpacing(4)
+          .setWordWrapWidth(500, true)
+          .setMaxLines(0);
       }
     });
 

@@ -271,14 +271,14 @@ export class MatchPresentationLayer {
       .join('\n\n');
     const body = this.scene.add.text(-322, -28, '', {
       fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f4ede4', wordWrap: { width: 628 }, lineSpacing: 5,
+      fixedWidth: 628, fixedHeight: 128,
     });
     const source = this.scene.add.text(316, 126, `${palette.label} • #${model.eventSeq}`, {
       fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#d8d0c6',
     }).setOrigin(1, 0.5);
 
     container.add([shadow, panel, kicker, title, impact, body, source]);
-    this.addPlayerChip(container, -322, 118, model.actorId, model.actorName, 'ACTOR');
-    if (model.targetId !== undefined && model.targetName) this.addPlayerChip(container, -80, 118, model.targetId, model.targetName, 'TARGET');
+    this.addNaturalActionLine(container, model);
     if (model.rarity) this.addRarityBadge(container, 238, -118, model.rarity);
 
     const revealMs = this.revealText(body, bodyText);
@@ -475,6 +475,31 @@ export class MatchPresentationLayer {
       targets: card, y: 448, scaleX: 1, scaleY: 1, angle: 6, alpha: 0, duration: 420, ease: 'Back.easeOut',
       onComplete: () => card.destroy(),
     });
+  }
+
+  private addNaturalActionLine(
+    container: Phaser.GameObjects.Container,
+    model: PresentationEventModel,
+  ): void {
+    if (model.targetId === undefined || !model.targetName) return;
+
+    const amount = Math.abs(model.amount ?? 0);
+    const copy = amount > 0
+      ? `${model.targetName} đưa ${amount} B$ cho ${model.actorName}`
+      : (model.summary || `${model.actorName} → ${model.targetName}`);
+
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x4a433c, 0.94);
+    bg.fillRoundedRect(-322, 104, 628, 30, 15);
+    const text = this.scene.add.text(-306, 119, copy, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      fixedWidth: 596,
+      align: 'center',
+    }).setOrigin(0, 0.5);
+    container.add([bg, text]);
   }
 
   private addPlayerChip(

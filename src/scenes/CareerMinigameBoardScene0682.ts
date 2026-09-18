@@ -145,26 +145,33 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
     this.visitTexts0682((text) => {
       if (!text.visible || canonical.has(text) || hud.has(text)) return;
 
-      // Top-level loose copy is always non-canonical while a blocking surface owns
-      // attention. Nested legacy overlays used to bypass this guard entirely because
-      // they had a parentContainer, which is how card descriptions leaked outside
-      // the canonical modal on mobile. Keep only nested UI whose root container is at
-      // least as high as the active modal (for example reaction bubbles at depth 910).
-      if (text.parentContainer && this.rootContainerDepth0682(text) >= blockingDepth) return;
+      // Blocking modal owns all narrative copy. The old depth-only exception was
+      // too broad: any legacy container at depth >= modal depth could leak text past
+      // the card. Only the canonical continue hint and an actual reaction bubble are
+      // allowed to coexist with the blocking surface.
+      if (this.isAllowedModalAuxiliary0682(text, blockingDepth)) return;
 
       if (!this.hiddenLooseText0682.has(text)) this.hiddenLooseText0682.set(text, text.visible);
       text.setVisible(false);
     });
   }
 
-  private rootContainerDepth0682(text: Phaser.GameObjects.Text): number {
-    let owner = text.parentContainer;
-    let depth = text.depth;
-    while (owner) {
-      depth = Math.max(depth, owner.depth);
-      owner = owner.parentContainer;
-    }
-    return depth;
+  private isAllowedModalAuxiliary0682(
+    text: Phaser.GameObjects.Text,
+    blockingDepth: number,
+  ): boolean {
+    const copy = this.normalize0682(text.text);
+    if (copy.startsWith('space / enter / click')) return true;
+
+    let root = text.parentContainer;
+    while (root?.parentContainer) root = root.parentContainer;
+    if (!root || root.depth < blockingDepth || root.depth !== 910) return false;
+
+    let reactionMarker = false;
+    this.visitContainerTexts0682(root, (candidate) => {
+      if (/[😐😄😤]/u.test(candidate.text)) reactionMarker = true;
+    });
+    return reactionMarker;
   }
 
   private findTopLevelContainer0682(

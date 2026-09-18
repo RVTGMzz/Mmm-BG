@@ -124,6 +124,7 @@ export class CareerMinigameBoardScene0561 extends CareerMinigameBoardScene056 {
           text.startsWith('🐛') ||
           text.startsWith('?  CÁCH CHƠI') ||
           text.startsWith('🤖 CPU TEST:') ||
+          text.startsWith('SPACE roll') ||
           text.startsWith('Tip:')
         ) {
           object.setVisible(false);

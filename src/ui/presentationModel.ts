@@ -67,6 +67,14 @@ export interface PresentationEventModel {
   toNodeId?: number;
 }
 
+function friendlyVisibleCopy(value: string): string {
+  return value
+    .replaceAll('Đối thủ', 'Người chơi khác')
+    .replaceAll('đối thủ', 'người chơi khác')
+    .replaceAll('Target', 'Người chơi được chọn')
+    .replaceAll('target', 'người chơi được chọn');
+}
+
 function dataString(event: MatchEvent, key: string): string {
   const value = event.data[key];
   if (value === null || value === undefined) return '';
@@ -178,7 +186,7 @@ function reactionLines(
         speakerName,
         speakerRole: step.speakerRole,
         expression: step.expression,
-        text: variant ? formatReactionText(variant.text, variables) : '',
+        text: variant ? friendlyVisibleCopy(formatReactionText(variant.text, variables)) : '',
       };
     })
     .filter((line) => line.text.trim().length > 0);
@@ -238,8 +246,8 @@ function functionTileModel(event: MatchEvent, players: PlayerState[]): Presentat
   const base = baseModel(event, players);
   const isMiniGame = event.type === 'minigame_tile';
   const isJob = event.type.startsWith('job_') || event.type === 'job_tile';
-  const description = dataString(event, 'description');
-  const summary = dataString(event, 'summary');
+  const description = friendlyVisibleCopy(dataString(event, 'description'));
+  const summary = friendlyVisibleCopy(dataString(event, 'summary'));
   return {
     ...base,
     kind: 'tile_land',
