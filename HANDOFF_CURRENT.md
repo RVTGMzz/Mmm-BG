@@ -7,24 +7,22 @@ PR: #1 (Draft/Open)
 
 ## Current milestone
 
-**MVP 0.1.70.4 — Online Room Hardening**
+**MVP 0.1.70.4.5 — Online Runtime Shell + Group Media + Mobile Readability**
 
-Status: **PUBLIC TEST BUILD DEPLOYED / PENDING HUMAN ONLINE HARDENING TEST**
+Status: **PUBLIC TEST BUILD DEPLOYED / PENDING REAL-DEVICE RUNTIME ACCEPTANCE**
 
 Do not resume 0.1.71 yet.
-
-The previous 0.1.70.1 freeze/stuck symptom was reported fixed by Ron. Full Jail/Hospital acceptance is still pending, so do not call the entire release-flow matrix Runtime PASS yet.
 
 ## Runtime authority
 
 Runtime source:
-`ece4cde7b42ce2c69cd17e3973bbb6223825a2d2`
+`66dba6cf04f6f5959d2b0dc340719465336835a8`
 
 Public mirror:
-`abb46b58540ffc1ac8b508c8d11ade3670f1926f`
+`db577149ff3467b5119c8ab63edc4df20bd55a11`
 
 Public Pages:
-- run **#44**
+- run **#51**
 - SUCCESS
 
 Test URL:
@@ -33,99 +31,120 @@ Test URL:
 Cloudflare Worker:
 `https://mememe-online.lengochung28191.workers.dev`
 
-## 0.1.70.4 room hardening contract
+PR #1 remains Draft/Open.
 
-Retains all 0.1.70.3 authority:
+## Retained online room contract
+
 - Host = P1.
-- Remote clients auto-seat P2 -> P3 -> P4.
-- Host owns Camera Allowed / Voice Allowed / CPU Fill policy.
-- Camera/mic remain OFF by default.
-- All humans must Ready.
-- Only Host can Start and Kick.
-- Gameplay remains browser-Host authoritative.
-- game / turn-order / demo-shell WebSocket channels stay isolated.
+- Humans auto-seat P2 -> P3 -> P4.
+- CPU Fill never blocks real humans; humans replace CPU placeholders in join order.
+- Custom room code is optional, 4–8 A-Z/0-9 characters; empty means auto-generated.
+- Ready / Kick / CPU Fill remain Host-controlled.
+- Camera/Voice permission is room policy only; each player still turns their own device on/off.
+- 3-second lobby heartbeat.
+- presence: Online / Reconnecting / Disconnected.
+- 60-second reconnect grace.
+- duplicate-device reconnect identity lock.
+- Host Leave closes the pre-match room.
+- authenticated existing clients may reconnect to their original seat after Start.
+- new humans cannot join after Start.
 
-Adds:
-- persistent per-install `deviceId` in browser localStorage;
-- reconnect identity continues to use room/client/reconnect token in sessionStorage;
-- lobby heartbeat every 3 seconds;
-- presence states:
-  - `online`
-  - `reconnecting`
-  - `disconnected`;
-- 60-second reconnect grace: a disconnected client seat remains reserved before it can be reclaimed;
-- Start requires every current human to be both **Online + Ready**;
-- duplicate-device lock: an active reconnect identity cannot be claimed by a different device during the grace window;
-- Host explicit Leave closes the room and clients receive a clear closed-room state;
-- Host missing for more than 60 seconds closes the pre-match room with `host_timeout`;
-- disconnected/reconnecting state is visible in the lobby UI;
-- stale client seats are pruned after the grace period on authoritative room maintenance.
+## 0.1.70.4.2 Participation ownership
 
-Important limitation:
-- duplicate-device lock is identity-based, not name-based. Two different people may use the same display name.
-- camera/voice WebRTC media is still not implemented.
+- Lobby DOM + heartbeat timer are explicitly destroyed on scene transition.
+- No stale lobby UI should remain clickable behind the game.
+- Every online human routes through SetupScene and edits only their own seat/avatar.
+- Online setup shows only the local seat card.
+- CPU seats are not edited in avatar setup.
+- 3-face avatar profile is synced through the Turn Order authority channel.
+- profile payload limit was raised enough for three 320px WebP face stickers.
+- Host waits for all expected human seats before locking Roll For Order claims.
+- CPU Roll For Order is automatic.
+- CPU board turns use the existing authoritative test-bot decision path.
+- Online waiting overlay no longer offers a mid-match return-to-lobby control.
+
+## 0.1.70.4.3 Group Camera / Voice
+
+Implemented `src/ui/OnlineGroupMedia07043.ts`:
+- real WebRTC peer connections;
+- signaling uses the authenticated online `media` logical channel;
+- host relays client-to-client signaling;
+- room roster is synchronized through the Host;
+- mesh connections are established between all real human peers;
+- STUN currently uses `stun:stun.l.google.com:19302`;
+- each player starts Camera/Mic OFF;
+- each player may independently turn their own camera/mic on;
+- Host policy can allow/deny camera and voice but cannot force-enable another device;
+- remote players fall back to their static avatar when video is off;
+- local preview is muted;
+- group media starts on the active online board and stops on scene shutdown.
+
+Important: this is currently **STUN-only**. Cross-network WebRTC may still fail on restrictive NAT/mobile networks; add TURN only if real-device testing proves it is necessary.
+
+## 0.1.70.4.4 Mobile UI readability
+
+Presentation-only pass:
+- larger mobile landscape lobby copy;
+- larger online room player/status text;
+- larger avatar editor and camera controls;
+- larger rule selector controls;
+- larger board/player HUD via retained presentation subclasses;
+- group-media strip resized for mobile;
+- canonical gameplay authority/RNG remains unchanged.
+
+## 0.1.70.4.5 Online board auto-start
+
+The screenshot feedback showed clients stuck behind:
+`CHỜ HOST BẮT ĐẦU...`
+
+Fix:
+- when the online Host reaches the Demo board after Ready + Roll For Order, Host immediately calls shell `begin(...)`;
+- authoritative `shell=active` is broadcast;
+- reconnecting/late existing clients request `shell_state` and receive the already-active state;
+- manual DEMO Start remains only for solo/hotseat fallback.
+
+This should remove the black waiting overlay and allow the correct remote human to roll on their own turn.
 
 ## Validation
 
-Successful chain for runtime source `ece4cde...`:
-- Push CI **#2996**: SUCCESS
-- PR CI **#2997**: SUCCESS
-- Steam Deck/Web **#301**: SUCCESS
-- Cloudflare Workers Build: SUCCESS
-- Publisher **#257**: SUCCESS
-- 0.1.70.3 inherited lobby gate: PASS
-- 0.1.70.4 online hardening gate: PASS
-- 0.1.70.3.1 mobile landscape/avatar gate: PASS
-- Package validation: PASS
-- Pages **#44**: SUCCESS
+Runtime `66dba6c...`:
+- Push CI **#3100** SUCCESS
+- PR CI **#3101** SUCCESS
+- Steam Deck/Web **#355** SUCCESS
+- Cloudflare Workers Build SUCCESS
+- Publisher **#311** SUCCESS
+- Online Participation gate PASS
+- Online Runtime Shell + Group Media gate PASS
+- Mobile UI Readability gate PASS
+- Online Board Auto-start gate PASS
+- Pages **#51** SUCCESS
 
-PR #1 remains Draft/Open.
+## Human runtime tests still required
 
-## Human online test still required
+Do **not** call Online Runtime PASS yet.
 
-Do not call Online Runtime PASS until Ron verifies real devices.
+Highest-priority test:
+1. Host + P2 enter online room.
+2. Both finish their own avatar setup.
+3. Roll For Order completes.
+4. Board opens without persistent black `CHỜ HOST BẮT ĐẦU` overlay.
+5. When P2 is current actor, P2 can roll from P2 device.
+6. CPU P3/P4 roll and play automatically.
+7. With Camera Allowed, P1 turns camera on and P2 sees P1 video.
+8. P2 turns camera on and P1 sees P2 video.
+9. Both video tiles are visible in the same group media strip.
+10. Turning camera off restores static avatar.
+11. Voice remains individually opt-in.
+12. Reload/reconnect P2 and confirm original seat + active shell recover.
 
-Core 0.1.70.3 test:
-1. Host creates room and remains P1.
-2. Remote joins receive P2/P3/P4 in order.
-3. Settings parity is correct.
-4. Ready gate works.
-5. Host Kick works.
-6. CPU Fill works.
-7. Both devices reach Roll For Order.
-8. Remote D6 remains Host-authoritative.
-9. State/checksum remains synchronized.
+If group camera works only on same Wi-Fi but fails across different networks, keep signaling code and add TURN rather than rewriting the media model.
 
-New 0.1.70.4 test:
-1. Client temporarily loses network and its seat stays reserved.
-2. Lobby changes Online -> Reconnecting -> Disconnected as time passes.
-3. Client reconnects within 60 seconds and keeps the same seat.
-4. A stale client can be released after the grace period.
-5. Start is blocked while a current human is not Online.
-6. The same reconnect identity cannot be active from another device during the grace window.
-7. Host pressing Leave closes the room for clients instead of leaving them hanging.
-8. Host disappearing for more than 60 seconds closes the pre-match room.
+## Mobile flow
 
-## Mobile flow retained
-
-Phone boot contract remains:
+Phone boot contract:
 **XOAY NGANG -> INTRO -> GAME**
 
-The rotate UI is tappable and attempts fullscreen + landscape lock. Phaser is not created until the initial landscape gate resolves, so the intro starts from frame zero.
-
-Native Android/iOS image pickers may still open portrait. If they return the browser portrait, MeMeMe reuses the rotate gate before opening the face editor.
-
-## Next planned layer
-
-After 0.1.70.4 human acceptance:
-**0.1.70.5 — Optional Camera / Voice WebRTC foundation**
-
-Rules:
-- Host only allows/denies room media capability.
-- Camera and mic stay OFF by default.
-- Each player must explicitly enable their own camera/mic.
-- Host can never force-enable another player's device.
-- Do not resume 0.1.71 visual redesign until Ron asks.
+Rotate UI is tappable and attempts fullscreen + landscape lock before Phaser is created.
 
 Keep visible vocabulary **TIN TỨC / LÁ BÀI**.
 Keep `specialHoldSourceJobId` authoritative.

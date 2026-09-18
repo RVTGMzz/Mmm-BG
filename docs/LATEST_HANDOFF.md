@@ -3,47 +3,49 @@
 Branch: `mememe-mvp-0.1-core`
 PR #1: Draft/Open. Do not merge unless Ron explicitly asks.
 
-## Current milestone
+## Current public runtime
 
-**0.1.70.4 — Online Room Hardening**
-
-Public build is deployed. Human cross-device hardening test is pending.
+**0.1.70.4.5 — Online Runtime Shell + Group Media + Mobile Readability**
 
 Runtime source:
-`ece4cde7b42ce2c69cd17e3973bbb6223825a2d2`
+`66dba6cf04f6f5959d2b0dc340719465336835a8`
 
-Implemented:
-- all 0.1.70.3 Host=P1 / auto-seat / Ready / CPU Fill / Kick rules retained;
-- per-install device identity;
-- 3-second authoritative lobby heartbeat;
-- Online / Reconnecting / Disconnected presence;
-- 60-second reconnect grace and reserved seat;
-- Start requires humans to be Online + Ready;
-- duplicate-device identity lock during grace;
-- explicit Host Leave closes room;
-- Host timeout closes pre-match room after 60 seconds;
-- stale client seat pruning;
-- presence UI in lobby;
-- mobile flow remains XOAY NGANG -> INTRO -> GAME;
-- camera/voice still policy-only, no WebRTC media yet.
+Mirror:
+`db577149ff3467b5119c8ab63edc4df20bd55a11`
 
-Validation:
-- Push CI #2996 SUCCESS
-- PR CI #2997 SUCCESS
-- Steam Deck/Web #301 SUCCESS
-- Cloudflare Worker build SUCCESS
-- Publisher #257 SUCCESS
-- 0.1.70.4 hardening gate PASS
-- Pages #44 SUCCESS
-
-Public mirror:
-`abb46b58540ffc1ac8b508c8d11ade3670f1926f`
+Pages #51: SUCCESS
 
 Test:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Do not call Online Runtime PASS until Ron tests the reconnect/presence/device-lock/host-leave cases on real devices.
-Do not resume 0.1.71.
-Do not merge PR #1.
+Implemented since old 0.1.70.4 checkpoint:
+- human-over-CPU seating;
+- optional custom 4–8 character room codes;
+- lobby DOM cleanup on Start;
+- authenticated reconnect after Start;
+- each human edits/syncs only their own 3-face avatar;
+- CPU Roll For Order + board autoplay;
+- WebRTC group camera/voice mesh via authenticated `media` channel;
+- camera/mic OFF by default and player-owned;
+- mobile readability/font sizing pass;
+- online Demo shell auto-start, removing the stuck `CHỜ HOST BẮT ĐẦU` state.
 
-Next planned online layer after human acceptance: **0.1.70.5 optional Camera/Voice WebRTC**, opt-in per player and OFF by default.
+Validation:
+- CI #3100 SUCCESS
+- PR CI #3101 SUCCESS
+- Steam Deck/Web #355 SUCCESS
+- Cloudflare Worker SUCCESS
+- Publisher #311 SUCCESS
+- Pages #51 SUCCESS
+
+Do not call Runtime PASS until Ron verifies:
+- client can roll on their own turn;
+- black waiting overlay disappears;
+- P1/P2 can see each other's camera in group media;
+- CPU auto-play behaves correctly;
+- reconnect preserves active match state.
+
+Current WebRTC uses STUN only. Add TURN only if cross-network real-device testing requires it.
+
+Do not resume 0.1.71 yet.
+Do not merge PR #1.
