@@ -7,132 +7,134 @@ PR: #1 (Draft/Open)
 
 ## Current milestone
 
-**MVP 0.1.70.1 — Release Flow Repair + UI Density Pass**
+**MVP 0.1.70.1 — Release Flow Repair + UI Density / Copy Overflow Hardening**
 
-Status: **RELEASE CANDIDATE PUBLISHED / PENDING HUMAN ACCEPTANCE**
+Status: **PUBLIC TEST BUILD DEPLOYED / PENDING FULL HUMAN ACCEPTANCE**
 
-Last explicitly user-accepted rollback baseline remains **0.1.48**.
+Do not resume 0.1.71 yet.
 
-Do not resume 0.1.71 until Ron manually validates the 0.1.70.1 release flow.
+Ron has explicitly reported that the previous **kẹt/freeze issue is fixed** in runtime. This is meaningful partial acceptance, but it is not yet a full four-case Jail/Hospital Runtime PASS.
+
+Last explicitly accepted rollback baseline remains **0.1.48** until Ron closes 0.1.70.1.
 
 ## Canonical release contract
 
-The release-check D6 and movement D6 are separate rolls.
+Successful release:
 
-Success:
-
-`release D6 -> success -> consume release roll -> clear hold -> same turn PRE_ROLL_ACTION + lastRoll=null -> NEW movement D6 -> move -> resolve landing`
-
-Requirements:
-- never reuse release face as movement steps;
-- successful release stays in the same turn;
-- player remains on hold node immediately after success;
-- authority owes exactly one fresh movement D6;
-- modal/presentation must never own or veto that obligation;
-- human and CPU share the same authoritative transition;
-- UI may delay human control visibility until presentation is safe.
+`release-check D6 -> success -> clear hold -> same turn PRE_ROLL_ACTION + lastRoll=null -> NEW movement D6 -> move -> resolve landing`
 
 Failure:
 
-`release D6 -> fail -> remain held -> end turn normally`
+`release-check D6 -> fail -> remain held -> end turn normally`
 
-## 0.1.70.1 authority fix
+Requirements:
+- release D6 is never reused as movement;
+- successful release stays in the same turn;
+- authority owes exactly one fresh movement D6;
+- presentation cannot erase/veto that obligation;
+- human input still waits for presentation-safe control;
+- CPU and human share the same authoritative state transition.
 
-Authoritative detector:
-`src/core/releaseFlow0701.ts`
-`pendingFreshMovementRollAfterRelease0701(match)`
+Authority:
+- `src/core/releaseFlow0701.ts`
+- `src/core/cpuReleaseResume066.ts`
+- human presentation safety remains in `src/scenes/DirectDiceBoardScene.ts`
 
-Compatibility wrapper:
-`src/core/cpuReleaseResume066.ts`
+## Latest 0.1.70.1 UI feedback hardening
 
-Resolved blocker:
-- removed the historical authority-level `presentationBlocking` veto from `pendingFreshRollAfterRelease066(...)`;
-- compatibility detection now reports the owed fresh movement D6 even while presentation is blocking;
-- CPU path remains presentation-independent;
-- human control remains presentation-safe in `src/scenes/DirectDiceBoardScene.ts` through `shouldShowDirectTurnDice(... presentationBlocking ...)`;
-- no new watchdog or second authority source was added.
+Ron runtime feedback after the release-flow repair:
+1. Job result was losing readable text instead of expanding.
+2. Card/News copy could still escape the modal.
+3. ACTOR / TARGET was too technical.
+4. Short text could still appear outside its owner.
+5. Legacy background/footer copy was visible under the board.
+6. Visible wording should use **người chơi khác**, not **đối thủ**.
+7. Positive report: the previous stuck/freeze bug was fixed.
 
-Last runtime-affecting source commit:
-`f07ad68298bb6737e92a73dcb9a9f075160229c6`
+Implemented:
+- Job result no longer hides body copy containing `trúng`;
+- Job result uses multi-line owned content area instead of `maxLines(1)`;
+- canonical Card/News modal guard no longer trusts arbitrary high-depth containers;
+- only canonical modal content, real reaction bubbles and continue hint may coexist;
+- ACTOR/TARGET chips removed from active cinematic UI;
+- targeted money Card action renders natural copy such as `Player A đưa 10 B$ cho Player B`;
+- stale `SPACE roll • C cards...` world footer is hidden;
+- shared `friendlyVisibleCopy0701` policy maps opponent/technical target wording to natural Vietnamese;
+- Card Hand, Tactical Choice, Card Overlay, News Overlay and presentation model share the same visible-copy policy;
+- old Card/News overlay truncation paths were removed/hardened;
+- visible dev copy such as `deterministic / host / resolve / Card overlay` was removed from those player-facing surfaces;
+- dead `addPlayerChip()` ACTOR/TARGET API was removed to prevent regression.
 
-## Validation
+Regression sentinel:
+- `tests/ui-copy-overflow-0701.ts`
+- npm: `test:ui-copy-overflow-0701`
+- CI step: **0.1.70.1 readable modal copy and overflow regression**
 
-Exact-source CI for `f07ad682...`:
-- push CI **#2924** / id `35287713667`: **SUCCESS**
-- PR CI **#2925** / id `35287716025`: **SUCCESS**
+## Runtime source / validation
 
-Confirmed PASS in the full chain:
-- build/typecheck;
-- replay / lockstep / HOST authority;
-- all prior release-flow sentinels;
-- **0.1.66 unified flow match length and Mini Game readability**;
-- **0.1.70.1 release flow repair + UI density**;
-- package validation.
+Latest runtime source commit:
+`8c367837ab4400ed492462fe5c1f12cc35c0fe7d`
 
-Publisher:
-- **Publish compiled web mirror #221**
-- id `35287713683`
-- **SUCCESS**
-- exact-SHA CI guard PASS;
-- current-branch-HEAD guard PASS;
-- exact private source build PASS.
-
-The publisher reported:
-`Public compiled mirror already matches this build.`
-
-That is expected. From the currently deployed source checkpoint `2b88563763f326834f7950364a1c3dc2df1eb9ea` to `f07ad682...`, only handoff/test files and the historical compatibility helper changed. The runtime bundle is byte-equivalent, so the mirror correctly required no new commit.
+Exact-source validation:
+- push CI **#2940** / id `35301210770`: **SUCCESS**
+- PR CI **#2941** / id `35301213879`: **SUCCESS**
+- source Steam Deck web build **#273** / id `35301210772`: **SUCCESS**
+- publisher **#229** / id `35301210778`: **SUCCESS**
+- exact-SHA guard: PASS
+- current-branch-HEAD guard: PASS
+- 0.1.66 unified-flow gate: PASS
+- 0.1.68.2 modal ownership gate: PASS
+- 0.1.69 first-impression gate: PASS
+- 0.1.70.1 release-flow gate: PASS
+- new UI copy/overflow regression gate: PASS
+- package validation: PASS
 
 ## Public mirror / Pages
 
 Public mirror:
 `ronvotri/ronvotri-MeMeMe-Web-Playtest`
 
-Current compiled mirror commit:
-`5299576ee1c1555d1ec6cd6775aa3b224b831347`
+Compiled mirror commit:
+`e7b40a6caf2b874a4031f54d8a58cd065f8178a4`
 
-Mirror commit message:
-`Publish compiled MeMeMe web playtest 2b88563`
-
-Because publisher #221 rebuilt `f07ad682...` and found no diff, this mirror is the exact compiled web output for the validated candidate.
+Mirror message:
+`Publish compiled MeMeMe web playtest 8c36783`
 
 Public Pages:
-- workflow **Deploy MeMeMe Web Playtest to GitHub Pages #32**
-- run id `35261101327`
-- build **SUCCESS**
-- deploy **SUCCESS**
+- run **#34**
+- id `35301305057`
+- build/deploy **SUCCESS**
 
-Public test URL:
+Test URL:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-## Runtime status
+## Human runtime status
 
-**Do not call Runtime PASS yet.**
+Known from Ron:
+- previous freeze/stuck symptom: **FIXED**
+- latest UI feedback has been patched and redeployed.
 
-Ron must manually validate:
+Still do **not** call full Runtime PASS until Ron confirms the remaining release matrix sufficiently:
 - Human Jail success -> fresh D6 -> movement
 - Human Hospital success -> fresh D6 -> movement
 - CPU Jail success -> fresh D6 -> movement
 - CPU Hospital success -> fresh D6 -> movement
 
-Also verify:
-- failed release ends turn normally;
-- release D6 is never reused as movement;
-- Career Trait release faces remain correct;
-- modal self-closes and never freezes;
-- no narration/card text leaks outside modal;
-- Roll For Order density/rounding looks balanced;
-- Mini Game ranking is readable and not mostly blank;
-- bottom-center gray card box is gone on CPU turns.
+Also verify latest UI visually:
+- Job result keeps all useful text readable;
+- Card/News text stays inside its owner;
+- no ACTOR/TARGET technical chips;
+- money transfer copy is natural;
+- no stale footer/background text;
+- visible copy says `người chơi khác`, not `đối thủ`.
 
-Only Ron's runtime confirmation may close the release bug.
-
-## Runtime / presentation retained
+## Retained authority / UI contracts
 
 Active runtime:
 - `TurnOrderScene0701 as TurnOrderScene`
 - `CareerMinigameBoardScene0701 as ActiveBoardScene`
 
-0.1.70 Career Traits remain authoritative:
+Career release faces remain:
 - baseline Jail: `1/3/5`
 - baseline Hospital: `2/4/6`
 - Police Jail: `1/3/4/5`
@@ -141,19 +143,8 @@ Active runtime:
 - Cascader Hospital: `2/6`
 
 Keep `specialHoldSourceJobId` authoritative.
-
-0.1.70.1 UI work retained:
-- rounded/denser Roll For Order;
-- larger order dice/results and less dead lower space;
-- denser rounded Mini Game ranking;
-- old bottom-center `compactCard` hidden on CPU turns;
-- `compactCard` visible only on interactive human turns;
-- bounded special-release feedback modal.
-
-Permanent UI contract:
-`docs/CANONICAL_UI_UX_RULES.md`
-
-Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
+Keep visible vocabulary **TIN TỨC / LÁ BÀI**.
+Permanent UI contract: `docs/CANONICAL_UI_UX_RULES.md`.
 
 ## Next-session read order
 
@@ -161,12 +152,14 @@ Visible vocabulary remains **TIN TỨC / LÁ BÀI**.
 2. `docs/LATEST_HANDOFF.md`
 3. `NEXT_CHAT_PROMPT.md`
 4. Ron's newest runtime feedback
-5. `src/core/releaseFlow0701.ts`
-6. `src/core/cpuReleaseResume066.ts`
-7. `src/scenes/DirectDiceBoardScene.ts`
-8. `src/scenes/CareerMinigameBoardScene0701.ts`
+5. `src/ui/friendlyVisibleCopy0701.ts`
+6. `tests/ui-copy-overflow-0701.ts`
+7. `src/scenes/CareerMinigameBoardScene069.ts`
+8. `src/scenes/CareerMinigameBoardScene0682.ts`
+9. `src/core/releaseFlow0701.ts`
+10. `src/scenes/DirectDiceBoardScene.ts`
 
-If Ron reports a failure, treat his runtime result as authority and debug 0.1.70.1 without starting 0.1.71.
-If Ron reports all four release cases PASS, record human acceptance before considering any later milestone.
+If Ron finds another UI/runtime failure, continue hardening 0.1.70.1.
+Do not start 0.1.71 until Ron explicitly accepts the release candidate.
 
 **Do not merge PR #1.**

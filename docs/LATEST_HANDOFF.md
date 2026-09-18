@@ -1,79 +1,59 @@
 # MeMeMe — Latest Handoff
 
 Branch: `mememe-mvp-0.1-core`
-PR: #1 Draft/Open. **Do not merge unless Ron explicitly asks.**
+PR #1 remains Draft/Open. **Do not merge unless Ron explicitly asks.**
 
 ## Current milestone
 
-**MVP 0.1.70.1 — Release Flow Repair + UI Density Pass**
+**0.1.70.1 — Release Flow Repair + UI Density / Copy Overflow Hardening**
 
-Status: **RELEASE CANDIDATE PUBLISHED / PENDING HUMAN ACCEPTANCE**
+Status: **PUBLIC TEST BUILD DEPLOYED / PENDING FULL HUMAN ACCEPTANCE**
 
-0.1.71 remains parked until Ron validates the Jail/Hospital release flow.
+Ron has reported the previous **kẹt/freeze issue is fixed**. Do not turn that partial confirmation into a full Runtime PASS yet, and do not resume 0.1.71.
 
-## Release contract
+## Latest runtime checkpoint
 
-Successful release:
+Source commit:
+`8c367837ab4400ed492462fe5c1f12cc35c0fe7d`
 
-`release-check D6 -> success -> clear hold -> same turn PRE_ROLL_ACTION + lastRoll=null -> NEW movement D6 -> move`
+Latest UI hardening:
+- Job result preserves readable multi-line detail;
+- Card/News modal owns its text strictly;
+- ACTOR/TARGET chips removed;
+- natural money-transfer sentence replaces technical role chips;
+- stale SPACE/Cards footer hidden;
+- `đối thủ` is normalized to `người chơi khác` across player-facing Card/News surfaces;
+- legacy max-line truncation removed from relevant overlays;
+- shared `friendlyVisibleCopy0701` policy;
+- CI regression sentinel `tests/ui-copy-overflow-0701.ts`.
 
-Never reuse the release face as movement.
-
-Authority:
-`src/core/releaseFlow0701.ts`
-`pendingFreshMovementRollAfterRelease0701(...)`
-
-Presentation may hide/delay human controls but must not erase the owed roll.
-
-## Blocker resolved
-
-`src/core/cpuReleaseResume066.ts`
-
-The historical general helper no longer returns early when `presentationBlocking` is true. It now agrees with the 0.1.70.1 authority contract.
-
-Human input safety is still owned by `DirectDiceBoardScene` / `shouldShowDirectTurnDice(...)`, which continues to honor `presentationBlocking`.
-
-Runtime-affecting fix commit:
-`f07ad68298bb6737e92a73dcb9a9f075160229c6`
-
-## CI / publish
-
-For `f07ad682...`:
-- push CI #2924 / `35287713667`: **SUCCESS**
-- PR CI #2925 / `35287716025`: **SUCCESS**
-- 0.1.66 gate: **PASS**
-- 0.1.70.1 gate: **PASS**
+Validation:
+- CI #2940: **SUCCESS**
+- PR CI #2941: **SUCCESS**
+- source web build #273: **SUCCESS**
+- publisher #229: **SUCCESS**
+- UI copy/overflow regression: **PASS**
 - package validation: **PASS**
-- publisher #221 / `35287713683`: **SUCCESS**
-
-Publisher rebuilt the exact source and reported the public mirror already matched the compiled build.
 
 Public mirror:
-`ronvotri/ronvotri-MeMeMe-Web-Playtest`
+`e7b40a6caf2b874a4031f54d8a58cd065f8178a4`
 
-Current mirror commit:
-`5299576ee1c1555d1ec6cd6775aa3b224b831347`
-
-Public Pages run #32 / `35261101327`:
-- build **SUCCESS**
-- deploy **SUCCESS**
+Public Pages #34 / `35301305057`: **SUCCESS**
 
 Test URL:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-## Manual acceptance required
+## Remaining acceptance
 
-Do **not** call Runtime PASS until Ron tests:
-- Human Jail success -> fresh D6 -> movement
-- Human Hospital success -> fresh D6 -> movement
-- CPU Jail success -> fresh D6 -> movement
-- CPU Hospital success -> fresh D6 -> movement
+Do not call full Runtime PASS until Ron confirms the release matrix sufficiently:
+- Human Jail success -> new movement D6
+- Human Hospital success -> new movement D6
+- CPU Jail success -> new movement D6
+- CPU Hospital success -> new movement D6
 
-Also keep an eye on failed-release turn ending, Career Trait faces, modal auto-close, Mini Game ranking density, Roll For Order layout, and CPU compact-card cleanup.
+Also visually recheck Job result, Card/News overflow, natural transfer wording, stale background/footer text and `người chơi khác`.
 
-Last explicitly accepted rollback baseline remains **0.1.48**.
-Visible vocabulary stays **TIN TỨC / LÁ BÀI**.
-
-Full details: `HANDOFF_CURRENT.md`.
+0.1.48 remains the last explicitly accepted rollback baseline until 0.1.70.1 is fully accepted.
+Keep **TIN TỨC / LÁ BÀI**.
 
 **Do not merge PR #1.**
