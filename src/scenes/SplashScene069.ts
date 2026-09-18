@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
+import { requireMobileLandscapeAfterIntro07034 } from '../ui/mobileLandscape07031';
 
 const LOGO_KEY_069 = 'mememe-official-logo-069';
 const LOGO_URL_069 = 'assets/mememe-logo-main.png?v=official-png-1024-0694';
@@ -39,9 +40,12 @@ export class SplashScene069 extends Phaser.Scene {
       if (this.started069) return;
       this.started069 = true;
       sfxController.play('ui_confirm');
-      bgmController.playMenu();
-      this.cameras.main.fadeOut(220, 244, 234, 215);
-      this.time.delayedCall(230, () => this.scene.start('LocalLobbyScene'));
+
+      void requireMobileLandscapeAfterIntro07034().then(() => {
+        bgmController.playMenu();
+        this.cameras.main.fadeOut(220, 244, 234, 215);
+        this.time.delayedCall(230, () => this.scene.start('LocalLobbyScene'));
+      });
     };
 
     this.add.zone(640, 360, 1280, 720).setInteractive({ useHandCursor: true }).once('pointerdown', start);
