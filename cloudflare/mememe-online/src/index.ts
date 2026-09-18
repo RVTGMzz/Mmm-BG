@@ -133,7 +133,7 @@ export default {
       return json({
         ok: true,
         service: "mememe-online",
-        milestone: "0.1.70.4.1",
+        milestone: "0.1.70.4.2",
         transport: "websocket-durable-object",
         lobbyAuthority: true
       }, {}, origin);
@@ -384,7 +384,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
     }
 
     if (url.pathname === "/join" && request.method === "POST") {
-      if (await this.ctx.storage.get<boolean>("started")) return internalJson({ ok: false, error: "match_already_started" }, 409);
+      const started = await this.ctx.storage.get<boolean>("started") ?? false;
       if (await this.ctx.storage.get<boolean>("closed")) return internalJson({ ok: false, error: "room_closed" }, 410);
       const body = await request.json() as Record<string, unknown>;
       const clientId = String(body.clientId ?? "").trim().slice(0, 80);
@@ -415,6 +415,10 @@ export class MeMeMeRoom extends DurableObject<Env> {
           clientId, seatId: existing.seatId, reconnectToken, lobby: await this.publicLobby()
         });
       }
+
+      // New humans cannot enter after Start, but an authenticated existing client above
+      // may reconnect to its original seat.
+      if (started) return internalJson({ ok: false, error: "match_already_started" }, 409);
 
       // CPU Fill is only a future Start placeholder. It must never make Join return room_full.
       const seatId = this.firstFreeHumanSeat07041(players);
@@ -636,7 +640,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
     const sender = socket.deserializeAttachment() as SocketAttachment | null;
     if (!sender) return;
     const text = typeof message === "string" ? message : new TextDecoder().decode(message);
-    if (text.length > 262144) { socket.close(1009, "Message too large."); return; }
+    // 0.1.70.4.2 profile sync may carry three 320px WebP face stickers.
+    if (text.length > 1048576) { socket.close(1009, "Message too large."); return; }
 
     let envelope: RelayEnvelope;
     try { envelope = JSON.parse(text) as RelayEnvelope; }
