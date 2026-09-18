@@ -17,8 +17,8 @@ assert.match(helper, /0\.1\.70\.4\.4/);
 assert.match(helper, /pointer: coarse/);
 assert.match(helper, /maxTouchPoints/);
 
-assert.match(board, /setFontSize\(21\)/);
-assert.match(board, /setFontSize\(23\)/);
+assert.match(board, /setFontSize\(active \? 21 : 18\)/);
+assert.match(board, /setFontSize\(active \? 23 : 20\)/);
 assert.match(board, /setFontSize\(19\)/);
 assert.match(board, /fillRoundedRect\(card\.x - 95, card\.y - 26, 190, 52/);
 assert.match(order, /setFontSize\(30\)/);
