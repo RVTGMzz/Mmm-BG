@@ -7,6 +7,10 @@ import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/m
 import { gameSession, type FaceExpression } from '../core/session';
 import { faceTextureKey } from '../systems/faces';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
+import {
+  recoverMobileLandscapeAfterPicker07031,
+  tryLockMobileLandscape07031,
+} from '../ui/mobileLandscape07031';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -70,7 +74,12 @@ export class SetupScene extends Phaser.Scene {
       nameInput?.addEventListener('input', () => gameSession.setPlayerName(player.id, nameInput.value));
       for (const expression of EXPRESSIONS) {
         const input = node.querySelector<HTMLInputElement>(`#face-${player.id}-${expression.id}`);
-        input?.addEventListener('change', () => { void this.handleFaceSelection(node, player.id, expression.id, input); });
+        const slotLabel = node.querySelector<HTMLElement>(`#slot-${player.id}-${expression.id}`);
+        slotLabel?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
+        input?.addEventListener('change', () => {
+          recoverMobileLandscapeAfterPicker07031();
+          void this.handleFaceSelection(node, player.id, expression.id, input);
+        });
         const asset = player.faces[expression.id];
         if (asset) {
           const slot = node.querySelector<HTMLElement>(`#slot-${player.id}-${expression.id}`);
@@ -120,6 +129,7 @@ export class SetupScene extends Phaser.Scene {
 
   private async handleFaceSelection(root: HTMLDivElement, playerId: number, expression: FaceExpression, input: HTMLInputElement): Promise<void> {
     const file = input.files?.[0]; if (!file) return;
+    recoverMobileLandscapeAfterPicker07031();
     const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression}`);
     const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression}`);
     slot?.classList.add('loading'); this.setStatus('Đang chỉnh ảnh…', false);

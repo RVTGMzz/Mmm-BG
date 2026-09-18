@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
+import { activateMobileLandscapeFromIntro07031 } from '../ui/mobileLandscape07031';
 
 const LOGO_KEY_069 = 'mememe-official-logo-069';
 const LOGO_URL_069 = 'assets/mememe-logo-main.png?v=official-png-1024-0694';
@@ -38,6 +39,7 @@ export class SplashScene069 extends Phaser.Scene {
     const start = () => {
       if (this.started069) return;
       this.started069 = true;
+      activateMobileLandscapeFromIntro07031();
       sfxController.play('ui_confirm');
       bgmController.playMenu();
       this.cameras.main.fadeOut(220, 244, 234, 215);
