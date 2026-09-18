@@ -8,7 +8,7 @@ const mode = readFileSync('src/scenes/LocalLobbyScene.ts', 'utf8');
 const browser = readFileSync('src/core/browserSession.ts', 'utf8');
 const transport = readFileSync('src/core/onlineTransport0702.ts', 'utf8');
 
-assert.match(worker, /milestone: "0\.1\.70\.(?:3|4)"/);
+assert.match(worker, /milestone: "0\.1\.70\.(?:3|4(?:\.1)?)/);
 assert.match(worker, /cameraAllowed/);
 assert.match(worker, /voiceAllowed/);
 assert.match(worker, /cpuFill/);
