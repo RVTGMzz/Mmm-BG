@@ -291,6 +291,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     this.enteringMatch = true;
     const state = this.state;
     browserSession.setCpuSeatIds(state.cpuSeatIds);
+    browserSession.setOnlineMediaPolicy(state.settings.cameraAllowed, state.settings.voiceAllowed);
     gameSession.reset();
     for (let seatId = 0; seatId < 4; seatId += 1) {
       const human = state.players.find((player) => player.seatId === seatId);
