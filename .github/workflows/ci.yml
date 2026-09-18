@@ -186,6 +186,8 @@ jobs:
         run: npm run test:online-runtime-media-07043
       - name: 0.1.70.4.4 mobile UI readability
         run: npm run test:mobile-ui-07044
+      - name: 0.1.70.4.5 online board auto-start
+        run: npm run test:online-autostart-07045
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
