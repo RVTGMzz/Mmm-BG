@@ -7,11 +7,36 @@ export interface TurnOrderPrompt {
   reroll: boolean;
 }
 
+export type TurnOrderFaceExpression07042 = 'neutral' | 'happy' | 'angry';
+
+export interface TurnOrderProfileWire07042 {
+  seatId: number;
+  name: string;
+  faces: Partial<Record<TurnOrderFaceExpression07042, string>>;
+}
+
+function normalizeProfile07042(
+  profile: TurnOrderProfileWire07042 | undefined,
+  expectedSeatId: number,
+): TurnOrderProfileWire07042 | undefined {
+  if (!profile || profile.seatId !== expectedSeatId || expectedSeatId < 0 || expectedSeatId > 3) return undefined;
+  const name = profile.name.trim().slice(0, 18) || `Player ${expectedSeatId + 1}`;
+  const faces: Partial<Record<TurnOrderFaceExpression07042, string>> = {};
+  for (const key of ['neutral', 'happy', 'angry'] as const) {
+    const value = profile.faces?.[key];
+    if (typeof value !== 'string') continue;
+    if (!value.startsWith('data:image/') || value.length > 220_000) continue;
+    faces[key] = value;
+  }
+  return { seatId: expectedSeatId, name, faces };
+}
+
 export type TurnOrderMessage =
-  | { kind: 'join_request'; roomCode: string; clientId: string; seatId: number }
+  | { kind: 'join_request'; roomCode: string; clientId: string; seatId: number; profile?: TurnOrderProfileWire07042 }
   | { kind: 'join_accept'; roomCode: string; clientId: string; seatId: number }
   | { kind: 'join_reject'; roomCode: string; clientId: string; reason: string }
   | { kind: 'profile_sync'; roomCode: string; playerNames: string[] }
+  | { kind: 'profile_update'; roomCode: string; profile: TurnOrderProfileWire07042 }
   | { kind: 'roll_prompt'; roomCode: string; prompt: TurnOrderPrompt }
   | { kind: 'roll_request'; roomCode: string; clientId: string; seatId: number; promptId: string }
   | { kind: 'roll_result'; roomCode: string; promptId: string; playerId: number; value: number }
@@ -23,6 +48,7 @@ export type TurnOrderMessage =
 export type TurnOrderEvent =
   | { kind: 'status'; message: string; level: 'info' | 'success' | 'error' }
   | { kind: 'profile_sync'; playerNames: string[] }
+  | { kind: 'profile_update'; profile: TurnOrderProfileWire07042 }
   | { kind: 'prompt'; prompt: TurnOrderPrompt }
   | { kind: 'result'; promptId: string; playerId: number; value: number }
   | { kind: 'tie_group'; playerIds: number[]; value: number }
@@ -87,6 +113,7 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
   private readonly rollD6: () => number;
   private readonly seatClaims = new Map<number, string>();
   private readonly clientSeats = new Map<string, number>();
+  private readonly profiles = new Map<number, TurnOrderProfileWire07042>();
   private readonly claimWaiters = new Set<() => void>();
   private unsubscribeTransport?: () => void;
   private promptSerial = 0;
@@ -104,6 +131,18 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
     this.playerNames = playerNames.map((name, index) => name.trim() || `Player ${index + 1}`);
     this.transport = transport;
     this.rollD6 = rollD6;
+    this.playerNames.forEach((name, seatId) => {
+      this.profiles.set(seatId, { seatId, name, faces: {} });
+    });
+  }
+
+  setInitialProfiles07042(profiles: readonly TurnOrderProfileWire07042[]): void {
+    for (const profile of profiles) {
+      const normalized = normalizeProfile07042(profile, profile.seatId);
+      if (!normalized) continue;
+      this.profiles.set(normalized.seatId, normalized);
+      this.playerNames[normalized.seatId] = normalized.name;
+    }
   }
 
   start(): void {
@@ -132,6 +171,19 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
   waitForRemoteClaim(): Promise<void> {
     if (this.seatClaims.size > 0) return Promise.resolve();
     return new Promise((resolve) => this.claimWaiters.add(resolve));
+  }
+
+  waitForRemoteSeats07042(seatIds: readonly number[]): Promise<void> {
+    const expected = [...new Set(seatIds.filter(validSeat))];
+    if (expected.every((seatId) => this.seatClaims.has(seatId))) return Promise.resolve();
+    return new Promise((resolve) => {
+      const check = () => {
+        if (!expected.every((seatId) => this.seatClaims.has(seatId))) return;
+        this.claimWaiters.delete(check);
+        resolve();
+      };
+      this.claimWaiters.add(check);
+    });
   }
 
   lockClaims(): void {
@@ -231,7 +283,7 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
     if ('roomCode' in payload && payload.roomCode !== this.roomCode) return;
 
     if (payload.kind === 'join_request') {
-      this.handleJoin(message.from, payload.clientId, payload.seatId);
+      this.handleJoin(message.from, payload.clientId, payload.seatId, payload.profile);
       return;
     }
 
@@ -253,7 +305,12 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
     this.finishPrompt(active, value);
   }
 
-  private handleJoin(from: string, clientId: string, seatId: number): void {
+  private handleJoin(
+    from: string,
+    clientId: string,
+    seatId: number,
+    profile?: TurnOrderProfileWire07042,
+  ): void {
     if (clientId !== from || !validSeat(seatId)) return;
     if (this.claimsLocked) {
       this.transport.send({
@@ -282,11 +339,28 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
 
     this.clientSeats.set(clientId, seatId);
     this.seatClaims.set(seatId, clientId);
+
+    const normalizedProfile = normalizeProfile07042(profile, seatId);
+    if (normalizedProfile) {
+      this.profiles.set(seatId, normalizedProfile);
+      this.playerNames[seatId] = normalizedProfile.name;
+      this.emit({ kind: 'profile_update', profile: normalizedProfile });
+    }
+
     this.transport.send({ kind: 'join_accept', roomCode: this.roomCode, clientId, seatId }, from);
-    this.transport.send({ kind: 'profile_sync', roomCode: this.roomCode, playerNames: [...this.playerNames] }, from);
+    this.transport.send({ kind: 'profile_sync', roomCode: this.roomCode, playerNames: [...this.playerNames] });
+
+    // New client receives every profile already known; everyone receives the newly joined profile.
+    for (const known of this.profiles.values()) {
+      if (known.seatId === seatId) continue;
+      this.transport.send({ kind: 'profile_update', roomCode: this.roomCode, profile: known }, from);
+    }
+    if (normalizedProfile) {
+      this.transport.send({ kind: 'profile_update', roomCode: this.roomCode, profile: normalizedProfile });
+    }
+
     this.emit({ kind: 'status', message: `${clientId} giữ P${seatId + 1} cho Remote Roll.`, level: 'success' });
-    for (const resolve of this.claimWaiters) resolve();
-    this.claimWaiters.clear();
+    for (const resolve of [...this.claimWaiters]) resolve();
   }
 }
 
@@ -299,18 +373,21 @@ export class TurnOrderClientSession extends TurnOrderEventSource {
   activePrompt?: TurnOrderPrompt;
   private unsubscribeTransport?: () => void;
   private submittedPromptId?: string;
+  private readonly profile?: TurnOrderProfileWire07042;
 
   constructor(
     roomCode: string,
     clientId: string,
     seatId: number,
     transport: LocalTransportAdapter<TurnOrderMessage>,
+    profile?: TurnOrderProfileWire07042,
   ) {
     super();
     this.roomCode = roomCode;
     this.clientId = clientId;
     this.seatId = seatId;
     this.transport = transport;
+    this.profile = normalizeProfile07042(profile, seatId);
   }
 
   start(): void {
@@ -326,6 +403,7 @@ export class TurnOrderClientSession extends TurnOrderEventSource {
       roomCode: this.roomCode,
       clientId: this.clientId,
       seatId: this.seatId,
+      ...(this.profile ? { profile: this.profile } : {}),
     }, 'host');
     this.emit({ kind: 'status', message: `Đang nối Remote Roll ${this.roomCode} với P${this.seatId + 1}...`, level: 'info' });
   }
@@ -377,6 +455,11 @@ export class TurnOrderClientSession extends TurnOrderEventSource {
     }
     if (payload.kind === 'profile_sync') {
       this.emit({ kind: 'profile_sync', playerNames: [...payload.playerNames] });
+      return;
+    }
+    if (payload.kind === 'profile_update') {
+      const normalized = normalizeProfile07042(payload.profile, payload.profile.seatId);
+      if (normalized) this.emit({ kind: 'profile_update', profile: normalized });
       return;
     }
     if (payload.kind === 'roll_prompt') {
