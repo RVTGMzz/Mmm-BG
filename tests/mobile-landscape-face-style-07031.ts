@@ -22,17 +22,24 @@ const preset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET;
 assert.equal(preset, 'game-soft');
 
 assert.match(main, /installMobileLandscapeGuard07031\(\)/);
+assert.match(main, /await requireMobileLandscapeBeforeGame07035\(\)/);
+assert.match(main, /const game = new Phaser\.Game\(config\)/);
+assert(
+  main.indexOf('await requireMobileLandscapeBeforeGame07035()') < main.indexOf('const game = new Phaser.Game(config)'),
+  'mobile landscape gate must resolve before Phaser/intro is created',
+);
 assert.match(guard, /<strong>XOAY NGANG<\/strong>/);
 assert.match(guard, /requireInitialMobileLandscape07032/);
 assert.match(guard, /waitForMobileLandscapeAfterPicker07032/);
-assert.match(guard, /requireMobileLandscapeAfterIntro07034/);
-assert.match(guard, /show only the small XOAY NGANG guard/i);
-assert.match(guard, /landscapeRequirementActive07034/);
-assert.match(guard, /Splash is never blocked on first load/i);
+assert.match(guard, /requireMobileLandscapeBeforeGame07035/);
+assert.match(guard, /Reuse the same tappable XOAY NGANG gate/i);
+assert.match(guard, /landscapeRequirementActive07035/);
+assert.match(guard, /do not create Phaser until the phone is landscape/i);
 assert.match(guard, /orientation\.lock\('landscape'\)/);
 assert.match(guard, /requestFullscreen/);
 assert.match(guard, /<strong>XOAY NGANG<\/strong>/);
-assert(!guard.includes('THỬ XOAY NGANG'));
+assert.match(guard, /rotateButton.*addEventListener\('click'/s);
+assert.match(guard, /tryLockMobileLandscape07031\(true\)/);
 assert(!guard.includes('XOAY NGANG ĐIỆN THOẠI'));
 assert.match(guard, /portrait07031/);
 assert.match(mobileCss, /mememe-landscape-guard/);
@@ -58,7 +65,8 @@ assert.match(manifest, /"orientation": "landscape"/);
 assert.match(manifest, /"display": "fullscreen"/);
 assert(!splash.includes('activateMobileLandscapeFromIntro07031'));
 assert.match(splash, /CHẠM ĐỂ BẮT ĐẦU/);
-assert.match(splash, /requireMobileLandscapeAfterIntro07034\(\)/);
+assert(!splash.includes('requireMobileLandscapeAfterIntro07034'));
+assert(!splash.includes('requireMobileLandscapeBeforeGame07035'));
 assert.match(setup, /waitForMobileLandscapeAfterPicker07032\(\)/);
 assert.match(setup, /prepareForNativePicker07033\(\)/);
 assert.match(setup, /face-batch-\$\{playerId\}/);

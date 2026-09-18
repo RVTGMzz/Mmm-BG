@@ -8,7 +8,10 @@ import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { installGlobalGamepadUiNavigation0651 } from './ui/gamepadUiNavigation0651';
-import { installMobileLandscapeGuard07031 } from './ui/mobileLandscape07031';
+import {
+  installMobileLandscapeGuard07031,
+  requireMobileLandscapeBeforeGame07035,
+} from './ui/mobileLandscape07031';
 import { SplashScene069 } from './scenes/SplashScene069';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { OnlineRoomLobbyScene } from './scenes/OnlineRoomLobbyScene';
@@ -66,23 +69,32 @@ const config: Phaser.Types.Core.GameConfig = {
   render: { antialias: true, pixelArt: false },
 };
 
-bgmController.start();
-sfxController.start();
-installSettingsPanel();
-installMobileLandscapeGuard07031();
-const game = new Phaser.Game(config);
-installGlobalGamepadUiNavigation0651(game);
+async function bootMeMeMe07035(): Promise<void> {
+  bgmController.start();
+  sfxController.start();
+  installMobileLandscapeGuard07031();
 
-let viewportRefreshFrame = 0;
-const refreshMobileViewport066 = () => {
-  if (viewportRefreshFrame) cancelAnimationFrame(viewportRefreshFrame);
-  viewportRefreshFrame = requestAnimationFrame(() => {
-    viewportRefreshFrame = 0;
-    game.scale.refresh();
-  });
-};
-window.addEventListener('resize', refreshMobileViewport066, { passive: true });
-window.addEventListener('orientationchange', refreshMobileViewport066, { passive: true });
-window.visualViewport?.addEventListener('resize', refreshMobileViewport066, { passive: true });
-window.visualViewport?.addEventListener('scroll', refreshMobileViewport066, { passive: true });
-document.addEventListener('fullscreenchange', refreshMobileViewport066);
+  // On phones, the rotate gate owns the screen BEFORE Phaser exists.
+  // This guarantees Splash/intro starts from frame zero after landscape.
+  await requireMobileLandscapeBeforeGame07035();
+
+  installSettingsPanel();
+  const game = new Phaser.Game(config);
+  installGlobalGamepadUiNavigation0651(game);
+
+  let viewportRefreshFrame = 0;
+  const refreshMobileViewport066 = () => {
+    if (viewportRefreshFrame) cancelAnimationFrame(viewportRefreshFrame);
+    viewportRefreshFrame = requestAnimationFrame(() => {
+      viewportRefreshFrame = 0;
+      game.scale.refresh();
+    });
+  };
+  window.addEventListener('resize', refreshMobileViewport066, { passive: true });
+  window.addEventListener('orientationchange', refreshMobileViewport066, { passive: true });
+  window.visualViewport?.addEventListener('resize', refreshMobileViewport066, { passive: true });
+  window.visualViewport?.addEventListener('scroll', refreshMobileViewport066, { passive: true });
+  document.addEventListener('fullscreenchange', refreshMobileViewport066);
+}
+
+void bootMeMeMe07035();
