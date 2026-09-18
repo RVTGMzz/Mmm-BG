@@ -4,6 +4,7 @@ import './settings.css';
 import './mobileViewport066.css';
 import './ruleSelect067.css';
 import './firstImpression069.css';
+import './mobileReadability07044.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
@@ -16,18 +17,18 @@ import { SplashScene069 } from './scenes/SplashScene069';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { OnlineRoomLobbyScene } from './scenes/OnlineRoomLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
-import { TurnOrderScene0701 as TurnOrderScene } from './scenes/TurnOrderScene0701';
+import { TurnOrderScene07044 as TurnOrderScene } from './scenes/TurnOrderScene07044';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardScene0701 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene0701';
+import { CareerMinigameBoardScene07044 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene07044';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
 import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
 import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode054';
 
-// Current presentation chain: 0701 -> 069 -> 0682 -> validated authority chain.
-// 0.1.70.1 repairs release resume ownership and UI density without changing HOST RNG.
+// Current presentation chain: 07044 -> 0701 -> 069 -> 0682 -> validated authority chain.
+// 0.1.70.4.4 is presentation-only: mobile readability without changing HOST RNG/authority.
 
 const finalMapMode = new URLSearchParams(window.location.search).get('finalmap');
 if (finalMapMode === '3') installPreviewBranchMode054();
