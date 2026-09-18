@@ -13,7 +13,7 @@ assert.match(worker, /cameraAllowed/);
 assert.match(worker, /voiceAllowed/);
 assert.match(worker, /cpuFill/);
 assert.match(worker, /\[1, 2, 3\]\.find\(\(seat\) => !used\.has\(seat\)\)/, 'online join must auto-assign lowest free P2-P4 seat');
-assert.match(worker, /players\.every\(\(player\) => player\.ready\)/);
+assert.match(worker, /players\.every\(\(player\) => player\.ready/);
 assert.match(worker, /players\.length === 4/);
 assert.match(worker, /bannedClientIds/);
 assert.match(worker, /Kicked by host/);
