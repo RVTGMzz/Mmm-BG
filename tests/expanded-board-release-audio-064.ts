@@ -13,7 +13,7 @@ const scene065 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene065
 const scene069 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
 const scene0701 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
 const camera0632 = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0632.ts', import.meta.url), 'utf8');
-assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 assert(scene0701.includes('extends CareerMinigameBoardScene069'));
 assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682')); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
