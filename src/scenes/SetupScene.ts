@@ -6,9 +6,10 @@ import { browserSession } from '../core/browserSession';
 import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import { faceTextureKey } from '../systems/faces';
+import { FaceCameraCapture07033 } from '../ui/FaceCameraCapture07033';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
 import {
-  tryLockMobileLandscape07031,
+  prepareForNativePicker07033,
   waitForMobileLandscapeAfterPicker07032,
 } from '../ui/mobileLandscape07031';
 
@@ -75,8 +76,8 @@ export class SetupScene extends Phaser.Scene {
 
       const batchInput = node.querySelector<HTMLInputElement>(`#face-batch-${player.id}`);
       const oneForAllInput = node.querySelector<HTMLInputElement>(`#face-one-${player.id}`);
-      batchInput?.parentElement?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
-      oneForAllInput?.parentElement?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
+      batchInput?.parentElement?.addEventListener('pointerdown', () => { prepareForNativePicker07033(); }, { passive: true });
+      oneForAllInput?.parentElement?.addEventListener('pointerdown', () => { prepareForNativePicker07033(); }, { passive: true });
       batchInput?.addEventListener('change', () => {
         void this.handleFaceBatchSelection(node, player.id, batchInput, false);
       });
@@ -84,10 +85,17 @@ export class SetupScene extends Phaser.Scene {
         void this.handleFaceBatchSelection(node, player.id, oneForAllInput, true);
       });
 
+      node.querySelector<HTMLButtonElement>(`#face-camera-3-${player.id}`)?.addEventListener('click', () => {
+        void this.handleFaceCameraCapture(node, player.id, false);
+      });
+      node.querySelector<HTMLButtonElement>(`#face-camera-one-${player.id}`)?.addEventListener('click', () => {
+        void this.handleFaceCameraCapture(node, player.id, true);
+      });
+
       for (const expression of EXPRESSIONS) {
         const input = node.querySelector<HTMLInputElement>(`#face-${player.id}-${expression.id}`);
         const slotLabel = node.querySelector<HTMLElement>(`#slot-${player.id}-${expression.id}`);
-        slotLabel?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
+        slotLabel?.addEventListener('pointerdown', () => { prepareForNativePicker07033(); }, { passive: true });
         input?.addEventListener('change', () => {
           void this.handleFaceSelection(node, player.id, expression.id, input);
         });
@@ -134,7 +142,12 @@ export class SetupScene extends Phaser.Scene {
       ? player?.name ?? `Player ${playerId + 1}`
       : isCpu ? `CPU ${playerId + 1}` : player?.name ?? `Player ${playerId + 1}`;
     const faceSlots = EXPRESSIONS.map((expression) => `<label class="face-slot" id="slot-${playerId}-${expression.id}" style="--player-accent:${accent}"><span class="face-emoji">${expression.emoji}</span><img id="preview-${playerId}-${expression.id}" alt="${expression.label}" /><span class="face-label">${expression.label}</span><span class="face-action">Chọn ảnh</span><input id="face-${playerId}-${expression.id}" type="file" accept="image/*" /></label>`).join('');
-    const batchActions = `<div class="face-batch-actions"><label class="face-batch-button"><span>📚 CHỌN 3 ẢNH</span><small>1 lần mở thư viện</small><input id="face-batch-${playerId}" type="file" accept="image/*" multiple /></label><label class="face-batch-button secondary"><span>🪄 1 ẢNH CHO CẢ 3</span><small>Chỉnh một lần</small><input id="face-one-${playerId}" type="file" accept="image/*" /></label></div>`;
+    const batchActions = `<div class="face-batch-actions">
+      <label class="face-batch-button"><span>📚 CHỌN 3 ẢNH</span><small>1 lần mở thư viện</small><input id="face-batch-${playerId}" type="file" accept="image/*" multiple /></label>
+      <label class="face-batch-button secondary"><span>🪄 1 ẢNH CHO CẢ 3</span><small>Chỉnh một lần</small><input id="face-one-${playerId}" type="file" accept="image/*" /></label>
+      <button id="face-camera-3-${playerId}" class="face-batch-button camera" type="button"><span>📷 CHỤP 3 BIỂU CẢM</span><small>Camera trong game</small></button>
+      <button id="face-camera-one-${playerId}" class="face-batch-button camera secondary" type="button"><span>🤳 CHỤP 1 CHO CẢ 3</span><small>Chụp một lần</small></button>
+    </div>`;
     const roleRow = `<div class="player-role-row-069">${isCpu ? '<span class="cpu-tag-069">CPU</span>' : '<span class="player-role-placeholder-069" aria-hidden="true">CPU</span>'}</div>`;
     return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${roleRow}<div class="face-slots">${faceSlots}</div>${batchActions}</section>`;
   }
@@ -213,6 +226,67 @@ export class SetupScene extends Phaser.Scene {
       this.setStatus(error instanceof Error ? error.message : 'Không xử lý được bộ ảnh.', true);
     } finally {
       input.value = '';
+    }
+  }
+
+  private async handleFaceCameraCapture(
+    root: HTMLDivElement,
+    playerId: number,
+    oneForAll: boolean,
+  ): Promise<void> {
+    this.setStatus('Đang mở camera…', false);
+
+    try {
+      const labels = oneForAll ? ['Cả 3 biểu cảm'] : EXPRESSIONS.map((expression) => expression.label);
+      const captured = await FaceCameraCapture07033.capture(labels);
+      if (!captured || captured.files.length === 0) {
+        this.setStatus('', false);
+        return;
+      }
+
+      if (oneForAll) {
+        const file = captured.files[0];
+        const edited = await FaceImageEditor.open(file, 'Cả 3 biểu cảm');
+        if (!edited) {
+          this.setStatus('', false);
+          return;
+        }
+        for (const expression of EXPRESSIONS) {
+          gameSession.setFace(playerId, expression.id, {
+            dataUrl: edited.dataUrl,
+            textureKey: faceTextureKey(playerId, expression.id),
+            originalName: file.name,
+          });
+          const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression.id}`);
+          const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression.id}`);
+          if (preview) preview.src = edited.dataUrl;
+          slot?.classList.add('has-image');
+        }
+        this.setStatus('✓ Ảnh camera đã áp dụng cho cả 3 biểu cảm', false);
+        return;
+      }
+
+      for (let index = 0; index < captured.files.length && index < EXPRESSIONS.length; index += 1) {
+        const expression = EXPRESSIONS[index];
+        const file = captured.files[index];
+        this.setStatus(`Đang chỉnh ảnh camera ${index + 1}/${captured.files.length}: ${expression.label}`, false);
+        const edited = await FaceImageEditor.open(file, `${index + 1}/${captured.files.length} • ${expression.label}`);
+        if (!edited) continue;
+
+        gameSession.setFace(playerId, expression.id, {
+          dataUrl: edited.dataUrl,
+          textureKey: faceTextureKey(playerId, expression.id),
+          originalName: file.name,
+        });
+        const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression.id}`);
+        const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression.id}`);
+        if (preview) preview.src = edited.dataUrl;
+        slot?.classList.add('has-image');
+      }
+
+      this.setStatus('✓ Đã chụp và lưu 3 biểu cảm ngay trong MeMeMe', false);
+    } catch (error) {
+      this.setStatus(error instanceof Error ? error.message : 'Không dùng được camera.', true);
     }
   }
 
