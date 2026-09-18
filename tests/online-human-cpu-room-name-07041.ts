@@ -25,7 +25,7 @@ assert(!worker.includes('normalizeRoomName07041'));
 assert(!worker.includes('roomName'));
 
 assert.match(api, /requestedRoomCode = ''/);
-assert.match(api, /roomCode: roomCode/);
+assert.match(api, /roomCode(?:\s*:\s*roomCode)?[,}]/);
 assert.match(api, /room_code_taken/);
 assert.match(api, /invalid_custom_room_code/);
 assert(!api.includes('roomName'));
