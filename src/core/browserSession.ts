@@ -97,7 +97,7 @@ class BrowserSessionState {
       cpuSeatIds: normalizeCpuSeatIds(cpuSeatIds),
       onlineBaseUrl: '',
       hostToken: '',
-    reconnectToken: '',
+      reconnectToken: '',
     };
     return this.current;
   }
@@ -113,7 +113,7 @@ class BrowserSessionState {
       cpuSeatIds: [],
       onlineBaseUrl: '',
       hostToken: '',
-    reconnectToken: '',
+      reconnectToken: '',
     };
     return this.current;
   }
@@ -132,7 +132,7 @@ class BrowserSessionState {
       cpuSeatIds: [],
       onlineBaseUrl: '',
       hostToken: '',
-    reconnectToken: '',
+      reconnectToken: '',
     };
     return this.current;
   }
@@ -158,7 +158,13 @@ class BrowserSessionState {
     return this.current;
   }
 
-  configureOnlineClient(roomCode: string, seatId: number, onlineBaseUrl: string): BrowserSessionConfig {
+  configureOnlineClient(
+    roomCode: string,
+    seatId: number,
+    onlineBaseUrl: string,
+    clientId?: string,
+    reconnectToken = '',
+  ): BrowserSessionConfig {
     const room = normalizeRoomCode(roomCode);
     const baseUrl = normalizeOnlineBaseUrl(onlineBaseUrl);
     if (!room) throw new Error('Mã phòng online không hợp lệ.');
@@ -169,12 +175,12 @@ class BrowserSessionState {
       mode: 'client',
       transport: 'online',
       roomCode: room,
-      clientId: makeClientId(`online-p${seatId + 1}`),
+      clientId: clientId?.trim() || makeClientId(`online-p${seatId + 1}`),
       seatId,
       cpuSeatIds: [],
       onlineBaseUrl: baseUrl,
       hostToken: '',
-    reconnectToken: '',
+      reconnectToken: reconnectToken.trim(),
     };
     return this.current;
   }

@@ -73,7 +73,7 @@ export async function readOnlineRoomStatus(
 }
 
 export function buildOnlineWebSocketUrl(
-  config: Pick<BrowserSessionConfig, 'mode' | 'roomCode' | 'clientId' | 'seatId' | 'onlineBaseUrl' | 'hostToken'>,
+  config: Pick<BrowserSessionConfig, 'mode' | 'roomCode' | 'clientId' | 'seatId' | 'onlineBaseUrl' | 'hostToken' | 'reconnectToken'>,
   channel: SessionLogicalChannel,
   endpointId = config.clientId,
 ): string {
