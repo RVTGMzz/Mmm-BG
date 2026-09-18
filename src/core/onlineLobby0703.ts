@@ -7,12 +7,15 @@ export interface OnlineRoomSettings0703 {
   cpuFill: boolean;
 }
 
+export type OnlinePresence0704 = 'online' | 'reconnecting' | 'disconnected';
+
 export interface OnlineLobbyPlayer0703 {
   clientId: string;
   seatId: number;
   name: string;
   ready: boolean;
   role: 'host' | 'client';
+  presence: OnlinePresence0704;
 }
 
 export interface OnlineLobbyState0703 {
@@ -23,6 +26,9 @@ export interface OnlineLobbyState0703 {
   started: boolean;
   cpuSeatIds: number[];
   canStart: boolean;
+  closed: boolean;
+  closeReason?: 'host_left' | 'host_timeout';
+  reconnectGraceMs: number;
   error?: string;
 }
 
@@ -50,14 +56,25 @@ interface SavedClientIdentity {
 }
 
 const identityKey = (roomCode: string) => `mememe-online-client-${normalizeRoomCode(roomCode)}`;
+const DEVICE_KEY_0704 = 'mememe-online-device-0704';
 
 function base(value = MEMEME_ONLINE_BASE_URL): string {
   return value.trim().replace(/\/+$/, '');
 }
 
+const ONLINE_ERROR_COPY_0704: Record<string, string> = {
+  duplicate_device_active: 'Ghế này đang hoạt động trên thiết bị khác.',
+  room_closed: 'Phòng online đã đóng.',
+  host_left: 'Host đã rời phòng.',
+  host_timeout: 'Host đã mất kết nối quá lâu.',
+};
+
 async function readJson<T>(response: Response): Promise<T> {
   const body = await response.json() as T & { error?: string };
-  if (!response.ok) throw new Error(body.error || `Online request failed (${response.status}).`);
+  if (!response.ok) {
+    const key = body.error || '';
+    throw new Error(ONLINE_ERROR_COPY_0704[key] || key || `Online request failed (${response.status}).`);
+  }
   return body;
 }
 
@@ -66,6 +83,25 @@ function makeClientId(): string {
     return `online-${crypto.randomUUID().slice(0, 12)}`;
   }
   return `online-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function makeDeviceId0704(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `device-${crypto.randomUUID()}`;
+  }
+  return `device-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+export function getOnlineDeviceId0704(): string {
+  try {
+    const existing = localStorage.getItem(DEVICE_KEY_0704)?.trim();
+    if (existing) return existing;
+    const created = makeDeviceId0704();
+    localStorage.setItem(DEVICE_KEY_0704, created);
+    return created;
+  } catch {
+    return makeDeviceId0704();
+  }
 }
 
 function loadIdentity(roomCode: string): SavedClientIdentity | undefined {
@@ -96,7 +132,11 @@ export async function createOnlineRoom0703(
   const response = await fetch(`${base(baseUrl)}/api/rooms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ hostName: hostName.trim() || 'Host', settings }),
+    body: JSON.stringify({
+      hostName: hostName.trim() || 'Host',
+      settings,
+      deviceId: getOnlineDeviceId0704(),
+    }),
   });
   return readJson<OnlineRoomCreate0703>(response);
 }
@@ -116,6 +156,7 @@ export async function joinOnlineRoom0703(
       clientId,
       displayName: displayName.trim() || 'Người chơi',
       reconnectToken: saved?.reconnectToken ?? '',
+      deviceId: getOnlineDeviceId0704(),
     }),
   });
   const joined = await readJson<OnlineRoomJoin0703>(response);
@@ -129,6 +170,35 @@ export async function fetchOnlineLobby0703(
 ): Promise<OnlineLobbyState0703> {
   const room = normalizeRoomCode(roomCode);
   const response = await fetch(`${base(baseUrl)}/api/rooms/${room}/status`, { cache: 'no-store' });
+  return readJson<OnlineLobbyState0703>(response);
+}
+
+export async function heartbeatOnlineLobby0704(
+  roomCode: string,
+  auth: { clientId: string; reconnectToken?: string; hostToken?: string },
+  baseUrl = MEMEME_ONLINE_BASE_URL,
+): Promise<OnlineLobbyState0703> {
+  const room = normalizeRoomCode(roomCode);
+  const response = await fetch(`${base(baseUrl)}/api/rooms/${room}/heartbeat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+    body: JSON.stringify({ ...auth, deviceId: getOnlineDeviceId0704() }),
+  });
+  return readJson<OnlineLobbyState0703>(response);
+}
+
+export async function closeOnlineRoom0704(
+  roomCode: string,
+  hostToken: string,
+  baseUrl = MEMEME_ONLINE_BASE_URL,
+): Promise<OnlineLobbyState0703> {
+  const room = normalizeRoomCode(roomCode);
+  const response = await fetch(`${base(baseUrl)}/api/rooms/${room}/close`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hostToken, reason: 'host_left' }),
+  });
   return readJson<OnlineLobbyState0703>(response);
 }
 
