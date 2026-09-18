@@ -99,7 +99,7 @@ assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene059.includes('extends CareerMinigameBoardScene058'));
 assert(scene060.includes('B$ ĐÃ KHÓA'));
 assert(!scene060.includes('Math.random')); assert(!scene060.includes('submitIntent(')); assert(!scene061.includes('Math.random')); assert(!scene061.includes('submitIntent('));
-assert(main.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 assert(scene0701.includes('extends CareerMinigameBoardScene069')); assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682')); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
 assert.equal(CANONICAL_PRESENTATION_0561.version, '0.1.61');
