@@ -914,17 +914,3 @@ canvas {
 .online-player-row.presence-disconnected .online-ready-state {
   opacity: .68;
 }
-
-
-/* 0.1.70.4.1 custom online room identity */
-.online-room-code-line {
-  margin: 2px 0 0;
-  color: #756b5f;
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: .08em;
-}
-.online-room-code-line strong {
-  color: #202020;
-  letter-spacing: .12em;
-}

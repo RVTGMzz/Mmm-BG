@@ -89,12 +89,6 @@ function normalizeName(value: unknown, fallback: string): string {
   return cleaned || fallback;
 }
 
-function normalizeRoomName07041(value: unknown, fallback: string): string {
-  if (typeof value !== "string") return fallback;
-  const cleaned = value.trim().replace(/[<>]/g, "").replace(/\s+/g, " ").slice(0, 32);
-  return cleaned || fallback;
-}
-
 function normalizeSettings(value: unknown): RoomSettings {
   const source = value && typeof value === "object" ? value as Record<string, unknown> : {};
   return {
@@ -147,8 +141,15 @@ export default {
 
     if (request.method === "POST" && url.pathname === "/api/rooms") {
       const body = await request.json().catch(() => ({})) as Record<string, unknown>;
-      for (let attempt = 0; attempt < 6; attempt += 1) {
-        const roomCode = generateRoomCode();
+      const rawRequestedCode = String(body.roomCode ?? "").trim().toUpperCase();
+      if (rawRequestedCode && !/^[A-Z0-9]{4,8}$/.test(rawRequestedCode)) {
+        return json({ ok: false, error: "invalid_custom_room_code" }, { status: 400 }, origin);
+      }
+      const requestedRoomCode = rawRequestedCode ? normalizeRoomCode(rawRequestedCode) : "";
+      const attempts = requestedRoomCode ? 1 : 6;
+
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        const roomCode = requestedRoomCode || generateRoomCode();
         const hostToken = makeSecret();
         const stub = env.MEMEME_ROOMS.getByName(roomCode);
         const initialized = await stub.fetch("https://room.internal/initialize", {
@@ -158,20 +159,23 @@ export default {
             roomCode,
             hostToken,
             hostName: normalizeName(body.hostName, "Host"),
-            roomName: normalizeRoomName07041(body.roomName, "Phòng MeMeMe"),
             settings: normalizeSettings(body.settings),
             deviceId: String(body.deviceId ?? "").trim().slice(0, 120)
           })
         });
 
-        if (initialized.status === 409) continue;
+        if (initialized.status === 409) {
+          if (requestedRoomCode) {
+            return json({ ok: false, error: "room_code_taken" }, { status: 409 }, origin);
+          }
+          continue;
+        }
         if (!initialized.ok) return json({ ok: false, error: "room_initialize_failed" }, { status: 502 }, origin);
 
         const lobby = await initialized.json();
         return json({
           ok: true,
           roomCode,
-          roomName: normalizeRoomName07041(body.roomName, "Phòng MeMeMe"),
           hostToken,
           websocketUrl: websocketUrl(request, roomCode, hostToken),
           lobby
@@ -300,7 +304,6 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
   private async publicLobby(): Promise<Record<string, unknown>> {
     const roomCode = await this.ctx.storage.get<string>("roomCode");
-    const roomName = await this.ctx.storage.get<string>("roomName") ?? "Phòng MeMeMe";
     const settings = await this.readSettings();
     const players = await this.maintainLobby0704();
     const started = await this.ctx.storage.get<boolean>("started") ?? false;
@@ -311,7 +314,6 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return {
       ok: Boolean(roomCode),
       roomCode: roomCode ?? "",
-      roomName,
       settings,
       players: players
         .map(({ clientId, seatId, name, ready, role, lastSeenAt }) => ({
@@ -333,13 +335,20 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
     if (url.pathname === "/initialize" && request.method === "POST") {
       const existing = await this.ctx.storage.get<string>("hostTokenHash");
-      if (existing) return internalJson({ ok: false, error: "room_exists" }, 409);
+      if (existing) {
+        const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
+        const started = await this.ctx.storage.get<boolean>("started") ?? false;
+        const existingPlayers = await this.readPlayers();
+        const host = existingPlayers.find((player) => player.role === "host");
+        const stalePrematch = !started && Boolean(host) && Date.now() - (host?.lastSeenAt ?? Date.now()) > RECONNECT_GRACE_MS_0704;
+        if (!closed && !stalePrematch) return internalJson({ ok: false, error: "room_exists" }, 409);
+        await this.ctx.storage.deleteAll();
+      }
       const body = await request.json() as Record<string, unknown>;
       const roomCode = normalizeRoomCode(String(body.roomCode ?? ""));
       const hostToken = String(body.hostToken ?? "");
       if (!roomCode || !hostToken) return internalJson({ ok: false, error: "missing_room_bootstrap" }, 400);
       const settings = normalizeSettings(body.settings);
-      const roomName = normalizeRoomName07041(body.roomName, "Phòng MeMeMe");
       const deviceId = String(body.deviceId ?? "").trim().slice(0, 120);
       const now = Date.now();
       const players: LobbyPlayerStored[] = [{
@@ -355,7 +364,6 @@ export class MeMeMeRoom extends DurableObject<Env> {
       }];
       await this.ctx.storage.put({
         roomCode,
-        roomName,
         hostTokenHash: await sha256Hex(hostToken),
         settings,
         players,

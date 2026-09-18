@@ -32,11 +32,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     root.className = 'online-room-lobby';
     root.innerHTML = `
       <header class="online-room-head">
-        <div>
-          <span class="online-kicker">ONLINE ROOM</span>
-          <h1 id="online-room-name">PHÒNG MEMEME</h1>
-          <p class="online-room-code-line">MÃ <strong id="online-room-code"></strong></p>
-        </div>
+        <div><span class="online-kicker">ONLINE ROOM</span><h1>PHÒNG <strong id="online-room-code"></strong></h1></div>
         <button id="online-copy-code" type="button">📋 COPY MÃ</button>
       </header>
       <div class="online-room-columns">
@@ -213,8 +209,6 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     if (!this.root || !this.state) return;
     const config = browserSession.current;
     const state = this.state;
-    const roomName = this.root.querySelector<HTMLElement>('#online-room-name');
-    if (roomName) roomName.textContent = state.roomName || 'PHÒNG MEMEME';
     const roomCode = this.root.querySelector<HTMLElement>('#online-room-code');
     if (roomCode) roomCode.textContent = state.roomCode || config.roomCode;
     const bySeat = new Map(state.players.map((player) => [player.seatId, player]));

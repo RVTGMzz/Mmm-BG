@@ -21,7 +21,6 @@ export interface OnlineLobbyPlayer0703 {
 export interface OnlineLobbyState0703 {
   ok: boolean;
   roomCode: string;
-  roomName: string;
   settings: OnlineRoomSettings0703;
   players: OnlineLobbyPlayer0703[];
   started: boolean;
@@ -36,7 +35,6 @@ export interface OnlineLobbyState0703 {
 export interface OnlineRoomCreate0703 {
   ok: true;
   roomCode: string;
-  roomName?: string;
   hostToken: string;
   websocketUrl: string;
   lobby: OnlineLobbyState0703;
@@ -45,7 +43,6 @@ export interface OnlineRoomCreate0703 {
 export interface OnlineRoomJoin0703 {
   ok: true;
   roomCode: string;
-  roomName?: string;
   clientId: string;
   seatId: number;
   reconnectToken: string;
@@ -69,6 +66,8 @@ const ONLINE_ERROR_COPY_0704: Record<string, string> = {
   duplicate_device_active: 'Ghế này đang hoạt động trên thiết bị khác.',
   room_closed: 'Phòng online đã đóng.',
   room_full_humans: 'Phòng đã đủ 4 người chơi thật.',
+  room_code_taken: 'Mã phòng này đang được sử dụng.',
+  invalid_custom_room_code: 'Mã phòng cần 4–8 ký tự, chỉ gồm chữ A–Z và số 0–9.',
   host_left: 'Host đã rời phòng.',
   host_timeout: 'Host đã mất kết nối quá lâu.',
 };
@@ -131,15 +130,19 @@ export function clearOnlineClientIdentity0703(roomCode: string): void {
 export async function createOnlineRoom0703(
   hostName: string,
   settings: OnlineRoomSettings0703,
-  roomName = '',
+  requestedRoomCode = '',
   baseUrl = MEMEME_ONLINE_BASE_URL,
 ): Promise<OnlineRoomCreate0703> {
+  const roomCode = normalizeRoomCode(requestedRoomCode);
+  if (requestedRoomCode.trim() && roomCode.length < 4) {
+    throw new Error('Mã phòng cần 4–8 ký tự, chỉ gồm chữ A–Z và số 0–9.');
+  }
   const response = await fetch(`${base(baseUrl)}/api/rooms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       hostName: hostName.trim() || 'Host',
-      roomName: roomName.trim() || 'Phòng MeMeMe',
+      roomCode,
       settings,
       deviceId: getOnlineDeviceId0704(),
     }),
