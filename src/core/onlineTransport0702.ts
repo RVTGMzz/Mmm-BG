@@ -8,7 +8,7 @@ import {
 
 export const MEMEME_ONLINE_BASE_URL = 'https://mememe-online.lengochung28191.workers.dev';
 
-export type SessionLogicalChannel = 'game' | 'turn-order' | 'demo-shell';
+export type SessionLogicalChannel = 'game' | 'turn-order' | 'demo-shell' | 'media';
 
 export interface OnlineRoomCreateResult {
   ok: true;
