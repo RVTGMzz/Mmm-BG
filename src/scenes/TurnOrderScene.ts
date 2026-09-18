@@ -11,6 +11,7 @@ import {
   type TurnOrderMessage,
   type TurnOrderProfileWire07042,
 } from '../core/turnOrderSession';
+import { faceTextureKey } from '../systems/faces';
 
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
