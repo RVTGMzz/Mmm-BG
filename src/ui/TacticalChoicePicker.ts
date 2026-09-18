@@ -31,7 +31,7 @@ export function showTacticalChoicePicker(
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5);
-    const subtitle = scene.add.text(0, -128, 'Cả hai lựa chọn đều deterministic. Chọn xong host mới resolve Lá Bài.', {
+    const subtitle = scene.add.text(0, -128, 'Chọn một cách chơi. Kết quả được áp dụng ngay sau khi bạn xác nhận.', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '13px',
       color: '#746a60',
@@ -102,7 +102,7 @@ export function showTacticalChoicePicker(
       `+${pressureAmount} B$`,
       richest
         ? `Lấy ${pressurePercent}% từ ${richest.name} đang có ${richest.money} B$.`
-        : 'Không có đối thủ hợp lệ.',
+        : 'Không có người chơi khác hợp lệ.',
       'pressure',
     );
 

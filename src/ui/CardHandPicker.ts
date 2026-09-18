@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
 import type { CardDefinition } from '../core/cards';
 import type { PlayerState } from '../core/types';
+import { friendlyVisibleCopy0701 } from './friendlyVisibleCopy0701';
 
 const RARITY_COLORS: Record<CardDefinition['rarity'], number> = {
   N: 0xd8d2c7,
@@ -20,9 +21,9 @@ function targetCopy(card: CardDefinition): string {
   switch (card.targetMode) {
     case 'self': return '🙋 CHÍNH BẠN';
     case 'single_other': return '🎯 1 MỤC TIÊU';
-    case 'random_other': return '🎲 ĐỐI THỦ NGẪU NHIÊN';
+    case 'random_other': return '🎲 NGƯỜI CHƠI NGẪU NHIÊN';
     case 'richest_other': return '👑 NGƯỜI GIÀU NHẤT';
-    case 'all_others': return '🌪️ TẤT CẢ ĐỐI THỦ';
+    case 'all_others': return '🌪️ TẤT CẢ NGƯỜI CHƠI KHÁC';
   }
 }
 
@@ -60,7 +61,7 @@ export function showCardHandPicker(
       .setOrigin(0.5);
 
     const subtitle = scene.add
-      .text(0, -181, 'Lá chỉ bị tiêu hao sau khi chọn đủ mục tiêu / lựa chọn và effect resolve thành công.', {
+      .text(0, -181, 'Lá chỉ được dùng sau khi bạn chọn đủ mục tiêu hoặc lựa chọn.', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
         color: '#746a60',
@@ -106,15 +107,17 @@ export function showCardHandPicker(
           fixedWidth: 220,
         })
         .setOrigin(0.5);
+      const descriptionCopy = friendlyVisibleCopy0701(card.description);
       const description = scene.add
-        .text(x, -12, card.description, {
+        .text(x, -12, descriptionCopy, {
           fontFamily: 'Arial, sans-serif',
-          fontSize: '14px',
+          fontSize: descriptionCopy.length > 92 ? '12px' : '13px',
           color: '#4e4740',
           align: 'center',
           fixedWidth: 214,
-          wordWrap: { width: 214 },
-          maxLines: 4,
+          fixedHeight: 108,
+          wordWrap: { width: 214, useAdvancedWrap: true },
+          lineSpacing: 2,
         })
         .setOrigin(0.5);
       const targetLabel = scene.add

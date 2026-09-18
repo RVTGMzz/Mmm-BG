@@ -13,6 +13,7 @@ import type { FaceExpression } from '../core/session';
 import { cpuQuirkForTurn, cpuQuirkLine } from '../core/testBot';
 import type { PlayerState } from '../core/types';
 import { npcChatDurationMs } from './npcChatPolicy';
+import { friendlyVisibleCopy0701 } from './friendlyVisibleCopy0701';
 import { tileIdentityCopy } from './tileIdentity';
 
 const REACTIONS = [
@@ -65,14 +66,6 @@ export interface PresentationEventModel {
   step?: number;
   fromNodeId?: number;
   toNodeId?: number;
-}
-
-function friendlyVisibleCopy(value: string): string {
-  return value
-    .replaceAll('Đối thủ', 'Người chơi khác')
-    .replaceAll('đối thủ', 'người chơi khác')
-    .replaceAll('Target', 'Người chơi được chọn')
-    .replaceAll('target', 'người chơi được chọn');
 }
 
 function dataString(event: MatchEvent, key: string): string {
@@ -186,7 +179,7 @@ function reactionLines(
         speakerName,
         speakerRole: step.speakerRole,
         expression: step.expression,
-        text: variant ? friendlyVisibleCopy(formatReactionText(variant.text, variables)) : '',
+        text: variant ? friendlyVisibleCopy0701(formatReactionText(variant.text, variables)) : '',
       };
     })
     .filter((line) => line.text.trim().length > 0);
@@ -246,8 +239,8 @@ function functionTileModel(event: MatchEvent, players: PlayerState[]): Presentat
   const base = baseModel(event, players);
   const isMiniGame = event.type === 'minigame_tile';
   const isJob = event.type.startsWith('job_') || event.type === 'job_tile';
-  const description = friendlyVisibleCopy(dataString(event, 'description'));
-  const summary = friendlyVisibleCopy(dataString(event, 'summary'));
+  const description = friendlyVisibleCopy0701(dataString(event, 'description'));
+  const summary = friendlyVisibleCopy0701(dataString(event, 'summary'));
   return {
     ...base,
     kind: 'tile_land',
@@ -270,8 +263,8 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   const title = dataString(event, 'title');
   const rarity = dataString(event, 'rarity');
   const impact = dataString(event, 'impact');
-  const description = friendlyVisibleCopy(dataString(event, 'description'));
-  const summary = friendlyVisibleCopy(dataString(event, 'summary'));
+  const description = friendlyVisibleCopy0701(dataString(event, 'description'));
+  const summary = friendlyVisibleCopy0701(dataString(event, 'summary'));
   const reactionEventId = dataString(event, 'reactionEventId') || undefined;
 
   if (event.type === 'dice_roll' || event.type === 'job_dice_roll') {
