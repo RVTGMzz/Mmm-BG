@@ -11,6 +11,8 @@ export interface BrowserSessionConfig {
   onlineBaseUrl: string;
   hostToken: string;
   reconnectToken: string;
+  cameraAllowed: boolean;
+  voiceAllowed: boolean;
 }
 
 function makeClientId(prefix: string): string {
@@ -59,6 +61,8 @@ class BrowserSessionState {
     onlineBaseUrl: '',
     hostToken: '',
     reconnectToken: '',
+    cameraAllowed: false,
+    voiceAllowed: false,
   };
 
   get current(): BrowserSessionConfig {
@@ -87,6 +91,11 @@ class BrowserSessionState {
     return this.current;
   }
 
+  setOnlineMediaPolicy(cameraAllowed: boolean, voiceAllowed: boolean): BrowserSessionConfig {
+    this.config = { ...this.config, cameraAllowed: Boolean(cameraAllowed), voiceAllowed: Boolean(voiceAllowed) };
+    return this.current;
+  }
+
   configureSolo(cpuSeatIds: number[] = []): BrowserSessionConfig {
     this.config = {
       mode: 'solo',
@@ -98,6 +107,8 @@ class BrowserSessionState {
       onlineBaseUrl: '',
       hostToken: '',
       reconnectToken: '',
+      cameraAllowed: false,
+      voiceAllowed: false,
     };
     return this.current;
   }
@@ -114,6 +125,8 @@ class BrowserSessionState {
       onlineBaseUrl: '',
       hostToken: '',
       reconnectToken: '',
+      cameraAllowed: false,
+      voiceAllowed: false,
     };
     return this.current;
   }
@@ -133,6 +146,8 @@ class BrowserSessionState {
       onlineBaseUrl: '',
       hostToken: '',
       reconnectToken: '',
+      cameraAllowed: false,
+      voiceAllowed: false,
     };
     return this.current;
   }
@@ -154,6 +169,8 @@ class BrowserSessionState {
       onlineBaseUrl: baseUrl,
       hostToken: hostToken.trim(),
       reconnectToken: '',
+      cameraAllowed: false,
+      voiceAllowed: false,
     };
     return this.current;
   }
@@ -181,6 +198,8 @@ class BrowserSessionState {
       onlineBaseUrl: baseUrl,
       hostToken: '',
       reconnectToken: reconnectToken.trim(),
+      cameraAllowed: false,
+      voiceAllowed: false,
     };
     return this.current;
   }
