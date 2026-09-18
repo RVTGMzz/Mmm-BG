@@ -19,6 +19,7 @@ const scene061Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardSc
 const scene062Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene062.ts', import.meta.url), 'utf8');
 const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
 const scene0701Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
+const scene07044Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene07044.ts', import.meta.url), 'utf8');
 const pickerSource = readFileSync(new URL('../src/ui/BranchPicker.ts', import.meta.url), 'utf8');
 
 assert(!CANONICAL_PRESENTATION_0561.header.includes('0.1.25'));
@@ -36,7 +37,9 @@ assert.equal(BOARD.id, 'city-mvp-graph-01', 'Presentation pass must not fork aut
 assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 44);
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
-assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'), 'Canonical runtime may advance presentation wrappers while preserving the validated chain.');
+assert(mainSource.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'), 'Canonical runtime may advance presentation wrappers while preserving the validated chain.');
+assert(scene07044Source.includes('extends CareerMinigameBoardScene0701'), '0.1.70.4.4 must remain presentation-only above the validated 0.1.70.1 chain.');
+assert(!scene07044Source.includes('Math.random')); assert(!scene07044Source.includes('submitIntent('));
 assert(scene0701Source.includes('extends CareerMinigameBoardScene069'), '0.1.70.1 must remain above the validated 0.1.69 chain.');
 assert(!scene0701Source.includes('Math.random'), '0.1.70.1 presentation must not add RNG.');
 assert(scene069Source.includes('extends CareerMinigameBoardScene0682'), '0.1.69 must remain above the validated presentation/authority chain.');
@@ -64,4 +67,4 @@ assert(!pickerSource.includes('1280, 720'), 'Historical Branch picker must not r
 assert(pickerSource.includes('CHỌN HƯỚNG'));
 assert(pickerSource.includes('branchFlavorInfo056'));
 assert(!pickerSource.includes('Node 200'));
-console.log('[canonical-presentation-0561] PASS canonical camera/HUD retained through 0.1.70.1 presentation wrapper; authority chain preserved');
+console.log('[canonical-presentation-0561] PASS canonical camera/HUD retained through 0.1.70.4.4 presentation wrapper; authority chain preserved');
