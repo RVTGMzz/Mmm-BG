@@ -59,3 +59,6 @@ body.mememe-splash-active .mememe-settings { opacity: 0; pointer-events: none; }
 .mememe-lobby-069 button, .mememe-lobby-069 input, .mememe-lobby-069 select,
 .mememe-setup-069 button, .mememe-setup-069 input,
 .mememe-rule-select-069 button { border-radius:16px; }
+
+.mememe-lobby-069 .lobby-actions { gap:10px; }
+.mememe-lobby-069 .lobby-actions button { padding:14px 8px; font-size:15px; }

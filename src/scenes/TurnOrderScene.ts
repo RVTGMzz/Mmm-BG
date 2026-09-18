@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
-import { BroadcastChannelTransport } from '../core/localTransport';
+import { createBrowserSessionTransport } from '../core/onlineTransport0702';
 import { configureInitialPlayOrder } from '../core/matchState';
 import { gameSession } from '../core/session';
 import {
@@ -120,10 +120,8 @@ export class TurnOrderScene extends Phaser.Scene {
   private setupRemoteOrderSession(): void {
     const config = browserSession.current;
     if (config.mode === 'solo') return;
-    const channel = `${browserSession.channelName}-turn-order`;
-
     if (config.mode === 'host') {
-      const transport = new BroadcastChannelTransport<TurnOrderMessage>(channel, 'host');
+      const transport = createBrowserSessionTransport<TurnOrderMessage>('turn-order', 'host');
       this.hostOrderSession = new TurnOrderHostSession(
         config.roomCode,
         gameSession.players.map((player) => player.name),
@@ -134,7 +132,7 @@ export class TurnOrderScene extends Phaser.Scene {
       return;
     }
 
-    const transport = new BroadcastChannelTransport<TurnOrderMessage>(channel, config.clientId);
+    const transport = createBrowserSessionTransport<TurnOrderMessage>('turn-order', config.clientId);
     this.clientOrderSession = new TurnOrderClientSession(
       config.roomCode,
       config.clientId,

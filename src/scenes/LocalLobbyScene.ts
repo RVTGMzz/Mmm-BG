@@ -3,6 +3,11 @@ import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
 import { browserSession, generateRoomCode, normalizeRoomCode } from '../core/browserSession';
+import {
+  createOnlineRoom,
+  MEMEME_ONLINE_BASE_URL,
+  readOnlineRoomStatus,
+} from '../core/onlineTransport0702';
 
 const PRESERVE_SETUP_REGISTRY_KEY = 'mememe-preserve-setup';
 
@@ -39,18 +44,19 @@ export class LocalLobbyScene extends Phaser.Scene {
           <button id="lobby-solo" type="button">CHƠI</button>
         </section>
         <section class="lobby-card host-card">
-          <div class="lobby-icon">📡</div><h2>TẠO PHÒNG</h2><p>Host local • 2 tab</p>
-          <label>MÃ PHÒNG<input id="host-room" maxlength="8" value="${initialRoom}" /></label>
-          <button id="lobby-host" type="button" ${broadcastReady ? '' : 'disabled'}>TẠO PHÒNG</button>
+          <div class="lobby-icon">🖥️</div><h2>LOCAL 2-TAB</h2><p>Cùng máy • test nhiều tab</p>
+          <label>MÃ PHÒNG<input id="local-room" maxlength="8" value="${initialRoom}" /></label>
+          <label>GHẾ KHI JOIN<select id="local-seat"><option value="1">P2</option><option value="2">P3</option><option value="3">P4</option></select></label>
+          <div class="lobby-actions"><button id="lobby-local-host" type="button" ${broadcastReady ? '' : 'disabled'}>TẠO LOCAL</button><button id="lobby-local-join" type="button" ${broadcastReady ? '' : 'disabled'}>VÀO</button></div>
         </section>
-        <section class="lobby-card join-card">
-          <div class="lobby-icon">🛰️</div><h2>VÀO PHÒNG</h2><p>Nhập code • chọn ghế</p>
-          <label>MÃ PHÒNG<input id="join-room" maxlength="8" placeholder="ME12AB" /></label>
-          <label>GHẾ<select id="join-seat"><option value="1">P2</option><option value="2">P3</option><option value="3">P4</option></select></label>
-          <button id="lobby-join" type="button" ${broadcastReady ? '' : 'disabled'}>VÀO PHÒNG</button>
+        <section class="lobby-card join-card online-card">
+          <div class="lobby-icon">🌐</div><h2>ONLINE</h2><p>Khác máy • qua Internet</p>
+          <label>MÃ PHÒNG<input id="online-room" maxlength="8" placeholder="ME12AB" /></label>
+          <label>GHẾ KHI JOIN<select id="online-seat"><option value="1">P2</option><option value="2">P3</option><option value="3">P4</option></select></label>
+          <div class="lobby-actions"><button id="lobby-online-host" type="button">TẠO ONLINE</button><button id="lobby-online-join" type="button">VÀO</button></div>
         </section>
       </div>
-      <p id="lobby-status" class="lobby-status">${broadcastReady ? '' : '⚠️ 2-tab không khả dụng trên trình duyệt này.'}</p>`;
+      <p id="lobby-status" class="lobby-status">${broadcastReady ? '' : '⚠️ Local 2-tab không khả dụng trên trình duyệt này.'}</p>`;
 
     const dom = this.add.dom(640, 370, root).setOrigin(0.5);
     const node = dom.node as HTMLDivElement;
@@ -72,27 +78,66 @@ export class LocalLobbyScene extends Phaser.Scene {
       browserSession.configureSolo(cpuSeatsForMode(mode));
       this.scene.start('SetupScene', { preserve: consumePreserveSetup() });
     });
-    node.querySelector<HTMLButtonElement>('#lobby-host')?.addEventListener('click', () => {
+
+    node.querySelector<HTMLButtonElement>('#lobby-local-host')?.addEventListener('click', () => {
       sfxController.play('ui_confirm');
-      if (!broadcastReady) return setStatus('2-tab chưa khả dụng.', true);
-      const input = node.querySelector<HTMLInputElement>('#host-room');
-      const room = normalizeRoomCode(input?.value ?? '') || generateRoomCode();
+      if (!broadcastReady) return setStatus('Local 2-tab chưa khả dụng.', true);
+      const room = normalizeRoomCode(node.querySelector<HTMLInputElement>('#local-room')?.value ?? '') || generateRoomCode();
       browserSession.configureHost(room);
-      setStatus(`Phòng ${room} đã sẵn sàng.`);
+      setStatus(`Local ${room} đã sẵn sàng.`);
       this.scene.start('SetupScene', { preserve: consumePreserveSetup() });
     });
-    node.querySelector<HTMLButtonElement>('#lobby-join')?.addEventListener('click', () => {
+
+    node.querySelector<HTMLButtonElement>('#lobby-local-join')?.addEventListener('click', () => {
       sfxController.play('ui_confirm');
-      if (!broadcastReady) return setStatus('2-tab chưa khả dụng.', true);
-      const room = normalizeRoomCode(node.querySelector<HTMLInputElement>('#join-room')?.value ?? '');
-      const seatId = Number(node.querySelector<HTMLSelectElement>('#join-seat')?.value ?? 1);
-      if (!room) return setStatus('Nhập mã phòng.', true);
+      if (!broadcastReady) return setStatus('Local 2-tab chưa khả dụng.', true);
+      const room = normalizeRoomCode(node.querySelector<HTMLInputElement>('#local-room')?.value ?? '');
+      const seatId = Number(node.querySelector<HTMLSelectElement>('#local-seat')?.value ?? 1);
+      if (!room) return setStatus('Nhập mã phòng local.', true);
       try {
         browserSession.configureClient(room, seatId);
         this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, false);
         this.scene.start('TurnOrderScene');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : String(error), true);
+      }
+    });
+
+    node.querySelector<HTMLButtonElement>('#lobby-online-host')?.addEventListener('click', async () => {
+      sfxController.play('ui_confirm');
+      const button = node.querySelector<HTMLButtonElement>('#lobby-online-host');
+      if (button) button.disabled = true;
+      setStatus('🌐 Đang tạo phòng online...');
+      try {
+        const room = await createOnlineRoom();
+        browserSession.configureOnlineHost(room.roomCode, room.hostToken, MEMEME_ONLINE_BASE_URL);
+        const input = node.querySelector<HTMLInputElement>('#online-room');
+        if (input) input.value = room.roomCode;
+        setStatus(`✅ Phòng online ${room.roomCode} đã tạo. Gửi mã này cho người chơi khác.`);
+        this.scene.start('SetupScene', { preserve: consumePreserveSetup() });
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : 'Không tạo được phòng online.', true);
+        if (button) button.disabled = false;
+      }
+    });
+
+    node.querySelector<HTMLButtonElement>('#lobby-online-join')?.addEventListener('click', async () => {
+      sfxController.play('ui_confirm');
+      const button = node.querySelector<HTMLButtonElement>('#lobby-online-join');
+      const room = normalizeRoomCode(node.querySelector<HTMLInputElement>('#online-room')?.value ?? '');
+      const seatId = Number(node.querySelector<HTMLSelectElement>('#online-seat')?.value ?? 1);
+      if (!room) return setStatus('Nhập mã phòng online.', true);
+      if (button) button.disabled = true;
+      setStatus(`🌐 Đang tìm phòng ${room}...`);
+      try {
+        const status = await readOnlineRoomStatus(room);
+        if (!status.ok) throw new Error('Không tìm thấy phòng online này.');
+        browserSession.configureOnlineClient(room, seatId, MEMEME_ONLINE_BASE_URL);
+        this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, false);
+        this.scene.start('TurnOrderScene');
+      } catch (error) {
+        setStatus(error instanceof Error ? error.message : 'Không vào được phòng online.', true);
+        if (button) button.disabled = false;
       }
     });
   }

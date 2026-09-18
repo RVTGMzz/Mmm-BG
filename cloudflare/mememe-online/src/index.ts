@@ -11,6 +11,7 @@ interface SocketAttachment {
   seatId: number;
   role: SocketRole;
   roomCode: string;
+  channel: string;
   joinedAt: number;
 }
 
@@ -190,8 +191,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
       const seats = sockets
         .map((socket) => socket.deserializeAttachment() as SocketAttachment | null)
         .filter((value): value is SocketAttachment => Boolean(value))
-        .map(({ clientId, seatId, role, joinedAt }) => ({ clientId, seatId, role, joinedAt }))
-        .sort((a, b) => a.seatId - b.seatId);
+        .map(({ clientId, seatId, role, channel, joinedAt }) => ({ clientId, seatId, role, channel, joinedAt }))
+        .sort((a, b) => a.channel.localeCompare(b.channel) || a.seatId - b.seatId);
 
       return Response.json({ ok: true, roomCode, connections: seats.length, seats });
     }
@@ -207,7 +208,9 @@ export class MeMeMeRoom extends DurableObject<Env> {
     const role = url.searchParams.get("role") === "host" ? "host" : "client";
     const clientId = (url.searchParams.get("clientId") ?? "").trim().slice(0, 80);
     const seatId = Number(url.searchParams.get("seatId") ?? (role === "host" ? "0" : "-1"));
+    const channel = (url.searchParams.get("channel") ?? "game").trim().toLowerCase();
     if (!clientId) return new Response("clientId is required.", { status: 400 });
+    if (!/^[a-z0-9-]{1,32}$/.test(channel)) return new Response("Invalid channel.", { status: 400 });
     if (!Number.isInteger(seatId) || seatId < 0 || seatId > 3) return new Response("Invalid seat.", { status: 400 });
     if (role === "host" && seatId !== 0) return new Response("Host must own P1.", { status: 400 });
     if (role === "client" && seatId === 0) return new Response("Remote clients must use P2-P4.", { status: 400 });
@@ -223,6 +226,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
     for (const socket of sockets) {
       const attachment = socket.deserializeAttachment() as SocketAttachment | null;
       if (!attachment) continue;
+
+      if (attachment.channel !== channel) continue;
 
       if (attachment.clientId === clientId) {
         try { socket.close(4001, "Replaced by reconnect."); } catch {}
@@ -241,6 +246,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
       seatId,
       role,
       roomCode,
+      channel,
       joinedAt: Date.now()
     };
 
@@ -252,10 +258,11 @@ export class MeMeMeRoom extends DurableObject<Env> {
       roomCode,
       clientId,
       seatId,
-      role
+      role,
+      channel
     }));
 
-    this.broadcastPresence();
+    this.broadcastPresence(channel);
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -294,7 +301,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
     for (const recipient of recipients) {
       if (recipient === socket) continue;
       const target = recipient.deserializeAttachment() as SocketAttachment | null;
-      if (!target) continue;
+      if (!target || target.channel !== sender.channel) continue;
 
       if (sender.role === "client") {
         if (target.role !== "host") continue;
@@ -316,25 +323,31 @@ export class MeMeMeRoom extends DurableObject<Env> {
   }
 
   webSocketClose(socket: WebSocket, code: number, reason: string): void {
+    const attachment = socket.deserializeAttachment() as SocketAttachment | null;
     try { socket.close(code, reason); } catch {}
-    this.broadcastPresence();
+    if (attachment) this.broadcastPresence(attachment.channel);
   }
 
   webSocketError(socket: WebSocket): void {
+    const attachment = socket.deserializeAttachment() as SocketAttachment | null;
     try { socket.close(1011, "WebSocket error."); } catch {}
-    this.broadcastPresence();
+    if (attachment) this.broadcastPresence(attachment.channel);
   }
 
-  private broadcastPresence(): void {
+  private broadcastPresence(channel: string): void {
     const sockets = this.ctx.getWebSockets();
-    const seats = sockets
+    const channelSockets = sockets.filter((socket) => {
+      const attachment = socket.deserializeAttachment() as SocketAttachment | null;
+      return attachment?.channel === channel;
+    });
+    const seats = channelSockets
       .map((socket) => socket.deserializeAttachment() as SocketAttachment | null)
       .filter((value): value is SocketAttachment => Boolean(value))
       .map(({ clientId, seatId, role }) => ({ clientId, seatId, role }))
       .sort((a, b) => a.seatId - b.seatId);
 
-    const payload = JSON.stringify({ kind: "presence", seats });
-    for (const socket of sockets) {
+    const payload = JSON.stringify({ kind: "presence", channel, seats });
+    for (const socket of channelSockets) {
       try { socket.send(payload); } catch {}
     }
   }

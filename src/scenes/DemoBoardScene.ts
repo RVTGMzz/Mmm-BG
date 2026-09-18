@@ -23,7 +23,8 @@ import {
   DemoShellHostSession,
   type DemoShellMessage,
 } from '../core/demoShellSession';
-import { BroadcastChannelTransport, InMemoryTransportHub } from '../core/localTransport';
+import { InMemoryTransportHub } from '../core/localTransport';
+import { createBrowserSessionTransport } from '../core/onlineTransport0702';
 import {
   cloneMatchState,
   createInitialMatchState,
@@ -168,10 +169,7 @@ export class DemoBoardScene extends Phaser.Scene {
     const runtime = { board: BOARD, cards: CARDS, news: NEWS };
 
     if (config.mode === 'client') {
-      const gameTransport = new BroadcastChannelTransport<TwoTabMessage>(
-        browserSession.channelName,
-        config.clientId,
-      );
+      const gameTransport = createBrowserSessionTransport<TwoTabMessage>('game', config.clientId);
       this.clientSession = new TwoTabClientSession(
         config.roomCode,
         config.clientId,
@@ -181,8 +179,8 @@ export class DemoBoardScene extends Phaser.Scene {
       this.unsubscribeGame = this.clientSession.subscribe((event) => this.handleGameEvent(event));
       this.clientSession.start();
 
-      const shellTransport = new BroadcastChannelTransport<DemoShellMessage>(
-        `${browserSession.channelName}-demo-shell`,
+      const shellTransport = createBrowserSessionTransport<DemoShellMessage>(
+        'demo-shell',
         `shell-${config.clientId}`,
       );
       this.shellClient = new DemoShellClientSession(`shell-${config.clientId}`, shellTransport);
@@ -203,16 +201,10 @@ export class DemoBoardScene extends Phaser.Scene {
     );
 
     if (config.mode === 'host') {
-      const gameTransport = new BroadcastChannelTransport<TwoTabMessage>(
-        browserSession.channelName,
-        'host',
-      );
+      const gameTransport = createBrowserSessionTransport<TwoTabMessage>('game', 'host');
       this.hostSession = new TwoTabHostSession(config.roomCode, authority, gameTransport);
 
-      const shellTransport = new BroadcastChannelTransport<DemoShellMessage>(
-        `${browserSession.channelName}-demo-shell`,
-        'shell-host',
-      );
+      const shellTransport = createBrowserSessionTransport<DemoShellMessage>('demo-shell', 'shell-host');
       this.shellHost = new DemoShellHostSession(this.players.length, shellTransport, DEMO_ROUNDS);
     } else {
       const gameHub = new InMemoryTransportHub<TwoTabMessage>();

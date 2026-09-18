@@ -41,7 +41,8 @@ export class SetupScene extends Phaser.Scene {
 
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;
-    const mode = config.mode === 'host' ? `HOST • ${config.roomCode}` : cpuCount > 0 ? `${4 - cpuCount} người • ${cpuCount} CPU` : 'HOTSEAT • 4 người';
+    const networkLabel = config.transport === 'online' ? '🌐 ONLINE HOST' : '📡 LOCAL HOST';
+    const mode = config.mode === 'host' ? `${networkLabel} • ${config.roomCode}` : cpuCount > 0 ? `${4 - cpuCount} người • ${cpuCount} CPU` : 'HOTSEAT • 4 người';
     this.add.text(72, 91, mode, { fontFamily: 'Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#756c61' });
 
     const root = document.createElement('div');
