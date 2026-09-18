@@ -11,6 +11,8 @@ const mobileCss = readFileSync('src/mobileViewport066.css', 'utf8');
 const faces = readFileSync('src/systems/faces.ts', 'utf8');
 const editor = readFileSync('src/ui/FaceImageEditor.ts', 'utf8');
 const styles = readFileSync('src/styles.css', 'utf8');
+const index = readFileSync('index.html', 'utf8');
+const manifest = readFileSync('public/manifest.webmanifest', 'utf8');
 
 assert.equal(DEFAULT_FACE_STYLE_PRESET, 'game-soft');
 const preset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET;
@@ -36,5 +38,9 @@ assert.match(editor, /encodeFaceSticker\(image, resolved, stylePreset\)/);
 assert.match(editor, /tryLockMobileLandscape07031\(false\)/);
 assert.match(styles, /grid-template-columns: minmax\(260px, 340px\) 1fr/);
 assert.match(styles, /pointer: coarse\) and \(orientation: landscape/);
+assert.match(styles, /face-editor-landscape \.face-editor-controls \{ grid-template-columns: 1fr 1fr/);
+assert.match(index, /manifest\.webmanifest/);
+assert.match(manifest, /"orientation": "landscape"/);
+assert.match(manifest, /"display": "fullscreen"/);
 
 console.log('[mobile-landscape-face-style-07031] PASS phone landscape guard + landscape face editor + default GAME SOFT preset');

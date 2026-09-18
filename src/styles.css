@@ -737,7 +737,7 @@ canvas {
     width: min(42vw, 300px, 68dvh);
   }
   .face-editor-landscape .face-editor-filter { margin-bottom: 8px; padding: 8px; }
-  .face-editor-landscape .face-editor-controls { gap: 8px; }
+  .face-editor-landscape .face-editor-controls { grid-template-columns: 1fr 1fr; gap: 8px; }
   .face-editor-landscape .face-editor-actions { margin-top: 7px; gap: 7px; }
   .face-editor-landscape .face-editor-actions button { padding: 7px 6px; font-size: 10px; }
   .face-editor-landscape .face-editor-note { margin-top: 7px; font-size: 8px; }
