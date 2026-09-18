@@ -46,15 +46,31 @@ export class SetupScene extends Phaser.Scene {
 
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;
-    const networkLabel = config.transport === 'online' ? '🌐 ONLINE HOST' : '📡 LOCAL HOST';
-    const mode = config.mode === 'host' ? `${networkLabel} • ${config.roomCode}` : cpuCount > 0 ? `${4 - cpuCount} người • ${cpuCount} CPU` : 'HOTSEAT • 4 người';
+    const onlineOwnSetup = config.transport === 'online' && config.mode !== 'solo';
+    const setupPlayerIds = onlineOwnSetup
+      ? [config.seatId]
+      : gameSession.players.map((player) => player.id);
+    const networkLabel = config.transport === 'online'
+      ? (config.mode === 'host' ? '🌐 ONLINE HOST' : `🌐 ONLINE P${config.seatId + 1}`)
+      : '📡 LOCAL HOST';
+    const mode = config.mode === 'host'
+      ? `${networkLabel} • ${config.roomCode}`
+      : onlineOwnSetup
+        ? `${networkLabel} • ${config.roomCode} • CHỈNH AVATAR CỦA BẠN`
+        : cpuCount > 0
+          ? `${4 - cpuCount} người • ${cpuCount} CPU`
+          : 'HOTSEAT • 4 người';
     this.add.text(72, 91, mode, { fontFamily: 'Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#756c61' });
 
     const root = document.createElement('div');
-    root.className = 'mememe-setup mememe-setup-069';
+    root.className = `mememe-setup mememe-setup-069${onlineOwnSetup ? ' online-own-profile' : ''}`;
     root.innerHTML = `
-      <div class="setup-grid">${gameSession.players.map((p) => this.playerCardMarkup(p.id)).join('')}</div>
-      <div class="setup-footer"><button id="setup-back-mode" class="setup-back-button" type="button">← CHẾ ĐỘ</button><p class="setup-hint">Chạm ảnh để chọn mặt • Có thể bỏ qua</p><button id="start-game" class="start-game-button" type="button">TIẾP TỤC →</button></div>
+      <div class="setup-grid">${setupPlayerIds.map((playerId) => this.playerCardMarkup(playerId)).join('')}</div>
+      <div class="setup-footer">
+        <button id="setup-back-mode" class="setup-back-button" type="button"${onlineOwnSetup ? ' style="display:none"' : ''}>← CHẾ ĐỘ</button>
+        <p class="setup-hint">${onlineOwnSetup ? 'Chọn 3 biểu cảm của bạn • Có thể bỏ qua' : 'Chạm ảnh để chọn mặt • Có thể bỏ qua'}</p>
+        <button id="start-game" class="start-game-button" type="button">${onlineOwnSetup && config.mode === 'client' ? 'XONG →' : 'TIẾP TỤC →'}</button>
+      </div>
       <p id="setup-status" class="setup-status"></p>`;
     const setupDom = this.add.dom(640, 410, root).setOrigin(0.5);
     const node = setupDom.node as HTMLDivElement;
@@ -70,7 +86,9 @@ export class SetupScene extends Phaser.Scene {
       </section>`;
     const rulesDom = this.add.dom(640, 360, rulesRoot).setOrigin(0.5).setVisible(false);
 
-    for (const player of gameSession.players) {
+    for (const playerId of setupPlayerIds) {
+      const player = gameSession.players[playerId];
+      if (!player) continue;
       const nameInput = node.querySelector<HTMLInputElement>(`#player-name-${player.id}`);
       nameInput?.addEventListener('input', () => gameSession.setPlayerName(player.id, nameInput.value));
 
@@ -121,6 +139,7 @@ export class SetupScene extends Phaser.Scene {
     for (const button of lapButtons) button.addEventListener('click', () => { sfxController.play('ui_confirm'); selectLaps(Number(button.dataset.laps)); });
 
     node.querySelector<HTMLButtonElement>('#setup-back-mode')?.addEventListener('click', () => {
+      if (onlineOwnSetup) return;
       this.captureNames(node);
       sfxController.play('ui_confirm');
       this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, true);
@@ -128,7 +147,14 @@ export class SetupScene extends Phaser.Scene {
     });
     node.querySelector<HTMLButtonElement>('#start-game')?.addEventListener('click', () => {
       if (!this.captureNames(node)) return;
-      sfxController.play('ui_confirm'); setupDom.setVisible(false); rulesDom.setVisible(true); selectLaps(gameSession.targetLaps);
+      sfxController.play('ui_confirm');
+      if (onlineOwnSetup && config.mode === 'client') {
+        this.startGame();
+        return;
+      }
+      setupDom.setVisible(false);
+      rulesDom.setVisible(true);
+      selectLaps(gameSession.targetLaps);
     });
     rulesRoot.querySelector<HTMLButtonElement>('.rule-back')?.addEventListener('click', () => { sfxController.play('ui_confirm'); rulesDom.setVisible(false); setupDom.setVisible(true); });
     rulesRoot.querySelector<HTMLButtonElement>('.rule-confirm')?.addEventListener('click', () => this.startGame());
@@ -137,6 +163,7 @@ export class SetupScene extends Phaser.Scene {
   private playerCardMarkup(playerId: number): string {
     const accent = PLAYER_ACCENTS[playerId];
     const isCpu = browserSession.isCpuSeat(playerId);
+    const onlineOwned = browserSession.current.transport === 'online';
     const player = gameSession.players[playerId];
     const displayName = this.preserveSetup
       ? player?.name ?? `Player ${playerId + 1}`
@@ -148,8 +175,13 @@ export class SetupScene extends Phaser.Scene {
       <button id="face-camera-3-${playerId}" class="face-batch-button camera" type="button"><span>📷 CHỤP 3 BIỂU CẢM</span><small>Camera trong game</small></button>
       <button id="face-camera-one-${playerId}" class="face-batch-button camera secondary" type="button"><span>🤳 CHỤP 1 CHO CẢ 3</span><small>Chụp một lần</small></button>
     </div>`;
-    const roleRow = `<div class="player-role-row-069">${isCpu ? '<span class="cpu-tag-069">CPU</span>' : '<span class="player-role-placeholder-069" aria-hidden="true">CPU</span>'}</div>`;
-    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}" /></div>${roleRow}<div class="face-slots">${faceSlots}</div>${batchActions}</section>`;
+    const roleRow = `<div class="player-role-row-069">${isCpu
+      ? '<span class="cpu-tag-069">CPU</span>'
+      : onlineOwned
+        ? '<span class="cpu-tag-069">👤 BẠN</span>'
+        : '<span class="player-role-placeholder-069" aria-hidden="true">CPU</span>'}</div>`;
+    const nameAttrs = onlineOwned ? ' readonly aria-readonly="true"' : '';
+    return `<section class="player-setup-card" style="--player-accent:${accent}"><div class="player-card-title"><span class="player-number">P${playerId + 1}${isCpu ? ' 🤖' : ''}</span><input id="player-name-${playerId}" class="player-name-input" value="${displayName}" maxlength="18" aria-label="Tên Player ${playerId + 1}"${nameAttrs} /></div>${roleRow}<div class="face-slots">${faceSlots}</div>${batchActions}</section>`;
   }
 
   private async handleFaceSelection(root: HTMLDivElement, playerId: number, expression: FaceExpression, input: HTMLInputElement): Promise<void> {
