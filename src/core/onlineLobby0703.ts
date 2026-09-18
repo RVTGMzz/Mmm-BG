@@ -21,6 +21,7 @@ export interface OnlineLobbyPlayer0703 {
 export interface OnlineLobbyState0703 {
   ok: boolean;
   roomCode: string;
+  roomName: string;
   settings: OnlineRoomSettings0703;
   players: OnlineLobbyPlayer0703[];
   started: boolean;
@@ -35,6 +36,7 @@ export interface OnlineLobbyState0703 {
 export interface OnlineRoomCreate0703 {
   ok: true;
   roomCode: string;
+  roomName?: string;
   hostToken: string;
   websocketUrl: string;
   lobby: OnlineLobbyState0703;
@@ -43,6 +45,7 @@ export interface OnlineRoomCreate0703 {
 export interface OnlineRoomJoin0703 {
   ok: true;
   roomCode: string;
+  roomName?: string;
   clientId: string;
   seatId: number;
   reconnectToken: string;
@@ -65,6 +68,7 @@ function base(value = MEMEME_ONLINE_BASE_URL): string {
 const ONLINE_ERROR_COPY_0704: Record<string, string> = {
   duplicate_device_active: 'Ghế này đang hoạt động trên thiết bị khác.',
   room_closed: 'Phòng online đã đóng.',
+  room_full_humans: 'Phòng đã đủ 4 người chơi thật.',
   host_left: 'Host đã rời phòng.',
   host_timeout: 'Host đã mất kết nối quá lâu.',
 };
@@ -127,6 +131,7 @@ export function clearOnlineClientIdentity0703(roomCode: string): void {
 export async function createOnlineRoom0703(
   hostName: string,
   settings: OnlineRoomSettings0703,
+  roomName = '',
   baseUrl = MEMEME_ONLINE_BASE_URL,
 ): Promise<OnlineRoomCreate0703> {
   const response = await fetch(`${base(baseUrl)}/api/rooms`, {
@@ -134,6 +139,7 @@ export async function createOnlineRoom0703(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       hostName: hostName.trim() || 'Host',
+      roomName: roomName.trim() || 'Phòng MeMeMe',
       settings,
       deviceId: getOnlineDeviceId0704(),
     }),
