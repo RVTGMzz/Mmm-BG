@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { CardDefinition, CardFaceSlot } from '../core/cards';
 import { gameSession } from '../core/session';
 import type { PlayerState } from '../core/types';
+import { friendlyVisibleCopy0701 } from './friendlyVisibleCopy0701';
 
 const RARITY_COLORS: Record<CardDefinition['rarity'], number> = {
   N: 0xd8d2c7,
@@ -56,12 +57,15 @@ export function showDynamicCard(
     .setOrigin(0.5);
 
   const subtitle = scene.add
-    .text(0, -102, card.description, {
+    .text(0, -102, friendlyVisibleCopy0701(card.description), {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#5a5148',
       align: 'center',
       fixedWidth: 548,
+      fixedHeight: 62,
+      wordWrap: { width: 548, useAdvancedWrap: true },
+      lineSpacing: 2,
     })
     .setOrigin(0.5);
 
@@ -146,7 +150,7 @@ export function showDynamicCard(
 
   if (resolutionSummary) {
     const result = scene.add
-      .text(0, 171, resolutionSummary, {
+      .text(0, 171, friendlyVisibleCopy0701(resolutionSummary), {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
         fontStyle: 'bold',
@@ -159,7 +163,7 @@ export function showDynamicCard(
   }
 
   const footer = scene.add
-    .text(0, 205, 'Hiệu ứng áp dụng ngay • Card overlay không khóa lượt kế tiếp', {
+    .text(0, 205, 'Hiệu ứng áp dụng ngay • Không khóa lượt kế tiếp', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '11px',
       color: '#7b7064',

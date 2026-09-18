@@ -484,7 +484,7 @@ export class MatchPresentationLayer {
     if (model.targetId === undefined || !model.targetName) return;
 
     const amount = Math.abs(model.amount ?? 0);
-    const copy = amount > 0
+    const copy = model.kind === 'card_play' && amount > 0
       ? `${model.targetName} đưa ${amount} B$ cho ${model.actorName}`
       : (model.summary || `${model.actorName} → ${model.targetName}`);
 
@@ -498,24 +498,6 @@ export class MatchPresentationLayer {
       color: '#ffffff',
       fixedWidth: 596,
       align: 'center',
-    }).setOrigin(0, 0.5);
-    container.add([bg, text]);
-  }
-
-  private addPlayerChip(
-    container: Phaser.GameObjects.Container,
-    x: number,
-    y: number,
-    playerId: number | undefined,
-    name: string,
-    role: string,
-  ): void {
-    const color = playerId === undefined ? 0x746b61 : PLAYER_COLORS[playerId % PLAYER_COLORS.length];
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(color, 0.95);
-    bg.fillRoundedRect(x, y - 14, 214, 28, 14);
-    const text = this.scene.add.text(x + 12, y, `${role}  ${name}`, {
-      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#ffffff',
     }).setOrigin(0, 0.5);
     container.add([bg, text]);
   }

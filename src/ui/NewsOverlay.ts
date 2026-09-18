@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { NewsDefinition } from '../core/news';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
+import { friendlyVisibleCopy0701 } from './friendlyVisibleCopy0701';
 
 const RARITY_COLORS: Record<NewsDefinition['rarity'], number> = {
   N: 0xd8d2c7,
@@ -52,25 +53,27 @@ export function showDynamicNews(
     .setOrigin(0, 0.5);
 
   const description = scene.add
-    .text(38, -9, news.description, {
+    .text(38, -9, friendlyVisibleCopy0701(news.description), {
       fontFamily: 'Arial, sans-serif',
       fontSize: '15px',
       color: '#5a5148',
       fixedWidth: 360,
-      wordWrap: { width: 360 },
-      maxLines: 2,
+      fixedHeight: 62,
+      wordWrap: { width: 360, useAdvancedWrap: true },
+      lineSpacing: 2,
     })
     .setOrigin(0, 0.5);
 
   const result = scene.add
-    .text(38, 66, summary, {
+    .text(38, 66, friendlyVisibleCopy0701(summary), {
       fontFamily: 'Arial, sans-serif',
       fontSize: '17px',
       fontStyle: 'bold',
       color: '#202020',
       fixedWidth: 360,
-      wordWrap: { width: 360 },
-      maxLines: 2,
+      fixedHeight: 72,
+      wordWrap: { width: 360, useAdvancedWrap: true },
+      lineSpacing: 2,
     })
     .setOrigin(0, 0.5);
 
