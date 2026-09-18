@@ -26,6 +26,8 @@ interface RoomSettings {
   cpuFill: boolean;
 }
 
+type LobbyPresence0704 = "online" | "reconnecting" | "disconnected";
+
 interface LobbyPlayerStored {
   clientId: string;
   seatId: number;
@@ -34,6 +36,19 @@ interface LobbyPlayerStored {
   role: SocketRole;
   reconnectTokenHash: string;
   joinedAt: number;
+  activeDeviceId: string;
+  lastSeenAt: number;
+}
+
+const ONLINE_WINDOW_MS_0704 = 12_000;
+const DISCONNECTED_WINDOW_MS_0704 = 30_000;
+const RECONNECT_GRACE_MS_0704 = 60_000;
+
+function presence0704(player: LobbyPlayerStored, now = Date.now()): LobbyPresence0704 {
+  const age = Math.max(0, now - player.lastSeenAt);
+  if (age <= ONLINE_WINDOW_MS_0704) return "online";
+  if (age <= DISCONNECTED_WINDOW_MS_0704) return "reconnecting";
+  return "disconnected";
 }
 
 const ALLOWED_ORIGINS = new Set([
@@ -118,7 +133,7 @@ export default {
       return json({
         ok: true,
         service: "mememe-online",
-        milestone: "0.1.70.3",
+        milestone: "0.1.70.4",
         transport: "websocket-durable-object",
         lobbyAuthority: true
       }, {}, origin);
@@ -156,7 +171,7 @@ export default {
       return json({ ok: false, error: "room_code_exhausted" }, { status: 503 }, origin);
     }
 
-    const match = url.pathname.match(/^\/api\/rooms\/([A-Za-z0-9]{4,8})\/(ws|status|join|ready|settings|kick|start|leave)$/);
+    const match = url.pathname.match(/^\/api\/rooms\/([A-Za-z0-9]{4,8})\/(ws|status|join|ready|settings|kick|start|leave|heartbeat|close)$/);
     if (!match) {
       return json({
         ok: false,
@@ -166,6 +181,7 @@ export default {
           "POST /api/rooms/:code/join", "POST /api/rooms/:code/ready",
           "POST /api/rooms/:code/settings", "POST /api/rooms/:code/kick",
           "POST /api/rooms/:code/start", "POST /api/rooms/:code/leave",
+          "POST /api/rooms/:code/heartbeat", "POST /api/rooms/:code/close",
           "WS /api/rooms/:code/ws"
         ]
       }, { status: 404 }, origin);
@@ -218,27 +234,62 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return Boolean(expected && token && await sha256Hex(token) === expected);
   }
 
-  private canStart(players: LobbyPlayerStored[], settings: RoomSettings): boolean {
-    if (players.length === 0 || !players.every((player) => player.ready)) return false;
+  private async maintainLobby0704(): Promise<LobbyPlayerStored[]> {
+    const players = await this.readPlayers();
+    const started = await this.ctx.storage.get<boolean>("started") ?? false;
+    if (started) return players;
+
+    const now = Date.now();
+    const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
+    const host = players.find((player) => player.role === "host");
+
+    if (!closed && host && now - host.lastSeenAt > RECONNECT_GRACE_MS_0704) {
+      await this.ctx.storage.put({
+        closed: true,
+        closeReason: "host_timeout"
+      });
+    }
+
+    const retained = players.filter((player) =>
+      player.role === "host" || now - player.lastSeenAt <= RECONNECT_GRACE_MS_0704
+    );
+    if (retained.length !== players.length) {
+      await this.ctx.storage.put("players", retained);
+    }
+    return retained;
+  }
+
+  private canStart(players: LobbyPlayerStored[], settings: RoomSettings, now = Date.now()): boolean {
+    if (players.length === 0) return false;
+    if (!players.every((player) => player.ready && presence0704(player, now) === "online")) return false;
     return settings.cpuFill ? true : players.length === 4;
   }
 
   private async publicLobby(): Promise<Record<string, unknown>> {
     const roomCode = await this.ctx.storage.get<string>("roomCode");
     const settings = await this.readSettings();
-    const players = await this.readPlayers();
+    const players = await this.maintainLobby0704();
     const started = await this.ctx.storage.get<boolean>("started") ?? false;
     const cpuSeatIds = await this.ctx.storage.get<number[]>("cpuSeatIds") ?? [];
+    const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
+    const closeReason = await this.ctx.storage.get<"host_left" | "host_timeout">("closeReason");
+    const now = Date.now();
     return {
       ok: Boolean(roomCode),
       roomCode: roomCode ?? "",
       settings,
       players: players
-        .map(({ clientId, seatId, name, ready, role }) => ({ clientId, seatId, name, ready, role }))
+        .map(({ clientId, seatId, name, ready, role, lastSeenAt }) => ({
+          clientId, seatId, name, ready, role,
+          presence: presence0704({ clientId, seatId, name, ready, role, reconnectTokenHash: "", joinedAt: 0, activeDeviceId: "", lastSeenAt }, now)
+        }))
         .sort((a, b) => a.seatId - b.seatId),
       started,
       cpuSeatIds,
-      canStart: !started && this.canStart(players, settings)
+      closed,
+      closeReason,
+      reconnectGraceMs: RECONNECT_GRACE_MS_0704,
+      canStart: !closed && !started && this.canStart(players, settings, now)
     };
   }
 
@@ -253,6 +304,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
       const hostToken = String(body.hostToken ?? "");
       if (!roomCode || !hostToken) return internalJson({ ok: false, error: "missing_room_bootstrap" }, 400);
       const settings = normalizeSettings(body.settings);
+      const deviceId = String(body.deviceId ?? "").trim().slice(0, 120);
+      const now = Date.now();
       const players: LobbyPlayerStored[] = [{
         clientId: "host",
         seatId: 0,
@@ -260,7 +313,9 @@ export class MeMeMeRoom extends DurableObject<Env> {
         ready: false,
         role: "host",
         reconnectTokenHash: "",
-        joinedAt: Date.now()
+        joinedAt: now,
+        activeDeviceId: deviceId || "host-device-unknown",
+        lastSeenAt: now
       }];
       await this.ctx.storage.put({
         roomCode,
@@ -269,6 +324,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
         players,
         bannedClientIds: [] as string[],
         started: false,
+        closed: false,
+        closeReason: "",
         cpuSeatIds: [] as number[],
         createdAt: Date.now()
       });
@@ -283,21 +340,30 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
     if (url.pathname === "/join" && request.method === "POST") {
       if (await this.ctx.storage.get<boolean>("started")) return internalJson({ ok: false, error: "match_already_started" }, 409);
+      if (await this.ctx.storage.get<boolean>("closed")) return internalJson({ ok: false, error: "room_closed" }, 410);
       const body = await request.json() as Record<string, unknown>;
       const clientId = String(body.clientId ?? "").trim().slice(0, 80);
       const displayName = normalizeName(body.displayName, "Người chơi");
       const reconnectToken = String(body.reconnectToken ?? "");
+      const deviceId = String(body.deviceId ?? "").trim().slice(0, 120);
       if (!clientId) return internalJson({ ok: false, error: "client_id_required" }, 400);
+      if (!deviceId) return internalJson({ ok: false, error: "device_id_required" }, 400);
       const banned = await this.ctx.storage.get<string[]>("bannedClientIds") ?? [];
       if (banned.includes(clientId)) return internalJson({ ok: false, error: "kicked_from_room" }, 403);
 
-      const players = await this.readPlayers();
+      const players = await this.maintainLobby0704();
       const existing = players.find((player) => player.clientId === clientId);
       if (existing) {
         if (!reconnectToken || await sha256Hex(reconnectToken) !== existing.reconnectTokenHash) {
           return internalJson({ ok: false, error: "reconnect_token_invalid" }, 403);
         }
+        const age = Date.now() - existing.lastSeenAt;
+        if (existing.activeDeviceId && existing.activeDeviceId !== deviceId && age <= RECONNECT_GRACE_MS_0704) {
+          return internalJson({ ok: false, error: "duplicate_device_active" }, 409);
+        }
         existing.name = displayName;
+        existing.activeDeviceId = deviceId;
+        existing.lastSeenAt = Date.now();
         await this.ctx.storage.put("players", players);
         return internalJson({
           ok: true, roomCode: normalizeRoomCode(String(await this.ctx.storage.get("roomCode") ?? "")),
@@ -316,7 +382,9 @@ export class MeMeMeRoom extends DurableObject<Env> {
         ready: false,
         role: "client",
         reconnectTokenHash: await sha256Hex(token),
-        joinedAt: Date.now()
+        joinedAt: Date.now(),
+        activeDeviceId: deviceId,
+        lastSeenAt: Date.now()
       });
       players.sort((a, b) => a.seatId - b.seatId);
       await this.ctx.storage.put("players", players);
@@ -328,6 +396,53 @@ export class MeMeMeRoom extends DurableObject<Env> {
         reconnectToken: token,
         lobby: await this.publicLobby()
       }, 201);
+    }
+
+    if (url.pathname === "/heartbeat" && request.method === "POST") {
+      const body = await request.json() as Record<string, unknown>;
+      const clientId = String(body.clientId ?? "").trim().slice(0, 80);
+      const deviceId = String(body.deviceId ?? "").trim().slice(0, 120);
+      if (!clientId || !deviceId) return internalJson({ ok: false, error: "heartbeat_identity_required" }, 400);
+
+      const players = await this.maintainLobby0704();
+      const player = players.find((entry) => entry.clientId === clientId);
+      if (!player) return internalJson({ ok: false, error: "player_not_found" }, 404);
+
+      if (player.role === "host") {
+        if (!await this.validHostToken(String(body.hostToken ?? ""))) {
+          return internalJson({ ok: false, error: "host_auth_failed" }, 403);
+        }
+      } else {
+        const token = String(body.reconnectToken ?? "");
+        if (!token || await sha256Hex(token) !== player.reconnectTokenHash) {
+          return internalJson({ ok: false, error: "reconnect_token_invalid" }, 403);
+        }
+      }
+
+      const age = Date.now() - player.lastSeenAt;
+      if (player.activeDeviceId && player.activeDeviceId !== deviceId && age <= RECONNECT_GRACE_MS_0704) {
+        return internalJson({ ok: false, error: "duplicate_device_active" }, 409);
+      }
+
+      player.activeDeviceId = deviceId;
+      player.lastSeenAt = Date.now();
+      await this.ctx.storage.put("players", players);
+      return internalJson(await this.publicLobby());
+    }
+
+    if (url.pathname === "/close" && request.method === "POST") {
+      const body = await request.json() as Record<string, unknown>;
+      if (!await this.validHostToken(String(body.hostToken ?? ""))) {
+        return internalJson({ ok: false, error: "host_auth_failed" }, 403);
+      }
+      await this.ctx.storage.put({
+        closed: true,
+        closeReason: "host_left"
+      });
+      for (const socket of this.ctx.getWebSockets()) {
+        try { socket.close(4004, "Host left room."); } catch {}
+      }
+      return internalJson(await this.publicLobby());
     }
 
     if (url.pathname === "/ready" && request.method === "POST") {
@@ -407,7 +522,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
       const body = await request.json() as Record<string, unknown>;
       if (!await this.validHostToken(String(body.hostToken ?? ""))) return internalJson({ ok: false, error: "host_auth_failed" }, 403);
       if (await this.ctx.storage.get<boolean>("started")) return internalJson(await this.publicLobby());
-      const players = await this.readPlayers();
+      if (await this.ctx.storage.get<boolean>("closed")) return internalJson({ ok: false, error: "room_closed" }, 410);
+      const players = await this.maintainLobby0704();
       const settings = await this.readSettings();
       if (!this.canStart(players, settings)) return internalJson({ ok: false, error: "players_not_ready" }, 409);
       const used = new Set(players.map((player) => player.seatId));
