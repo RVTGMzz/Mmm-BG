@@ -35,7 +35,6 @@ import {
 import type { NewsDefinition } from '../core/news';
 import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from '../core/rules';
 import { gameSession } from '../core/session';
-import { chooseTestBotIntent } from '../core/testBot';
 import {
   TwoTabClientSession,
   TwoTabHostSession,
@@ -100,8 +99,6 @@ export class DemoBoardScene extends Phaser.Scene {
   private handButton!: Phaser.GameObjects.Rectangle;
   private handButtonText!: Phaser.GameObjects.Text;
   private logs: string[] = [];
-  private cpuAutoplayKey07042 = '';
-  private cpuAutoplayTimer07042?: Phaser.Time.TimerEvent;
 
   constructor() {
     super('DemoBoardScene');
@@ -251,9 +248,6 @@ export class DemoBoardScene extends Phaser.Scene {
   }
 
   private closeSessions(): void {
-    this.cpuAutoplayTimer07042?.remove(false);
-    this.cpuAutoplayTimer07042 = undefined;
-    this.cpuAutoplayKey07042 = '';
     this.unsubscribeGame?.();
     this.unsubscribeShell?.();
     this.unsubscribeGame = undefined;
@@ -317,17 +311,9 @@ export class DemoBoardScene extends Phaser.Scene {
     }
 
     this.refreshHud();
-    const current = this.currentPlayer();
-    if (
-      this.shell.status === 'active' &&
-      this.phase.is('BRANCH_CHOICE') &&
-      this.canControlCurrentPlayer() &&
-      current &&
-      !browserSession.isCpuSeat(current.id)
-    ) {
+    if (this.shell.status === 'active' && this.phase.is('BRANCH_CHOICE') && this.canControlCurrentPlayer()) {
       void this.promptNetworkBranch();
     }
-    this.scheduleCpuAutoplay07042();
   }
 
   private applyShell(shell: DemoMatchShellState): void {
@@ -339,7 +325,6 @@ export class DemoBoardScene extends Phaser.Scene {
     }
     this.refreshHud();
     this.renderShellOverlay();
-    this.scheduleCpuAutoplay07042();
   }
 
   private networkStatusLabel(commandSeq?: number, checksum?: string): string {
@@ -358,40 +343,6 @@ export class DemoBoardScene extends Phaser.Scene {
     if (this.hostSession) return this.hostSession.controlsActor(current.id);
     if (this.clientSession) return this.clientSession.controlsActor(current.id);
     return false;
-  }
-
-  private scheduleCpuAutoplay07042(): void {
-    if (!this.hostSession || browserSession.current.mode === 'client' || this.shell.status !== 'active') return;
-    const actor = this.currentPlayer();
-    if (!actor || !browserSession.isCpuSeat(actor.id) || !this.hostSession.controlsActor(actor.id)) return;
-
-    const commandSeq = hostAuthorityCommandSeq(this.hostSession.authority);
-    const key = [
-      actor.id,
-      this.match.turn.phase,
-      this.match.turn.revision,
-      this.match.turn.turnNumber,
-      commandSeq,
-    ].join(':');
-    if (key === this.cpuAutoplayKey07042) return;
-
-    this.cpuAutoplayKey07042 = key;
-    this.cpuAutoplayTimer07042?.remove(false);
-    this.cpuAutoplayTimer07042 = this.time.delayedCall(520, () => {
-      if (!this.hostSession || this.shell.status !== 'active') return;
-      const liveActor = this.currentPlayer();
-      if (!liveActor || liveActor.id !== actor.id || !browserSession.isCpuSeat(liveActor.id)) return;
-
-      const decision = chooseTestBotIntent(this.match, BOARD, CARDS);
-      if (!decision) return;
-
-      this.writeLog(`🤖 ${liveActor.name}: ${decision.reason}`);
-      try {
-        this.hostSession.submitLocalIntent(decision.type, liveActor.id, decision.data);
-      } catch (error) {
-        this.writeLog(`⚠️ CPU: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    });
   }
 
   private currentPlayer(): PlayerState | undefined {
