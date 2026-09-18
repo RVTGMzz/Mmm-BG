@@ -23,3 +23,8 @@ The Worker name intentionally matches the existing Cloudflare dashboard Worker.
 The Durable Object is a relay/room coordinator only. Gameplay authority remains in MeMeMe's existing host-authoritative session code.
 
 The WebSocket server uses Cloudflare's hibernation API through `ctx.acceptWebSocket()`.
+
+## Cloudflare Git deployment
+
+Git integration connected on 2026-09-18 to the existing `mememe-online` Worker.
+This checkpoint intentionally touches the Worker root so Cloudflare can run the first production build from `mememe-mvp-0.1-core`.
