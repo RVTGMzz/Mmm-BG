@@ -8,7 +8,6 @@ import {
   type FaceStylePreset,
   type FaceTransform,
 } from '../systems/faces';
-import { recoverMobileLandscapeAfterPicker07031 } from './mobileLandscape07031';
 
 export interface FaceImageEditorResult {
   dataUrl: string;
@@ -22,7 +21,6 @@ function distance(a: PointerEvent, b: PointerEvent): number {
 
 export class FaceImageEditor {
   static async open(file: File): Promise<FaceImageEditorResult | undefined> {
-    recoverMobileLandscapeAfterPicker07031();
     const image = await loadFaceImage(file);
 
     return new Promise((resolve) => {

@@ -8,8 +8,8 @@ import { gameSession, type FaceExpression } from '../core/session';
 import { faceTextureKey } from '../systems/faces';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
 import {
-  recoverMobileLandscapeAfterPicker07031,
   tryLockMobileLandscape07031,
+  waitForMobileLandscapeAfterPicker07032,
 } from '../ui/mobileLandscape07031';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
@@ -77,7 +77,6 @@ export class SetupScene extends Phaser.Scene {
         const slotLabel = node.querySelector<HTMLElement>(`#slot-${player.id}-${expression.id}`);
         slotLabel?.addEventListener('pointerdown', () => { void tryLockMobileLandscape07031(false); }, { passive: true });
         input?.addEventListener('change', () => {
-          recoverMobileLandscapeAfterPicker07031();
           void this.handleFaceSelection(node, player.id, expression.id, input);
         });
         const asset = player.faces[expression.id];
@@ -129,7 +128,7 @@ export class SetupScene extends Phaser.Scene {
 
   private async handleFaceSelection(root: HTMLDivElement, playerId: number, expression: FaceExpression, input: HTMLInputElement): Promise<void> {
     const file = input.files?.[0]; if (!file) return;
-    recoverMobileLandscapeAfterPicker07031();
+    await waitForMobileLandscapeAfterPicker07032();
     const slot = root.querySelector<HTMLElement>(`#slot-${playerId}-${expression}`);
     const preview = root.querySelector<HTMLImageElement>(`#preview-${playerId}-${expression}`);
     slot?.classList.add('loading'); this.setStatus('Đang chỉnh ảnh…', false);
