@@ -176,7 +176,7 @@ const scene060Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardSc
 const scene061Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene061.ts', import.meta.url), 'utf8');
 const scene069Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene069.ts', import.meta.url), 'utf8');
 const scene0701Source = readFileSync(new URL('../src/scenes/CareerMinigameBoardScene0701.ts', import.meta.url), 'utf8');
-assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'), 'later presentation wrappers may advance the launcher while retaining 0.1.58 beneath them');
+assert(mainSource.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'), 'later presentation wrappers may advance the launcher while retaining 0.1.58 beneath them');
 assert(scene0701Source.includes('extends CareerMinigameBoardScene069'), '0.1.70.1 must preserve the validated chain through 0.1.69');
 assert(!scene0701Source.includes('Math.random'));
 assert(scene069Source.includes('extends CareerMinigameBoardScene0682'), '0.1.69 must remain above the retained authority/presentation chain');
