@@ -3,7 +3,8 @@ import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import {
-  fetchOnlineLobby0703,
+  closeOnlineRoom0704,
+  heartbeatOnlineLobby0704,
   kickOnlinePlayer0703,
   leaveOnlineRoom0703,
   setOnlineReady0703,
@@ -18,6 +19,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
   private state?: OnlineLobbyState0703;
   private enteringMatch = false;
   private polling = false;
+  private exitingRoom = false;
 
   constructor() { super('OnlineRoomLobbyScene'); }
 
@@ -130,37 +132,72 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     });
 
     root.querySelector<HTMLButtonElement>('#online-leave')?.addEventListener('click', async () => {
+      if (this.exitingRoom) return;
+      this.exitingRoom = true;
       sfxController.play('ui_confirm');
-      if (config.mode === 'client') {
-        try { await leaveOnlineRoom0703(config.roomCode, config.clientId, config.reconnectToken); } catch {}
+      try {
+        if (config.mode === 'host') {
+          await closeOnlineRoom0704(config.roomCode, config.hostToken);
+        } else {
+          await leaveOnlineRoom0703(config.roomCode, config.clientId, config.reconnectToken);
+        }
+      } catch {
+        // Leaving the local scene must remain possible even if the network is already gone.
       }
       this.scene.start('LocalLobbyScene');
     });
 
     void this.refresh();
-    this.time.addEvent({ delay: 900, loop: true, callback: () => { void this.refresh(); } });
+    this.time.addEvent({ delay: 3000, loop: true, callback: () => { void this.refresh(); } });
   }
 
   private async refresh(): Promise<void> {
-    if (this.polling || this.enteringMatch) return;
+    if (this.polling || this.enteringMatch || this.exitingRoom) return;
     this.polling = true;
     try {
-      this.state = await fetchOnlineLobby0703(browserSession.current.roomCode);
-      if (browserSession.current.mode === 'client') {
-        const me = this.state.players.find((player) => player.clientId === browserSession.current.clientId);
+      const config = browserSession.current;
+      this.state = await heartbeatOnlineLobby0704(
+        config.roomCode,
+        config.mode === 'host'
+          ? { clientId: 'host', hostToken: config.hostToken }
+          : { clientId: config.clientId, reconnectToken: config.reconnectToken },
+      );
+
+      if (this.state.closed && !this.state.started) {
+        const copy = this.state.closeReason === 'host_timeout'
+          ? 'Host mất kết nối quá 60 giây • phòng đã đóng.'
+          : 'Host đã rời phòng • phòng đã đóng.';
+        this.setStatus(copy, true);
+        this.scheduleLobbyExit0704(1600);
+        return;
+      }
+
+      if (config.mode === 'client') {
+        const me = this.state.players.find((player) => player.clientId === config.clientId);
         if (!me && !this.state.started) {
-          this.setStatus('Bạn đã rời hoặc bị Host mời khỏi phòng.', true);
-          this.time.delayedCall(1200, () => this.scene.start('LocalLobbyScene'));
+          this.setStatus('Ghế của bạn đã hết thời gian giữ hoặc bạn đã bị Host mời khỏi phòng.', true);
+          this.scheduleLobbyExit0704(1600);
           return;
         }
       }
+
       this.render();
       this.enterMatchIfStarted();
     } catch (error) {
-      this.setStatus(error instanceof Error ? error.message : 'Mất kết nối lobby.', true);
+      const message = error instanceof Error ? error.message : 'Mất kết nối lobby.';
+      this.setStatus(message, true);
+      if (/thiết bị khác|player_not_found|Phòng online đã đóng/i.test(message)) {
+        this.scheduleLobbyExit0704(1800);
+      }
     } finally {
       this.polling = false;
     }
+  }
+
+  private scheduleLobbyExit0704(delay: number): void {
+    if (this.exitingRoom) return;
+    this.exitingRoom = true;
+    this.time.delayedCall(delay, () => this.scene.start('LocalLobbyScene'));
   }
 
   private localPlayer() {
@@ -180,13 +217,21 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
         const cpuPending = !player && state.settings.cpuFill && seatId > 0;
         const title = player?.name ?? (cpuPending ? `CPU ${seatId + 1}` : 'Đang trống');
         const badge = seatId === 0 ? '👑 HOST' : player ? 'NGƯỜI CHƠI' : cpuPending ? '🤖 CPU KHI START' : 'TRỐNG';
+        const presenceCopy = player?.presence === 'online'
+          ? '🟢 ONLINE'
+          : player?.presence === 'reconnecting'
+            ? '🟡 ĐANG KẾT NỐI LẠI'
+            : player?.presence === 'disconnected'
+              ? '⚪ MẤT KẾT NỐI'
+              : '';
         const ready = player ? (player.ready ? '✅ READY' : '⏳ CHƯA READY') : (cpuPending ? '✅ AUTO' : '—');
         const kick = config.mode === 'host' && seatId > 0 && player
           ? `<button type="button" class="online-kick" data-kick-seat="${seatId}">KICK</button>`
           : '';
-        return `<div class="online-player-row ${player ? 'occupied' : ''}">
+        const presenceClass = player ? `presence-${player.presence}` : '';
+        return `<div class="online-player-row ${player ? 'occupied' : ''} ${presenceClass}">
           <span class="online-seat">P${seatId + 1}</span>
-          <div><strong>${this.escape(title)}</strong><small>${badge}</small></div>
+          <div><strong>${this.escape(title)}</strong><small>${badge}${presenceCopy ? ` • ${presenceCopy}` : ''}</small></div>
           <span class="online-ready-state">${ready}</span>${kick}
         </div>`;
       }).join('');
@@ -214,8 +259,11 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
 
     if (!state.started) {
       const humanCount = state.players.length;
-      const requirement = state.settings.cpuFill ? 'Mọi người trong phòng cần Ready.' : 'Tắt CPU: cần đủ 4 người và tất cả Ready.';
-      this.setStatus(`${humanCount}/4 người • ${requirement}`);
+      const onlineCount = state.players.filter((player) => player.presence === 'online').length;
+      const requirement = state.settings.cpuFill
+        ? 'Mọi người phải Online + Ready.'
+        : 'Tắt CPU: cần đủ 4 người Online + Ready.';
+      this.setStatus(`${humanCount}/4 người • ${onlineCount} online • giữ ghế mất kết nối 60s • ${requirement}`);
     }
   }
 
