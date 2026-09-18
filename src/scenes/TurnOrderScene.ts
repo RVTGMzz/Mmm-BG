@@ -3,12 +3,13 @@ import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import { createBrowserSessionTransport } from '../core/onlineTransport0702';
 import { configureInitialPlayOrder } from '../core/matchState';
-import { gameSession } from '../core/session';
+import { gameSession, type FaceExpression } from '../core/session';
 import {
   TurnOrderClientSession,
   TurnOrderHostSession,
   type TurnOrderEvent,
   type TurnOrderMessage,
+  type TurnOrderProfileWire07042,
 } from '../core/turnOrderSession';
 
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
@@ -44,7 +45,7 @@ export class TurnOrderScene extends Phaser.Scene {
   }
 
   create(): void {
-    if (browserSession.current.mode === 'client') gameSession.reset();
+    if (browserSession.current.mode === 'client' && browserSession.current.transport !== 'online') gameSession.reset();
 
     this.cameras.main.setBackgroundColor('#f4ead7');
     this.add.rectangle(640, 360, 1130, 620, 0xfffbf3, 1).setStrokeStyle(5, 0x202020, 1);
@@ -127,6 +128,9 @@ export class TurnOrderScene extends Phaser.Scene {
         gameSession.players.map((player) => player.name),
         transport,
       );
+      this.hostOrderSession.setInitialProfiles07042(
+        gameSession.players.map((player) => this.toWireProfile07042(player.id)),
+      );
       this.unsubscribeOrder = this.hostOrderSession.subscribe((event) => this.handleHostOrderEvent(event));
       this.hostOrderSession.start();
       return;
@@ -138,6 +142,7 @@ export class TurnOrderScene extends Phaser.Scene {
       config.clientId,
       config.seatId,
       transport,
+      this.toWireProfile07042(config.seatId),
     );
     this.unsubscribeOrder = this.clientOrderSession.subscribe((event) => this.handleClientOrderEvent(event));
     this.clientOrderSession.start();
@@ -179,17 +184,28 @@ export class TurnOrderScene extends Phaser.Scene {
     const session = this.hostOrderSession;
     if (!session) return;
 
+    const expectedRemoteSeats = [1, 2, 3].filter((seatId) => !browserSession.isCpuSeat(seatId));
     this.hidePrimaryButton();
-    this.promptText?.setText('📡 CHỜ CLIENT REMOTE...');
-    this.detailText?.setText('Mở tab JOIN, chọn P2/P3/P4. Roll For Order chỉ bắt đầu sau khi có ít nhất 1 ghế remote kết nối.');
-    await session.waitForRemoteClaim();
-    await this.pause(420);
+
+    if (expectedRemoteSeats.length > 0) {
+      this.promptText?.setText('📡 CHỜ NGƯỜI CHƠI...');
+      this.detailText?.setText(
+        `Đang chờ ${expectedRemoteSeats.map((seatId) => `P${seatId + 1}`).join(', ')} hoàn tất avatar và kết nối.`,
+      );
+      await session.waitForRemoteSeats07042(expectedRemoteSeats);
+      await this.pause(420);
+    }
+
     session.lockClaims();
     this.refreshOwnerLabels();
 
     const remoteSeats = session.claimedSeatIds.map((seatId) => `P${seatId + 1}`).join(', ');
-    this.promptText?.setText('✅ REMOTE ĐÃ KẾT NỐI');
-    this.detailText?.setText(`${remoteSeats} sẽ tự bấm xúc xắc trên tab của mình. Các ghế còn lại do HOST bấm.`);
+    this.promptText?.setText(expectedRemoteSeats.length > 0 ? '✅ MỌI NGƯỜI ĐÃ KẾT NỐI' : '🤖 CPU ĐÃ SẴN SÀNG');
+    this.detailText?.setText(
+      remoteSeats
+        ? `${remoteSeats} tự điều khiển trên máy của họ. CPU sẽ tự chơi.`
+        : 'Không có client remote. CPU sẽ tự đổ và tự đánh như chế độ offline.',
+    );
     await this.pause(620);
 
     const ids = gameSession.players.map((player) => player.id);
@@ -247,14 +263,20 @@ export class TurnOrderScene extends Phaser.Scene {
         this.hidePrimaryButton();
         this.promptText?.setText(`📡 ${player.name} • REMOTE ROLL`);
         this.detailText?.setText(depth === 1
-          ? `Đang chờ P${id + 1} bấm xúc xắc trên tab remote.`
-          : `Tie reroll: chỉ P${id + 1} bấm lại trên tab remote.`);
+          ? `Đang chờ P${id + 1} bấm xúc xắc trên máy của họ.`
+          : `Tie reroll: chỉ P${id + 1} bấm lại trên máy của họ.`);
         result = await handle.result!;
+      } else if (browserSession.isCpuSeat(id)) {
+        this.hidePrimaryButton();
+        this.promptText?.setText(`🤖 ${player.name} • CPU ROLL`);
+        this.detailText?.setText('CPU tự đổ xúc xắc.');
+        await this.pause(520);
+        result = session.resolveHostOwnedPrompt(handle.prompt.promptId);
       } else {
         this.promptText?.setText(`🖥️ ${player.name} • HOST ROLL`);
         this.detailText?.setText(depth === 1
-          ? 'Ghế này do HOST điều khiển. Bấm xúc xắc để host chốt D6.'
-          : 'Tie reroll: ghế HOST này đổ lại.');
+          ? 'Đây là lượt của Host. Bấm xúc xắc để chốt D6.'
+          : 'Tie reroll: Host đổ lại.');
         result = await this.waitForHostOwnedRoll(handle.prompt.promptId);
       }
 
@@ -348,6 +370,18 @@ export class TurnOrderScene extends Phaser.Scene {
   }
 
   private handleHostOrderEvent(event: TurnOrderEvent): void {
+    if (event.kind === 'profile_update') {
+      this.applyWireProfile07042(event.profile);
+      this.refreshOwnerLabels();
+      return;
+    }
+    if (event.kind === 'profile_sync') {
+      event.playerNames.forEach((name, id) => {
+        gameSession.setPlayerName(id, name);
+        this.nameTexts.get(id)?.setText(gameSession.players[id]?.name ?? name);
+      });
+      return;
+    }
     if (event.kind !== 'status') return;
     if (!this.hostOrderSession?.claimedSeatIds.length) return;
     this.refreshOwnerLabels();
@@ -364,6 +398,12 @@ export class TurnOrderScene extends Phaser.Scene {
         gameSession.setPlayerName(id, name);
         this.nameTexts.get(id)?.setText(gameSession.players[id]?.name ?? name);
       });
+      this.refreshOwnerLabels();
+      return;
+    }
+
+    if (event.kind === 'profile_update') {
+      this.applyWireProfile07042(event.profile);
       this.refreshOwnerLabels();
       return;
     }
@@ -475,6 +515,35 @@ export class TurnOrderScene extends Phaser.Scene {
       text.setAlpha(id === playerId ? 1 : 0.48);
       text.setScale(id === playerId ? 1.08 : 1).setAngle(0);
       this.rankTexts.get(id)?.setText('');
+    }
+  }
+
+  private toWireProfile07042(playerId: number): TurnOrderProfileWire07042 {
+    const player = gameSession.players[playerId];
+    const faces: Partial<Record<FaceExpression, string>> = {};
+    for (const expression of ['neutral', 'happy', 'angry'] as const) {
+      const asset = player?.faces[expression];
+      if (asset?.dataUrl) faces[expression] = asset.dataUrl;
+    }
+    return {
+      seatId: playerId,
+      name: player?.name ?? `Player ${playerId + 1}`,
+      faces,
+    };
+  }
+
+  private applyWireProfile07042(profile: TurnOrderProfileWire07042): void {
+    if (!Number.isInteger(profile.seatId) || profile.seatId < 0 || profile.seatId > 3) return;
+    gameSession.setPlayerName(profile.seatId, profile.name);
+    this.nameTexts.get(profile.seatId)?.setText(gameSession.players[profile.seatId]?.name ?? profile.name);
+    for (const expression of ['neutral', 'happy', 'angry'] as const) {
+      const dataUrl = profile.faces?.[expression];
+      if (!dataUrl) continue;
+      gameSession.setFace(profile.seatId, expression, {
+        dataUrl,
+        textureKey: faceTextureKey(profile.seatId, expression),
+        originalName: `online-p${profile.seatId + 1}-${expression}.webp`,
+      });
     }
   }
 
