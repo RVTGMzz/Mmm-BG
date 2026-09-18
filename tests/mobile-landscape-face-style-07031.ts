@@ -22,7 +22,7 @@ const preset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET;
 assert.equal(preset, 'game-soft');
 
 assert.match(main, /installMobileLandscapeGuard07031\(\)/);
-assert.match(guard, /XOAY NGANG ĐIỆN THOẠI/);
+assert.match(guard, /<strong>XOAY NGANG<\/strong>/);
 assert.match(guard, /requireInitialMobileLandscape07032/);
 assert.match(guard, /waitForMobileLandscapeAfterPicker07032/);
 assert.match(guard, /requireMobileLandscapeAfterIntro07034/);
