@@ -61,7 +61,7 @@ const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 assert(scene061.includes('extends CareerMinigameBoardScene060')); assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene061.includes('BÁO CÁO PLAYTEST')); assert(scene061.includes('LOCAL ONLY')); assert(scene061.includes('navigator.clipboard'));
 assert(!scene061.includes('Math.random')); assert(!scene061.includes('submitIntent(')); assert(!scene061.includes('fetch('));
-assert(main.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 assert(scene0701.includes('extends CareerMinigameBoardScene069'), '0.1.70.1 must preserve the validated chain through 0.1.69');
 assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682')); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
