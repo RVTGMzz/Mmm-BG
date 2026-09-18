@@ -7,6 +7,7 @@ const setup = readFileSync('src/scenes/SetupScene.ts', 'utf8');
 const orderCore = readFileSync('src/core/turnOrderSession.ts', 'utf8');
 const orderScene = readFileSync('src/scenes/TurnOrderScene.ts', 'utf8');
 const board = readFileSync('src/scenes/DemoBoardScene.ts', 'utf8');
+const playtestBoard = readFileSync('src/scenes/PlaytestDemoBoardScene.ts', 'utf8');
 const styles = readFileSync('src/styles.css', 'utf8');
 
 assert.match(worker, /milestone: "0\.1\.70\.4\.[23]"/);
@@ -50,10 +51,11 @@ assert.match(orderScene, /CPU tự đổ xúc xắc/);
 assert.match(orderScene, /applyWireProfile07042/);
 assert.match(orderScene, /faceTextureKey/);
 
-assert.match(board, /chooseTestBotIntent/);
-assert.match(board, /scheduleCpuAutoplay07042/);
-assert.match(board, /browserSession\.isCpuSeat\(actor\.id\)/);
-assert.match(board, /hostSession\.submitLocalIntent\(decision\.type/);
+assert.match(playtestBoard, /chooseTestBotIntent/);
+assert.match(playtestBoard, /queueCpuActionIfNeeded/);
+assert.match(playtestBoard, /browserSession\.isCpuSeat\(current\.id\)/);
+assert.match(playtestBoard, /live\.submitIntent\(liveDecision\.type/);
+assert(!board.includes('scheduleCpuAutoplay07042'));
 assert.match(board, /ONLINE • trận đã khóa phòng/);
 
 assert.match(styles, /mememe-setup\.online-own-profile/);
