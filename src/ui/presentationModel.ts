@@ -270,8 +270,8 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   const title = dataString(event, 'title');
   const rarity = dataString(event, 'rarity');
   const impact = dataString(event, 'impact');
-  const description = dataString(event, 'description');
-  const summary = dataString(event, 'summary');
+  const description = friendlyVisibleCopy(dataString(event, 'description'));
+  const summary = friendlyVisibleCopy(dataString(event, 'summary'));
   const reactionEventId = dataString(event, 'reactionEventId') || undefined;
 
   if (event.type === 'dice_roll' || event.type === 'job_dice_roll') {
