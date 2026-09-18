@@ -176,6 +176,8 @@ jobs:
         run: npm run test:online-client-0702
       - name: 0.1.70.3 online lobby authority
         run: npm run test:online-lobby-0703
+      - name: 0.1.70.4 online room hardening
+        run: npm run test:online-hardening-0704
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
