@@ -3,7 +3,7 @@
 Continue from `HANDOFF_CURRENT.md` on branch `mememe-mvp-0.1-core`.
 
 Current milestone:
-**0.1.70.3 — Online Lobby Authority**
+**0.1.70.4 — Online Room Hardening**
 
 Read:
 1. `HANDOFF_CURRENT.md`
@@ -13,29 +13,38 @@ Read:
 5. `src/scenes/OnlineRoomLobbyScene.ts`
 6. `cloudflare/mememe-online/src/index.ts`
 7. `src/core/onlineTransport0702.ts`
-8. `tests/online-lobby-authority-0703.ts`
+8. `tests/online-room-hardening-0704.ts`
+9. `tests/online-lobby-authority-0703.ts`
 
 Runtime source:
-`d56755ba6731ef78c8ecb32a76e0e7752e036506`
+`ece4cde7b42ce2c69cd17e3973bbb6223825a2d2`
 
 Public test:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-0.1.70.3 contract:
+0.1.70.4 contract:
 - Host=P1
-- remote clients auto-seat P2/P3/P4 in join order
-- Host controls room permission for Camera Call / Voice Chat and CPU Fill
-- camera and mic are still OFF by default; no WebRTC media yet
-- all humans must Ready
-- setting change resets Ready
-- CPU Fill turns vacant seats into CPU at Start
-- CPU Fill OFF requires four humans
-- Host owns Start and Kick
-- reconnect token protects reserved client seat
-- gameplay WS validates lobby seat identity
-- Host gameplay authority remains unchanged
+- auto-seat P2/P3/P4
+- Ready / CPU Fill / Kick retained
+- per-device identity
+- heartbeat every 3 seconds
+- presence Online / Reconnecting / Disconnected
+- 60-second reconnect grace
+- Start requires Online + Ready
+- duplicate-device reconnect identity lock
+- Host Leave closes room
+- Host timeout closes pre-match room after 60 seconds
+- gameplay authority remains Host-side
+- camera/voice media is still not implemented
 
-Await Ron's two-device online runtime test before declaring Online Runtime PASS.
+Mobile boot remains:
+**XOAY NGANG -> INTRO -> GAME**
+
+Await Ron's real-device runtime test before declaring Online Runtime PASS.
+
+After 0.1.70.4 human acceptance, planned next layer is:
+**0.1.70.5 Optional Camera/Voice WebRTC**
+with camera/mic OFF by default and explicit per-player opt-in.
 
 Do not resume 0.1.71.
 Do not merge or Ready PR #1.

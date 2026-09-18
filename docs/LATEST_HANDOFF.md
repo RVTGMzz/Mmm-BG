@@ -5,45 +5,45 @@ PR #1: Draft/Open. Do not merge unless Ron explicitly asks.
 
 ## Current milestone
 
-**0.1.70.3 — Online Lobby Authority**
+**0.1.70.4 — Online Room Hardening**
 
-Public build is deployed. Human cross-device testing is pending.
+Public build is deployed. Human cross-device hardening test is pending.
 
 Runtime source:
-`d56755ba6731ef78c8ecb32a76e0e7752e036506`
+`ece4cde7b42ce2c69cd17e3973bbb6223825a2d2`
 
 Implemented:
-- Cloudflare Worker + SQLite Durable Object room backend;
-- Internet WebSocket transport while retaining BroadcastChannel local mode;
-- Host=P1;
-- server auto-seat P2 -> P3 -> P4 by join order;
-- Host-controlled Camera Call allowed, Voice Chat allowed, CPU Fill;
-- camera/mic remain OFF and media is not implemented yet;
-- human Ready state and authoritative Start gate;
-- settings changes reset Ready;
-- CPU Fill converts vacant seats on Start;
-- Host Kick;
-- room-session ban for kicked client IDs;
-- reconnect token hashing and client seat validation;
-- game / turn-order / demo-shell channel isolation.
+- all 0.1.70.3 Host=P1 / auto-seat / Ready / CPU Fill / Kick rules retained;
+- per-install device identity;
+- 3-second authoritative lobby heartbeat;
+- Online / Reconnecting / Disconnected presence;
+- 60-second reconnect grace and reserved seat;
+- Start requires humans to be Online + Ready;
+- duplicate-device identity lock during grace;
+- explicit Host Leave closes room;
+- Host timeout closes pre-match room after 60 seconds;
+- stale client seat pruning;
+- presence UI in lobby;
+- mobile flow remains XOAY NGANG -> INTRO -> GAME;
+- camera/voice still policy-only, no WebRTC media yet.
 
 Validation:
-- CI #2954 SUCCESS
-- PR CI #2955 SUCCESS
-- source web #280 SUCCESS
+- Push CI #2996 SUCCESS
+- PR CI #2997 SUCCESS
+- Steam Deck/Web #301 SUCCESS
 - Cloudflare Worker build SUCCESS
-- publisher #236 SUCCESS
-- 0.1.70.3 lobby gate PASS
-- Pages #36 SUCCESS
+- Publisher #257 SUCCESS
+- 0.1.70.4 hardening gate PASS
+- Pages #44 SUCCESS
 
 Public mirror:
-`5f9c4805a17a9919a5c35a36456eaf1882296724`
+`abb46b58540ffc1ac8b508c8d11ade3670f1926f`
 
 Test:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Do not call Online Runtime PASS until Ron tests two real devices.
+Do not call Online Runtime PASS until Ron tests the reconnect/presence/device-lock/host-leave cases on real devices.
 Do not resume 0.1.71.
 Do not merge PR #1.
 
-The prior freeze/stuck symptom is reported fixed, but the full Jail/Hospital release matrix still has not received explicit human PASS.
+Next planned online layer after human acceptance: **0.1.70.5 optional Camera/Voice WebRTC**, opt-in per player and OFF by default.
