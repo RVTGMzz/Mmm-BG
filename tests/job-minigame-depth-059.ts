@@ -114,7 +114,7 @@ assert(!scene059.includes('Math.random'), '0.1.59 presentation wrapper must not 
 assert(!scene059.includes('submitIntent('), '0.1.59 scene must not become a second gameplay authority.');
 assert(scene060.includes('extends CareerMinigameBoardScene059'));
 assert(scene061.includes('extends CareerMinigameBoardScene060'));
-assert(main.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 assert(scene0701.includes('extends CareerMinigameBoardScene069'));
 assert(!scene0701.includes('Math.random'));
 assert(scene069.includes('extends CareerMinigameBoardScene0682'));
