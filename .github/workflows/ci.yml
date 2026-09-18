@@ -174,6 +174,8 @@ jobs:
         run: npm run test:online-worker-0702
       - name: 0.1.70.2 online client transport and room lobby
         run: npm run test:online-client-0702
+      - name: 0.1.70.3 online lobby authority
+        run: npm run test:online-lobby-0703
       - name: Face image transform bounds
         run: npm run test:image
       - name: Validate external playtest package

@@ -10,6 +10,7 @@ import { installSettingsPanel } from './ui/SettingsPanel';
 import { installGlobalGamepadUiNavigation0651 } from './ui/gamepadUiNavigation0651';
 import { SplashScene069 } from './scenes/SplashScene069';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
+import { OnlineRoomLobbyScene } from './scenes/OnlineRoomLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderScene0701 as TurnOrderScene } from './scenes/TurnOrderScene0701';
 import { BoardScene } from './scenes/BoardScene';
@@ -30,6 +31,7 @@ if (finalMapMode === '3') installPreviewBranchMode054();
 const normalScenes = [
   SplashScene069,
   LocalLobbyScene,
+  OnlineRoomLobbyScene,
   SetupScene,
   TurnOrderScene,
   ActiveBoardScene,

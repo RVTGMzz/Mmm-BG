@@ -10,6 +10,7 @@ export interface BrowserSessionConfig {
   cpuSeatIds: number[];
   onlineBaseUrl: string;
   hostToken: string;
+  reconnectToken: string;
 }
 
 function makeClientId(prefix: string): string {
@@ -57,6 +58,7 @@ class BrowserSessionState {
     cpuSeatIds: [],
     onlineBaseUrl: '',
     hostToken: '',
+    reconnectToken: '',
   };
 
   get current(): BrowserSessionConfig {
@@ -77,7 +79,12 @@ class BrowserSessionState {
   }
 
   isCpuSeat(seatId: number): boolean {
-    return this.config.mode === 'solo' && this.config.cpuSeatIds.includes(seatId);
+    return this.config.cpuSeatIds.includes(seatId);
+  }
+
+  setCpuSeatIds(seatIds: number[]): BrowserSessionConfig {
+    this.config = { ...this.config, cpuSeatIds: normalizeCpuSeatIds(seatIds) };
+    return this.current;
   }
 
   configureSolo(cpuSeatIds: number[] = []): BrowserSessionConfig {
@@ -90,6 +97,7 @@ class BrowserSessionState {
       cpuSeatIds: normalizeCpuSeatIds(cpuSeatIds),
       onlineBaseUrl: '',
       hostToken: '',
+    reconnectToken: '',
     };
     return this.current;
   }
@@ -105,6 +113,7 @@ class BrowserSessionState {
       cpuSeatIds: [],
       onlineBaseUrl: '',
       hostToken: '',
+    reconnectToken: '',
     };
     return this.current;
   }
@@ -123,6 +132,7 @@ class BrowserSessionState {
       cpuSeatIds: [],
       onlineBaseUrl: '',
       hostToken: '',
+    reconnectToken: '',
     };
     return this.current;
   }
@@ -143,6 +153,7 @@ class BrowserSessionState {
       cpuSeatIds: [],
       onlineBaseUrl: baseUrl,
       hostToken: hostToken.trim(),
+      reconnectToken: '',
     };
     return this.current;
   }
@@ -163,6 +174,7 @@ class BrowserSessionState {
       cpuSeatIds: [],
       onlineBaseUrl: baseUrl,
       hostToken: '',
+    reconnectToken: '',
     };
     return this.current;
   }

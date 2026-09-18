@@ -39,6 +39,7 @@ interface OnlineTransportOptions {
   role: 'host' | 'client';
   seatId: number;
   hostToken?: string;
+  reconnectToken?: string;
   channel: SessionLogicalChannel;
 }
 
@@ -86,6 +87,7 @@ export function buildOnlineWebSocketUrl(
   base.searchParams.set('seatId', String(config.mode === 'host' ? 0 : config.seatId));
   base.searchParams.set('channel', channel);
   if (config.mode === 'host' && config.hostToken) base.searchParams.set('hostToken', config.hostToken);
+  if (config.mode === 'client' && config.reconnectToken) base.searchParams.set('reconnectToken', config.reconnectToken);
   return base.toString();
 }
 
@@ -146,6 +148,9 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
     url.searchParams.set('channel', this.options.channel);
     if (this.options.role === 'host' && this.options.hostToken) {
       url.searchParams.set('hostToken', this.options.hostToken);
+    }
+    if (this.options.role === 'client' && this.options.reconnectToken) {
+      url.searchParams.set('reconnectToken', this.options.reconnectToken);
     }
 
     const socket = new WebSocket(url.toString());
@@ -227,6 +232,7 @@ export function createBrowserSessionTransport<T>(
     role: config.mode === 'host' ? 'host' : 'client',
     seatId: config.mode === 'host' ? 0 : config.seatId,
     hostToken: config.hostToken,
+    reconnectToken: config.reconnectToken,
     channel,
   });
 }

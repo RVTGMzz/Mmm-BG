@@ -62,3 +62,6 @@ body.mememe-splash-active .mememe-settings { opacity: 0; pointer-events: none; }
 
 .mememe-lobby-069 .lobby-actions { gap:10px; }
 .mememe-lobby-069 .lobby-actions button { padding:14px 8px; font-size:15px; }
+
+.online-room-lobby button, .online-room-lobby input { border-radius:16px; }
+.online-room-lobby .online-room-panel { border-radius:28px; }

@@ -3,11 +3,11 @@ import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
 import { browserSession, generateRoomCode, normalizeRoomCode } from '../core/browserSession';
+import { MEMEME_ONLINE_BASE_URL } from '../core/onlineTransport0702';
 import {
-  createOnlineRoom,
-  MEMEME_ONLINE_BASE_URL,
-  readOnlineRoomStatus,
-} from '../core/onlineTransport0702';
+  createOnlineRoom0703,
+  joinOnlineRoom0703,
+} from '../core/onlineLobby0703';
 
 const PRESERVE_SETUP_REGISTRY_KEY = 'mememe-preserve-setup';
 
@@ -51,8 +51,13 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
         <section class="lobby-card join-card online-card">
           <div class="lobby-icon">🌐</div><h2>ONLINE</h2><p>Khác máy • qua Internet</p>
+          <label>TÊN CỦA BẠN<input id="online-name" maxlength="18" value="Player" /></label>
           <label>MÃ PHÒNG<input id="online-room" maxlength="8" placeholder="ME12AB" /></label>
-          <label>GHẾ KHI JOIN<select id="online-seat"><option value="1">P2</option><option value="2">P3</option><option value="3">P4</option></select></label>
+          <div class="online-host-options">
+            <label><input id="online-camera" type="checkbox" /> 📷 Cho phép Camera Call</label>
+            <label><input id="online-voice" type="checkbox" /> 🎤 Cho phép Voice Chat</label>
+            <label><input id="online-cpu" type="checkbox" checked /> 🤖 Tự lấp ghế trống bằng CPU</label>
+          </div>
           <div class="lobby-actions"><button id="lobby-online-host" type="button">TẠO ONLINE</button><button id="lobby-online-join" type="button">VÀO</button></div>
         </section>
       </div>
@@ -109,12 +114,17 @@ export class LocalLobbyScene extends Phaser.Scene {
       if (button) button.disabled = true;
       setStatus('🌐 Đang tạo phòng online...');
       try {
-        const room = await createOnlineRoom();
+        const hostName = node.querySelector<HTMLInputElement>('#online-name')?.value ?? 'Host';
+        const room = await createOnlineRoom0703(hostName, {
+          cameraAllowed: node.querySelector<HTMLInputElement>('#online-camera')?.checked ?? false,
+          voiceAllowed: node.querySelector<HTMLInputElement>('#online-voice')?.checked ?? false,
+          cpuFill: node.querySelector<HTMLInputElement>('#online-cpu')?.checked ?? true,
+        });
         browserSession.configureOnlineHost(room.roomCode, room.hostToken, MEMEME_ONLINE_BASE_URL);
         const input = node.querySelector<HTMLInputElement>('#online-room');
         if (input) input.value = room.roomCode;
-        setStatus(`✅ Phòng online ${room.roomCode} đã tạo. Gửi mã này cho người chơi khác.`);
-        this.scene.start('SetupScene', { preserve: consumePreserveSetup() });
+        setStatus(`✅ Phòng online ${room.roomCode} đã tạo.`);
+        this.scene.start('OnlineRoomLobbyScene', { hostName });
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'Không tạo được phòng online.', true);
         if (button) button.disabled = false;
@@ -125,16 +135,21 @@ export class LocalLobbyScene extends Phaser.Scene {
       sfxController.play('ui_confirm');
       const button = node.querySelector<HTMLButtonElement>('#lobby-online-join');
       const room = normalizeRoomCode(node.querySelector<HTMLInputElement>('#online-room')?.value ?? '');
-      const seatId = Number(node.querySelector<HTMLSelectElement>('#online-seat')?.value ?? 1);
+      const displayName = node.querySelector<HTMLInputElement>('#online-name')?.value ?? 'Người chơi';
       if (!room) return setStatus('Nhập mã phòng online.', true);
       if (button) button.disabled = true;
-      setStatus(`🌐 Đang tìm phòng ${room}...`);
+      setStatus(`🌐 Đang vào phòng ${room}...`);
       try {
-        const status = await readOnlineRoomStatus(room);
-        if (!status.ok) throw new Error('Không tìm thấy phòng online này.');
-        browserSession.configureOnlineClient(room, seatId, MEMEME_ONLINE_BASE_URL);
+        const joined = await joinOnlineRoom0703(room, displayName);
+        browserSession.configureOnlineClient(
+          joined.roomCode,
+          joined.seatId,
+          MEMEME_ONLINE_BASE_URL,
+          joined.clientId,
+          joined.reconnectToken,
+        );
         this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, false);
-        this.scene.start('TurnOrderScene');
+        this.scene.start('OnlineRoomLobbyScene');
       } catch (error) {
         setStatus(error instanceof Error ? error.message : 'Không vào được phòng online.', true);
         if (button) button.disabled = false;

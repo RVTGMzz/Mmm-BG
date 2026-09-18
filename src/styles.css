@@ -571,3 +571,107 @@ canvas {
   transform: none;
   box-shadow: 0 2px 0 #202020;
 }
+
+.online-host-options {
+  display: grid;
+  gap: 5px;
+  padding: 8px 10px;
+  border: 2px solid #d9d0c4;
+  border-radius: 14px;
+  background: #fff;
+}
+.online-host-options label {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: 0;
+  font-size: 10px;
+}
+.online-host-options input { width: auto; }
+
+.online-room-lobby {
+  width: 1030px;
+  color: #202020;
+  pointer-events: auto;
+}
+.online-room-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.online-room-head h1 { margin: 4px 0 0; font-size: 34px; }
+.online-kicker { color: #61b37b; font-size: 12px; font-weight: 1000; letter-spacing: .09em; }
+.online-room-head button,
+.online-room-footer button,
+.online-ready-box button,
+.online-kick {
+  border: 3px solid #202020;
+  border-radius: 15px;
+  background: #ffd34d;
+  color: #202020;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #202020;
+  font-weight: 1000;
+}
+.online-room-head button { padding: 10px 14px; }
+.online-room-columns { display: grid; grid-template-columns: 1.35fr .9fr; gap: 18px; }
+.online-room-panel {
+  min-height: 390px;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 4px solid #202020;
+  border-radius: 26px;
+  background: #fffaf0;
+}
+.online-room-panel h2 { margin: 0 0 15px; font-size: 21px; }
+.online-roster { display: grid; gap: 10px; }
+.online-player-row {
+  display: grid;
+  grid-template-columns: 50px 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 64px;
+  padding: 8px 12px;
+  border: 3px solid #d8d0c5;
+  border-radius: 18px;
+  background: #f5efe5;
+}
+.online-player-row.occupied { border-color: #202020; background: #fff; }
+.online-seat { font-size: 17px; font-weight: 1000; }
+.online-player-row strong { display: block; font-size: 16px; }
+.online-player-row small { display: block; margin-top: 2px; color: #756c61; font-size: 10px; font-weight: 900; }
+.online-ready-state { font-size: 11px; font-weight: 1000; white-space: nowrap; }
+.online-kick { padding: 7px 9px; background: #fff; font-size: 10px; }
+.settings-panel label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 12px 0;
+  font-size: 14px;
+  font-weight: 900;
+}
+.settings-panel input { width: 18px; height: 18px; accent-color: #61b37b; }
+.online-room-note {
+  margin: 18px 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: #eef7f0;
+  color: #536158;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.online-ready-box { display: grid; gap: 10px; margin-top: 20px; }
+.online-ready-box button { padding: 13px 10px; font-size: 14px; }
+.online-ready-box button:disabled { opacity: .45; cursor: not-allowed; }
+.online-room-footer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+  margin-top: 16px;
+}
+.online-room-footer button { padding: 9px 12px; background: #fff; }
+.online-room-footer p { margin: 0; color: #665f56; font-size: 12px; font-weight: 800; text-align: right; }
+.online-room-footer p.error { color: #c62828; }
