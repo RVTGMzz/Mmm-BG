@@ -23,22 +23,25 @@ assert.equal(hostWs.searchParams.get('role'), 'host');
 assert.equal(hostWs.searchParams.get('channel'), 'turn-order');
 assert.equal(hostWs.searchParams.get('hostToken'), 'host-secret');
 
-const client = browserSession.configureOnlineClient('ME12AB', 2, MEMEME_ONLINE_BASE_URL);
+const client = browserSession.configureOnlineClient('ME12AB', 2, MEMEME_ONLINE_BASE_URL, 'online-test-p3', 'reconnect-secret');
 assert.equal(client.transport, 'online');
 assert.equal(client.mode, 'client');
 assert.equal(client.seatId, 2);
 assert.equal(client.hostToken, '');
+assert.equal(client.reconnectToken, 'reconnect-secret');
 const clientWs = new URL(buildOnlineWebSocketUrl(client, 'game', client.clientId));
 assert.equal(clientWs.searchParams.get('role'), 'client');
 assert.equal(clientWs.searchParams.get('seatId'), '2');
 assert.equal(clientWs.searchParams.get('channel'), 'game');
+assert.equal(clientWs.searchParams.get('reconnectToken'), 'reconnect-secret');
 assert.equal(clientWs.searchParams.has('hostToken'), false);
 
 const local = browserSession.configureClient('MELOCAL', 1);
 assert.equal(local.transport, 'local');
 
 assert.match(lobby, /TẠO ONLINE/);
-assert.match(lobby, /readOnlineRoomStatus/);
+assert.match(lobby, /createOnlineRoom0703/);
+assert.match(lobby, /joinOnlineRoom0703/);
 assert.match(lobby, /configureOnlineHost/);
 assert.match(lobby, /configureOnlineClient/);
 
