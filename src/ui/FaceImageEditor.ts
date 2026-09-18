@@ -20,7 +20,7 @@ function distance(a: PointerEvent, b: PointerEvent): number {
 }
 
 export class FaceImageEditor {
-  static async open(file: File): Promise<FaceImageEditorResult | undefined> {
+  static async open(file: File, contextLabel = ''): Promise<FaceImageEditorResult | undefined> {
     const image = await loadFaceImage(file);
 
     return new Promise((resolve) => {
@@ -30,7 +30,7 @@ export class FaceImageEditor {
         <section class="face-editor face-editor-landscape" role="dialog" aria-modal="true" aria-label="Chỉnh ảnh khuôn mặt">
           <div class="face-editor-head">
             <div>
-              <strong>CHỈNH ẢNH</strong>
+              <strong>CHỈNH ẢNH${contextLabel ? ` • ${contextLabel}` : ''}</strong>
               <span>Kéo để canh mặt • pinch/cuộn để zoom • mặc định dùng GAME SOFT</span>
             </div>
             <button class="face-editor-close" type="button" aria-label="Đóng">×</button>
