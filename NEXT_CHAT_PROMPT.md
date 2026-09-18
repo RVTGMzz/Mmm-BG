@@ -1,53 +1,42 @@
 # NEXT CHAT PROMPT — MeMeMe Board Game
 
-Tiếp tục MeMeMe Board Game từ `HANDOFF_CURRENT.md` trên branch `mememe-mvp-0.1-core`.
+Continue from `HANDOFF_CURRENT.md` on branch `mememe-mvp-0.1-core`.
 
-Đọc trước:
+Current milestone:
+**0.1.70.3 — Online Lobby Authority**
+
+Read:
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
 3. Ron's newest runtime feedback
-4. `src/ui/friendlyVisibleCopy0701.ts`
-5. `tests/ui-copy-overflow-0701.ts`
-6. `src/scenes/CareerMinigameBoardScene069.ts`
-7. `src/scenes/CareerMinigameBoardScene0682.ts`
-8. `src/core/releaseFlow0701.ts`
-9. `src/scenes/DirectDiceBoardScene.ts`
+4. `src/core/onlineLobby0703.ts`
+5. `src/scenes/OnlineRoomLobbyScene.ts`
+6. `cloudflare/mememe-online/src/index.ts`
+7. `src/core/onlineTransport0702.ts`
+8. `tests/online-lobby-authority-0703.ts`
 
-## Current milestone
+Runtime source:
+`d56755ba6731ef78c8ecb32a76e0e7752e036506`
 
-**0.1.70.1 — Release Flow Repair + UI Density / Copy Overflow Hardening**
-
-Do not resume 0.1.71.
-Do not merge PR #1.
-
-Latest runtime source:
-`8c367837ab4400ed492462fe5c1f12cc35c0fe7d`
-
-Ron has already confirmed the prior **kẹt/freeze symptom is fixed**, but full Jail/Hospital human acceptance is still pending.
-
-Latest build chain:
-- CI #2940 SUCCESS
-- PR CI #2941 SUCCESS
-- source web #273 SUCCESS
-- publisher #229 SUCCESS
-- public mirror `e7b40a6caf2b874a4031f54d8a58cd065f8178a4`
-- Pages #34 SUCCESS
-
-Test:
+Public test:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Latest UI fixes:
-- Job result no longer loses text;
-- multi-line readable Job detail;
-- strict Card/News modal text ownership;
-- no ACTOR/TARGET chips;
-- natural transfer wording;
-- stale world footer hidden;
-- `đối thủ` -> `người chơi khác` on visible Card/News surfaces;
-- no relevant legacy max-line truncation;
-- dedicated CI regression gate for visible copy/overflow.
+0.1.70.3 contract:
+- Host=P1
+- remote clients auto-seat P2/P3/P4 in join order
+- Host controls room permission for Camera Call / Voice Chat and CPU Fill
+- camera and mic are still OFF by default; no WebRTC media yet
+- all humans must Ready
+- setting change resets Ready
+- CPU Fill turns vacant seats into CPU at Start
+- CPU Fill OFF requires four humans
+- Host owns Start and Kick
+- reconnect token protects reserved client seat
+- gameplay WS validates lobby seat identity
+- Host gameplay authority remains unchanged
 
-Next authority is Ron's runtime feedback. If anything still leaks/clips, patch 0.1.70.1 and rerun full CI/publisher/Pages. If Ron confirms the remaining Jail/Hospital release cases, record human acceptance before considering 0.1.71.
+Await Ron's two-device online runtime test before declaring Online Runtime PASS.
 
-Keep **TIN TỨC / LÁ BÀI**.
-Do not call full Runtime PASS before Ron confirms.
+Do not resume 0.1.71.
+Do not merge or Ready PR #1.
+Keep TIN TỨC / LÁ BÀI.

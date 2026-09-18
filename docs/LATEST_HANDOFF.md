@@ -1,59 +1,49 @@
 # MeMeMe — Latest Handoff
 
 Branch: `mememe-mvp-0.1-core`
-PR #1 remains Draft/Open. **Do not merge unless Ron explicitly asks.**
+PR #1: Draft/Open. Do not merge unless Ron explicitly asks.
 
 ## Current milestone
 
-**0.1.70.1 — Release Flow Repair + UI Density / Copy Overflow Hardening**
+**0.1.70.3 — Online Lobby Authority**
 
-Status: **PUBLIC TEST BUILD DEPLOYED / PENDING FULL HUMAN ACCEPTANCE**
+Public build is deployed. Human cross-device testing is pending.
 
-Ron has reported the previous **kẹt/freeze issue is fixed**. Do not turn that partial confirmation into a full Runtime PASS yet, and do not resume 0.1.71.
+Runtime source:
+`d56755ba6731ef78c8ecb32a76e0e7752e036506`
 
-## Latest runtime checkpoint
-
-Source commit:
-`8c367837ab4400ed492462fe5c1f12cc35c0fe7d`
-
-Latest UI hardening:
-- Job result preserves readable multi-line detail;
-- Card/News modal owns its text strictly;
-- ACTOR/TARGET chips removed;
-- natural money-transfer sentence replaces technical role chips;
-- stale SPACE/Cards footer hidden;
-- `đối thủ` is normalized to `người chơi khác` across player-facing Card/News surfaces;
-- legacy max-line truncation removed from relevant overlays;
-- shared `friendlyVisibleCopy0701` policy;
-- CI regression sentinel `tests/ui-copy-overflow-0701.ts`.
+Implemented:
+- Cloudflare Worker + SQLite Durable Object room backend;
+- Internet WebSocket transport while retaining BroadcastChannel local mode;
+- Host=P1;
+- server auto-seat P2 -> P3 -> P4 by join order;
+- Host-controlled Camera Call allowed, Voice Chat allowed, CPU Fill;
+- camera/mic remain OFF and media is not implemented yet;
+- human Ready state and authoritative Start gate;
+- settings changes reset Ready;
+- CPU Fill converts vacant seats on Start;
+- Host Kick;
+- room-session ban for kicked client IDs;
+- reconnect token hashing and client seat validation;
+- game / turn-order / demo-shell channel isolation.
 
 Validation:
-- CI #2940: **SUCCESS**
-- PR CI #2941: **SUCCESS**
-- source web build #273: **SUCCESS**
-- publisher #229: **SUCCESS**
-- UI copy/overflow regression: **PASS**
-- package validation: **PASS**
+- CI #2954 SUCCESS
+- PR CI #2955 SUCCESS
+- source web #280 SUCCESS
+- Cloudflare Worker build SUCCESS
+- publisher #236 SUCCESS
+- 0.1.70.3 lobby gate PASS
+- Pages #36 SUCCESS
 
 Public mirror:
-`e7b40a6caf2b874a4031f54d8a58cd065f8178a4`
+`5f9c4805a17a9919a5c35a36456eaf1882296724`
 
-Public Pages #34 / `35301305057`: **SUCCESS**
-
-Test URL:
+Test:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-## Remaining acceptance
+Do not call Online Runtime PASS until Ron tests two real devices.
+Do not resume 0.1.71.
+Do not merge PR #1.
 
-Do not call full Runtime PASS until Ron confirms the release matrix sufficiently:
-- Human Jail success -> new movement D6
-- Human Hospital success -> new movement D6
-- CPU Jail success -> new movement D6
-- CPU Hospital success -> new movement D6
-
-Also visually recheck Job result, Card/News overflow, natural transfer wording, stale background/footer text and `người chơi khác`.
-
-0.1.48 remains the last explicitly accepted rollback baseline until 0.1.70.1 is fully accepted.
-Keep **TIN TỨC / LÁ BÀI**.
-
-**Do not merge PR #1.**
+The prior freeze/stuck symptom is reported fixed, but the full Jail/Hospital release matrix still has not received explicit human PASS.
