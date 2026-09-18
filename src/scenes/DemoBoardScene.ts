@@ -225,7 +225,12 @@ export class DemoBoardScene extends Phaser.Scene {
     this.shellHost.start();
 
     if (config.mode === 'host') {
-      this.writeLog(`📡 HOST ${config.roomCode}: client có thể JOIN trước khi bấm BẮT ĐẦU.`);
+      // Online already passed lobby Ready + Roll For Order. Do not introduce a
+      // second manual Host gate on the board. Begin immediately and broadcast
+      // authoritative shell=active; late/reconnecting clients receive it via
+      // shell_hello -> shell_state.
+      this.shellHost.begin(hostAuthorityCommandSeq(this.hostSession.authority));
+      this.writeLog(`🚦 HOST ${config.roomCode}: trận online tự bắt đầu.`);
     } else {
       this.writeLog('🎲 Demo hotseat sẵn sàng. Bấm BẮT ĐẦU khi cả nhóm đã ngồi đủ.');
     }
