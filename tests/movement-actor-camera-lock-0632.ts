@@ -17,7 +17,7 @@ assert.equal(resolveCameraActor0632(1, landingP1), 0);
 assert.equal(resolveCameraActor0632(1, undefined), 1);
 assert.equal(resolveCameraActor0632(undefined, movingP1), 0);
 assert.equal(resolveCameraActor0632(undefined, undefined), undefined);
-assert(mainSource.includes('CareerMinigameBoardScene0701 as ActiveBoardScene'));
+assert(mainSource.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 assert(scene0701Source.includes('extends CareerMinigameBoardScene069'));
 assert(!scene0701Source.includes('Math.random'));
 assert(scene069Source.includes('extends CareerMinigameBoardScene0682'));
