@@ -897,3 +897,20 @@ canvas {
   .face-camera-actions button { min-height: 36px; font-size: 11px; }
   .face-camera-panel > small { margin-top: 4px; font-size: 8px; }
 }
+
+
+/* 0.1.70.4 online room presence hardening */
+.online-player-row.presence-reconnecting {
+  border-style: dashed;
+}
+.online-player-row.presence-reconnecting small {
+  font-weight: 1000;
+}
+.online-player-row.presence-disconnected {
+  opacity: .62;
+  border-style: dashed;
+  filter: grayscale(.35);
+}
+.online-player-row.presence-disconnected .online-ready-state {
+  opacity: .68;
+}
