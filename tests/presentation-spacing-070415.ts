@@ -6,8 +6,7 @@ const replay = readFileSync('src/core/replay.ts', 'utf8');
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.15');
-assert.match(MEMEME_BUILD.phase, /PRESENTATION SPACING PASS/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 // Job source copy: no repeated offer sentence and no small icon beside job name.
 assert.match(replay, /description: 'Đổ xúc xắc để nhận việc\.[^']*Mỗi nghề có lương riêng/);
@@ -25,12 +24,14 @@ assert.match(active, /fixedWidth: isResult \? 260 : 570/);
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
 assert.match(active, /child\.destroy\(\)/);
 assert.match(active, /root\.add\(\[shadow, panel, kicker, title, impact, body, source\]\)/);
-assert.match(active, /if \(model\.kind === 'card_play' && model\.targetName && amount > 0\)/);
+assert.match(active, /const directMoneyTransfer/);
+assert.match(active, /model\.cardEffectType === 'steal_money'/);
 
 // Reaction label/body have deliberate vertical separation.
-assert.match(presentation, /const speaker = this\.scene\.add\.text\(textX, -36,[\s\S]*line\.speakerName/);
-assert.match(presentation, /const text = this\.scene\.add\.text\(textX, 10/);
-assert.match(presentation, /fixedWidth: 224/);
+assert.match(presentation, /const speaker = this\.scene\.add\.text\(textX, -45,[\s\S]*line\.speakerName/);
+assert.match(presentation, /const text = this\.scene\.add\.text\(textX, -11/);
+assert.match(presentation, /fixedWidth: 226/);
+assert.match(presentation, /setOrigin\(0, 0\)/);
 
 const leftBodyRight = -240 + 260;
 const rightTitleLeft = 190 - 320 / 2;

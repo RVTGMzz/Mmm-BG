@@ -57,6 +57,7 @@ export interface PresentationEventModel {
   targetId?: number;
   targetName?: string;
   reactionEventId?: string;
+  cardEffectType?: CardDefinition['effect']['type'];
   reactions: PresentationReactionLine[];
   holdMs: number;
   tileType?: string;
@@ -369,7 +370,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       ...base,
       kind: 'card_draw',
       eyebrow: 'LÁ BÀI • RÚT ĐƯỢC',
-      title: title || dataString(event, 'cardId') || 'Lá Bài',
+      title: title || cardId || 'Lá Bài',
       rarity,
       impact,
       description,
@@ -395,6 +396,8 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   }
 
   if (event.type === 'card_play') {
+    const cardId = dataString(event, 'cardId');
+    const card = CARDS.find((entry) => entry.id === cardId);
     const resolvedReactionEventId = cardReactionEventId(event) ?? reactionEventId;
     const reactions = reactionLines(event, players, resolvedReactionEventId);
     const quirk = maybeNpcQuirkLine(event, players);
@@ -411,6 +414,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       targetId,
       targetName,
       reactionEventId: resolvedReactionEventId,
+      cardEffectType: card?.effect.type,
       reactions,
       holdMs: 3500,
       amount: dataNumber(event, 'amount', true),

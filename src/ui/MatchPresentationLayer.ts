@@ -498,12 +498,16 @@ export class MatchPresentationLayer {
     container: Phaser.GameObjects.Container,
     model: PresentationEventModel,
   ): void {
-    if (model.targetId === undefined || !model.targetName) return;
+    if (model.kind !== 'card_play' || model.targetId === undefined || !model.targetName) return;
 
     const amount = Math.abs(model.amount ?? 0);
-    const copy = model.kind === 'card_play' && amount > 0
-      ? `${model.targetName} đưa ${amount} B$ cho ${model.actorName}`
-      : (model.summary || `${model.actorName} → ${model.targetName}`);
+    const directMoneyTransfer =
+      model.cardEffectType === 'steal_money'
+      || model.cardEffectType === 'rich_tax'
+      || model.cardEffectType === 'tactical_choice';
+    if (!directMoneyTransfer || amount <= 0) return;
+
+    const copy = `${model.targetName} đưa ${amount} B$ cho ${model.actorName}`;
 
     const bg = this.scene.add.graphics();
     bg.fillStyle(0x4a433c, 0.94);
@@ -515,10 +519,9 @@ export class MatchPresentationLayer {
       color: '#ffffff',
       fixedWidth: 596,
       align: 'center',
-    }).setOrigin(0, 0.5);
+    }).setOrigin(0, 0);
     container.add([bg, text]);
   }
-
   private addRarityBadge(container: Phaser.GameObjects.Container, x: number, y: number, rarity: string): void {
     const color = RARITY_COLORS[rarity] ?? 0xe4ded2;
     const bg = this.scene.add.graphics();
@@ -547,24 +550,25 @@ export class MatchPresentationLayer {
 
     const shadow = this.scene.add.graphics();
     shadow.fillStyle(0x000000, 0.2);
-    shadow.fillRoundedRect(-154, -46, 308, 94, 16);
+    shadow.fillRoundedRect(-164, -58, 328, 116, 18);
     shadow.setPosition(0, 5);
     const bg = this.scene.add.graphics();
     bg.fillStyle(0xfffbf3, 0.985);
-    bg.fillRoundedRect(-154, -50, 308, 94, 16);
+    bg.fillRoundedRect(-164, -62, 328, 116, 18);
     bg.lineStyle(3, color, 0.88);
-    bg.strokeRoundedRect(-154, -50, 308, 94, 16);
+    bg.strokeRoundedRect(-164, -62, 328, 116, 18);
 
     const avatar = this.buildAvatar(line.speakerId, line.expression, color);
-    avatar.setPosition(left ? -124 : 124, 0);
+    avatar.setPosition(left ? -132 : 132, -2);
     avatar.setScale(0.9);
-    const textX = left ? -94 : -140;
-    const speaker = this.scene.add.text(textX, -36, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
+    const textX = left ? -98 : -146;
+    const speaker = this.scene.add.text(textX, -45, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
       fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#4b4239',
     });
-    const text = this.scene.add.text(textX, 10, '', {
+    const text = this.scene.add.text(textX, -11, '', {
       fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#201d1a',
-      wordWrap: { width: 224 }, fixedWidth: 224,
+      wordWrap: { width: 226, useAdvancedWrap: true }, fixedWidth: 226, fixedHeight: 54,
+      lineSpacing: 3, maxLines: 3,
     }).setOrigin(0, 0.5);
 
     bubble.add([shadow, bg, avatar, speaker, text]);

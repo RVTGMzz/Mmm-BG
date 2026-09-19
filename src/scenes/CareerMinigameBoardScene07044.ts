@@ -231,7 +231,11 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     }
 
     const amount = Math.abs(model.amount ?? 0);
-    if (model.kind === 'card_play' && model.targetName && amount > 0) {
+    const directMoneyTransfer =
+      model.cardEffectType === 'steal_money'
+      || model.cardEffectType === 'rich_tax'
+      || model.cardEffectType === 'tactical_choice';
+    if (model.kind === 'card_play' && model.targetName && directMoneyTransfer && amount > 0) {
       const action = `${model.targetName} • ${amount} B$ • ${model.actorName}`;
       const actionText = this.add.text(0, 112, action, {
         fontFamily: MOBILE_UI_FONT_07044,
