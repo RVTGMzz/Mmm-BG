@@ -72,6 +72,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
   update(): void {
     super.update();
+    this.retireLegacyPresentationOverlays070414();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
   }
@@ -119,21 +120,140 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     (presentation as Presentation07044 & {
       showCinematic: (model: PresentationEventModel) => void;
     }).showCinematic = (model: PresentationEventModel) => {
-      if (
+      const isCard =
         model.kind === 'card_draw'
         || model.kind === 'card_play'
-        || model.kind === 'card_blocked'
-      ) this.destroyNamedTopLevelContainers070413('legacy-card-overlay');
-      if (model.kind === 'news') this.destroyNamedTopLevelContainers070413('legacy-news-overlay');
+        || model.kind === 'card_blocked';
+      const isNews = model.kind === 'news';
+
+      if (isCard) this.destroyNamedTopLevelContainers070413('legacy-card-overlay');
+      if (isNews) this.destroyNamedTopLevelContainers070413('legacy-news-overlay');
 
       originalShowCinematic(model);
-      if (
-        model.kind !== 'card_draw'
-        && model.kind !== 'card_play'
-        && model.kind !== 'card_blocked'
-      ) return;
-      this.normalizeCardPresentation070412(presentation.active, model);
+
+      if (!isCard && !isNews) return;
+      this.rebuildCanonicalCinematicText070414(presentation.active, model);
     };
+  }
+
+  private retireLegacyPresentationOverlays070414(): void {
+    this.destroyNamedTopLevelContainers070413('legacy-card-overlay');
+    this.destroyNamedTopLevelContainers070413('legacy-news-overlay');
+  }
+
+  private rebuildCanonicalCinematicText070414(
+    root: Phaser.GameObjects.Container | undefined,
+    model: PresentationEventModel,
+  ): void {
+    if (!root?.active) return;
+
+    const isNews = model.kind === 'news';
+    root.setName(isNews ? 'news-presentation-card' : 'card-presentation-card');
+
+    // The inherited presentation chain is allowed to create graphics/animations,
+    // but no inherited text survives this final layout lock. This prevents old
+    // scaled descriptions/summaries from leaking outside the panel.
+    this.visitDisplayTree07044(root.list, (object) => {
+      if (object instanceof Phaser.GameObjects.Text) object.setVisible(false);
+    });
+    for (const child of root.list) {
+      const transform = child as Phaser.GameObjects.GameObject & {
+        setScale?: (x: number, y?: number) => unknown;
+      };
+      transform.setScale?.(1, 1);
+    }
+
+    const kicker = this.add.text(-322, -118, model.eyebrow, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#f8f4ec',
+      fixedWidth: 500,
+    });
+
+    const title = this.add.text(-322, -88, model.title, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '30px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      fixedWidth: 540,
+      fixedHeight: 52,
+      wordWrap: { width: 540, useAdvancedWrap: true },
+    });
+
+    const impact = this.add.text(314, -108, model.impact || '•', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '19px',
+      color: '#ffffff',
+    }).setOrigin(1, 0);
+
+    const bodyCopy = this.canonicalCinematicBody070414(model);
+    const body = this.add.text(-322, -24, bodyCopy, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '16px',
+      color: '#f4ede4',
+      fixedWidth: 628,
+      fixedHeight: model.targetId === undefined ? 138 : 116,
+      wordWrap: { width: 628, useAdvancedWrap: true },
+      lineSpacing: 5,
+      maxLines: model.targetId === undefined ? 6 : 5,
+    });
+
+    const source = this.add.text(316, 126, `${isNews ? 'CITY NEWS' : 'CARD ACTION'} • #${model.eventSeq}`, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '9px',
+      color: '#d8d0c6',
+    }).setOrigin(1, 0.5);
+
+    root.add([kicker, title, impact, body, source]);
+
+    if (model.rarity) {
+      const rarityText = this.add.text(275, -118, model.rarity, {
+        fontFamily: MOBILE_UI_FONT_07044,
+        fontSize: '10px',
+        fontStyle: 'bold',
+        color: '#24211d',
+        backgroundColor: '#eee8dc',
+        padding: { x: 18, y: 4 },
+      }).setOrigin(0.5);
+      root.add(rarityText);
+    }
+
+    if (model.targetId !== undefined && model.targetName) {
+      const amount = Math.abs(model.amount ?? 0);
+      const action = model.kind === 'card_play' && amount > 0
+        ? `${model.targetName} • ${amount} B$ • ${model.actorName}`
+        : (model.summary || `${model.actorName} → ${model.targetName}`);
+      const actionText = this.add.text(0, 112, action, {
+        fontFamily: MOBILE_UI_FONT_07044,
+        fontSize: '11px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+        backgroundColor: '#4a433c',
+        fixedWidth: 596,
+        align: 'center',
+        padding: { x: 8, y: 7 },
+      }).setOrigin(0.5);
+      root.add(actionText);
+    }
+  }
+
+  private canonicalCinematicBody070414(model: PresentationEventModel): string {
+    const lines = [
+      ...model.description.split(/\n+/),
+      ...(model.summary && model.summary !== model.description ? [`→ ${model.summary}`] : []),
+    ];
+    const seen = new Set<string>();
+    return lines
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .filter((line) => {
+        const key = this.normalizePresentationCopy070412(line);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .join('\n');
   }
 
   private destroyNamedTopLevelContainers070413(name: string): void {
@@ -218,6 +338,26 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     return value.replace(/\s+/g, ' ').trim().toLocaleLowerCase('vi');
   }
 
+  private canonicalJobBody070414(model: PresentationEventModel): string {
+    const impact = model.impact?.trim();
+    const seen = new Set<string>();
+    return model.description
+      .split(/\n+/)
+      .map((line) => {
+        let copy = line.trim();
+        if (impact && copy.includes(impact)) copy = copy.replace(impact, '').trim();
+        return copy;
+      })
+      .filter(Boolean)
+      .filter((line) => {
+        const key = this.normalizePresentationCopy070412(line);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .join('\n');
+  }
+
   private showCanonicalJobLanding070411(
     presentation: Presentation07044,
     model: PresentationEventModel,
@@ -257,24 +397,25 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fontSize: '42px',
     }).setOrigin(0.5);
 
-    const title = this.add.text(15, -43, model.title, {
+    const title = this.add.text(45, -43, model.title, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '30px',
       fontStyle: 'bold',
       color: '#ffffff',
-      fixedWidth: 585,
+      fixedWidth: 535,
       align: 'center',
-      wordWrap: { width: 585 },
+      wordWrap: { width: 535 },
     }).setOrigin(0.5);
 
-    const body = this.add.text(15, 40, model.description, {
+    const jobBodyCopy = this.canonicalJobBody070414(model);
+    const body = this.add.text(45, 42, jobBodyCopy, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '17px',
       color: '#f4ede4',
-      fixedWidth: 610,
+      fixedWidth: 535,
       fixedHeight: 82,
       align: 'center',
-      wordWrap: { width: 610, useAdvancedWrap: true },
+      wordWrap: { width: 535, useAdvancedWrap: true },
       lineSpacing: 6,
       maxLines: 3,
     }).setOrigin(0.5);

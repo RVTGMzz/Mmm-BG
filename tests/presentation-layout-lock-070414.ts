@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { MEMEME_BUILD } from '../src/buildInfo';
+
+const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
+const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
+
+assert.equal(MEMEME_BUILD.version, '0.1.70.4.14');
+assert.match(MEMEME_BUILD.phase, /PRESENTATION LAYOUT LOCK/);
+
+// Job: one large icon, body is a separate centered column, repeated lines are deduped.
+assert.match(active, /canonicalJobBody070414/);
+assert.match(active, /if \(impact && copy\.includes\(impact\)\) copy = copy\.replace\(impact, ''\)\.trim\(\)/);
+assert.match(active, /const body = this\.add\.text\(45, 42, jobBodyCopy/);
+assert.match(active, /fixedWidth: 535/);
+assert.match(active, /if \(seen\.has\(key\)\) return false/);
+
+// Card + News: inherited text is hidden, canonical copy is rebuilt inside fixed bounds.
+assert.match(active, /rebuildCanonicalCinematicText070414/);
+assert.match(active, /const isNews = model\.kind === 'news'/);
+assert.match(active, /object instanceof Phaser\.GameObjects\.Text\) object\.setVisible\(false\)/);
+assert.match(active, /const body = this\.add\.text\(-322, -24, bodyCopy/);
+assert.match(active, /fixedWidth: 628/);
+assert.match(active, /retireLegacyPresentationOverlays070414/);
+
+// Reaction bubbles: deterministic avatar-corner anchors.
+assert.match(presentation, /const anchorId = speakerId === undefined \? fallbackId/);
+assert.match(presentation, /const x = left \? 188 : 1092/);
+assert.match(presentation, /const y = top \? 172 : 548/);
+assert.doesNotMatch(presentation, /const y = 195 \+ \(index % 3\) \* 112/);
+
+console.log('[presentation-layout-lock-070414] PASS Job column/dedupe + Card/News text rebuild + avatar-anchored reactions');

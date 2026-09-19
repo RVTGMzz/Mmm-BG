@@ -534,38 +534,43 @@ export class MatchPresentationLayer {
     if (this.destroyed || this.currentModel === undefined) return;
     sfxController.play('reaction');
 
-    const left = index % 2 === 0;
-    const x = left ? 212 : 1068;
-    const y = 195 + (index % 3) * 112;
-    const color = line.speakerId === undefined ? 0x746b61 : PLAYER_COLORS[line.speakerId % PLAYER_COLORS.length];
+    const speakerId = line.speakerId;
+    const fallbackId = index % 4;
+    const anchorId = speakerId === undefined ? fallbackId : Math.max(0, Math.min(3, speakerId));
+    const left = anchorId === 0 || anchorId === 2;
+    const top = anchorId === 0 || anchorId === 1;
+    const x = left ? 188 : 1092;
+    const y = top ? 172 : 548;
+    const color = speakerId === undefined ? 0x746b61 : PLAYER_COLORS[speakerId % PLAYER_COLORS.length];
     const bubble = this.scene.add.container(x, y).setDepth(910).setAlpha(0);
     this.reactionObjects.add(bubble);
 
     const shadow = this.scene.add.graphics();
     shadow.fillStyle(0x000000, 0.2);
-    shadow.fillRoundedRect(-176, -42, 352, 88, 18);
+    shadow.fillRoundedRect(-154, -38, 308, 78, 16);
     shadow.setPosition(0, 5);
     const bg = this.scene.add.graphics();
     bg.fillStyle(0xfffbf3, 0.985);
-    bg.fillRoundedRect(-176, -46, 352, 88, 18);
+    bg.fillRoundedRect(-154, -42, 308, 78, 16);
     bg.lineStyle(3, color, 0.88);
-    bg.strokeRoundedRect(-176, -46, 352, 88, 18);
+    bg.strokeRoundedRect(-154, -42, 308, 78, 16);
 
     const avatar = this.buildAvatar(line.speakerId, line.expression, color);
-    avatar.setPosition(left ? -140 : 140, -4);
-    const textX = left ? -105 : -160;
+    avatar.setPosition(left ? -124 : 124, -3);
+    avatar.setScale(0.9);
+    const textX = left ? -94 : -140;
     const speaker = this.scene.add.text(textX, -31, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
       fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#4b4239',
     });
     const text = this.scene.add.text(textX, -8, '', {
       fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#201d1a',
-      wordWrap: { width: 270 },
+      wordWrap: { width: 224 },
     }).setOrigin(0, 0.5);
 
     bubble.add([shadow, bg, avatar, speaker, text]);
-    bubble.x += left ? -22 : 22;
+    bubble.y += top ? -10 : 10;
     this.revealText(text, line.text);
-    this.scene.tweens.add({ targets: bubble, x, alpha: 1, duration: 180, ease: 'Sine.easeOut' });
+    this.scene.tweens.add({ targets: bubble, y, alpha: 1, duration: 180, ease: 'Sine.easeOut' });
 
     this.schedule(Math.max(850, line.durationMs), () => {
       if (!bubble.active) return;

@@ -9,8 +9,7 @@ const owner = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'utf8')
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const dice = readFileSync('src/scenes/PresentationParityBoardScene.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.13');
-assert.match(MEMEME_BUILD.phase, /VISUAL PREFLIGHT HARDENING/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(card, /setName\('legacy-card-overlay'\)/);
 assert.match(news, /setName\('legacy-news-overlay'\)/);
