@@ -162,6 +162,7 @@ export class TwoTabHostSession extends TwoTabEventSource {
   private readonly seatClaims = new Map<number, string>();
   private readonly clientSeats = new Map<string, number>();
   private unsubscribeTransport?: () => void;
+  private unsubscribeConnection?: () => void;
   private intentSerial = 0;
 
   constructor(
@@ -466,6 +467,31 @@ export class TwoTabClientSession extends TwoTabEventSource {
   start(): void {
     if (this.unsubscribeTransport) return;
     this.unsubscribeTransport = this.transport.subscribe((message) => this.handleMessage(message));
+    if (this.transport.subscribeConnection) {
+      this.unsubscribeConnection = this.transport.subscribeConnection((state) => {
+        if (state === 'open') {
+          this.joined = false;
+          this.requestJoin07047();
+          return;
+        }
+        if (state === 'connecting' || state === 'reconnecting') {
+          const wasJoined = this.joined;
+          this.joined = false;
+          if (wasJoined || state === 'reconnecting') {
+            this.emit({
+              kind: 'status',
+              message: `P${this.seatId + 1} đang kết nối lại Host...`,
+              level: 'info',
+            });
+          }
+        }
+      });
+    } else {
+      this.requestJoin07047();
+    }
+  }
+
+  requestJoin07047(): void {
     this.transport.send(
       {
         kind: 'join_request',
@@ -477,7 +503,7 @@ export class TwoTabClientSession extends TwoTabEventSource {
     );
     this.emit({
       kind: 'status',
-      message: `Đang xin vào phòng ${this.roomCode} với P${this.seatId + 1}...`,
+      message: `Đang xác nhận P${this.seatId + 1} với Host...`,
       level: 'info',
     });
   }
@@ -485,6 +511,8 @@ export class TwoTabClientSession extends TwoTabEventSource {
   close(): void {
     this.unsubscribeTransport?.();
     this.unsubscribeTransport = undefined;
+    this.unsubscribeConnection?.();
+    this.unsubscribeConnection = undefined;
     this.transport.close();
     this.handlers.clear();
   }

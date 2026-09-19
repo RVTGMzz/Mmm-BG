@@ -4,6 +4,8 @@ import {
   type LocalTransportAdapter,
   type LocalTransportHandler,
   type LocalTransportMessage,
+  type TransportConnectionHandler07047,
+  type TransportConnectionState07047,
 } from './localTransport';
 
 export const MEMEME_ONLINE_BASE_URL = 'https://mememe-online.lengochung28191.workers.dev';
@@ -95,7 +97,9 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
   readonly endpointId: string;
   private readonly options: OnlineTransportOptions;
   private readonly handlers = new Set<LocalTransportHandler<T>>();
+  private readonly connectionHandlers = new Set<TransportConnectionHandler07047>();
   private readonly pending: string[] = [];
+  private connectionState: TransportConnectionState07047 = 'connecting';
   private socket?: WebSocket;
   private reconnectTimer?: ReturnType<typeof setTimeout>;
   private reconnectAttempt = 0;
@@ -125,19 +129,35 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
     return () => this.handlers.delete(handler);
   }
 
+  subscribeConnection(handler: TransportConnectionHandler07047): () => void {
+    if (this.closed) throw new Error(`Endpoint ${this.endpointId} is closed.`);
+    this.connectionHandlers.add(handler);
+    handler(this.connectionState);
+    return () => this.connectionHandlers.delete(handler);
+  }
+
   close(): void {
     if (this.closed) return;
     this.closed = true;
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = undefined;
+    this.emitConnection07047('closed');
     this.handlers.clear();
+    this.connectionHandlers.clear();
     this.pending.length = 0;
     this.socket?.close(1000, 'Scene closed.');
     this.socket = undefined;
   }
 
+  private emitConnection07047(state: TransportConnectionState07047): void {
+    if (this.connectionState === state) return;
+    this.connectionState = state;
+    for (const handler of this.connectionHandlers) handler(state);
+  }
+
   private connect(): void {
     if (this.closed) return;
+    this.emitConnection07047(this.reconnectAttempt > 0 ? 'reconnecting' : 'connecting');
     const url = new URL(normalizedBaseUrl(this.options.baseUrl));
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.pathname = `/api/rooms/${normalizeRoomCode(this.options.roomCode)}/ws`;
@@ -159,6 +179,9 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
     socket.addEventListener('open', () => {
       if (this.closed || this.socket !== socket) return;
       this.reconnectAttempt = 0;
+      // Handshake owners subscribe to connection state. Let them reclaim their seat
+      // before any gameplay intent queued during the outage is flushed.
+      this.emitConnection07047('open');
       while (this.pending.length > 0 && socket.readyState === WebSocket.OPEN) {
         const message = this.pending.shift();
         if (message) socket.send(message);
@@ -187,6 +210,7 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
     socket.addEventListener('close', () => {
       if (this.closed || this.socket !== socket) return;
       this.socket = undefined;
+      this.emitConnection07047('reconnecting');
       this.scheduleReconnect();
     });
 

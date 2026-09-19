@@ -6,10 +6,14 @@ export interface LocalTransportMessage<T> {
 
 export type LocalTransportHandler<T> = (message: LocalTransportMessage<T>) => void;
 
+export type TransportConnectionState07047 = 'connecting' | 'open' | 'reconnecting' | 'closed';
+export type TransportConnectionHandler07047 = (state: TransportConnectionState07047) => void;
+
 export interface LocalTransportAdapter<T> {
   readonly endpointId: string;
   send(payload: T, to?: string): void;
   subscribe(handler: LocalTransportHandler<T>): () => void;
+  subscribeConnection?(handler: TransportConnectionHandler07047): () => void;
   close(): void;
 }
 

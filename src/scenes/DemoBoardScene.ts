@@ -170,6 +170,11 @@ export class DemoBoardScene extends Phaser.Scene {
     const runtime = { board: BOARD, cards: CARDS, news: NEWS };
 
     if (config.mode === 'client') {
+      // Reaching the board already proves the online lobby has started. Keep the
+      // presentation shell active while its dedicated channel resyncs so a transient
+      // socket reconnect cannot leave a persistent black "waiting Host" overlay.
+      this.shell = createDemoMatchShell(this.players.length, DEMO_ROUNDS, 'active');
+
       const gameTransport = createBrowserSessionTransport<TwoTabMessage>('game', config.clientId);
       this.clientSession = new TwoTabClientSession(
         config.roomCode,
@@ -238,17 +243,7 @@ export class DemoBoardScene extends Phaser.Scene {
 
   private retryClientJoin(): void {
     if (!this.clientSession || !this.shellClient) return;
-    if (!this.clientSession.joined) {
-      this.clientSession.transport.send(
-        {
-          kind: 'join_request',
-          roomCode: this.clientSession.roomCode,
-          clientId: this.clientSession.clientId,
-          seatId: this.clientSession.seatId,
-        },
-        'host',
-      );
-    }
+    if (!this.clientSession.joined) this.clientSession.requestJoin07047();
     if (!this.shellClient.shell) this.shellClient.requestState();
   }
 
@@ -345,7 +340,22 @@ export class DemoBoardScene extends Phaser.Scene {
     if (this.shell.status !== 'active') return false;
     const current = this.currentPlayer();
     if (!current) return false;
-    if (this.hostSession) return this.hostSession.controlsActor(current.id);
+
+    const config = browserSession.current;
+    if (this.hostSession) {
+      // Online P2-P4 humans own their own devices. Before their gameplay socket has
+      // finished reclaiming the seat, Host must wait rather than temporarily taking
+      // over that human turn. CPU seats remain Host-authoritative.
+      if (
+        config.mode === 'host' &&
+        config.transport === 'online' &&
+        current.id > 0 &&
+        !browserSession.isCpuSeat(current.id)
+      ) {
+        return false;
+      }
+      return this.hostSession.controlsActor(current.id);
+    }
     if (this.clientSession) return this.clientSession.controlsActor(current.id);
     return false;
   }

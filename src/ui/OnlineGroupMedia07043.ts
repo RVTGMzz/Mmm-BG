@@ -43,9 +43,11 @@ function safeText07043(value: string): string {
 class OnlineGroupMedia07043 {
   private transport?: LocalTransportAdapter<MediaMessage07043>;
   private unsubscribe?: () => void;
+  private unsubscribeConnection?: () => void;
   private root?: HTMLDivElement;
   private roster = new Map<string, MediaPeer07043>();
   private peers = new Map<string, PeerRuntime07043>();
+  private readonly repairTimers07047 = new Map<string, number>();
   private localStream?: MediaStream;
   private cameraOn = false;
   private micOn = false;
@@ -66,8 +68,20 @@ class OnlineGroupMedia07043 {
     this.roster.set(me.clientId, me);
     this.transport = createBrowserSessionTransport<MediaMessage07043>('media', config.clientId);
     this.unsubscribe = this.transport.subscribe((message) => this.handleMessage(message));
+    if (this.transport.subscribeConnection) {
+      this.unsubscribeConnection = this.transport.subscribeConnection((state) => {
+        if (state === 'open') {
+          this.status = '';
+          this.announce();
+          this.reconcileRoster();
+        } else if (state === 'reconnecting') {
+          this.status = 'Đang nối lại camera/voice…';
+          this.renderRoster();
+        }
+      });
+    }
     this.createUi();
-    this.announce();
+    if (!this.transport.subscribeConnection) this.announce();
     this.announceTimer = window.setInterval(() => this.announce(), 3500);
   }
 
@@ -84,9 +98,16 @@ class OnlineGroupMedia07043 {
     this.announceTimer = undefined;
     this.unsubscribe?.();
     this.unsubscribe = undefined;
+    this.unsubscribeConnection?.();
+    this.unsubscribeConnection = undefined;
     this.transport?.close();
     this.transport = undefined;
-    for (const peer of this.peers.values()) peer.pc.close();
+    for (const timer of this.repairTimers07047.values()) window.clearTimeout(timer);
+    this.repairTimers07047.clear();
+    for (const peer of this.peers.values()) {
+      peer.pc.onconnectionstatechange = null;
+      peer.pc.close();
+    }
     this.peers.clear();
     for (const track of this.localStream?.getTracks() ?? []) track.stop();
     this.localStream = undefined;
@@ -207,8 +228,16 @@ class OnlineGroupMedia07043 {
       this.renderRoster();
     };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed') this.status = `Mất media P${descriptor.seatId + 1}, đang chờ kết nối lại…`;
-      else if (pc.connectionState === 'connected') this.status = '';
+      if (pc.connectionState === 'connected') {
+        this.clearPeerRepair07047(descriptor.clientId);
+        this.status = '';
+      } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+        this.status = `Đang nối lại media P${descriptor.seatId + 1}…`;
+        this.schedulePeerRepair07047(descriptor.clientId, 250);
+      } else if (pc.connectionState === 'disconnected') {
+        this.status = `Media P${descriptor.seatId + 1} chập chờn, đang tự phục hồi…`;
+        this.schedulePeerRepair07047(descriptor.clientId, 1800);
+      }
       this.renderRoster();
     };
 
@@ -320,9 +349,37 @@ class OnlineGroupMedia07043 {
     this.renderRoster();
   }
 
+  private clearPeerRepair07047(clientId: string): void {
+    const timer = this.repairTimers07047.get(clientId);
+    if (timer !== undefined) window.clearTimeout(timer);
+    this.repairTimers07047.delete(clientId);
+  }
+
+  private schedulePeerRepair07047(clientId: string, delay: number): void {
+    if (this.repairTimers07047.has(clientId)) return;
+    const timer = window.setTimeout(() => {
+      this.repairTimers07047.delete(clientId);
+      const current = this.peers.get(clientId);
+      if (current?.pc.connectionState === 'connected') return;
+      const descriptor = this.roster.get(clientId);
+      if (!descriptor) {
+        this.removePeer(clientId);
+        return;
+      }
+      this.removePeer(clientId);
+      this.ensurePeer(descriptor);
+      this.renderRoster();
+    }, delay);
+    this.repairTimers07047.set(clientId, timer);
+  }
+
   private removePeer(clientId: string): void {
+    this.clearPeerRepair07047(clientId);
     const peer = this.peers.get(clientId);
-    peer?.pc.close();
+    if (peer) {
+      peer.pc.onconnectionstatechange = null;
+      peer.pc.close();
+    }
     this.peers.delete(clientId);
   }
 

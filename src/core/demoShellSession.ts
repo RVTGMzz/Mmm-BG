@@ -90,6 +90,8 @@ export class DemoShellHostSession extends DemoShellEventSource {
   close(): void {
     this.unsubscribeTransport?.();
     this.unsubscribeTransport = undefined;
+    this.unsubscribeConnection?.();
+    this.unsubscribeConnection = undefined;
     this.transport.close();
     this.handlers.clear();
   }
@@ -111,6 +113,7 @@ export class DemoShellHostSession extends DemoShellEventSource {
 export class DemoShellClientSession extends DemoShellEventSource {
   shell?: DemoMatchShellState;
   private unsubscribeTransport?: () => void;
+  private unsubscribeConnection?: () => void;
 
   constructor(
     readonly clientId: string,
@@ -123,7 +126,15 @@ export class DemoShellClientSession extends DemoShellEventSource {
     if (!this.unsubscribeTransport) {
       this.unsubscribeTransport = this.transport.subscribe((message) => this.handleMessage(message));
     }
-    this.requestState();
+    if (this.transport.subscribeConnection) {
+      if (!this.unsubscribeConnection) {
+        this.unsubscribeConnection = this.transport.subscribeConnection((state) => {
+          if (state === 'open') this.requestState();
+        });
+      }
+    } else {
+      this.requestState();
+    }
   }
 
   requestState(): void {
