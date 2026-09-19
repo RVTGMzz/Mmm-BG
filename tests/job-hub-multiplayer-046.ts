@@ -101,7 +101,9 @@ assert(scene.includes('canRoll: false'), 'non-controlling peers must get a spect
 assert(scene.includes('state.turn.phase !== \'JOB_CHOICE\''), 'spectator Job Hub must close after authoritative resolution');
 assert(baseScene.includes("internals.submitIntent('choose_job', {})"), 'controlling peer must submit the existing empty choose_job intent');
 assert(presentation.includes("event.type === 'dice_roll' || event.type === 'job_dice_roll'"), 'Job D6 must use authoritative shared dice presentation');
-assert(picker.includes('HOST quyết định kết quả D6'), 'Compact Job Hub UI must retain the host-authority boundary without verbose tiny copy');
+assert(picker.includes('ĐỔ XÚC XẮC ĐỂ CHỌN NGHỀ'), 'Compact Job Hub must expose one clear action');
+assert(picker.includes('CHẠM ĐỂ XEM'), 'Job preview must remain available on demand');
+assert(!picker.includes('Controller B'), 'Unsupported controller copy must not leak into the current Job UI');
 assert(!/Math\.random\s*\(/.test(picker), 'Job Hub picker must never generate its own random Job result');
 assert(!/rollD6\s*\(/.test(picker), 'Job Hub picker must not roll gameplay D6 locally');
 
