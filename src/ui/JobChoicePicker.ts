@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
-import { jobDepthProfile059, jobSalary, type JobDefinition } from '../core/jobs';
+import { jobSalary, type JobDefinition } from '../core/jobs';
 
 export interface JobRollPickerOptions {
   canRoll?: boolean;
@@ -146,7 +146,6 @@ export function createJobRollPicker(
   jobs.forEach((job, index) => {
     const x = JOB_CARD_X_0682[index] ?? 0;
     const risky = job.risk === 'crime';
-    const profile = jobDepthProfile059(job);
     const box = scene.add.rectangle(x, -4, 265, 276, risky ? 0xffc6c1 : 0xffe09a, 1)
       .setStrokeStyle(4, 0x242424, 1)
       .setInteractive({ useHandCursor: true });
