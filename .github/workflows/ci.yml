@@ -196,13 +196,13 @@ jobs:
         run: npm run test:image
       - name: Validate external playtest package
         run: npm run test:package
-      - name: Add 0.1.70.1 playtest guide to package
+      - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MVP 0.1.70.1 Release Flow UI Density build
+      - name: Upload MVP 0.1.70.4.6 UI Interaction build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.1-release-flow-ui-density
+          name: mmm-playtest-0.1.70.4.6-ui-interaction
           path: dist
           if-no-files-found: error
           retention-days: 14
