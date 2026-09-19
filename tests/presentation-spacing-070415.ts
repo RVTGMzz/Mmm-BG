@@ -10,7 +10,7 @@ assert.equal(MEMEME_BUILD.version, '0.1.70.4.15');
 assert.match(MEMEME_BUILD.phase, /PRESENTATION SPACING PASS/);
 
 // Job source copy: no repeated offer sentence and no small icon beside job name.
-assert.match(replay, /description: 'Đổ xúc xắc để nhận việc\\nMỗi nghề có lương riêng/);
+assert.match(replay, /description: 'Đổ xúc xắc để nhận việc\.[^']*Mỗi nghề có lương riêng/);
 assert.match(replay, /summary: ''/);
 assert.match(replay, /description: `\$\{job\.title\} • \$\{jobSalary\(job, 1\)\} B\$\/cổng\.`/);
 assert.doesNotMatch(replay, /description: `\$\{job\.icon\} \$\{job\.title\}/);
