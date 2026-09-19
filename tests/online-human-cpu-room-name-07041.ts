@@ -20,7 +20,8 @@ assert.match(worker, /requestedRoomCode \? 1 : 6/);
 assert.match(worker, /room_code_taken/);
 assert.match(worker, /invalid_custom_room_code/);
 assert.match(worker, /await this\.ctx\.storage\.deleteAll\(\)/);
-assert.match(worker, /stalePrematch/);
+assert.match(worker, /roomCanRecycle07046/);
+assert.match(worker, /RECONNECT_GRACE_MS_0704/);
 assert(!worker.includes('normalizeRoomName07041'));
 assert(!worker.includes('roomName'));
 
