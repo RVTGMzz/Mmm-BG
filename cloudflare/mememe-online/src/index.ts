@@ -272,12 +272,12 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return [1, 2, 3].find((seat) => !humanSeats.has(seat));
   }
 
-  private roomCanRecycle07046(
+  private async roomCanRecycle07046(
     players: LobbyPlayerStored[],
     started: boolean,
     closed: boolean,
     now = Date.now(),
-  ): boolean {
+  ): Promise<boolean> {
     if (closed) return true;
 
     const host = players.find((player) => player.role === "host");
@@ -290,9 +290,14 @@ export class MeMeMeRoom extends DurableObject<Env> {
     // game/media/shell socket is gone AND every remembered human is beyond the
     // reconnect grace window. This keeps reconnect safe without immortal room codes.
     const noLiveSockets = this.ctx.getWebSockets().length === 0;
-    const everyonePastGrace = players.length === 0
-      || players.every((player) => now - player.lastSeenAt > RECONNECT_GRACE_MS_0704);
-    return noLiveSockets && everyonePastGrace;
+    const lastSocketActivityAt = await this.ctx.storage.get<number>("lastSocketActivityAt") ?? 0;
+    const latestHumanActivityAt = players.reduce(
+      (latest, player) => Math.max(latest, player.lastSeenAt),
+      lastSocketActivityAt,
+    );
+    const reconnectGraceExpired = latestHumanActivityAt > 0
+      && now - latestHumanActivityAt > RECONNECT_GRACE_MS_0704;
+    return noLiveSockets && reconnectGraceExpired;
   }
 
   private async maintainLobby0704(): Promise<LobbyPlayerStored[]> {
@@ -302,7 +307,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
     const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
 
     if (started) {
-      if (!closed && this.roomCanRecycle07046(players, true, false, now)) {
+      if (!closed && await this.roomCanRecycle07046(players, true, false, now)) {
         await this.ctx.storage.put({
           closed: true,
           closeReason: "host_timeout"
@@ -372,7 +377,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
         const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
         const started = await this.ctx.storage.get<boolean>("started") ?? false;
         const existingPlayers = await this.readPlayers();
-        if (!this.roomCanRecycle07046(existingPlayers, started, closed)) {
+        if (!await this.roomCanRecycle07046(existingPlayers, started, closed)) {
           return internalJson({ ok: false, error: "room_exists" }, 409);
         }
         await this.ctx.storage.deleteAll();
@@ -664,6 +669,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
     const attachment: SocketAttachment = { clientId, seatId, role, roomCode, channel, joinedAt: Date.now() };
     server.serializeAttachment(attachment);
     this.ctx.acceptWebSocket(server);
+    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
     server.send(JSON.stringify({ kind: "relay_ready", roomCode, clientId, seatId, role, channel }));
     this.broadcastPresence(channel);
     return new Response(null, { status: 101, webSocket: client });
@@ -672,6 +678,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
   async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer): Promise<void> {
     const sender = socket.deserializeAttachment() as SocketAttachment | null;
     if (!sender) return;
+    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
     const text = typeof message === "string" ? message : new TextDecoder().decode(message);
     // 0.1.70.4.2 profile sync may carry three 320px WebP face stickers.
     if (text.length > 1048576) { socket.close(1009, "Message too large."); return; }
@@ -702,14 +709,16 @@ export class MeMeMeRoom extends DurableObject<Env> {
     }
   }
 
-  webSocketClose(socket: WebSocket, code: number, reason: string): void {
+  async webSocketClose(socket: WebSocket, code: number, reason: string): Promise<void> {
     const attachment = socket.deserializeAttachment() as SocketAttachment | null;
+    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
     try { socket.close(code, reason); } catch {}
     if (attachment) this.broadcastPresence(attachment.channel);
   }
 
-  webSocketError(socket: WebSocket): void {
+  async webSocketError(socket: WebSocket): Promise<void> {
     const attachment = socket.deserializeAttachment() as SocketAttachment | null;
+    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
     try { socket.close(1011, "WebSocket error."); } catch {}
     if (attachment) this.broadcastPresence(attachment.channel);
   }
