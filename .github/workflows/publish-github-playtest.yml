@@ -1,116 +1,13 @@
-name: Publish compiled GitHub playtest
+name: Publish compiled GitHub playtest manual fallback
 
 on:
-  workflow_run:
-    workflows:
-      - MMM MVP CI
-    types:
-      - completed
-    branches:
-      - mmm-mvp-0.1-core
   workflow_dispatch:
 
 permissions:
   contents: read
-  actions: read
-
-concurrency:
-  group: mmm-github-playtest-publish
-  cancel-in-progress: true
-
-env:
-  PUBLIC_REPO: ronvotri/MeMeMe-Web-Playtest
-  SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
 
 jobs:
-  publish:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+  note:
     runs-on: ubuntu-latest
     steps:
-      - name: Check mirror credential
-        id: mirror-token
-        shell: bash
-        env:
-          MIRROR_TOKEN: ${{ secrets.MMM_WEB_DEPLOY_TOKEN }}
-        run: |
-          if [ -n "$MIRROR_TOKEN" ]; then
-            echo 'ready=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo 'MMM_WEB_DEPLOY_TOKEN is not configured; publish is skipped safely.'
-          fi
-
-      - name: Verify source is current branch HEAD
-        id: head-guard
-        if: steps.mirror-token.outputs.ready == 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          latest_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/mmm-mvp-0.1-core" --jq '.object.sha')"
-          if [ "$latest_sha" = "$SOURCE_SHA" ]; then
-            echo 'current=true' >> "$GITHUB_OUTPUT"
-          else
-            echo 'current=false' >> "$GITHUB_OUTPUT"
-            echo "Skipping stale publish $SOURCE_SHA; current HEAD is $latest_sha."
-          fi
-
-      - name: Checkout exact source
-        if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.SOURCE_SHA }}
-
-      - name: Setup Node
-        if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: package.json
-
-      - name: Build compiled web only
-        if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
-        run: |
-          npm install --no-audit --no-fund
-          npm run build
-          test -f dist/index.html
-          test -d dist/assets
-          test -z "$(find dist -type f -name '*.map' -print -quit)"
-          test ! -d dist/src
-          test ! -d dist/tests
-          test ! -d dist/docs
-
-      - name: Checkout GitHub playtest mirror
-        if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.PUBLIC_REPO }}
-          token: ${{ secrets.MMM_WEB_DEPLOY_TOKEN }}
-          path: public-mirror
-
-      - name: Replace compiled site only
-        if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
-        shell: bash
-        run: |
-          rm -rf public-mirror/assets
-          cp dist/index.html public-mirror/index.html
-          cp -R dist/assets public-mirror/assets
-          sed -i '1i<!-- Compiled playtest build only. Source is not mirrored here. -->' public-mirror/index.html
-
-      - name: Commit GitHub playtest mirror
-        if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
-        working-directory: public-mirror
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html assets
-          if git diff --cached --quiet; then
-            echo 'Compiled GitHub playtest already matches this build.'
-            exit 0
-          fi
-          git commit -m "Publish compiled playtest ${SOURCE_SHA::7}"
-          git push
+      - run: echo "Automatic playtest publishing now runs as the final step of MMM MVP CI."
