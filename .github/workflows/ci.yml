@@ -224,14 +224,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf public-mirror/assets
-          cp dist/index.html public-mirror/index.html
-          cp -R dist/assets public-mirror/assets
+
+          # Vite copies public/ to the root of dist/. Audio therefore lives in
+          # dist/audio, not dist/assets. Mirror the complete compiled output so
+          # BGM, SFX, manifest and future public assets can never be dropped.
+          find public-mirror -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -a dist/. public-mirror/
           sed -i '1i<!-- Compiled playtest build only. Source is not mirrored here. -->' public-mirror/index.html
+
+          test -f public-mirror/audio/bgm/01_Menu_MeMeMe.ogg
+          test -f public-mirror/audio/bgm/02_City_Bubble.ogg
+          test -f public-mirror/audio/bgm/03_City_Silly.ogg
+          test -f public-mirror/audio/bgm/04_Final_Round.ogg
+          test -f public-mirror/audio/sfx/dice.ogg
+          test -f public-mirror/audio/sfx/choice.ogg
+          test -f public-mirror/audio/sfx/money_gain.ogg
+          test -f public-mirror/audio/sfx/step.ogg
+
           cd public-mirror
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add index.html assets
+          git add -A
           if git diff --cached --quiet; then
             echo 'Compiled GitHub playtest already matches this build.'
             exit 0
