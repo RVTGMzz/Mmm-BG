@@ -177,7 +177,7 @@ function resolveJobTile(ctx: ReplayContext, player: PlayerState, nodeId: number)
       optionTitles: offer.map((job) => `${job.icon} ${job.title}`).join(' | '),
       title: '3 JOB XUẤT HIỆN!',
       impact: '💼🎲',
-      description: 'Không chọn trực tiếp. Hãy đổ xúc xắc Job: 1–2 = A • 3–4 = B • 5–6 = C.',
+      description: 'Đổ xúc xắc để nhận việc.',
       summary: 'Mỗi nghề có lương riêng khi qua cổng và một nhịp rủi ro/đặc tính khác nhau.',
       affectedPlayerIds: String(player.id),
     },
@@ -669,10 +669,10 @@ function replayJobChoice(ctx: ReplayContext, commandIndex: number): number {
     salary: jobSalary(job, 1),
     title: `${job.icon} 🎲 ${result} → NHẬN VIỆC`,
     impact: job.icon,
-    description: `${player.name} đổ ${result}, trúng ${job.title} • lương Lv.1 ${jobSalary(job, 1)} B$/cổng.`,
+    description: `${job.icon} ${job.title} • ${jobSalary(job, 1)} B$/cổng.`,
     summary: pendingMovement
-      ? `${job.special} • Còn ${pendingMovement.remainingSteps} bước từ xúc xắc di chuyển, tiếp tục đi.`
-      : job.special,
+      ? `Còn ${pendingMovement.remainingSteps} bước di chuyển.`
+      : 'Đã nhận việc.',
     affectedPlayerIds: String(player.id),
   }, player.id);
 

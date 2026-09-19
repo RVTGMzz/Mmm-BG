@@ -192,6 +192,8 @@ jobs:
         run: npm run test:ui-interaction-07046
       - name: 0.1.70.4.7 online runtime participation
         run: npm run test:online-runtime-participation-07047
+      - name: 0.1.70.4.8 Job UI compact pass
+        run: npm run test:job-ui-compact-07048
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
@@ -200,11 +202,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MVP 0.1.70.4.7 Online Runtime Participation build
+      - name: Upload MVP 0.1.70.4.8 Job UI Compact build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.7-online-participation
+          name: mmm-playtest-0.1.70.4.8-job-ui-compact
           path: dist
           if-no-files-found: error
           retention-days: 14

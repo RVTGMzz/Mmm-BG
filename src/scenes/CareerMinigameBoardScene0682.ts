@@ -129,8 +129,13 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
 
   private syncStrictModalOwnership0682(): void {
     const presentationRoot = this.presentation0682()?.active;
+    const jobDetailRoot = this.findTopLevelContainer0682((copy) => copy === 'xem nghề');
     const jobHubRoot = this.findTopLevelContainer0682((copy) => copy.includes('job hub'));
-    const blockingRoot = presentationRoot?.active ? presentationRoot : jobHubRoot;
+    const blockingRoot = presentationRoot?.active
+      ? presentationRoot
+      : jobDetailRoot?.active
+        ? jobDetailRoot
+        : jobHubRoot;
 
     if (!blockingRoot?.active) {
       this.restoreLooseText0682();

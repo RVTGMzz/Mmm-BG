@@ -10,8 +10,7 @@ const demo = readFileSync('src/scenes/DemoBoardScene.ts', 'utf8');
 const bot = readFileSync('src/scenes/PlaytestDemoBoardScene.ts', 'utf8');
 const media = readFileSync('src/ui/OnlineGroupMedia07043.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.7');
-assert.match(MEMEME_BUILD.phase, /ONLINE RUNTIME PARTICIPATION PASS/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(localTransport, /subscribeConnection\?/);
 assert.match(onlineTransport, /TransportConnectionState07047/);

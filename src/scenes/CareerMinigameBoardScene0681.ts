@@ -170,8 +170,8 @@ export class CareerMinigameBoardScene0681 extends CareerMinigameBoardScene068 {
           .setText(compact)
           .setFontSize(18)
           .setLineSpacing(2)
-          .setWordWrapWidth(410, true)
-          .setFixedSize(410, 46);
+          .setWordWrapWidth(500, true)
+          .setFixedSize(500, 46);
       }
       // Keep the result title comfortably readable on a phone.
       if (text.x <= -150 && text.y < 0 && text.style.fontSize) {

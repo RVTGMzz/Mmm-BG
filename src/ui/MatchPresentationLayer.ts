@@ -200,31 +200,38 @@ export class MatchPresentationLayer {
 
   private showLanding(model: PresentationEventModel): void {
     const palette = KIND_PALETTE[model.kind];
+    const isJobCard = model.tileType === 'job';
+    const panelWidth = isJobCard ? 700 : 560;
+    const bodyWidth = isJobCard ? 500 : 410;
+    const contentX = isJobCard ? -218 : -178;
+    const iconX = isJobCard ? -286 : -226;
     const container = this.scene.add.container(640, 350).setDepth(900).setAlpha(0).setScale(0.9);
     this.active = container;
 
     const shadow = this.scene.add.graphics();
     shadow.fillStyle(0x000000, 0.22);
-    shadow.fillRoundedRect(-286, -80, 572, 170, 22);
+    shadow.fillRoundedRect(-(panelWidth / 2 + 6), -80, panelWidth + 12, 170, 22);
     shadow.setPosition(0, 8);
     const panel = this.scene.add.graphics();
     panel.fillStyle(palette.panel, 0.98);
-    panel.fillRoundedRect(-280, -84, 560, 168, 20);
+    panel.fillRoundedRect(-panelWidth / 2, -84, panelWidth, 168, 20);
     panel.lineStyle(3, palette.accent, 0.95);
-    panel.strokeRoundedRect(-280, -84, 560, 168, 20);
+    panel.strokeRoundedRect(-panelWidth / 2, -84, panelWidth, 168, 20);
 
-    const icon = this.scene.add.text(-226, -4, model.impact || '•', {
+    const icon = this.scene.add.text(iconX, -4, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '44px',
     }).setOrigin(0.5);
-    const eyebrow = this.scene.add.text(-178, -52, model.eyebrow, {
+    const eyebrow = this.scene.add.text(contentX, -52, model.eyebrow, {
       fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#d9d1c7',
     });
-    const title = this.scene.add.text(-178, -24, model.title, {
+    const title = this.scene.add.text(contentX, -24, model.title, {
       fontFamily: 'Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#ffffff',
+      fixedWidth: bodyWidth, wordWrap: { width: bodyWidth },
     });
-    const description = this.scene.add.text(-178, 20, '', {
-      fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#f4ede4', wordWrap: { width: 410 },
+    const description = this.scene.add.text(contentX, 20, '', {
+      fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#f4ede4',
+      wordWrap: { width: bodyWidth }, fixedWidth: bodyWidth, fixedHeight: 58, lineSpacing: 3,
     });
 
     container.add([shadow, panel, icon, eyebrow, title, description]);

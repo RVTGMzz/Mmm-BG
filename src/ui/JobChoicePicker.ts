@@ -90,7 +90,7 @@ export function createJobRollPicker(
     const detail = scene.add.container(640, 360).setDepth(995);
     detailRoot = detail;
     const dim = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.78).setInteractive();
-    const detailPanel = scene.add.rectangle(0, 0, 700, 350, 0xfffbf3, 1).setStrokeStyle(6, risky ? 0xc34742 : 0x5d4773, 1);
+    const detailPanel = scene.add.rectangle(0, 0, 780, 370, 0xfffbf3, 1).setStrokeStyle(6, risky ? 0xc34742 : 0x5d4773, 1);
     const previewKicker = scene.add.text(0, -132, 'XEM NGHỀ', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '14px',
@@ -113,10 +113,10 @@ export function createJobRollPicker(
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#36312c',
-      fixedWidth: 560,
+      fixedWidth: 640,
       align: 'center',
-      wordWrap: { width: 560 },
-      maxLines: 2,
+      wordWrap: { width: 640 },
+      maxLines: 3,
     }).setOrigin(0.5);
     const closeButton = scene.add.rectangle(0, 115, 210, 54, 0x242424, 1)
       .setStrokeStyle(3, 0xffffff, 0.9)

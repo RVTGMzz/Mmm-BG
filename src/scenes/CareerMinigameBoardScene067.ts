@@ -61,8 +61,8 @@ export class CareerMinigameBoardScene067 extends CareerMinigameBoardScene066 {
         // MatchPresentationLayer landing body is created at (-178, 20). Give it a
         // hard text box so even the longest Job description cannot escape the card.
         if (object.x <= -150 && object.y >= 8) {
-          object.setWordWrapWidth(410, true);
-          object.setFixedSize(410, 66);
+          object.setWordWrapWidth(500, true);
+          object.setFixedSize(500, 58);
           object.setLineSpacing(3);
         }
       }
