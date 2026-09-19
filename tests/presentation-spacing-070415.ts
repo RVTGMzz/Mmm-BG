@@ -28,7 +28,7 @@ assert.match(active, /root\.add\(\[shadow, panel, kicker, title, impact, body, s
 assert.match(active, /if \(model\.kind === 'card_play' && model\.targetName && amount > 0\)/);
 
 // Reaction label/body have deliberate vertical separation.
-assert.match(presentation, /speakerName[\s\S]*-36/);
+assert.match(presentation, /const speaker = this\.scene\.add\.text\(textX, -36,[\s\S]*line\.speakerName/);
 assert.match(presentation, /const text = this\.scene\.add\.text\(textX, 10/);
 assert.match(presentation, /fixedWidth: 224/);
 
