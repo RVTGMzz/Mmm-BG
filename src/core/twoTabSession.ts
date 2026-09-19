@@ -162,7 +162,6 @@ export class TwoTabHostSession extends TwoTabEventSource {
   private readonly seatClaims = new Map<number, string>();
   private readonly clientSeats = new Map<string, number>();
   private unsubscribeTransport?: () => void;
-  private unsubscribeConnection?: () => void;
   private intentSerial = 0;
 
   constructor(
@@ -449,6 +448,7 @@ export class TwoTabClientSession extends TwoTabEventSource {
   observedCommandSeq = 0;
   state?: MatchState;
   private unsubscribeTransport?: () => void;
+  private unsubscribeConnection?: () => void;
   private intentSerial = 0;
 
   constructor(
