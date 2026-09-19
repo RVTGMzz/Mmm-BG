@@ -53,6 +53,7 @@ function presence0704(player: LobbyPlayerStored, now = Date.now()): LobbyPresenc
 
 const ALLOWED_ORIGINS = new Set([
   "https://ronvotri.github.io",
+  "https://mwp-test.pages.dev",
   "http://localhost:5173",
   "http://127.0.0.1:5173"
 ]);
@@ -271,13 +272,45 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return [1, 2, 3].find((seat) => !humanSeats.has(seat));
   }
 
+  private roomCanRecycle07046(
+    players: LobbyPlayerStored[],
+    started: boolean,
+    closed: boolean,
+    now = Date.now(),
+  ): boolean {
+    if (closed) return true;
+
+    const host = players.find((player) => player.role === "host");
+    if (!started) {
+      return Boolean(host && now - host.lastSeenAt > RECONNECT_GRACE_MS_0704);
+    }
+
+    // Once a match has started, lobby heartbeats intentionally stop. The room may
+    // therefore look stale while the game is healthy. Only recycle after every
+    // game/media/shell socket is gone AND every remembered human is beyond the
+    // reconnect grace window. This keeps reconnect safe without immortal room codes.
+    const noLiveSockets = this.ctx.getWebSockets().length === 0;
+    const everyonePastGrace = players.length === 0
+      || players.every((player) => now - player.lastSeenAt > RECONNECT_GRACE_MS_0704);
+    return noLiveSockets && everyonePastGrace;
+  }
+
   private async maintainLobby0704(): Promise<LobbyPlayerStored[]> {
     const players = await this.readPlayers();
     const started = await this.ctx.storage.get<boolean>("started") ?? false;
-    if (started) return players;
-
     const now = Date.now();
     const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
+
+    if (started) {
+      if (!closed && this.roomCanRecycle07046(players, true, false, now)) {
+        await this.ctx.storage.put({
+          closed: true,
+          closeReason: "host_timeout"
+        });
+      }
+      return players;
+    }
+
     const host = players.find((player) => player.role === "host");
 
     if (!closed && host && now - host.lastSeenAt > RECONNECT_GRACE_MS_0704) {
@@ -339,9 +372,9 @@ export class MeMeMeRoom extends DurableObject<Env> {
         const closed = await this.ctx.storage.get<boolean>("closed") ?? false;
         const started = await this.ctx.storage.get<boolean>("started") ?? false;
         const existingPlayers = await this.readPlayers();
-        const host = existingPlayers.find((player) => player.role === "host");
-        const stalePrematch = !started && Boolean(host) && Date.now() - (host?.lastSeenAt ?? Date.now()) > RECONNECT_GRACE_MS_0704;
-        if (!closed && !stalePrematch) return internalJson({ ok: false, error: "room_exists" }, 409);
+        if (!this.roomCanRecycle07046(existingPlayers, started, closed)) {
+          return internalJson({ ok: false, error: "room_exists" }, 409);
+        }
         await this.ctx.storage.deleteAll();
       }
       const body = await request.json() as Record<string, unknown>;
