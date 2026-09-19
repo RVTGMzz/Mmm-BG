@@ -13,7 +13,7 @@ const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8
 assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(picker, /restoreHubVisuals/);
-assert.match(picker, /child instanceof Phaser\.GameObjects\.Text/);
+assert.match(picker, /object instanceof Phaser\.GameObjects\.Text/);
 assert.match(picker, /restoreHubVisuals\(\);[\s\S]*setCardInteractive\(true\)/);
 
 assert.match(owner0682, /if \(jobHubRoot\?\.active\) this\.restoreCanonicalModalText0682\(jobHubRoot\)/);
