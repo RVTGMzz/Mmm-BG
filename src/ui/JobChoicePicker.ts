@@ -70,9 +70,18 @@ export function createJobRollPicker(
     rollButton.setInteractive({ useHandCursor: true });
   };
 
+  const restoreHubVisuals = (): void => {
+    if (!root.active) return;
+    root.setVisible(true).setAlpha(1);
+    for (const child of root.list) {
+      if (child instanceof Phaser.GameObjects.Text) child.setVisible(true).setAlpha(1);
+    }
+  };
+
   const closeDetail = (): void => {
     if (detailRoot?.active) detailRoot.destroy(true);
     detailRoot = undefined;
+    restoreHubVisuals();
     setCardInteractive(true);
     restoreRollInteraction();
   };

@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
 import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
+import type { PresentationEventModel } from '../ui/presentationModel';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import {
   MOBILE_UI_FONT_07044,
@@ -22,7 +24,10 @@ type Hud07044 = {
 
 type Presentation07044 = {
   active?: Phaser.GameObjects.Container;
+  currentModel?: PresentationEventModel;
   isBlocking(): boolean;
+  showLanding(model: PresentationEventModel): void;
+  finishCurrent(animate?: boolean): void;
 };
 
 type Runtime07044 = {
@@ -57,6 +62,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
   create(): void {
     super.create();
+    this.installCanonicalJobPresentation070411();
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
@@ -70,6 +76,118 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
   private runtime07044(): Runtime07044 {
     return this as unknown as Runtime07044;
+  }
+
+  /**
+   * 0.1.70.4.11: one renderer owns every Job landing card.
+   *
+   * This wrapper is installed after every inherited showLanding wrapper. Job models
+   * intentionally do NOT call the legacy chain, so 0.1.63/0.1.67/0.1.68/0.1.68.1
+   * can no longer scale, rewrite, hide or restore pieces of the same Job card.
+   */
+  private installCanonicalJobPresentation070411(): void {
+    const presentation = this.runtime07044().presentation;
+    if (!presentation) return;
+    const originalShowLanding = presentation.showLanding.bind(presentation);
+
+    presentation.showLanding = (model: PresentationEventModel) => {
+      if (model.tileType !== 'job') {
+        originalShowLanding(model);
+        return;
+      }
+      this.showCanonicalJobLanding070411(presentation, model);
+    };
+  }
+
+  private showCanonicalJobLanding070411(
+    presentation: Presentation07044,
+    model: PresentationEventModel,
+  ): void {
+    const previous = presentation.active;
+    if (previous?.active && previous.name === 'job-presentation-card') previous.destroy(true);
+
+    const root = this.add.container(640, 350)
+      .setDepth(900)
+      .setName('job-presentation-card')
+      .setAlpha(0)
+      .setScale(0.96);
+    presentation.active = root;
+
+    const shadow = this.add.graphics();
+    shadow.fillStyle(0x000000, 0.22);
+    shadow.fillRoundedRect(-396, -118, 792, 246, 28);
+    shadow.setPosition(0, 9);
+
+    const panel = this.add.graphics();
+    panel.fillStyle(0x2c2925, 0.985);
+    panel.fillRoundedRect(-390, -122, 780, 244, 26);
+    panel.lineStyle(5, 0xffd34d, 0.96);
+    panel.strokeRoundedRect(-390, -122, 780, 244, 26);
+
+    const eyebrow = this.add.text(0, -91, model.eyebrow, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#d9d1c7',
+      fixedWidth: 650,
+      align: 'center',
+    }).setOrigin(0.5);
+
+    const icon = this.add.text(-310, -26, model.impact || '💼', {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '42px',
+    }).setOrigin(0.5);
+
+    const title = this.add.text(15, -43, model.title, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '30px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      fixedWidth: 585,
+      align: 'center',
+      wordWrap: { width: 585 },
+    }).setOrigin(0.5);
+
+    const body = this.add.text(15, 40, model.description, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '17px',
+      color: '#f4ede4',
+      fixedWidth: 610,
+      fixedHeight: 82,
+      align: 'center',
+      wordWrap: { width: 610, useAdvancedWrap: true },
+      lineSpacing: 6,
+      maxLines: 3,
+    }).setOrigin(0.5);
+
+    const hit = this.add.rectangle(0, 0, 780, 244, 0xffffff, 0.001)
+      .setInteractive({ useHandCursor: true });
+
+    root.add([shadow, panel, eyebrow, icon, title, body, hit]);
+    root.bringToTop(eyebrow);
+    root.bringToTop(icon);
+    root.bringToTop(title);
+    root.bringToTop(body);
+
+    sfxController.play('ui_confirm');
+    this.tweens.add({
+      targets: root,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 170,
+      ease: 'Back.easeOut',
+    });
+
+    let closed = false;
+    const close = (): void => {
+      if (closed || presentation.currentModel !== model) return;
+      closed = true;
+      presentation.finishCurrent(false);
+    };
+
+    hit.on('pointerdown', close);
+    this.time.delayedCall(Math.max(model.holdMs, 1900), close);
   }
 
   private applyMobileLandscapeUi07044(): void {

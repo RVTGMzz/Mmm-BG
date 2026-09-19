@@ -164,13 +164,15 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
   }
 
   private polishJobResult069(): void {
-    if (this.findNamedContainer069('job-detail-modal')?.active) {
-      this.restoreLeaks069();
-      return;
-    }
-
+    const detail = this.findNamedContainer069('job-detail-modal');
+    const hub = this.findNamedContainer069('job-hub-modal');
     const presentation = this.presentation069();
     const root = presentation?.active;
+
+    // 0.1.70.4.11: named Job UI has one owner. Do not hide, reposition or restore
+    // its text from this legacy polish layer; 0682 owns outside-copy suppression.
+    if (detail?.active || hub?.active || root?.name === 'job-presentation-card') return;
+
     const model = presentation?.currentModel;
     const activeJobResult = Boolean(root?.active && model?.kind === 'tile_land' && model.tileType === 'job');
     if (!activeJobResult || !root || !model) {

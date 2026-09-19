@@ -49,6 +49,11 @@ export class CareerMinigameBoardScene068 extends CareerMinigameBoardScene067 {
       return;
     }
 
+    if (root.name === 'job-presentation-card') {
+      this.restoreCanonicalModalTexts068();
+      return;
+    }
+
     const canonicalObjects = new Set<Phaser.GameObjects.GameObject>();
     this.collectObjects068(root, canonicalObjects);
     const normalizedDescription = this.normalizeCopy068(model.description);

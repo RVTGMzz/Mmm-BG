@@ -131,7 +131,9 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
     const presentationRoot = this.presentation0682()?.active;
     const jobDetailRoot = this.findNamedTopLevelContainer0682('job-detail-modal');
     const jobHubRoot = this.findNamedTopLevelContainer0682('job-hub-modal');
+
     if (jobDetailRoot?.active) this.restoreCanonicalModalText0682(jobDetailRoot);
+    if (jobHubRoot?.active) this.restoreCanonicalModalText0682(jobHubRoot);
 
     const blockingRoot = jobDetailRoot?.active
       ? jobDetailRoot
@@ -146,6 +148,12 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
 
     const canonical = new Set<Phaser.GameObjects.GameObject>();
     this.collectObjects0682(blockingRoot, canonical);
+    // Detail temporarily covers the Job Hub, but the Hub remains the same live
+    // component underneath. Preserve its child visibility instead of hiding each
+    // Text object and then forgetting to restore it when Detail closes.
+    if (jobDetailRoot?.active && jobHubRoot?.active) {
+      this.collectObjects0682(jobHubRoot, canonical);
+    }
     const hud = this.collectHudObjects0682();
     const blockingDepth = blockingRoot.depth;
 

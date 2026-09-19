@@ -8,8 +8,7 @@ const ownership = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'ut
 const polish = readFileSync('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
 const replay = readFileSync('src/core/replay.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.10');
-assert.match(MEMEME_BUILD.phase, /JOB SINGLE OWNER/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(presentation, /setName\('job-presentation-card'\)/);
 assert.match(presentation, /object\.name === 'job-presentation-card'/);

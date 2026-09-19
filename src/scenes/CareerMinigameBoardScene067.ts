@@ -51,6 +51,12 @@ export class CareerMinigameBoardScene067 extends CareerMinigameBoardScene066 {
       return;
     }
 
+    if (root.name === 'job-presentation-card') {
+      this.polishedJobRoot067 = undefined;
+      this.restoreLegacyJobText067();
+      return;
+    }
+
     const canonicalObjects = new Set<Phaser.GameObjects.GameObject>();
     this.collectContainerObjects067(root, canonicalObjects);
 

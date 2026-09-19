@@ -112,12 +112,19 @@ export class CareerMinigameBoardScene0681 extends CareerMinigameBoardScene068 {
   private syncModalDeclutter0681(): void {
     const presentation = this.presentation0681();
     const presentationActive = Boolean(presentation?.active?.active);
-    const jobHubActive = this.anyVisibleText0681((copy) => copy.includes('đổ xúc xắc job'));
+    const canonicalJobPresentation = presentation?.active?.name === 'job-presentation-card';
+    const jobHubActive = this.hasNamedTopLevelContainer0681('job-hub-modal');
+    const jobDetailActive = this.hasNamedTopLevelContainer0681('job-detail-modal');
     const jobResultActive = this.anyVisibleText0681((copy) => copy.includes('nhận việc'));
-    const largeModalActive = presentationActive || jobHubActive;
+    const largeModalActive = presentationActive || jobHubActive || jobDetailActive;
 
     if (largeModalActive) this.hideTopHud0681();
     else this.restoreTopHud0681();
+
+    if (canonicalJobPresentation) {
+      this.restoreLegacyCopy0681();
+      return;
+    }
 
     if (jobResultActive) {
       this.compactCanonicalJobCard0681();
@@ -125,6 +132,16 @@ export class CareerMinigameBoardScene0681 extends CareerMinigameBoardScene068 {
     } else {
       this.restoreLegacyCopy0681();
     }
+  }
+
+  private hasNamedTopLevelContainer0681(name: string): boolean {
+    return this.children.list.some(
+      (object) =>
+        object instanceof Phaser.GameObjects.Container
+        && object.active
+        && object.visible
+        && object.name === name,
+    );
   }
 
   private hideTopHud0681(): void {
