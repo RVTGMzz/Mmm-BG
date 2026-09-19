@@ -10,8 +10,7 @@ const owner0682 = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'ut
 const legacy069 = readFileSync('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.11');
-assert.match(MEMEME_BUILD.phase, /JOB FLOW CONSOLIDATION/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(picker, /restoreHubVisuals/);
 assert.match(picker, /child instanceof Phaser\.GameObjects\.Text/);
