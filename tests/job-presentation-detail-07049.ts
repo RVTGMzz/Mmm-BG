@@ -8,8 +8,7 @@ const spectator = readFileSync('src/scenes/CareerMinigameBoardScene046.ts', 'utf
 const ownership = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'utf8');
 const polish = readFileSync('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.9');
-assert.match(MEMEME_BUILD.phase, /JOB PRESENTATION SEQUENCING/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(picker, /setName\('job-hub-modal'\)/);
 assert.match(picker, /setName\('job-detail-modal'\)/);

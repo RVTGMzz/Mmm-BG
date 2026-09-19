@@ -38,8 +38,8 @@ function player(overrides: Partial<PlayerState> = {}): PlayerState {
   };
 }
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.9');
-assert.match(MEMEME_BUILD.phase, /JOB PRESENTATION SEQUENCING/);
+assert.equal(MEMEME_BUILD.version, '0.1.70.4.10');
+assert.match(MEMEME_BUILD.phase, /JOB SINGLE OWNER/);
 assert.deepEqual(DEFAULT_RELEASE_FACES_070.jail, [1, 3, 5]);
 assert.deepEqual(DEFAULT_RELEASE_FACES_070.hospital, [2, 4, 6]);
 

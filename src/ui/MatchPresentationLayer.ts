@@ -201,11 +201,21 @@ export class MatchPresentationLayer {
   private showLanding(model: PresentationEventModel): void {
     const palette = KIND_PALETTE[model.kind];
     const isJobCard = model.tileType === 'job';
+    if (isJobCard) {
+      for (const object of [...this.scene.children.list]) {
+        if (
+          object instanceof Phaser.GameObjects.Container
+          && object.active
+          && object.name === 'job-presentation-card'
+        ) object.destroy(true);
+      }
+    }
     const panelWidth = isJobCard ? 700 : 560;
     const bodyWidth = isJobCard ? 500 : 410;
     const contentX = isJobCard ? -218 : -178;
     const iconX = isJobCard ? -286 : -226;
     const container = this.scene.add.container(640, 350).setDepth(900).setAlpha(0).setScale(0.9);
+    if (isJobCard) container.setName('job-presentation-card');
     this.active = container;
 
     const shadow = this.scene.add.graphics();

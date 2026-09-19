@@ -84,9 +84,9 @@ export function startMiniGameOverlay(
   const subtitle = scene.add.text(0, -184, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
     fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#6d655b', align: 'center', fixedWidth: 790,
   }).setOrigin(0.5);
-  const stake = scene.add.text(0, -156, `NHIỀU RA ÍT BỊ: ${miniGameRewardCopy059(slot.contentId, 'majority_minority')}`, {
+  const stake = scene.add.text(0, -156, '', {
     fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#5d4773', align: 'center', fixedWidth: 780,
-  }).setOrigin(0.5);
+  }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22);
   root.add([backdrop, panel, title, subtitle, stake, stage]);
 
@@ -103,27 +103,122 @@ export function startMiniGameOverlay(
     const prompt = scene.add.text(0, -95, `${player.name} • CHỌN KÍN`, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '23px', fontStyle: 'bold', color: '#202020',
     }).setOrigin(0.5);
-    const hint = scene.add.text(0, -58, 'Người khác chưa được xem lựa chọn của bạn.', {
+    const hint = scene.add.text(0, -58, '← → / A D • ENTER / SPACE • D-PAD + A', {
       fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#746a60',
     }).setOrigin(0.5);
     stage.add([prompt, hint]);
+
     const spacing = choices.length === 2 ? 210 : 185;
+    const boxes: Phaser.GameObjects.Rectangle[] = [];
+    let selectedIndex = 0;
+    let settled = false;
+    let gamepadTimer: Phaser.Time.TimerEvent | undefined;
+    let previousPadLeft = false;
+    let previousPadRight = false;
+    let previousPadConfirm = false;
+
+    const refreshFocus = () => {
+      boxes.forEach((box, index) => {
+        const focused = index === selectedIndex;
+        box
+          .setScale(focused ? 1.055 : 1)
+          .setStrokeStyle(focused ? 7 : 4, focused ? 0x5d4773 : 0x242424, 1);
+      });
+    };
+
+    const moveFocus = (delta: number) => {
+      if (settled || choices.length === 0) return;
+      selectedIndex = (selectedIndex + delta + choices.length) % choices.length;
+      sfxController.play('ui_confirm');
+      refreshFocus();
+    };
+
+    const cleanupControls = () => {
+      scene.input.keyboard?.off('keydown', keyboardHandler);
+      gamepadTimer?.remove(false);
+      gamepadTimer = undefined;
+    };
+
+    const commit = (index = selectedIndex) => {
+      if (settled) return;
+      const choice = choices[index];
+      if (!choice) return;
+      settled = true;
+      cleanupControls();
+      sfxController.play('ui_confirm');
+      resolve(choice.value);
+    };
+
+    const keyboardHandler = (event: KeyboardEvent) => {
+      const key = event.key.toLocaleLowerCase();
+      if (key === 'arrowleft' || key === 'a') {
+        event.preventDefault();
+        moveFocus(-1);
+        return;
+      }
+      if (key === 'arrowright' || key === 'd') {
+        event.preventDefault();
+        moveFocus(1);
+        return;
+      }
+      if (key === 'enter' || key === ' ') {
+        event.preventDefault();
+        commit();
+        return;
+      }
+      const directIndex = Number(key) - 1;
+      if (Number.isInteger(directIndex) && directIndex >= 0 && directIndex < choices.length) commit(directIndex);
+    };
+
     choices.forEach((choice, index) => {
       const x = (index - (choices.length - 1) / 2) * spacing;
       const box = scene.add.rectangle(x, 35, 160, 155, choice.fill, 1)
         .setStrokeStyle(4, 0x242424, 1)
         .setInteractive({ useHandCursor: true });
+      boxes.push(box);
       const icon = scene.add.text(x, 8, choice.icon, { fontSize: '42px' }).setOrigin(0.5);
       const label = scene.add.text(x, 68, choice.label, {
         fontFamily: 'Arial, sans-serif', fontSize: '14px', fontStyle: 'bold', color: '#202020',
       }).setOrigin(0.5);
-      box.on('pointerover', () => box.setScale(1.035));
-      box.on('pointerout', () => box.setScale(1));
-      box.on('pointerdown', () => {
-        sfxController.play('ui_confirm');
-        resolve(choice.value);
+      box.on('pointerover', () => {
+        selectedIndex = index;
+        refreshFocus();
       });
+      box.on('pointerdown', () => commit(index));
       stage.add([box, icon, label]);
+    });
+
+    refreshFocus();
+    scene.input.keyboard?.on('keydown', keyboardHandler);
+
+    gamepadTimer = scene.time.addEvent({
+      delay: 70,
+      loop: true,
+      callback: () => {
+        const pads = typeof navigator !== 'undefined' && navigator.getGamepads
+          ? Array.from(navigator.getGamepads()).filter((pad): pad is Gamepad => Boolean(pad))
+          : [];
+        const pad = pads[0];
+        if (!pad) {
+          previousPadLeft = false;
+          previousPadRight = false;
+          previousPadConfirm = false;
+          return;
+        }
+
+        const axisX = pad.axes[0] ?? 0;
+        const left = Boolean(pad.buttons[14]?.pressed || axisX < -0.55);
+        const right = Boolean(pad.buttons[15]?.pressed || axisX > 0.55);
+        const confirm = Boolean(pad.buttons[0]?.pressed);
+
+        if (left && !previousPadLeft) moveFocus(-1);
+        if (right && !previousPadRight) moveFocus(1);
+        if (confirm && !previousPadConfirm) commit();
+
+        previousPadLeft = left;
+        previousPadRight = right;
+        previousPadConfirm = confirm;
+      },
     });
   });
 
@@ -149,7 +244,6 @@ export function startMiniGameOverlay(
   ) => {
     clearStage();
     subtitle.setText(`${slot.title} • 1 VS 1 • OẲN TÙ XÌ`);
-    stake.setText(`OẲN TÙ XÌ: ${miniGameRewardCopy059(slot.contentId, 'rps')}`);
 
     const leftName = scene.add.text(-235, -108, a.name, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#202020', fixedWidth: 240, align: 'center',
@@ -314,7 +408,6 @@ export function startMiniGameOverlay(
     }
 
     subtitle.setText(`${slot.title} • NHIỀU RA ÍT BỊ • phe thiểu số bị loại`);
-    stake.setText(`THƯỞNG: ${miniGameRewardCopy059(slot.contentId, 'majority_minority')}`);
     let round = 0;
     let safety = 0;
     while (activeIds.length > 2 && safety < 16) {

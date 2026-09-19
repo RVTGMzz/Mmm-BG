@@ -164,6 +164,11 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
   }
 
   private polishJobResult069(): void {
+    if (this.findNamedContainer069('job-detail-modal')?.active) {
+      this.restoreLeaks069();
+      return;
+    }
+
     const presentation = this.presentation069();
     const root = presentation?.active;
     const model = presentation?.currentModel;
@@ -173,65 +178,14 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       return;
     }
 
-    const runtime = this.runtime069();
-    const player = runtime.match.players.find((candidate) => candidate.id === model.actorId);
-    const job = player?.jobStatus === 'employed' ? jobById(JOBS_069, player.jobId) : undefined;
-    const level = job && player ? Math.max(1, Math.min(job.maxLevel, Math.floor(player.jobLevel ?? 1))) : 0;
-    const salary = job && level > 0 ? jobSalary(job, level) : 0;
-    const normalizedJobTitle = job ? this.normalize069(job.title) : '';
-    const normalizedJobIcon = job ? this.normalize069(job.icon) : '';
-
-    const jobDetailCopy = job
-      ? [
-          `${job.icon} ${job.title} • ${salary} B$/vòng`,
-          model.summary || model.description,
-        ].filter(Boolean).join('\n')
-      : [model.description, model.summary].filter((value, index, list) => Boolean(value) && list.indexOf(value) === index).join('\n');
-
-    this.visitContainerTexts069(root, (text) => {
-      const copy = this.normalize069(text.text);
-      if (normalizedJobIcon && copy === normalizedJobIcon) {
-        this.hideLeakText069(text);
-        return;
-      }
-      if (copy.endsWith('• job')) {
-        text
-          .setPosition(0, -82)
-          .setOrigin(0.5)
-          .setFixedSize(520, 28)
-          .setAlign('center');
-        return;
-      }
-      if (copy.includes('nhận việc')) {
-        const roll = text.text.match(/🎲\s*([1-6])/)?.[1] ?? text.text.match(/\b([1-6])\s*→/)?.[1] ?? '';
-        text
-          .setText(`🎲${roll ? ` ${roll}` : ''} → NHẬN VIỆC`)
-          .setPosition(0, -28)
-          .setOrigin(0.5)
-          .setFontSize(30)
-          .setFixedSize(520, 52)
-          .setAlign('center');
-        return;
-      }
-      if ((normalizedJobTitle && copy.includes(normalizedJobTitle)) || (text.x <= -150 && text.y >= 8)) {
-        text
-          .setText(jobDetailCopy || 'Kết quả nghề đã được áp dụng.')
-          .setVisible(true)
-          .setPosition(0, 22)
-          .setOrigin(0.5, 0)
-          .setFontSize(16)
-          .setFixedSize(500, 92)
-          .setAlign('center')
-          .setLineSpacing(4)
-          .setWordWrapWidth(500, true)
-          .setMaxLines(0);
-      }
-    });
-
+    // 0.1.70.4.10: MatchPresentationLayer owns the canonical Job card.
+    // This wrapper only suppresses stale Job copy outside that card. It must never
+    // rewrite title/body positions every frame because that can visually duplicate
+    // text while adjacent Job events transition.
     const canonical = new Set<Phaser.GameObjects.GameObject>();
     this.collectObjects069(root, canonical);
     const hud = new Set<Phaser.GameObjects.GameObject>();
-    for (const ui of runtime.hud.values()) this.collectObjects069(ui.root, hud);
+    for (const ui of this.runtime069().hud.values()) this.collectObjects069(ui.root, hud);
 
     this.visitTexts069((text) => {
       if (!text.visible || canonical.has(text) || hud.has(text)) return;
@@ -246,9 +200,20 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
         copy.includes('cây đơn') ||
         copy.includes('xác di chuyển') ||
         /còn \d+ bước/.test(copy);
-      if (!leak) return;
-      this.hideLeakText069(text);
+      if (leak) this.hideLeakText069(text);
     });
+  }
+
+  private findNamedContainer069(name: string): Phaser.GameObjects.Container | undefined {
+    for (const object of this.children.list) {
+      if (
+        object instanceof Phaser.GameObjects.Container
+        && object.active
+        && object.visible
+        && object.name === name
+      ) return object;
+    }
+    return undefined;
   }
 
   private hideLeakText069(text: Phaser.GameObjects.Text): void {
