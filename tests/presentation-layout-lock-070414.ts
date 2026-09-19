@@ -11,13 +11,14 @@ assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 assert.match(active, /canonicalJobBody070414/);
 assert.match(active, /if \(impact && copy\.includes\(impact\)\) copy = copy\.replace\(impact, ''\)\.trim\(\)/);
 assert.match(active, /canonicalJobBody070414/);
-assert.match(active, /fixedWidth: 535/);
+assert.match(active, /fixedWidth: isResult \? 260 : 570/);
 assert.match(active, /if \(seen\.has\(key\)\) return false/);
 
 // Card + News: inherited text is hidden, canonical copy is rebuilt inside fixed bounds.
 assert.match(active, /rebuildCanonicalCinematicText070414/);
 assert.match(active, /const isNews = model\.kind === 'news'/);
-assert.match(active, /object instanceof Phaser\.GameObjects\.Text\) object\.setVisible\(false\)/);
+assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
+assert.match(active, /child\.destroy\(\)/);
 assert.match(active, /const body = this\.add\.text\(-322, -24, bodyCopy/);
 assert.match(active, /fixedWidth: 628/);
 assert.match(active, /retireLegacyPresentationOverlays070414/);
