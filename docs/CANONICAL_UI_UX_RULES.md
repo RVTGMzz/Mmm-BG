@@ -2,7 +2,7 @@
 
 Status: **MANDATORY DESIGN CONTRACT**
 
-These rules apply to every current and future MeMeMe screen, HUD, modal, popup, card, controller flow and mobile layout unless Ron explicitly approves an exception.
+These rules apply to every current and future MeMeMe screen, HUD, modal, popup, card and mobile layout unless Ron explicitly approves an exception. Controller support is deferred until it receives its own runtime acceptance pass.
 
 The purpose is to prevent the recurring loop of adding too much information, shrinking text to make it fit, then rebuilding the UI later.
 
@@ -10,7 +10,7 @@ The purpose is to prevent the recurring loop of adding too much information, shr
 Design for a real phone in landscape first. A UI is not accepted merely because it fits at 1280×720. Critical information must never depend on tiny copy.
 
 ## 2. Summary first, detail on demand
-Default surfaces show only what is needed for the current decision. Long explanations belong behind focus, touch/click, controller confirm, keyboard confirm or a dedicated detail panel.
+Default surfaces show only what is needed for the current decision. Long explanations belong behind focus, touch/click, keyboard confirm or a dedicated detail panel.
 
 ## 3. Maximum three persistent information lines
 A normal persistent HUD/card should target at most three readable lines. Player HUD default: identity, money, job name when applicable. Do not permanently show zero-value counters or explanatory prose.
@@ -19,10 +19,10 @@ A normal persistent HUD/card should target at most three readable lines. Player 
 Idle cards stay compact. The active player's card scales up moderately, strengthens focus without relying on colour alone, and may reveal one extra context line such as salary/status. The expanded card must stay inside its HUD safe area.
 
 ## 5. Focus must communicate interaction
-Selectable cards need a clear focus state for touch/click, keyboard and controller/Steam Deck. Never require hover for a core action.
+Selectable cards need a clear focus state for touch/click and keyboard. Never require hover for a core action. Do not advertise controller input until the controller runtime is accepted.
 
 ## 6. Job Hub uses compact cards plus optional details
-Default Job cards show only slot/D6 range, art/icon, job name, compact salary and one identity/risk tag. Long prose and percentage breakdowns belong in deliberate detail view. Detail opens with touch/click, controller confirm or keyboard; closes with controller back, Esc, outside tap/click or explicit close.
+Default Job cards show only slot/D6 range, art/icon, job name and compact salary. Long prose and percentage breakdowns stay out of the default surface. A concise preview opens with touch/click or keyboard and closes with Esc, outside tap/click or explicit close.
 
 ## 7. Contextual information beats permanent information
 If information matters only during one action, reveal it only during that action. The board HUD must not become a permanent database dump.
@@ -42,8 +42,8 @@ At any moment the screen should have one dominant action/message: roll, choose, 
 ## 12. Reduce copy before reducing font size
 When crowded: remove duplicate information → shorten copy → move detail behind interaction → reorganize layout → only then adjust typography modestly.
 
-## 13. Touch, controller and keyboard have feature parity
-Core actions and details reachable by touch/click need understandable controller/keyboard routes where supported, with deterministic focus and visible focus.
+## 13. Touch and keyboard are the supported input surface
+Core actions and details reachable by touch/click need understandable keyboard routes where supported. Controller helpers may remain in source, but must not be wired into runtime or advertised until a dedicated controller milestone is accepted.
 
 ## 14. Do not encode meaning only by colour
 Active turn, selected option, danger, disabled and success/failure states need another cue such as scale, icon, border, label, motion or shape.
@@ -59,12 +59,14 @@ Use a consistent family of corner radii instead of random rounding. Full-screen 
 Presentation work must not introduce client RNG, alternate MatchState mutation paths, extra submitIntent paths or duplicated gameplay state solely to drive visuals.
 
 ## 17. Required review questions for every new screen
-Before a UI is done: Is it comfortably readable on phone landscape? Is the current action obvious within one second? Can default text be removed? Can detail open deliberately? Does every text stay inside its owner? Do modals suppress unrelated UI? Do touch/controller/keyboard reach equivalent core actions? Is focus obvious without colour alone? Are ordinary surfaces softly rounded? Does gameplay authority remain unchanged?
+Before a UI is done: Is it comfortably readable on phone landscape? Is the current action obvious within one second? Can default text be removed? Can detail open deliberately? Does every text stay inside its owner? Do modals suppress unrelated UI? Do touch/click and keyboard reach the supported core actions? Is focus obvious without colour alone? Are ordinary surfaces softly rounded? Does gameplay authority remain unchanged?
 
 ## 18. Implementation history and forward rule
 0.1.68.2 is the first implementation pass required to follow this contract end-to-end: compact idle HUD, expanded active HUD, compact Job cards, on-demand Job details, modal ownership and safe bubbles.
 
 0.1.69 **First Impression Polish** extends the permanent contract with owned/bounded player career labels, simplified first-run screens, compact Job results, the official logo splash, larger default copy and the soft-rounded shape language.
+
+0.1.70.4.6 **UI Interaction Pass** adds one-entry avatar selection with four large choices, clamped active-player HUD expansion, concise Job selection with on-demand preview, and explicitly keeps controller runtime disabled until a future acceptance pass.
 
 Future content/art passes must preserve these rules instead of reintroducing dense tiny-text HUDs or harsh square UI.
 
