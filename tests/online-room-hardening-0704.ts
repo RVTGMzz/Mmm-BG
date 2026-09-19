@@ -6,7 +6,7 @@ const api = readFileSync('src/core/onlineLobby0703.ts', 'utf8');
 const lobby = readFileSync('src/scenes/OnlineRoomLobbyScene.ts', 'utf8');
 const styles = readFileSync('src/styles.css', 'utf8');
 
-assert.match(worker, /milestone: "0\.1\.70\.4(?:\.[123])?"/);
+assert.match(worker, /milestone: "0\.1\.70\.4(?:\.[1236])?"/);
 assert.match(worker, /ONLINE_WINDOW_MS_0704 = 12_000/);
 assert.match(worker, /DISCONNECTED_WINDOW_MS_0704 = 30_000/);
 assert.match(worker, /RECONNECT_GRACE_MS_0704 = 60_000/);
