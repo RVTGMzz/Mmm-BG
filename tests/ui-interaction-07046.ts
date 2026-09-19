@@ -30,11 +30,12 @@ assert.match(job, /LƯƠNG •/);
 assert.doesNotMatch(job, /Controller B/);
 assert.doesNotMatch(main, /installGlobalGamepadUiNavigation0651\(game\)/);
 
-assert.match(worker, /roomCanRecycle07046/);
+assert.match(worker, /private async roomCanRecycle07046/);
 assert.match(worker, /const noLiveSockets = this\.ctx\.getWebSockets\(\)\.length === 0/);
-assert.match(worker, /everyonePastGrace/);
-assert.match(worker, /players\.every\(\(player\) => now - player\.lastSeenAt > RECONNECT_GRACE_MS_0704\)/);
-assert.match(worker, /if \(!this\.roomCanRecycle07046\(existingPlayers, started, closed\)\)/);
+assert.match(worker, /lastSocketActivityAt/);
+assert.match(worker, /reconnectGraceExpired/);
+assert.match(worker, /now - latestHumanActivityAt > RECONNECT_GRACE_MS_0704/);
+assert.match(worker, /if \(!await this\.roomCanRecycle07046\(existingPlayers, started, closed\)\)/);
 assert.match(worker, /https:\/\/mwp-test\.pages\.dev/);
 
 console.log('[ui-interaction-07046] PASS avatar popup + clamped active HUD + concise Job preview + controller-off + stale room recycle');
