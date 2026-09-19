@@ -6,7 +6,7 @@ const api = readFileSync('src/core/onlineLobby0703.ts', 'utf8');
 const localLobby = readFileSync('src/scenes/LocalLobbyScene.ts', 'utf8');
 const roomLobby = readFileSync('src/scenes/OnlineRoomLobbyScene.ts', 'utf8');
 
-assert.match(worker, /milestone: "0\.1\.70\.4\.[123]"/);
+assert.match(worker, /milestone: "0\.1\.70\.4\.[1236]"/);
 assert.match(worker, /deviceId: String\(body\.deviceId/);
 assert.match(worker, /firstFreeHumanSeat07041/);
 assert.match(worker, /CPU Fill never reserves lobby seats/);
