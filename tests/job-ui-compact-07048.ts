@@ -10,7 +10,7 @@ const ownership = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'ut
 
 assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
-assert.match(replay, /description: 'Đổ xúc xắc để nhận việc\.'/);
+assert.match(replay, /description: 'Đổ xúc xắc để nhận việc\./);
 assert.doesNotMatch(replay, /Không chọn trực tiếp\. Hãy đổ xúc xắc Job/);
 assert.match(replay, /\$\{job\.icon\} \$\{job\.title\} • \$\{jobSalary\(job, 1\)\} B\$\/cổng/);
 assert.match(replay, /Còn \$\{pendingMovement\.remainingSteps\} bước di chuyển/);
