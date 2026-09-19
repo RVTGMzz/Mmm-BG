@@ -12,7 +12,8 @@ assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.match(replay, /description: 'Đổ xúc xắc để nhận việc\./);
 assert.doesNotMatch(replay, /Không chọn trực tiếp\. Hãy đổ xúc xắc Job/);
-assert.match(replay, /\$\{job\.icon\} \$\{job\.title\} • \$\{jobSalary\(job, 1\)\} B\$\/cổng/);
+assert.match(replay, /description: `\$\{job\.title\} • \$\{jobSalary\(job, 1\)\} B\$\/cổng\.`/);
+assert.doesNotMatch(replay, /description: `\$\{job\.icon\} \$\{job\.title\}/);
 assert.match(replay, /Còn \$\{pendingMovement\.remainingSteps\} bước di chuyển/);
 
 assert.match(presentation, /const isJobCard = model\.tileType === 'job'/);
