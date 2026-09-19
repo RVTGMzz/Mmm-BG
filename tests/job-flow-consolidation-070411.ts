@@ -28,7 +28,7 @@ assert.match(active, /installCanonicalJobPresentation070411/);
 assert.match(active, /if \(model\.tileType !== 'job'\)/);
 assert.match(active, /showCanonicalJobLanding070411/);
 assert.match(active, /setName\('job-presentation-card'\)/);
-assert.match(active, /fixedWidth: 610/);
+assert.match(active, /fixedWidth: 535/);
 assert.match(active, /fixedHeight: 82/);
 assert.match(active, /maxLines: 3/);
 assert.match(active, /presentation\.finishCurrent\(false\)/);
