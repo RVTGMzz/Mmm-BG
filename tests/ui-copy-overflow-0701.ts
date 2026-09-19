@@ -42,7 +42,8 @@ assert.match(model, /friendlyVisibleCopy0701/);
 assert(!model.includes('function friendlyVisibleCopy('));
 
 assert.match(layer, /addNaturalActionLine/);
-assert.match(layer, /model\.kind === 'card_play' && amount > 0/);
+assert.match(layer, /const directMoneyTransfer/);
+assert.match(layer, /if \(!directMoneyTransfer \|\| amount <= 0\) return/);
 assert(!layer.includes('addPlayerChip('));
 assert(!layer.includes("'ACTOR'"));
 assert(!layer.includes("'TARGET'"));
