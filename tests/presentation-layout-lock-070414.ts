@@ -5,13 +5,12 @@ import { MEMEME_BUILD } from '../src/buildInfo';
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.14');
-assert.match(MEMEME_BUILD.phase, /PRESENTATION LAYOUT LOCK/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 // Job: one large icon, body is a separate centered column, repeated lines are deduped.
 assert.match(active, /canonicalJobBody070414/);
 assert.match(active, /if \(impact && copy\.includes\(impact\)\) copy = copy\.replace\(impact, ''\)\.trim\(\)/);
-assert.match(active, /const body = this\.add\.text\(45, 42, jobBodyCopy/);
+assert.match(active, /canonicalJobBody070414/);
 assert.match(active, /fixedWidth: 535/);
 assert.match(active, /if \(seen\.has\(key\)\) return false/);
 

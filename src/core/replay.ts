@@ -178,7 +178,7 @@ function resolveJobTile(ctx: ReplayContext, player: PlayerState, nodeId: number)
       title: '3 JOB XUẤT HIỆN!',
       impact: '💼🎲',
       description: 'Đổ xúc xắc để nhận việc.\nMỗi nghề có lương riêng khi qua cổng và có đặc tính khác nhau.',
-      summary: 'Mỗi nghề có lương riêng khi qua cổng và có đặc tính khác nhau.',
+      summary: '',
       affectedPlayerIds: String(player.id),
     },
     player.id,
@@ -669,7 +669,7 @@ function replayJobChoice(ctx: ReplayContext, commandIndex: number): number {
     salary: jobSalary(job, 1),
     title: `🎲 ${result} → NHẬN VIỆC`,
     impact: job.icon,
-    description: `${job.icon} ${job.title} • ${jobSalary(job, 1)} B$/cổng.`,
+    description: `${job.title} • ${jobSalary(job, 1)} B$/cổng.`,
     summary: pendingMovement
       ? `Còn ${pendingMovement.remainingSteps} bước di chuyển.`
       : 'Đã nhận việc.',

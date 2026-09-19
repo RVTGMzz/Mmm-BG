@@ -547,24 +547,24 @@ export class MatchPresentationLayer {
 
     const shadow = this.scene.add.graphics();
     shadow.fillStyle(0x000000, 0.2);
-    shadow.fillRoundedRect(-154, -38, 308, 78, 16);
+    shadow.fillRoundedRect(-154, -46, 308, 94, 16);
     shadow.setPosition(0, 5);
     const bg = this.scene.add.graphics();
     bg.fillStyle(0xfffbf3, 0.985);
-    bg.fillRoundedRect(-154, -42, 308, 78, 16);
+    bg.fillRoundedRect(-154, -50, 308, 94, 16);
     bg.lineStyle(3, color, 0.88);
-    bg.strokeRoundedRect(-154, -42, 308, 78, 16);
+    bg.strokeRoundedRect(-154, -50, 308, 94, 16);
 
     const avatar = this.buildAvatar(line.speakerId, line.expression, color);
-    avatar.setPosition(left ? -124 : 124, -3);
+    avatar.setPosition(left ? -124 : 124, 0);
     avatar.setScale(0.9);
     const textX = left ? -94 : -140;
-    const speaker = this.scene.add.text(textX, -31, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
+    const speaker = this.scene.add.text(textX, -36, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
       fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#4b4239',
     });
-    const text = this.scene.add.text(textX, -8, '', {
+    const text = this.scene.add.text(textX, 10, '', {
       fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#201d1a',
-      wordWrap: { width: 224 },
+      wordWrap: { width: 224 }, fixedWidth: 224,
     }).setOrigin(0, 0.5);
 
     bubble.add([shadow, bg, avatar, speaker, text]);

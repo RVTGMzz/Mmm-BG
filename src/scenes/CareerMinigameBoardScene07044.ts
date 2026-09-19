@@ -150,18 +150,29 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const isNews = model.kind === 'news';
     root.setName(isNews ? 'news-presentation-card' : 'card-presentation-card');
 
-    // The inherited presentation chain is allowed to create graphics/animations,
-    // but no inherited text survives this final layout lock. This prevents old
-    // scaled descriptions/summaries from leaking outside the panel.
-    this.visitDisplayTree07044(root.list, (object) => {
-      if (object instanceof Phaser.GameObjects.Text) object.setVisible(false);
-    });
-    for (const child of root.list) {
-      const transform = child as Phaser.GameObjects.GameObject & {
-        setScale?: (x: number, y?: number) => unknown;
-      };
-      transform.setScale?.(1, 1);
+    // Final layout lock: destroy every inherited child, including legacy footer
+    // graphics and rarity/action strips. Keeping only hidden text was not enough
+    // because old Graphics objects still looked like a second frame.
+    for (const child of [...root.list]) {
+      this.tweens.killTweensOf(child);
+      child.destroy();
     }
+
+    const accent = isNews ? 0x9bcf74 : 0xd4a8ff;
+    const panelColor = isNews ? 0x173c31 : 0x2d203f;
+
+    const shadow = this.add.graphics();
+    shadow.fillStyle(0x000000, 0.28);
+    shadow.fillRoundedRect(-366, -145, 732, 306, 24);
+    shadow.setPosition(0, 9);
+
+    const panel = this.add.graphics();
+    panel.fillStyle(panelColor, 0.985);
+    panel.fillRoundedRect(-360, -150, 720, 300, 22);
+    panel.lineStyle(3, accent, 0.92);
+    panel.strokeRoundedRect(-360, -150, 720, 300, 22);
+    panel.fillStyle(accent, 1);
+    panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
 
     const kicker = this.add.text(-322, -118, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
@@ -205,7 +216,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       color: '#d8d0c6',
     }).setOrigin(1, 0.5);
 
-    root.add([kicker, title, impact, body, source]);
+    root.add([shadow, panel, kicker, title, impact, body, source]);
 
     if (model.rarity) {
       const rarityText = this.add.text(275, -118, model.rarity, {
@@ -219,11 +230,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       root.add(rarityText);
     }
 
-    if (model.targetId !== undefined && model.targetName) {
-      const amount = Math.abs(model.amount ?? 0);
-      const action = model.kind === 'card_play' && amount > 0
-        ? `${model.targetName} • ${amount} B$ • ${model.actorName}`
-        : (model.summary || `${model.actorName} → ${model.targetName}`);
+    const amount = Math.abs(model.amount ?? 0);
+    if (model.kind === 'card_play' && model.targetName && amount > 0) {
+      const action = `${model.targetName} • ${amount} B$ • ${model.actorName}`;
       const actionText = this.add.text(0, 112, action, {
         fontFamily: MOBILE_UI_FONT_07044,
         fontSize: '11px',
@@ -372,55 +381,57 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       .setScale(0.96);
     presentation.active = root;
 
+    const isResult = model.title.includes('NHẬN VIỆC');
+
     const shadow = this.add.graphics();
     shadow.fillStyle(0x000000, 0.22);
-    shadow.fillRoundedRect(-396, -118, 792, 246, 28);
+    shadow.fillRoundedRect(-416, -126, 832, 262, 28);
     shadow.setPosition(0, 9);
 
     const panel = this.add.graphics();
     panel.fillStyle(0x2c2925, 0.985);
-    panel.fillRoundedRect(-390, -122, 780, 244, 26);
+    panel.fillRoundedRect(-410, -130, 820, 260, 26);
     panel.lineStyle(5, 0xffd34d, 0.96);
-    panel.strokeRoundedRect(-390, -122, 780, 244, 26);
+    panel.strokeRoundedRect(-410, -130, 820, 260, 26);
 
-    const eyebrow = this.add.text(0, -91, model.eyebrow, {
+    const eyebrow = this.add.text(0, -100, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '13px',
       fontStyle: 'bold',
       color: '#d9d1c7',
-      fixedWidth: 650,
+      fixedWidth: 680,
       align: 'center',
     }).setOrigin(0.5);
 
-    const icon = this.add.text(-310, -26, model.impact || '💼', {
+    const icon = this.add.text(isResult ? -320 : -315, isResult ? 8 : -10, model.impact || '💼', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '42px',
-    }).setOrigin(0.5);
-
-    const title = this.add.text(45, -43, model.title, {
-      fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '30px',
-      fontStyle: 'bold',
-      color: '#ffffff',
-      fixedWidth: 535,
-      align: 'center',
-      wordWrap: { width: 535 },
+      fontSize: isResult ? '54px' : '46px',
     }).setOrigin(0.5);
 
     const jobBodyCopy = this.canonicalJobBody070414(model);
-    const body = this.add.text(45, 42, jobBodyCopy, {
+    const title = this.add.text(isResult ? 190 : 60, isResult ? -24 : -48, model.title, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '17px',
-      color: '#f4ede4',
-      fixedWidth: 535,
-      fixedHeight: 82,
+      fontSize: isResult ? '28px' : '30px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      fixedWidth: isResult ? 320 : 570,
       align: 'center',
-      wordWrap: { width: 535, useAdvancedWrap: true },
-      lineSpacing: 6,
-      maxLines: 3,
+      wordWrap: { width: isResult ? 320 : 570, useAdvancedWrap: true },
     }).setOrigin(0.5);
 
-    const hit = this.add.rectangle(0, 0, 780, 244, 0xffffff, 0.001)
+    const body = this.add.text(isResult ? -240 : 60, isResult ? 24 : 38, jobBodyCopy, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: isResult ? '16px' : '17px',
+      color: '#f4ede4',
+      fixedWidth: isResult ? 260 : 570,
+      fixedHeight: isResult ? 92 : 88,
+      align: isResult ? 'left' : 'center',
+      wordWrap: { width: isResult ? 260 : 570, useAdvancedWrap: true },
+      lineSpacing: isResult ? 10 : 7,
+      maxLines: 3,
+    }).setOrigin(isResult ? 0 : 0.5, 0.5);
+
+    const hit = this.add.rectangle(0, 0, 820, 260, 0xffffff, 0.001)
       .setInteractive({ useHandCursor: true });
 
     root.add([shadow, panel, eyebrow, icon, title, body, hit]);
