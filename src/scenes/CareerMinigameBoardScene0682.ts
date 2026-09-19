@@ -137,9 +137,9 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
 
     const blockingRoot = jobDetailRoot?.active
       ? jobDetailRoot
-      : presentationRoot?.active
-        ? presentationRoot
-        : jobHubRoot;
+      : jobHubRoot?.active
+        ? jobHubRoot
+        : presentationRoot;
 
     if (!blockingRoot?.active) {
       this.restoreLooseText0682();

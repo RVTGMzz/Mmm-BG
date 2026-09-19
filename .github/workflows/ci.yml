@@ -200,6 +200,8 @@ jobs:
         run: npm run test:job-minigame-input-070410
       - name: 0.1.70.4.11 Job flow consolidation
         run: npm run test:job-flow-consolidation-070411
+      - name: 0.1.70.4.12 runtime presentation leak cleanup
+        run: npm run test:presentation-leak-cleanup-070412
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
@@ -208,11 +210,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MVP 0.1.70.4.11 Job Flow Consolidation build
+      - name: Upload MVP 0.1.70.4.12 Presentation Leak Cleanup build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.11-job-flow-consolidation
+          name: mmm-playtest-0.1.70.4.12-presentation-leak-cleanup
           path: dist
           if-no-files-found: error
           retention-days: 14

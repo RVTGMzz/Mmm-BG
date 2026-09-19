@@ -498,7 +498,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
       const pips = pipPositions.map((position) =>
         this.add.circle(position.x, position.y, 7, 0x24211d, 1).setVisible(false),
       );
-      const label = this.add.text(0, 86, `${model.actorName} • ${result}`, {
+      const label = this.add.text(0, 86, `${model.actorName} đang đổ...`, {
         fontFamily: 'Arial, sans-serif',
         fontSize: '14px',
         fontStyle: 'bold',
@@ -537,7 +537,7 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
         if (!container.active || runtime.currentModel !== model) return;
         renderFace(result);
         container.setAngle(0).setScale(1.1);
-        label.setText(`${model.actorName} • ${result}`);
+        label.setText(model.actorName);
         this.tweens.add({ targets: container, scaleX: 1, scaleY: 1, duration: 170, ease: 'Back.easeOut' });
       });
 

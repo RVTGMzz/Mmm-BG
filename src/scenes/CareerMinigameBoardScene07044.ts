@@ -27,6 +27,7 @@ type Presentation07044 = {
   currentModel?: PresentationEventModel;
   isBlocking(): boolean;
   showLanding(model: PresentationEventModel): void;
+  showCinematic(model: PresentationEventModel): void;
   finishCurrent(animate?: boolean): void;
 };
 
@@ -63,6 +64,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   create(): void {
     super.create();
     this.installCanonicalJobPresentation070411();
+    this.installFinalCardLayout070412();
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
@@ -97,6 +99,103 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       }
       this.showCanonicalJobLanding070411(presentation, model);
     };
+  }
+
+  /**
+   * 0.1.70.4.12: card text must remain inside its cinematic panel after every
+   * inherited presentation wrapper has run. 0.1.63 scales child transforms for
+   * generic cinematics; later card layouts inherited those transformed positions.
+   * Normalize only Card-family roots here, at the final active scene.
+   */
+  private installFinalCardLayout070412(): void {
+    const presentation = this.runtime07044().presentation;
+    if (!presentation) return;
+
+    const originalShowCinematic = (presentation as Presentation07044 & {
+      showCinematic?: (model: PresentationEventModel) => void;
+    }).showCinematic?.bind(presentation);
+    if (!originalShowCinematic) return;
+
+    (presentation as Presentation07044 & {
+      showCinematic: (model: PresentationEventModel) => void;
+    }).showCinematic = (model: PresentationEventModel) => {
+      originalShowCinematic(model);
+      if (
+        model.kind !== 'card_draw'
+        && model.kind !== 'card_play'
+        && model.kind !== 'card_blocked'
+      ) return;
+      this.normalizeCardPresentation070412(presentation.active, model);
+    };
+  }
+
+  private normalizeCardPresentation070412(
+    root: Phaser.GameObjects.Container | undefined,
+    model: PresentationEventModel,
+  ): void {
+    if (!root?.active) return;
+    root.setName('card-presentation-card');
+
+    // Undo legacy child scaling while preserving the root entrance animation.
+    for (const child of root.list) {
+      const transform = child as Phaser.GameObjects.GameObject & {
+        setScale?: (x: number, y?: number) => unknown;
+      };
+      transform.setScale?.(1, 1);
+    }
+
+    const [shadow, panel, kicker, title, impact, body, source] = root.list;
+    if (shadow instanceof Phaser.GameObjects.Graphics) shadow.setPosition(0, 9);
+    if (panel instanceof Phaser.GameObjects.Graphics) panel.setPosition(0, 0);
+    if (kicker instanceof Phaser.GameObjects.Text) {
+      kicker.setPosition(-322, -118).setFixedSize(520, 24);
+    }
+    if (title instanceof Phaser.GameObjects.Text) {
+      title
+        .setPosition(-322, -88)
+        .setFixedSize(540, 54)
+        .setWordWrapWidth(540, true);
+    }
+    if (impact instanceof Phaser.GameObjects.Text) impact.setPosition(314, -108);
+    if (body instanceof Phaser.GameObjects.Text) {
+      body
+        .setPosition(-322, -28)
+        .setFixedSize(628, 128)
+        .setWordWrapWidth(628, true)
+        .setLineSpacing(5);
+    }
+    if (source instanceof Phaser.GameObjects.Text) source.setPosition(316, 126);
+
+    for (const child of root.list.slice(7)) {
+      if (!(child instanceof Phaser.GameObjects.Text)) continue;
+      const copy = child.text.trim();
+      if (['N', 'R', 'SR', 'SSR'].includes(copy)) {
+        child.setPosition(275, -118);
+        continue;
+      }
+      if (child.style.fixedWidth === 596) {
+        child.setPosition(-306, 119).setFixedSize(596, child.height);
+      }
+    }
+
+    // A second legacy copy of the same description/summary must never remain
+    // elsewhere on the board while this canonical card owns presentation.
+    const canonical = new Set<Phaser.GameObjects.GameObject>(root.list);
+    canonical.add(root);
+    const description = this.normalizePresentationCopy070412(model.description);
+    const summary = this.normalizePresentationCopy070412(model.summary);
+    this.visitDisplayTree07044(this.children.list, (object) => {
+      if (!(object instanceof Phaser.GameObjects.Text) || canonical.has(object) || !object.visible) return;
+      const copy = this.normalizePresentationCopy070412(object.text);
+      if (
+        (description.length > 8 && copy === description)
+        || (summary.length > 8 && (copy === summary || copy === `→ ${summary}`))
+      ) object.setVisible(false);
+    });
+  }
+
+  private normalizePresentationCopy070412(value: string): string {
+    return value.replace(/\s+/g, ' ').trim().toLocaleLowerCase('vi');
   }
 
   private showCanonicalJobLanding070411(
