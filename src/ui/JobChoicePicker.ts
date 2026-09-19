@@ -23,8 +23,9 @@ const JOB_CARD_RANGES_0682 = ['🎲 1–2', '🎲 3–4', '🎲 5–6'] as const
  * Multiplayer-friendly Job Hub overlay.
  *
  * 0.1.68.2 follows the canonical MeMeMe UI contract: the three Job cards stay
- * concise and readable; touch/click/controller confirm or A/B/C keyboard input opens
- * a dedicated detail surface. The overlay never rolls or chooses gameplay outcomes.
+ * concise and readable; touch/click or keyboard input opens a dedicated preview.
+ * Controller is intentionally not advertised in 0.1.70.4.6. The overlay never rolls
+ * or chooses gameplay outcomes.
  */
 export function createJobRollPicker(
   scene: Phaser.Scene,
@@ -44,7 +45,7 @@ export function createJobRollPicker(
     fontStyle: 'bold',
     color: '#202020',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -184, 'Xúc xắc chọn A / B / C • Chạm nghề hoặc nhấn A để xem chi tiết', {
+  const subtitle = scene.add.text(0, -184, 'ĐỔ XÚC XẮC ĐỂ CHỌN NGHỀ', {
     fontFamily: 'Arial, sans-serif',
     fontSize: '15px',
     fontStyle: 'bold',
@@ -84,75 +85,55 @@ export function createJobRollPicker(
     rollButton.disableInteractive().setScale(1);
     sfxController.play('ui_confirm');
 
-    const profile = jobDepthProfile059(job);
     const risky = job.risk === 'crime';
-    const odds = risky
-      ? `Tăng cấp ${profile.promotionPercent}% • Tụt ${profile.demotionPercent}% • Vào tù ${profile.jailPercent}%`
-      : `Tăng cấp ${profile.promotionPercent}% • Tụt ${profile.demotionPercent}% • Mất việc ${profile.firedPercent}% khi tụt`;
 
     const detail = scene.add.container(640, 360).setDepth(995);
     detailRoot = detail;
     const dim = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.78).setInteractive();
-    const detailPanel = scene.add.rectangle(0, 0, 720, 430, 0xfffbf3, 1).setStrokeStyle(6, risky ? 0xc34742 : 0x5d4773, 1);
-    const detailTitle = scene.add.text(0, -165, `${job.icon} ${job.title}`, {
+    const detailPanel = scene.add.rectangle(0, 0, 700, 350, 0xfffbf3, 1).setStrokeStyle(6, risky ? 0xc34742 : 0x5d4773, 1);
+    const previewKicker = scene.add.text(0, -132, 'XEM NGHỀ', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontSize: '14px',
+      fontStyle: 'bold',
+      color: '#756d62',
+    }).setOrigin(0.5);
+    const detailTitle = scene.add.text(0, -90, `${job.icon} ${job.title}`, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '32px',
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5);
-    const mapping = scene.add.text(0, -118, `${JOB_CARD_LETTERS_0682[index]} • ${JOB_CARD_RANGES_0682[index]}`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '19px',
-      fontStyle: 'bold',
-      color: risky ? '#9e2f2c' : '#5d4773',
-    }).setOrigin(0.5);
-    const salaries = scene.add.text(0, -72, `💰 Lv1 ${jobSalary(job, 1)}  •  Lv2 ${jobSalary(job, 2)}  •  Lv3 ${jobSalary(job, 3)} B$/vòng`, {
+    const salaries = scene.add.text(0, -36, `💰 LƯƠNG • ${jobSalary(job, 1)} / ${jobSalary(job, 2)} / ${jobSalary(job, 3)} B$/vòng`, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '20px',
+      fontSize: '19px',
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5);
-    const identity = scene.add.text(0, -28, `${profile.riskIcon} ${profile.riskLabel} • ${profile.salaryCurveLabel}`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '16px',
-      fontStyle: 'bold',
-      color: risky ? '#9e2f2c' : '#4f4740',
-    }).setOrigin(0.5);
-    const oddsText = scene.add.text(0, 12, odds, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '15px',
-      fontStyle: 'bold',
-      color: '#5d554d',
-      fixedWidth: 610,
-      align: 'center',
-      wordWrap: { width: 610 },
-      maxLines: 2,
-    }).setOrigin(0.5);
-    const special = scene.add.text(0, 68, job.special, {
+    const special = scene.add.text(0, 22, job.special, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
       color: '#36312c',
-      fixedWidth: 610,
+      fixedWidth: 560,
       align: 'center',
-      wordWrap: { width: 610 },
-      maxLines: 3,
+      wordWrap: { width: 560 },
+      maxLines: 2,
     }).setOrigin(0.5);
-    const closeButton = scene.add.rectangle(0, 158, 210, 54, 0x242424, 1)
+    const closeButton = scene.add.rectangle(0, 115, 210, 54, 0x242424, 1)
       .setStrokeStyle(3, 0xffffff, 0.9)
       .setInteractive({ useHandCursor: true });
-    const closeText = scene.add.text(0, 158, '← ĐÓNG', {
+    const closeText = scene.add.text(0, 115, '← ĐÓNG', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '17px',
       fontStyle: 'bold',
       color: '#ffffff',
     }).setOrigin(0.5);
-    const closeHint = scene.add.text(0, 198, 'Esc / Controller B / A trên nút ĐÓNG', {
+    const closeHint = scene.add.text(0, 153, 'Chạm ĐÓNG hoặc nhấn Esc', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '11px',
       color: '#756d62',
     }).setOrigin(0.5);
 
-    detail.add([dim, detailPanel, detailTitle, mapping, salaries, identity, oddsText, special, closeButton, closeText, closeHint]);
+    detail.add([dim, detailPanel, previewKicker, detailTitle, salaries, special, closeButton, closeText, closeHint]);
     closeButton.on('pointerover', () => closeButton.setScale(1.04));
     closeButton.on('pointerout', () => closeButton.setScale(1));
     closeButton.on('pointerdown', () => {
@@ -200,13 +181,13 @@ export function createJobRollPicker(
       fontStyle: 'bold',
       color: '#202020',
     }).setOrigin(0.5);
-    const riskLabel = scene.add.text(x, 65, `${profile.riskIcon} ${profile.riskLabel}`, {
+    const riskLabel = scene.add.text(x, 65, `LƯƠNG KHỞI ĐIỂM • ${jobSalary(job, 1)} B$/vòng`, {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '14px',
+      fontSize: '13px',
       fontStyle: 'bold',
-      color: risky ? '#9e2f2c' : '#4f4740',
+      color: '#4f4740',
     }).setOrigin(0.5);
-    const hint = scene.add.text(x, 105, 'CHẠM / A: CHI TIẾT', {
+    const hint = scene.add.text(x, 105, 'CHẠM ĐỂ XEM', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '11px',
       fontStyle: 'bold',
@@ -217,25 +198,19 @@ export function createJobRollPicker(
 
     box.on('pointerover', () => {
       box.setStrokeStyle(7, risky ? 0xc34742 : 0x5d4773, 1);
-      hint.setText('A / ENTER: MỞ CHI TIẾT').setColor(risky ? '#9e2f2c' : '#5d4773');
+      hint.setText('XEM NGHỀ').setColor(risky ? '#9e2f2c' : '#5d4773');
     });
     box.on('pointerout', () => {
       box.setStrokeStyle(4, 0x242424, 1);
-      hint.setText('CHẠM / A: CHI TIẾT').setColor('#6d655b');
+      hint.setText('CHẠM ĐỂ XEM').setColor('#6d655b');
     });
     box.on('pointerdown', () => openDetail(index));
   });
 
-  const diceRule = scene.add.text(0, 154, '1–2 → A     •     3–4 → B     •     5–6 → C', {
-    fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-    fontSize: '14px',
-    fontStyle: 'bold',
-    color: '#4f4740',
-  }).setOrigin(0.5);
-  const rollButton = scene.add.rectangle(0, 211, 360, 60, canRoll ? 0xef4545 : 0xb8ada1, 1)
+  const rollButton = scene.add.rectangle(0, 190, 360, 60, canRoll ? 0xef4545 : 0xb8ada1, 1)
     .setStrokeStyle(4, 0x242424, 1);
-  const defaultLabel = canRoll ? '🎲 ĐỔ XÚC XẮC JOB' : (options.waitingLabel ?? `⏳ CHỜ ${playerName} ĐỔ JOB`);
-  const rollText = scene.add.text(0, 211, defaultLabel, {
+  const defaultLabel = canRoll ? '🎲 ĐỔ XÚC XẮC' : (options.waitingLabel ?? `⏳ CHỜ ${playerName}`);
+  const rollText = scene.add.text(0, 190, defaultLabel, {
     fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
     fontSize: canRoll ? '19px' : '14px',
     fontStyle: 'bold',
@@ -243,20 +218,14 @@ export function createJobRollPicker(
     fixedWidth: 330,
     align: 'center',
   }).setOrigin(0.5);
-  const authorityText = scene.add.text(0, 250, 'HOST quyết định kết quả D6', {
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '11px',
-    fontStyle: 'bold',
-    color: '#746a60',
-  }).setOrigin(0.5);
-  root.add([diceRule, rollButton, rollText, authorityText]);
+  root.add([rollButton, rollText]);
 
   let resolveRoll!: () => void;
   const rolled = new Promise<void>((resolve) => {
     resolveRoll = resolve;
   });
 
-  const enableRoll = (label = '🎲 ĐỔ XÚC XẮC JOB') => {
+  const enableRoll = (label = '🎲 ĐỔ XÚC XẮC') => {
     if (!root.active || !canRoll) return;
     submitted = false;
     rollButton.setFillStyle(0xef4545, 1).setInteractive({ useHandCursor: true });
@@ -295,9 +264,7 @@ export function createJobRollPicker(
     const index = key === 'a' || key === '1' ? 0 : key === 'b' || key === '2' ? 1 : key === 'c' || key === '3' ? 2 : -1;
     if (index >= 0) openDetail(index);
   };
-  const controllerBackHandler = (): void => closeDetail();
   scene.input.keyboard?.on('keydown', keyboardHandler);
-  scene.events.on('mememe-ui-back', controllerBackHandler);
 
   return {
     root,
@@ -306,7 +273,6 @@ export function createJobRollPicker(
     setReady: enableRoll,
     close: () => {
       scene.input.keyboard?.off('keydown', keyboardHandler);
-      scene.events.off('mememe-ui-back', controllerBackHandler);
       closeDetail();
       if (root.active) root.destroy(true);
     },
