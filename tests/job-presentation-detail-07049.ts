@@ -21,8 +21,8 @@ assert.match(ownership, /findNamedTopLevelContainer0682\('job-detail-modal'\)/);
 assert.match(ownership, /findNamedTopLevelContainer0682\('job-hub-modal'\)/);
 assert.match(
   ownership,
-  /const blockingRoot = jobDetailRoot\?\.active[\s\S]*\? jobDetailRoot[\s\S]*presentationRoot\?\.active/,
-  'Job Detail must outrank stale presentation ownership',
+  /const blockingRoot = jobDetailRoot\?\.active[\s\S]*\? jobDetailRoot[\s\S]*jobHubRoot\?\.active[\s\S]*\? jobHubRoot[\s\S]*presentationRoot/,
+  'Job Detail then Job Hub must outrank stale presentation ownership',
 );
 
 assert.match(polish, /copy\.includes\('job xuất hiện'\)/);
