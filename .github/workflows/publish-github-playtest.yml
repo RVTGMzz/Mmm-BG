@@ -1,7 +1,11 @@
 name: Publish compiled GitHub playtest
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - MMM MVP CI
+    types:
+      - completed
     branches:
       - mmm-mvp-0.1-core
   workflow_dispatch:
@@ -16,9 +20,11 @@ concurrency:
 
 env:
   PUBLIC_REPO: ronvotri/MeMeMe-Web-Playtest
+  SOURCE_SHA: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
 
 jobs:
   publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Check mirror credential
@@ -31,35 +37,8 @@ jobs:
             echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
             echo 'ready=false' >> "$GITHUB_OUTPUT"
-            echo 'MMM_WEB_DEPLOY_TOKEN is not configured yet; GitHub playtest publish is skipped safely.'
+            echo 'MMM_WEB_DEPLOY_TOKEN is not configured; publish is skipped safely.'
           fi
-
-      - name: Wait for exact-SHA CI success
-        if: steps.mirror-token.outputs.ready == 'true' && github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 60); do
-            payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&event=push&per_page=20")"
-            status="$(printf '%s' "$payload" | jq -r '.workflow_runs[] | select(.name == "MMM MVP CI") | .status' | head -n1)"
-            conclusion="$(printf '%s' "$payload" | jq -r '.workflow_runs[] | select(.name == "MMM MVP CI") | .conclusion // ""' | head -n1)"
-
-            if [ "$status" = 'completed' ]; then
-              if [ "$conclusion" = 'success' ]; then
-                echo "Exact-SHA CI passed for ${GITHUB_SHA}."
-                exit 0
-              fi
-              echo "Exact-SHA CI completed with conclusion: ${conclusion:-unknown}. Refusing playtest publish."
-              exit 1
-            fi
-
-            echo "Waiting for exact-SHA CI (${attempt}/60), current status: ${status:-not-found-yet}"
-            sleep 10
-          done
-          echo 'Timed out waiting for exact-SHA CI.'
-          exit 1
 
       - name: Verify source is current branch HEAD
         id: head-guard
@@ -70,18 +49,18 @@ jobs:
         run: |
           set -euo pipefail
           latest_sha="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/mmm-mvp-0.1-core" --jq '.object.sha')"
-          if [ "$latest_sha" = "$GITHUB_SHA" ]; then
+          if [ "$latest_sha" = "$SOURCE_SHA" ]; then
             echo 'current=true' >> "$GITHUB_OUTPUT"
           else
             echo 'current=false' >> "$GITHUB_OUTPUT"
-            echo "Skipping stale publish ${GITHUB_SHA}; current HEAD is ${latest_sha}."
+            echo "Skipping stale publish $SOURCE_SHA; current HEAD is $latest_sha."
           fi
 
       - name: Checkout exact source
         if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.SOURCE_SHA }}
 
       - name: Setup Node
         if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
@@ -124,8 +103,6 @@ jobs:
         if: steps.mirror-token.outputs.ready == 'true' && steps.head-guard.outputs.current == 'true'
         working-directory: public-mirror
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
@@ -135,5 +112,5 @@ jobs:
             echo 'Compiled GitHub playtest already matches this build.'
             exit 0
           fi
-          git commit -m "Publish compiled playtest ${GITHUB_SHA::7}"
+          git commit -m "Publish compiled playtest ${SOURCE_SHA::7}"
           git push
