@@ -5,10 +5,10 @@ import './mobileViewport066.css';
 import './ruleSelect067.css';
 import './firstImpression069.css';
 import './mobileReadability07044.css';
+import './uiInteraction07046.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
-import { installGlobalGamepadUiNavigation0651 } from './ui/gamepadUiNavigation0651';
 import {
   installMobileLandscapeGuard07031,
   requireMobileLandscapeBeforeGame07035,
@@ -81,7 +81,8 @@ async function bootMeMeMe07035(): Promise<void> {
 
   installSettingsPanel();
   const game = new Phaser.Game(config);
-  installGlobalGamepadUiNavigation0651(game);
+  // 0.1.70.4.6: controller support is not part of the accepted runtime yet.
+  // Keep the legacy helper in source, but do not install global gamepad navigation.
 
   let viewportRefreshFrame = 0;
   const refreshMobileViewport066 = () => {
