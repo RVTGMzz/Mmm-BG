@@ -68,7 +68,7 @@ export class SetupScene extends Phaser.Scene {
       <div class="setup-grid">${setupPlayerIds.map((playerId) => this.playerCardMarkup(playerId)).join('')}</div>
       <div class="setup-footer">
         <button id="setup-back-mode" class="setup-back-button" type="button"${onlineOwnSetup ? ' style="display:none"' : ''}>← CHẾ ĐỘ</button>
-        <p class="setup-hint">${onlineOwnSetup ? 'Chọn 3 biểu cảm của bạn • Có thể bỏ qua' : 'Chạm ảnh để chọn mặt • Có thể bỏ qua'}</p>
+        <p class="setup-hint">${onlineOwnSetup ? 'Avatar của bạn • Có thể bỏ qua' : 'Avatar người chơi • Có thể bỏ qua'}</p>
         <button id="start-game" class="start-game-button" type="button">${onlineOwnSetup && config.mode === 'client' ? 'XONG →' : 'TIẾP TỤC →'}</button>
       </div>
       <p id="setup-status" class="setup-status"></p>`;
@@ -94,8 +94,31 @@ export class SetupScene extends Phaser.Scene {
 
       const batchInput = node.querySelector<HTMLInputElement>(`#face-batch-${player.id}`);
       const oneForAllInput = node.querySelector<HTMLInputElement>(`#face-one-${player.id}`);
-      batchInput?.parentElement?.addEventListener('pointerdown', () => { prepareForNativePicker07033(); }, { passive: true });
-      oneForAllInput?.parentElement?.addEventListener('pointerdown', () => { prepareForNativePicker07033(); }, { passive: true });
+      const choiceMenu = node.querySelector<HTMLElement>(`#face-choice-menu-${player.id}`);
+      const closeChoiceMenu = () => {
+        if (choiceMenu) choiceMenu.hidden = true;
+      };
+      const openChoiceMenu = () => {
+        if (choiceMenu) choiceMenu.hidden = false;
+      };
+
+      node.querySelector<HTMLButtonElement>(`#face-menu-${player.id}`)?.addEventListener('click', openChoiceMenu);
+      node.querySelector<HTMLButtonElement>(`#face-choice-close-${player.id}`)?.addEventListener('click', closeChoiceMenu);
+      choiceMenu?.addEventListener('pointerdown', (event) => {
+        if (event.target === choiceMenu) closeChoiceMenu();
+      });
+
+      node.querySelector<HTMLButtonElement>(`#face-library-3-${player.id}`)?.addEventListener('click', () => {
+        closeChoiceMenu();
+        prepareForNativePicker07033();
+        batchInput?.click();
+      });
+      node.querySelector<HTMLButtonElement>(`#face-library-one-${player.id}`)?.addEventListener('click', () => {
+        closeChoiceMenu();
+        prepareForNativePicker07033();
+        oneForAllInput?.click();
+      });
+
       batchInput?.addEventListener('change', () => {
         void this.handleFaceBatchSelection(node, player.id, batchInput, false);
       });
@@ -104,9 +127,11 @@ export class SetupScene extends Phaser.Scene {
       });
 
       node.querySelector<HTMLButtonElement>(`#face-camera-3-${player.id}`)?.addEventListener('click', () => {
+        closeChoiceMenu();
         void this.handleFaceCameraCapture(node, player.id, false);
       });
       node.querySelector<HTMLButtonElement>(`#face-camera-one-${player.id}`)?.addEventListener('click', () => {
+        closeChoiceMenu();
         void this.handleFaceCameraCapture(node, player.id, true);
       });
 
@@ -169,11 +194,22 @@ export class SetupScene extends Phaser.Scene {
       ? player?.name ?? `Player ${playerId + 1}`
       : isCpu ? `CPU ${playerId + 1}` : player?.name ?? `Player ${playerId + 1}`;
     const faceSlots = EXPRESSIONS.map((expression) => `<label class="face-slot" id="slot-${playerId}-${expression.id}" style="--player-accent:${accent}"><span class="face-emoji">${expression.emoji}</span><img id="preview-${playerId}-${expression.id}" alt="${expression.label}" /><span class="face-label">${expression.label}</span><span class="face-action">Chọn ảnh</span><input id="face-${playerId}-${expression.id}" type="file" accept="image/*" /></label>`).join('');
-    const batchActions = `<div class="face-batch-actions">
-      <label class="face-batch-button"><span>📚 CHỌN 3 ẢNH</span><small>1 lần mở thư viện</small><input id="face-batch-${playerId}" type="file" accept="image/*" multiple /></label>
-      <label class="face-batch-button secondary"><span>🪄 1 ẢNH CHO CẢ 3</span><small>Chỉnh một lần</small><input id="face-one-${playerId}" type="file" accept="image/*" /></label>
-      <button id="face-camera-3-${playerId}" class="face-batch-button camera" type="button"><span>📷 CHỤP 3 BIỂU CẢM</span><small>Camera trong game</small></button>
-      <button id="face-camera-one-${playerId}" class="face-batch-button camera secondary" type="button"><span>🤳 CHỤP 1 CHO CẢ 3</span><small>Chụp một lần</small></button>
+    const batchActions = `<div class="face-picker-entry">
+      <button id="face-menu-${playerId}" class="face-picker-launch" type="button">📷 CHỌN ẢNH</button>
+      <input id="face-batch-${playerId}" class="face-hidden-input" type="file" accept="image/*" multiple />
+      <input id="face-one-${playerId}" class="face-hidden-input" type="file" accept="image/*" />
+    </div>
+    <div id="face-choice-menu-${playerId}" class="face-choice-menu" hidden>
+      <section class="face-choice-panel" role="dialog" aria-modal="true" aria-label="Chọn cách tạo avatar">
+        <strong>CHỌN CÁCH TẠO AVATAR</strong>
+        <div class="face-choice-grid">
+          <button id="face-library-3-${playerId}" type="button"><span class="face-choice-icon">📚</span><span>3 ẢNH</span></button>
+          <button id="face-library-one-${playerId}" type="button"><span class="face-choice-icon">🪄</span><span>1 ẢNH</span></button>
+          <button id="face-camera-3-${playerId}" type="button"><span class="face-choice-icon">📷</span><span>CHỤP 3</span></button>
+          <button id="face-camera-one-${playerId}" type="button"><span class="face-choice-icon">🤳</span><span>CHỤP 1</span></button>
+        </div>
+        <button id="face-choice-close-${playerId}" class="face-choice-close" type="button">ĐÓNG</button>
+      </section>
     </div>`;
     const roleRow = `<div class="player-role-row-069">${isCpu
       ? '<span class="cpu-tag-069">CPU</span>'
