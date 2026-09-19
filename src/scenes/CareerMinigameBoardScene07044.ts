@@ -46,6 +46,12 @@ type Runtime07044 = {
  * The goal is to stop rendering a desktop-sized 1280x720 HUD with 9–12px text
  * and then shrinking it into ant-sized copy on a phone.
  */
+const HUD_SAFE_MARGIN_07046 = 12;
+const HUD_BASE_WIDTH_07046 = 252;
+const HUD_BASE_HEIGHT_07046 = 92;
+const ACTIVE_HUD_SCALE_07046 = 1.18;
+const IDLE_HUD_SCALE_07046 = 0.96;
+
 export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 {
   private compactLandscape07044 = false;
 
@@ -115,7 +121,21 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       if (!ui) continue;
 
       const active = player.id === currentId;
-      ui.root.setScale(active ? 1.12 : 0.98);
+      const scale = active ? ACTIVE_HUD_SCALE_07046 : IDLE_HUD_SCALE_07046;
+      ui.root.setScale(scale);
+
+      const halfWidth = HUD_BASE_WIDTH_07046 * scale * 0.5;
+      const halfHeight = HUD_BASE_HEIGHT_07046 * scale * 0.5;
+      ui.root.x = Phaser.Math.Clamp(
+        ui.root.x,
+        HUD_SAFE_MARGIN_07046 + halfWidth,
+        1280 - HUD_SAFE_MARGIN_07046 - halfWidth,
+      );
+      ui.root.y = Phaser.Math.Clamp(
+        ui.root.y,
+        HUD_SAFE_MARGIN_07046 + halfHeight,
+        720 - HUD_SAFE_MARGIN_07046 - halfHeight,
+      );
 
       ui.name
         .setFontFamily(MOBILE_UI_FONT_07044)
