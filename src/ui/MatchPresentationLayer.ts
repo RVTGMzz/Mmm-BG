@@ -519,9 +519,10 @@ export class MatchPresentationLayer {
       color: '#ffffff',
       fixedWidth: 596,
       align: 'center',
-    }).setOrigin(0, 0);
+    }).setOrigin(0, 0.5);
     container.add([bg, text]);
   }
+
   private addRarityBadge(container: Phaser.GameObjects.Container, x: number, y: number, rarity: string): void {
     const color = RARITY_COLORS[rarity] ?? 0xe4ded2;
     const bg = this.scene.add.graphics();
@@ -569,7 +570,7 @@ export class MatchPresentationLayer {
       fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#201d1a',
       wordWrap: { width: 226, useAdvancedWrap: true }, fixedWidth: 226, fixedHeight: 54,
       lineSpacing: 3, maxLines: 3,
-    }).setOrigin(0, 0.5);
+    }).setOrigin(0, 0);
 
     bubble.add([shadow, bg, avatar, speaker, text]);
     bubble.y += top ? -10 : 10;
