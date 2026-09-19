@@ -1,0 +1,138 @@
+/* 0.1.70.4.6 — UI Interaction Pass
+ * One obvious avatar entry point, then four large choices.
+ */
+.mememe-setup {
+  position: relative;
+}
+
+.face-picker-entry {
+  margin-top: 10px;
+}
+
+.face-picker-launch {
+  width: 100%;
+  min-height: 54px;
+  border: 3px solid #202020;
+  border-radius: 18px;
+  background: #ffd34d;
+  color: #202020;
+  box-shadow: 0 4px 0 rgba(32,32,32,.95);
+  cursor: pointer;
+  font: 1000 16px/1 ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+}
+
+.face-picker-launch:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(32,32,32,.95);
+}
+
+.face-hidden-input {
+  display: none !important;
+}
+
+.face-choice-menu[hidden] {
+  display: none !important;
+}
+
+.face-choice-menu {
+  position: absolute;
+  z-index: 120;
+  inset: -14px;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  border-radius: 28px;
+  background: rgba(20,18,16,.78);
+}
+
+.face-choice-panel {
+  width: min(620px, calc(100% - 24px));
+  box-sizing: border-box;
+  padding: 22px;
+  border: 4px solid #202020;
+  border-radius: 28px;
+  background: #fffaf0;
+  box-shadow: 0 10px 0 rgba(32,32,32,.22);
+  text-align: center;
+}
+
+.face-choice-panel > strong {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 1000;
+}
+
+.face-choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.face-choice-grid button {
+  min-height: 112px;
+  border: 3px solid #202020;
+  border-radius: 22px;
+  background: #ffffff;
+  color: #202020;
+  cursor: pointer;
+  font: 1000 17px/1.05 ui-rounded, "Arial Rounded MT Bold", system-ui, sans-serif;
+}
+
+.face-choice-grid button:nth-child(1) { background: #ffd34d; }
+.face-choice-grid button:nth-child(2) { background: #fff0bd; }
+.face-choice-grid button:nth-child(3) { background: #e8f5ea; }
+.face-choice-grid button:nth-child(4) { background: #eaf0ff; }
+
+.face-choice-icon {
+  display: block;
+  margin-bottom: 9px;
+  font-size: 34px;
+}
+
+.face-choice-close {
+  min-width: 180px;
+  min-height: 46px;
+  margin-top: 16px;
+  border: 3px solid #202020;
+  border-radius: 16px;
+  background: #202020;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 1000;
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .face-picker-launch {
+    min-height: 58px;
+    font-size: 20px;
+  }
+
+  .face-choice-panel {
+    width: min(760px, calc(100% - 18px));
+    padding: 18px;
+  }
+
+  .face-choice-panel > strong {
+    margin-bottom: 13px;
+    font-size: 24px;
+  }
+
+  .face-choice-grid {
+    gap: 10px;
+  }
+
+  .face-choice-grid button {
+    min-height: 96px;
+    font-size: 20px;
+  }
+
+  .face-choice-icon {
+    font-size: 32px;
+  }
+
+  .face-choice-close {
+    min-height: 48px;
+    font-size: 17px;
+  }
+}
