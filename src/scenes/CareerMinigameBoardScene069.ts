@@ -237,6 +237,8 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
       if (!text.visible || canonical.has(text) || hud.has(text)) return;
       const copy = this.normalize069(text.text);
       const leak =
+        copy.includes('job xuất hiện') ||
+        copy === 'đổ xúc xắc để nhận việc.' ||
         copy.includes('trúng') ||
         (copy.includes('đổ') && copy.includes('lương')) ||
         copy.includes('b$/công') ||

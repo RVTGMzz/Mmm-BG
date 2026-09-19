@@ -15,6 +15,10 @@ type JobHubInternals = {
   match: MatchState;
   currentPlayer(): PlayerState | undefined;
   canControlCurrentPlayer(): boolean;
+  presentation?: {
+    active?: Phaser.GameObjects.Container;
+    isBlocking(): boolean;
+  };
   applyNetworkState(
     state: MatchState,
     commandSeq: number,
@@ -80,6 +84,7 @@ export class CareerMinigameBoardScene046 extends CareerMinigameBoardScene045 {
     const match = internals.match;
     const player = internals.currentPlayer();
     if (!match || !player || match.turn.phase !== 'JOB_CHOICE') return;
+    if (internals.presentation?.isBlocking() || internals.presentation?.active?.active) return;
 
     // The controlling tab already receives the interactive Job picker from the
     // validated base scene. 0.1.46 only fills the multiplayer spectator gap.

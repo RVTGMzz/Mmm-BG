@@ -129,12 +129,12 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
 
   private syncStrictModalOwnership0682(): void {
     const presentationRoot = this.presentation0682()?.active;
-    const jobDetailRoot = this.findTopLevelContainer0682((copy) => copy === 'xem nghề');
-    const jobHubRoot = this.findTopLevelContainer0682((copy) => copy.includes('job hub'));
-    const blockingRoot = presentationRoot?.active
-      ? presentationRoot
-      : jobDetailRoot?.active
-        ? jobDetailRoot
+    const jobDetailRoot = this.findNamedTopLevelContainer0682('job-detail-modal');
+    const jobHubRoot = this.findNamedTopLevelContainer0682('job-hub-modal');
+    const blockingRoot = jobDetailRoot?.active
+      ? jobDetailRoot
+      : presentationRoot?.active
+        ? presentationRoot
         : jobHubRoot;
 
     if (!blockingRoot?.active) {
@@ -177,6 +177,18 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
       if (/[😐😄😤]/u.test(candidate.text)) reactionMarker = true;
     });
     return reactionMarker;
+  }
+
+  private findNamedTopLevelContainer0682(name: string): Phaser.GameObjects.Container | undefined {
+    for (const object of this.children.list) {
+      if (
+        object instanceof Phaser.GameObjects.Container
+        && object.active
+        && object.visible
+        && object.name === name
+      ) return object;
+    }
+    return undefined;
   }
 
   private findTopLevelContainer0682(

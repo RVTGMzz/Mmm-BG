@@ -36,7 +36,7 @@ export function createJobRollPicker(
   if (jobs.length !== 3) throw new Error('Job Roll picker requires exactly 3 offered Jobs.');
 
   const canRoll = options.canRoll ?? true;
-  const root = scene.add.container(640, 360).setDepth(980);
+  const root = scene.add.container(640, 360).setDepth(980).setName('job-hub-modal');
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
   const panel = scene.add.rectangle(0, 0, 960, 540, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
   const title = scene.add.text(0, -224, `💼 ${playerName} • JOB HUB`, {
@@ -87,7 +87,7 @@ export function createJobRollPicker(
 
     const risky = job.risk === 'crime';
 
-    const detail = scene.add.container(640, 360).setDepth(995);
+    const detail = scene.add.container(640, 360).setDepth(995).setName('job-detail-modal');
     detailRoot = detail;
     const dim = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.78).setInteractive();
     const detailPanel = scene.add.rectangle(0, 0, 780, 370, 0xfffbf3, 1).setStrokeStyle(6, risky ? 0xc34742 : 0x5d4773, 1);

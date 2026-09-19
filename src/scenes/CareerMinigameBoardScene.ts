@@ -33,6 +33,10 @@ type CareerInternals = {
   shellOverlay: Phaser.GameObjects.GameObject[];
   visuals: Map<number, PlayerVisualRuntime>;
   compactTurnText?: Phaser.GameObjects.Text;
+  presentation?: {
+    active?: Phaser.GameObjects.Container;
+    isBlocking(): boolean;
+  };
   currentPlayer(): PlayerState | undefined;
   canControlCurrentPlayer(): boolean;
   submitIntent(type: ClientIntentType, data?: Record<string, MatchEventValue>): void;
@@ -373,6 +377,10 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     const player = internals.currentPlayer();
     if (!match || !player) return;
     if (match.turn.phase !== 'JOB_CHOICE') return;
+    // Do not open Job Hub on top of the landing presentation. Waiting for the
+    // presentation queue to fully clear prevents "NHẬN VIỆC" from visually
+    // jumping over "3 JOB XUẤT HIỆN!" on the next authoritative Job event.
+    if (internals.presentation?.isBlocking() || internals.presentation?.active?.active) return;
     if (!internals.canControlCurrentPlayer() || browserSession.isCpuSeat(player.id)) return;
 
     const offerIds = match.pendingJobOfferIds ?? [];
