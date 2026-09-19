@@ -188,16 +188,17 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.visitDisplayTree07044(this.children.list, (object) => {
       if (!(object instanceof Phaser.GameObjects.Text)) return;
 
-      if (object.text.startsWith('CITY • MVP 0.1.')) {
-        object.setText(`CITY • MVP ${MOBILE_UI_BUILD_07044} • MOBILE UI READABILITY`);
-        if (this.compactLandscape07044) object.setVisible(false);
-        return;
-      }
+      const copy = object.text.trim().toUpperCase();
+      const legacyTopChrome =
+        object.text.startsWith('CITY • MVP 0.1.')
+        || (object.text.startsWith('PLAYTEST 0.1.') && object.text.includes('•'))
+        || copy.includes('TỔNG QUAN')
+        || copy.includes('CHUNG KẾT')
+        || copy.startsWith('LƯỢT:');
 
-      if (object.text.startsWith('PLAYTEST 0.1.') && object.text.includes('•')) {
-        object.setText(`PLAYTEST ${MOBILE_UI_BUILD_07044} • ONLINE + MOBILE UI`);
-        if (this.compactLandscape07044) object.setVisible(false);
-      }
+      if (!legacyTopChrome) return;
+      object.setVisible(false);
+      if (object.input?.enabled) object.disableInteractive();
     });
   }
 

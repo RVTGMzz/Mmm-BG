@@ -136,6 +136,7 @@ export class DemoBoardScene extends Phaser.Scene {
     this.createPlayers();
     this.createHud();
     this.setupSessions();
+    this.showReadyFlash();
 
     this.input.keyboard?.on('keydown-SPACE', () => this.handleRoll());
     this.input.keyboard?.on('keydown-C', () => void this.handleUseCard());
@@ -224,15 +225,14 @@ export class DemoBoardScene extends Phaser.Scene {
     this.hostSession.start();
     this.shellHost.start();
 
+    // Lobby/Setup already owns readiness. The board itself no longer has a
+    // second "DEMO MATCH" start gate. Host and local play enter active state
+    // immediately; reconnecting clients receive the active shell snapshot.
+    this.shellHost.begin(hostAuthorityCommandSeq(this.hostSession.authority));
     if (config.mode === 'host') {
-      // Online already passed lobby Ready + Roll For Order. Do not introduce a
-      // second manual Host gate on the board. Begin immediately and broadcast
-      // authoritative shell=active; late/reconnecting clients receive it via
-      // shell_hello -> shell_state.
-      this.shellHost.begin(hostAuthorityCommandSeq(this.hostSession.authority));
-      this.writeLog(`🚦 HOST ${config.roomCode}: trận online tự bắt đầu.`);
+      this.writeLog(`✅ READY • HOST ${config.roomCode}: trận online bắt đầu.`);
     } else {
-      this.writeLog('🎲 Demo hotseat sẵn sàng. Bấm BẮT ĐẦU khi cả nhóm đã ngồi đủ.');
+      this.writeLog('✅ READY • trận local bắt đầu.');
     }
   }
 
@@ -429,11 +429,6 @@ export class DemoBoardScene extends Phaser.Scene {
     } finally {
       this.branchPromptOpen = false;
     }
-  }
-
-  private startDemoMatch(): void {
-    if (!this.shellHost || !this.hostSession || this.shell.status !== 'waiting') return;
-    this.shellHost.begin(hostAuthorityCommandSeq(this.hostSession.authority));
   }
 
   private rematchDemo(): void {
@@ -638,43 +633,14 @@ export class DemoBoardScene extends Phaser.Scene {
   private renderShellOverlay(): void {
     for (const object of this.shellOverlay) object.destroy();
     this.shellOverlay = [];
-    if (this.shell.status === 'active') return;
+
+    // The old waiting/demo modal is retired. Readiness lives in Lobby/Setup;
+    // only the real end-of-match result may own a blocking shell overlay.
+    if (this.shell.status !== 'ended') return;
 
     const bg = this.add.rectangle(640, 360, 780, 430, 0x202020, 0.94)
       .setStrokeStyle(5, 0xfffaf0, 1).setDepth(700).setInteractive();
     this.shellOverlay.push(bg);
-
-    if (this.shell.status === 'waiting') {
-      this.shellOverlay.push(
-        this.add.text(640, 220, '🎲 MeMeMe DEMO MATCH', {
-          fontFamily: 'Arial, sans-serif', fontSize: '34px', fontStyle: 'bold', color: '#ffffff',
-        }).setOrigin(0.5).setDepth(701),
-        this.add.text(640, 292,
-          `Luật demo tạm: ${this.shell.rounds} vòng (${this.shell.turnLimit} lượt).\nKết thúc vòng cuối, ai có nhiều B$ nhất thắng. Nếu bằng tiền thì đồng hạng.\nLuật này chỉ để playtest, chưa phải win condition final.`, {
-            fontFamily: 'Arial, sans-serif', fontSize: '17px', color: '#f4ead7', align: 'center', lineSpacing: 8,
-          }).setOrigin(0.5).setDepth(701),
-      );
-
-      if (this.shellHost) {
-        this.addOverlayButton(640, 405, 'BẮT ĐẦU DEMO 🚦', 0xef4545, () => this.startDemoMatch());
-      } else {
-        this.shellOverlay.push(
-          this.add.text(640, 410, '⏳ CHỜ HOST BẮT ĐẦU...', {
-            fontFamily: 'Arial, sans-serif', fontSize: '20px', fontStyle: 'bold', color: '#ffd34d',
-          }).setOrigin(0.5).setDepth(701),
-        );
-      }
-      if (!browserSession.isOnline) {
-        this.addOverlayButton(640, 475, 'VỀ LOBBY', 0x6d655b, () => this.goLobby(), 210);
-      } else {
-        this.shellOverlay.push(
-          this.add.text(640, 475, 'ONLINE • trận đã khóa phòng, không quay về lobby giữa chừng', {
-            fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#cfc6b8',
-          }).setOrigin(0.5).setDepth(701),
-        );
-      }
-      return;
-    }
 
     const result = demoMatchResult(this.match);
     const winners = result.winnerIds
@@ -727,6 +693,29 @@ export class DemoBoardScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(703);
     button.on('pointerdown', action);
     this.shellOverlay.push(button, text);
+  }
+
+  private showReadyFlash(): void {
+    const ready = this.add.text(640, 360, 'READY', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontSize: '64px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      stroke: '#202020',
+      strokeThickness: 10,
+    }).setOrigin(0.5).setDepth(704).setAlpha(0).setScale(0.88);
+
+    this.tweens.add({
+      targets: ready,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 170,
+      ease: 'Back.easeOut',
+      yoyo: true,
+      hold: 520,
+      onComplete: () => ready.destroy(),
+    });
   }
 
   private flashCenter(message: string, color: string): void {
