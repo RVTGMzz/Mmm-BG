@@ -3,7 +3,6 @@ import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import {
-  MOBILE_UI_BUILD_07044,
   MOBILE_UI_FONT_07044,
   isCompactLandscape07044,
 } from '../ui/mobileReadability07044';
