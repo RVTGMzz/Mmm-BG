@@ -26,7 +26,7 @@ assert.match(mini, /Hạng \$\{index \+ 1\} •/);
 
 assert.match(picker, /780, 370/);
 assert.match(picker, /fixedWidth: 640/);
-assert.match(ownership, /const jobDetailRoot = this\.findTopLevelContainer0682\(\(copy\) => copy === 'xem nghề'\)/);
+assert.match(ownership, /const jobDetailRoot = this\.findNamedTopLevelContainer0682\('job-detail-modal'\)/);
 assert.match(ownership, /jobDetailRoot\?\.active/);
 
 console.log('[job-ui-compact-07048] PASS concise Job copy + wider Job card + clean ranking + visible Job detail');
