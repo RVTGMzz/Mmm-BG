@@ -208,3 +208,31 @@ jobs:
           path: dist
           if-no-files-found: error
           retention-days: 14
+
+      - name: Checkout compiled GitHub playtest mirror
+        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-core'
+        uses: actions/checkout@v4
+        with:
+          repository: ronvotri/MeMeMe-Web-Playtest
+          token: ${{ secrets.MMM_WEB_DEPLOY_TOKEN }}
+          path: public-mirror
+
+      - name: Publish compiled GitHub playtest mirror
+        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-core'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf public-mirror/assets
+          cp dist/index.html public-mirror/index.html
+          cp -R dist/assets public-mirror/assets
+          sed -i '1i<!-- Compiled playtest build only. Source is not mirrored here. -->' public-mirror/index.html
+          cd public-mirror
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets
+          if git diff --cached --quiet; then
+            echo 'Compiled GitHub playtest already matches this build.'
+            exit 0
+          fi
+          git commit -m "Publish compiled playtest ${GITHUB_SHA::7}"
+          git push
