@@ -90,8 +90,6 @@ export class DemoShellHostSession extends DemoShellEventSource {
   close(): void {
     this.unsubscribeTransport?.();
     this.unsubscribeTransport = undefined;
-    this.unsubscribeConnection?.();
-    this.unsubscribeConnection = undefined;
     this.transport.close();
     this.handlers.clear();
   }
@@ -144,6 +142,8 @@ export class DemoShellClientSession extends DemoShellEventSource {
   close(): void {
     this.unsubscribeTransport?.();
     this.unsubscribeTransport = undefined;
+    this.unsubscribeConnection?.();
+    this.unsubscribeConnection = undefined;
     this.transport.close();
     this.handlers.clear();
   }
