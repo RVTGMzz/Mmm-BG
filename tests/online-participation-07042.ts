@@ -56,7 +56,8 @@ assert.match(playtestBoard, /queueCpuActionIfNeeded/);
 assert.match(playtestBoard, /browserSession\.isCpuSeat\(current\.id\)/);
 assert.match(playtestBoard, /live\.submitIntent\(liveDecision\.type/);
 assert(!board.includes('scheduleCpuAutoplay07042'));
-assert.match(board, /ONLINE • trận đã khóa phòng/);
+assert.match(board, /The old waiting\/demo modal is retired/);
+assert.doesNotMatch(board, /ONLINE • trận đã khóa phòng/);
 
 assert.match(styles, /mememe-setup\.online-own-profile/);
 
