@@ -47,9 +47,10 @@ assert(!layer.includes('addPlayerChip('));
 assert(!layer.includes("'ACTOR'"));
 assert(!layer.includes("'TARGET'"));
 
-assert.match(job, /setFixedSize\(500, 92\)/);
-assert.match(job, /setWordWrapWidth\(500, true\)/);
-assert.match(job, /setMaxLines\(0\)/);
+assert.match(layer, /const bodyWidth = isJobCard \? 500 : 410/);
+assert.match(layer, /fixedHeight: 58/);
+assert.match(job, /MatchPresentationLayer owns the canonical Job card/);
+assert.match(modal, /restoreCanonicalModalText0682/);
 assert.match(modal, /isAllowedModalAuxiliary0682/);
 assert(!modal.includes('rootContainerDepth0682'));
 assert.match(canonical, /text\.startsWith\('SPACE roll'\)/);
