@@ -15,5 +15,5 @@ assert.match(scene0651,/extends CareerMinigameBoardScene065/); assert.match(scen
 assert.match(main,/CareerMinigameBoardScene07044 as ActiveBoardScene/); assert.match(scene0701,/extends CareerMinigameBoardScene069/); assert(!scene0701.includes('Math.random')); assert.match(scene069,/extends CareerMinigameBoardScene0682/); assert(!scene069.includes('Math.random')); assert(!scene069.includes('submitIntent('));
 assert.match(main,/installGlobalGamepadUiNavigation0651\(game\)/);
 assert.match(gamepad,/0: 'confirm'/); assert.match(gamepad,/12: 'up'/); assert.match(gamepad,/13: 'down'/); assert.match(gamepad,/14: 'left'/); assert.match(gamepad,/15: 'right'/); assert.match(gamepad,/navigator\.getGamepads\(\)/); assert.match(gamepad,/target\.emit\('pointerdown'\)/); assert.match(gamepad,/focus\.emit\('pointerover'\)/); assert(!gamepad.includes('Math.random')); assert(!gamepad.includes('submitIntent'));
-assert.match(vite,/base:\s*'\.\/'/); assert.match(pages,/actions\/deploy-pages@/); assert.match(pages,/path:\s*dist/); assert.match(pages,/mememe-mvp-0\.1-core/);
+assert.match(vite,/base:\s*'\.\/'/); assert.match(pages,/actions\/deploy-pages@/); assert.match(pages,/path:\s*dist/); assert.match(pages,/workflow_dispatch/); assert.doesNotMatch(pages,/\npush:/);
 console.log('[ui-ghost-gamepad-web-0651] PASS web/gamepad/proxy guards retained beneath 0.1.70.1 wrapper');
