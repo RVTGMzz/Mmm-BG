@@ -21,6 +21,7 @@ export function showDynamicNews(
   const container = scene.add
     .container(640, 300)
     .setDepth(380)
+    .setName('legacy-news-overlay')
     .setAlpha(0)
     .setScale(0.9);
 

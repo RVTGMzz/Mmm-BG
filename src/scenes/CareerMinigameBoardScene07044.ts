@@ -119,6 +119,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     (presentation as Presentation07044 & {
       showCinematic: (model: PresentationEventModel) => void;
     }).showCinematic = (model: PresentationEventModel) => {
+      if (
+        model.kind === 'card_draw'
+        || model.kind === 'card_play'
+        || model.kind === 'card_blocked'
+      ) this.destroyNamedTopLevelContainers070413('legacy-card-overlay');
+      if (model.kind === 'news') this.destroyNamedTopLevelContainers070413('legacy-news-overlay');
+
       originalShowCinematic(model);
       if (
         model.kind !== 'card_draw'
@@ -127,6 +134,19 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       ) return;
       this.normalizeCardPresentation070412(presentation.active, model);
     };
+  }
+
+  private destroyNamedTopLevelContainers070413(name: string): void {
+    for (const object of [...this.children.list]) {
+      if (
+        object instanceof Phaser.GameObjects.Container
+        && object.active
+        && object.name === name
+      ) {
+        this.tweens.killTweensOf(object);
+        object.destroy(true);
+      }
+    }
   }
 
   private normalizeCardPresentation070412(

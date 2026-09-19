@@ -73,9 +73,13 @@ export function createJobRollPicker(
   const restoreHubVisuals = (): void => {
     if (!root.active) return;
     root.setVisible(true).setAlpha(1);
-    for (const child of root.list) {
-      if (child instanceof Phaser.GameObjects.Text) child.setVisible(true).setAlpha(1);
-    }
+    const restore = (object: Phaser.GameObjects.GameObject): void => {
+      if (object instanceof Phaser.GameObjects.Text) object.setVisible(true).setAlpha(1);
+      if (object instanceof Phaser.GameObjects.Container) {
+        for (const child of object.list) restore(child);
+      }
+    };
+    restore(root);
   };
 
   const closeDetail = (): void => {

@@ -28,7 +28,7 @@ export function showDynamicCard(
   target?: PlayerState,
   resolutionSummary?: string,
 ): void {
-  const container = scene.add.container(640, 340).setDepth(300).setAlpha(0).setScale(0.86);
+  const container = scene.add.container(640, 340).setDepth(300).setAlpha(0).setScale(0.86).setName('legacy-card-overlay');
 
   const shadow = scene.add.rectangle(10, 12, 650, 452, 0x000000, 0.18);
   const panel = scene.add

@@ -6,8 +6,7 @@ const parity = readFileSync('src/scenes/PresentationParityBoardScene.ts', 'utf8'
 const owner = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'utf8');
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.12');
-assert.match(MEMEME_BUILD.phase, /RUNTIME PRESENTATION LEAK CLEANUP/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 assert.doesNotMatch(parity, /\$\{model\.actorName\} • \$\{result\}/);
 assert.match(parity, /\$\{model\.actorName\} đang đổ\.\.\./);

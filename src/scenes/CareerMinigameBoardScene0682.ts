@@ -159,6 +159,7 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
 
     this.visitTexts0682((text) => {
       if (!text.visible || canonical.has(text) || hud.has(text)) return;
+      if (this.isInsideProtectedJobModal0682(text)) return;
 
       // Blocking modal owns all narrative copy. The old depth-only exception was
       // too broad: any legacy container at depth >= modal depth could leak text past
@@ -169,6 +170,12 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
       if (!this.hiddenLooseText0682.has(text)) this.hiddenLooseText0682.set(text, text.visible);
       text.setVisible(false);
     });
+  }
+
+  private isInsideProtectedJobModal0682(text: Phaser.GameObjects.Text): boolean {
+    let root = text.parentContainer;
+    while (root?.parentContainer) root = root.parentContainer;
+    return root?.name === 'job-hub-modal' || root?.name === 'job-detail-modal';
   }
 
   private isAllowedModalAuxiliary0682(
