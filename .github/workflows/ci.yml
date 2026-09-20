@@ -212,6 +212,8 @@ jobs:
         run: npm run test:presentation-semantic-footer-070416
       - name: 0.1.70.4.17 global cinematic ownership + token badge guard
         run: npm run test:presentation-global-guard-070417
+      - name: 0.1.70.4.18 adaptive presentation safe area
+        run: npm run test:presentation-adaptive-safearea-070418
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
@@ -220,11 +222,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MVP 0.1.70.4.17 Global Cinematic Token Badge build
+      - name: Upload MVP 0.1.70.4.18 Adaptive Presentation Safe Area build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.17-global-cinematic-token-badge
+          name: mmm-playtest-0.1.70.4.18-adaptive-presentation-safe-area
           path: dist
           if-no-files-found: error
           retention-days: 14
