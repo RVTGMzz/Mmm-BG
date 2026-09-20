@@ -313,7 +313,6 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fontStyle: 'bold',
       color: '#ffffff',
       fixedWidth: 540,
-      fixedHeight: 52,
       wordWrap: { width: 540, useAdvancedWrap: true },
     });
 
@@ -329,11 +328,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fontSize: '16px',
       color: '#f4ede4',
       fixedWidth: 628,
-      fixedHeight: model.targetId === undefined ? 138 : 116,
       wordWrap: { width: 628, useAdvancedWrap: true },
       lineSpacing: 5,
-      maxLines: model.targetId === undefined ? 6 : 5,
     });
+
+    const bodyHeight070418 = model.targetId === undefined ? 138 : 116;
+    this.fitWrappedText070418(title, 540, 54, 30, 24, 2);
+    this.fitWrappedText070418(body, 628, bodyHeight070418, 16, 12, 5);
 
     const source = this.add.text(316, 126, `${isNews ? 'CITY NEWS' : 'CARD ACTION'} • #${model.eventSeq}`, {
       fontFamily: MOBILE_UI_FONT_07044,
@@ -374,6 +375,34 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       }).setOrigin(0.5);
       root.add(actionText);
     }
+  }
+
+  /**
+   * 0.1.70.4.18: fit arbitrary future Card/News copy into the canonical panel.
+   * We reduce type only as much as needed, then lock the final box so no title
+   * or description can escape into the footer or outside the modal.
+   */
+  private fitWrappedText070418(
+    text: Phaser.GameObjects.Text,
+    width: number,
+    height: number,
+    maxFontSize: number,
+    minFontSize: number,
+    lineSpacing: number,
+  ): void {
+    text
+      .setFontSize(maxFontSize)
+      .setFixedSize(width, 0)
+      .setWordWrapWidth(width, true)
+      .setLineSpacing(lineSpacing);
+
+    let fontSize = maxFontSize;
+    while (fontSize > minFontSize && text.height > height) {
+      fontSize -= 1;
+      text.setFontSize(fontSize);
+    }
+
+    text.setFixedSize(width, height);
   }
 
   private canonicalCinematicBody070414(model: PresentationEventModel): string {
