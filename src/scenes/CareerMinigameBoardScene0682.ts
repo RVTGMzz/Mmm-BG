@@ -141,7 +141,9 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
         ? jobHubRoot
         : presentationRoot;
 
-    if (!blockingRoot?.active) {
+    // move_step owns an invisible flow blocker, not a visual modal. Treating
+    // that hidden container as a modal used to hide token seat badges while moving.
+    if (!blockingRoot?.active || !blockingRoot.visible) {
       this.restoreLooseText0682();
       return;
     }

@@ -7,8 +7,7 @@ const base = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 const finalScene = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const cards = JSON.parse(readFileSync('src/content/core/cards_mvp.json', 'utf8')) as Array<{ id: string; effect: { type: string } }>;
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.16');
-assert.match(MEMEME_BUILD.phase, /SEMANTIC CARD FOOTER \+ REACTION SPLIT/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 const block = cards.find((card) => card.id === 'ACT_006');
 assert.equal(block?.effect.type, 'block_cards');

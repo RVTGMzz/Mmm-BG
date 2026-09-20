@@ -34,6 +34,7 @@ type Presentation07044 = {
 type Runtime07044 = {
   match: MatchState;
   hud: Map<number, Hud07044>;
+  visuals: Map<number, { token: Phaser.GameObjects.Container }>;
   turnStatus?: Phaser.GameObjects.Text;
   overviewButton?: Phaser.GameObjects.Text;
   compactCard?: Phaser.GameObjects.Rectangle;
@@ -60,11 +61,15 @@ const IDLE_HUD_SCALE_07046 = 0.96;
 
 export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 {
   private compactLandscape07044 = false;
+  private readonly hiddenDetachedCinematicText070417 = new Map<Phaser.GameObjects.Text, boolean>();
 
   create(): void {
     super.create();
     this.installCanonicalJobPresentation070411();
     this.installFinalCardLayout070412();
+    this.ensurePlayerTokenBadges070417();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restoreDetachedCinematicText070417());
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreDetachedCinematicText070417());
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
@@ -73,6 +78,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   update(): void {
     super.update();
     this.retireLegacyPresentationOverlays070414();
+    this.syncCanonicalCinematicOwnership070417();
+    this.ensurePlayerTokenBadges070417();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
   }
@@ -133,7 +140,125 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
       if (!isCard && !isNews) return;
       this.rebuildCanonicalCinematicText070414(presentation.active, model);
+      this.syncCanonicalCinematicOwnership070417();
     };
+  }
+
+  /**
+   * 0.1.70.4.17: generic single-owner guard for every Card/News cinematic.
+   *
+   * Older presentation layers may reuse a detached Text object for description
+   * or summary copy. The final scene compares semantic copy, not event/card IDs,
+   * so future Card/News content is protected automatically.
+   */
+  private syncCanonicalCinematicOwnership070417(): void {
+    const presentation = this.runtime07044().presentation;
+    const root = presentation?.active;
+    const model = presentation?.currentModel;
+    const cinematic =
+      root?.active
+      && model
+      && (
+        model.kind === 'card_draw'
+        || model.kind === 'card_play'
+        || model.kind === 'card_blocked'
+        || model.kind === 'news'
+      );
+
+    if (!cinematic || !root || !model) {
+      this.restoreDetachedCinematicText070417();
+      return;
+    }
+
+    const canonical = new Set<Phaser.GameObjects.GameObject>();
+    this.collectDisplayObjects070417(root, canonical);
+
+    const ownedCopy = new Set<string>();
+    const own = (value: string): void => {
+      const normalized = this.normalizePresentationCopy070412(value);
+      if (normalized.length >= 5) ownedCopy.add(normalized);
+    };
+
+    own(model.eyebrow);
+    own(model.title);
+    own(model.description);
+    own(model.summary);
+    for (const line of model.description.split(/\n+/)) own(line);
+    for (const line of model.summary.split(/\n+/)) {
+      own(line);
+      own(`→ ${line}`);
+    }
+
+    this.visitDisplayTree07044(this.children.list, (object) => {
+      if (!(object instanceof Phaser.GameObjects.Text) || canonical.has(object) || !object.visible) return;
+      const copy = this.normalizePresentationCopy070412(object.text);
+      if (!ownedCopy.has(copy)) return;
+      if (!this.hiddenDetachedCinematicText070417.has(object)) {
+        this.hiddenDetachedCinematicText070417.set(object, object.visible);
+      }
+      object.setVisible(false);
+    });
+  }
+
+  private restoreDetachedCinematicText070417(): void {
+    for (const [text, wasVisible] of this.hiddenDetachedCinematicText070417) {
+      if (text.scene && text.active) text.setVisible(wasVisible);
+    }
+    this.hiddenDetachedCinematicText070417.clear();
+  }
+
+  private collectDisplayObjects070417(
+    root: Phaser.GameObjects.Container,
+    output: Set<Phaser.GameObjects.GameObject>,
+  ): void {
+    output.add(root);
+    for (const child of root.list) {
+      output.add(child);
+      if (child instanceof Phaser.GameObjects.Container) this.collectDisplayObjects070417(child, output);
+    }
+  }
+
+  /**
+   * Token identity is board chrome, never modal narration. Keep the P1-P4 seat
+   * number pinned to the small lower-right badge even while move_step owns its
+   * invisible presentation blocker.
+   */
+  private ensurePlayerTokenBadges070417(): void {
+    const runtime = this.runtime07044();
+    for (const player of runtime.match.players) {
+      const token = runtime.visuals.get(player.id)?.token;
+      if (!token?.active) continue;
+
+      const expected = String(player.id + 1);
+      let badgeText = token.list.find(
+        (child): child is Phaser.GameObjects.Text =>
+          child instanceof Phaser.GameObjects.Text
+          && child.text.trim() === expected
+          && Math.abs(child.x - 21) <= 4
+          && Math.abs(child.y - 21) <= 4,
+      );
+
+      if (!badgeText) {
+        badgeText = this.add.text(21, 21, expected, {
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '11px',
+          fontStyle: 'bold',
+          color: '#ffffff',
+        }).setOrigin(0.5);
+        token.add(badgeText);
+      }
+
+      badgeText
+        .setText(expected)
+        .setPosition(21, 21)
+        .setOrigin(0.5)
+        .setFontFamily('Arial, sans-serif')
+        .setFontSize(11)
+        .setFontStyle('bold')
+        .setColor('#ffffff')
+        .setAlpha(1)
+        .setVisible(true);
+    }
   }
 
   private retireLegacyPresentationOverlays070414(): void {

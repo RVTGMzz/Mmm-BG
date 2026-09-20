@@ -1,15 +1,15 @@
-const version = '0.1.70.4.16' as const;
+const version = '0.1.70.4.17' as const;
 
 /** Canonical visible build identity. Keep visible version copy centralized here. */
 export const MEMEME_BUILD = {
   version,
-  phase: 'SEMANTIC CARD FOOTER + REACTION SPLIT',
+  phase: 'GLOBAL CINEMATIC OWNERSHIP + TOKEN BADGE GUARD',
   lobbyHeader: `MeMeMe • ${version}`,
   lobbySubtitle: 'Chọn cách chơi',
   setupHeader: `TẠO NGƯỜI CHƠI • ${version}`,
   setupStatus: 'Sẵn sàng',
   rollOrderBadge: `MVP ${version} • ROLL FOR ORDER`,
   boardHeader: `CITY • MVP ${version}`,
-  boardBadge: `PLAYTEST ${version} • SEMANTIC CARD FOOTER + REACTION SPLIT`,
-  artifactName: `mememe-playtest-${version}-semantic-footer-reaction-split`,
+  boardBadge: `PLAYTEST ${version} • GLOBAL CINEMATIC OWNERSHIP + TOKEN BADGE GUARD`,
+  artifactName: `mememe-playtest-${version}-global-cinematic-token-badge`,
 } as const;
