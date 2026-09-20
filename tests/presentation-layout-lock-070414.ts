@@ -28,7 +28,7 @@ assert.match(presentation, /const anchorId = speakerId === undefined \? fallback
 assert.match(presentation, /const x = left \? 188 : 1092/);
 assert.match(presentation, /const REACTION_TOP_Y_070418 = 190/);
 assert.match(presentation, /const REACTION_BOTTOM_Y_070418 = 530/);
-assert.match(presentation, /const y = top \\? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418/);
+assert.match(presentation, /const y = top \? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418/);
 assert.doesNotMatch(presentation, /const y = 195 \+ \(index % 3\) \* 112/);
 
 console.log('[presentation-layout-lock-070414] PASS Job column/dedupe + Card/News text rebuild + avatar-anchored reactions');
