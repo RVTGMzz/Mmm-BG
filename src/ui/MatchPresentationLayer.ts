@@ -13,6 +13,11 @@ import {
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
+// 0.1.70.4.18: keep reaction bubbles clear of the four corner HUD cards,
+// including the 1.18x active-player zoom used on compact landscape.
+const REACTION_TOP_Y_070418 = 190;
+const REACTION_BOTTOM_Y_070418 = 530;
+
 const KIND_PALETTE: Record<PresentationEventModel['kind'], { panel: number; accent: number; label: string }> = {
   dice_roll: { panel: 0x24211d, accent: 0xffd34d, label: 'DICE' },
   move_step: { panel: 0x24211d, accent: 0xffd34d, label: 'MOVE' },
@@ -544,7 +549,7 @@ export class MatchPresentationLayer {
     const left = anchorId === 0 || anchorId === 2;
     const top = anchorId === 0 || anchorId === 1;
     const x = left ? 188 : 1092;
-    const y = top ? 172 : 548;
+    const y = top ? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418;
     const color = speakerId === undefined ? 0x746b61 : PLAYER_COLORS[speakerId % PLAYER_COLORS.length];
     const bubble = this.scene.add.container(x, y).setDepth(910).setAlpha(0);
     this.reactionObjects.add(bubble);
