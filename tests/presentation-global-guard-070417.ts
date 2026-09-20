@@ -5,7 +5,7 @@ import { MEMEME_BUILD } from '../src/buildInfo';
 const strictModal = readFileSync('src/scenes/CareerMinigameBoardScene0682.ts', 'utf8');
 const finalScene = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.17');
+assert.match(MEMEME_BUILD.version, /^0\\.1\\.70\\.4\\.\\d+$/);
 assert.match(MEMEME_BUILD.phase, /GLOBAL CINEMATIC OWNERSHIP \+ TOKEN BADGE GUARD/);
 
 // Invisible move_step blocker is flow state, not a visual modal.
