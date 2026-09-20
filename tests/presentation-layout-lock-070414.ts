@@ -26,7 +26,9 @@ assert.match(active, /retireLegacyPresentationOverlays070414/);
 // Reaction bubbles: deterministic avatar-corner anchors.
 assert.match(presentation, /const anchorId = speakerId === undefined \? fallbackId/);
 assert.match(presentation, /const x = left \? 188 : 1092/);
-assert.match(presentation, /const y = top \? 172 : 548/);
+assert.match(presentation, /const REACTION_TOP_Y_070418 = 190/);
+assert.match(presentation, /const REACTION_BOTTOM_Y_070418 = 530/);
+assert.match(presentation, /const y = top \\? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418/);
 assert.doesNotMatch(presentation, /const y = 195 \+ \(index % 3\) \* 112/);
 
 console.log('[presentation-layout-lock-070414] PASS Job column/dedupe + Card/News text rebuild + avatar-anchored reactions');
