@@ -1,51 +1,74 @@
 # MeMeMe — Latest Handoff
 
-Branch: `mememe-mvp-0.1-core`
-PR #1: Draft/Open. Do not merge unless Ron explicitly asks.
+Branch: `mmm-mvp-0.1-core`
+
+Legacy PR #1 remains Draft/Open on `mememe-mvp-0.1-core`.
+Do not merge or mark Ready unless Ron explicitly asks.
 
 ## Current public runtime
 
-**0.1.70.4.5 — Online Runtime Shell + Group Media + Mobile Readability**
+**0.1.70.4.18 — Adaptive Presentation Safe Area**
 
-Runtime source:
-`66dba6cf04f6f5959d2b0dc340719465336835a8`
+Runtime source tree:
+`7583836934f7081c8fd2cb85941fd989c39b967f`
 
-Mirror:
-`db577149ff3467b5119c8ab63edc4df20bd55a11`
+Final validated source head (tree-identical presentation-test follow-up):
+`e8e1f018f7c904aca0c84020840d6a2095289830`
 
-Pages #51: SUCCESS
+Public mirror:
+`0c5f3398105126344fa4ba81a5c7ce13fe7b63b2`
+
+Mirror publish title:
+`Publish compiled playtest 7583836`
 
 Test:
 `https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
 
-Implemented since old 0.1.70.4 checkpoint:
-- human-over-CPU seating;
-- optional custom 4–8 character room codes;
-- lobby DOM cleanup on Start;
-- authenticated reconnect after Start;
-- each human edits/syncs only their own 3-face avatar;
-- CPU Roll For Order + board autoplay;
-- WebRTC group camera/voice mesh via authenticated `media` channel;
-- camera/mic OFF by default and player-owned;
-- mobile readability/font sizing pass;
-- online Demo shell auto-start, removing the stuck `CHỜ HOST BẮT ĐẦU` state.
+## 0.1.70.4.17 retained fixes
 
-Validation:
-- CI #3100 SUCCESS
-- PR CI #3101 SUCCESS
-- Steam Deck/Web #355 SUCCESS
-- Cloudflare Worker SUCCESS
-- Publisher #311 SUCCESS
-- Pages #51 SUCCESS
+- Card/News cinematics use a semantic single-owner guard, so duplicate detached text is hidden generically instead of patching one event at a time.
+- P1–P4 token seat badges are restored/kept visible during movement.
+- Invisible `move_step` blockers are no longer treated as visual modals.
 
-Do not call Runtime PASS until Ron verifies:
+## 0.1.70.4.18 changes
+
+- Card/News titles now adapt from 30px down to 24px when required by wrapped copy.
+- Card/News body copy now adapts from 16px down to 12px before the final text box is locked.
+- The same adaptive fitter applies to future Card/News content, not only currently reported cards.
+- Reaction bubbles moved to HUD-safe vertical lanes:
+  - top lane: y=190
+  - bottom lane: y=530
+- The safe-area regression test accounts for the 1.18x active-player HUD scale and 12px mobile safe margin.
+- Presentation-only: no Host authority, deterministic RNG, reconnect ownership, or WebRTC signaling changes.
+
+## Validation
+
+- MMM MVP CI #3156: SUCCESS
+- GitHub Actions run: `35525656148`
+- Typecheck/build: SUCCESS
+- 0.1.70.4.17 global cinematic ownership + token badge guard: SUCCESS
+- 0.1.70.4.18 adaptive presentation safe area: SUCCESS
+- mobile landscape/face style: SUCCESS
+- external playtest package: SUCCESS
+- compiled mirror publish: SUCCESS
+
+The compiled mirror currently points at:
+- JS: `./assets/index-CyXhECzx.js`
+- CSS: `./assets/index-BZCErh0i.css`
+
+Do not call Runtime PASS from CI alone. Ron's screenshots/device playtest remain the runtime authority.
+
+## Online runtime items still requiring real-device confirmation
+
 - client can roll on their own turn;
 - black waiting overlay disappears;
 - P1/P2 can see each other's camera in group media;
-- CPU auto-play behaves correctly;
-- reconnect preserves active match state.
+- CPU autoplay behaves correctly;
+- reconnect preserves the active match state.
 
-Current WebRTC uses STUN only. Add TURN only if cross-network real-device testing requires it.
+Current WebRTC remains STUN-only. Add TURN only if cross-network real-device testing proves it necessary.
+
+Cloudflare online release remains frozen unless Ron explicitly asks to update it.
 
 Do not resume 0.1.71 yet.
 Do not merge PR #1.
