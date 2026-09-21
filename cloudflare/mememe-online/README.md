@@ -30,3 +30,5 @@ The WebSocket server uses Cloudflare's hibernation API through `ctx.acceptWebSoc
 
 Git integration connected on 2026-09-18 to the existing `mememe-online` Worker.
 This checkpoint intentionally touches the Worker root so Cloudflare can run the first production build from `mmm-mvp-0.1-core`.
+
+Deployment checkpoint: 0.1.70.4.20
