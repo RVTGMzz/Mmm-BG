@@ -50,8 +50,16 @@ Automated guards now lock:
 ## Validation
 
 Source CI:
-- MMM MVP CI #3158: SUCCESS
-- run: `35559818520`
+- MMM MVP CI #3159: SUCCESS
+- run: `35560164806`
+- live Worker smoke: SUCCESS
+  - room lifecycle: create/join/ready/start
+  - P2 post-start seat reclaim with same reconnect token
+  - game relay Host -> P2 and P2 -> Host
+  - simulated P2 reload socket reconnect on the same seat
+  - authenticated media roster relay Host -> P2
+  - authenticated media signal relay P2 -> Host
+  - CI probe room: `ME44VO`
 - typecheck/build: SUCCESS
 - 0.1.70.4.17 guard: SUCCESS
 - 0.1.70.4.18 adaptive safe area: SUCCESS
