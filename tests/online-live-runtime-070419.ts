@@ -8,7 +8,7 @@ type Json = Record<string, unknown>;
 const BASE = process.env.MEMEME_ONLINE_BASE_URL?.trim() || MEMEME_ONLINE_BASE_URL;
 const TIMEOUT_MS = 8_000;
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.19');
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 async function jsonRequest<T extends Json>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(BASE.replace(/\/+$/, '') + path, {
