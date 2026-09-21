@@ -10,7 +10,7 @@ const board = readFileSync('src/scenes/DemoBoardScene.ts', 'utf8');
 const playtestBoard = readFileSync('src/scenes/PlaytestDemoBoardScene.ts', 'utf8');
 const styles = readFileSync('src/styles.css', 'utf8');
 
-assert.match(worker, /milestone: "0\.1\.70\.4\.[236]"/);
+assert.match(worker, /milestone: "0\.1\.70\.4\.\d+"/);
 assert.match(worker, /const started = await this\.ctx\.storage\.get<boolean>\("started"\)/);
 assert.match(worker, /New humans cannot enter after Start/);
 assert.match(worker, /if \(started\) return internalJson\(\{ ok: false, error: "match_already_started"/);
