@@ -40,15 +40,11 @@ jobs:
           cat /tmp/create.json
           echo
           test "$code" = "201"
-          token="$(python - <<'PY'
-import json
-print(json.load(open('/tmp/create.json'))['hostToken'])
-PY
-)"
+          token="$(python -c "import json; print(json.load(open('/tmp/create.json'))['hostToken'])")"
           curl -fsS -X POST "$base/api/rooms/123123/close" \
             -H 'Content-Type: application/json' \
             --data "{\"hostToken\":\"$token\",\"reason\":\"host_left\"}" >/tmp/close.json
           cat /tmp/close.json
           echo
 
-# one-shot trigger
+# one-shot trigger v2
