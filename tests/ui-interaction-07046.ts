@@ -31,7 +31,7 @@ assert.doesNotMatch(job, /Controller B/);
 assert.doesNotMatch(main, /installGlobalGamepadUiNavigation0651\(game\)/);
 
 assert.match(worker, /private async roomCanRecycle07046/);
-assert.match(worker, /const noLiveSockets = this\.ctx\.getWebSockets\(\)\.length === 0/);
+assert.match(worker, /const noLiveSockets = this\.pruneStaleSockets070420\(now\) === 0/);
 assert.match(worker, /lastSocketActivityAt/);
 assert.match(worker, /reconnectGraceExpired/);
 assert.match(worker, /now - latestHumanActivityAt > RECONNECT_GRACE_MS_0704/);
