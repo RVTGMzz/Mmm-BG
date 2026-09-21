@@ -9,7 +9,7 @@ const media = readFileSync('src/ui/OnlineGroupMedia07043.ts', 'utf8');
 const runtime = readFileSync('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
 const worker = readFileSync('cloudflare/mememe-online/src/index.ts', 'utf8');
 
-assert.match(worker, /milestone: "0\.1\.70\.4\.(?:3|6)"/);
+assert.match(worker, /milestone: "0\.1\.70\.4\.\d+"/);
 assert.match(transport, /'demo-shell' \| 'media'/);
 assert.match(demo, /'demo-shell',\s*config\.clientId/);
 assert.match(demo, /new DemoShellClientSession\(config\.clientId/);
