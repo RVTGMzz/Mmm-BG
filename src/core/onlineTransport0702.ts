@@ -9,6 +9,8 @@ import {
 } from './localTransport';
 
 export const MEMEME_ONLINE_BASE_URL = 'https://mememe-online.lengochung28191.workers.dev';
+export const ONLINE_KEEPALIVE_INTERVAL_MS_070420 = 20_000;
+const ONLINE_KEEPALIVE_KIND_070420 = '__transport_keepalive_070420';
 
 export type SessionLogicalChannel = 'game' | 'turn-order' | 'demo-shell' | 'media';
 
@@ -102,6 +104,7 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
   private connectionState: TransportConnectionState07047 = 'connecting';
   private socket?: WebSocket;
   private reconnectTimer?: ReturnType<typeof setTimeout>;
+  private keepaliveTimer070420?: ReturnType<typeof setInterval>;
   private reconnectAttempt = 0;
   private closed = false;
 
@@ -141,6 +144,7 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
     this.closed = true;
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = undefined;
+    this.clearKeepalive070420();
     this.emitConnection07047('closed');
     this.handlers.clear();
     this.connectionHandlers.clear();
@@ -182,6 +186,7 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
       // Handshake owners subscribe to connection state. Let them reclaim their seat
       // before any gameplay intent queued during the outage is flushed.
       this.emitConnection07047('open');
+      this.startKeepalive070420(socket);
       while (this.pending.length > 0 && socket.readyState === WebSocket.OPEN) {
         const message = this.pending.shift();
         if (message) socket.send(message);
@@ -209,6 +214,7 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
 
     socket.addEventListener('close', () => {
       if (this.closed || this.socket !== socket) return;
+      this.clearKeepalive070420();
       this.socket = undefined;
       this.emitConnection07047('reconnecting');
       this.scheduleReconnect();
@@ -218,6 +224,21 @@ export class OnlineWebSocketTransport<T> implements LocalTransportAdapter<T> {
       if (this.closed || this.socket !== socket) return;
       try { socket.close(); } catch { /* browser will trigger close/reconnect */ }
     });
+  }
+
+  private clearKeepalive070420(): void {
+    if (this.keepaliveTimer070420) clearInterval(this.keepaliveTimer070420);
+    this.keepaliveTimer070420 = undefined;
+  }
+
+  private startKeepalive070420(socket: WebSocket): void {
+    this.clearKeepalive070420();
+    this.keepaliveTimer070420 = setInterval(() => {
+      if (this.closed || this.socket !== socket || socket.readyState !== WebSocket.OPEN) return;
+      socket.send(JSON.stringify({
+        payload: { kind: ONLINE_KEEPALIVE_KIND_070420, at: Date.now() },
+      }));
+    }, ONLINE_KEEPALIVE_INTERVAL_MS_070420);
   }
 
   private scheduleReconnect(): void {
