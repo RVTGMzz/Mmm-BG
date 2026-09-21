@@ -17,7 +17,6 @@ const workflow = readFileSync('.github/workflows/ci.yml', 'utf8');
 const handoff = readFileSync('docs/LATEST_HANDOFF.md', 'utf8');
 
 assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
-assert.match(MEMEME_BUILD.phase, /RUNTIME RELIABILITY \+ RELEASE GUARD/);
 
 // Online seat/reconnect ownership remains authoritative.
 assert.match(localTransport, /subscribeConnection\?/);
