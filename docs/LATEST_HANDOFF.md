@@ -7,68 +7,105 @@ Do not merge or mark Ready unless Ron explicitly asks.
 
 ## Current public runtime
 
-**0.1.70.4.18 — Adaptive Presentation Safe Area**
+**0.1.70.4.19 — Runtime Reliability + Release Guard**
 
-Runtime source tree:
-`7583836934f7081c8fd2cb85941fd989c39b967f`
-
-Final validated source head (tree-identical presentation-test follow-up):
-`e8e1f018f7c904aca0c84020840d6a2095289830`
+Validated runtime source:
+`3f1a96b6bd27606c1180e5b7cf4bc890288de8f9`
 
 Public mirror:
-`0c5f3398105126344fa4ba81a5c7ce13fe7b63b2`
+`03e2a745389dc3af060b0d04c19ab2a2d3bd4d77`
 
 Mirror publish title:
-`Publish compiled playtest 7583836`
+`Publish compiled playtest 3f1a96b`
 
-Test:
+Pages:
 `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
 
-## 0.1.70.4.17 retained fixes
+Current compiled assets:
+- JS: `./assets/index-Cim9s4_x.js`
+- CSS: `./assets/index-BZCErh0i.css`
 
-- Card/News cinematics use a semantic single-owner guard, so duplicate detached text is hidden generically instead of patching one event at a time.
-- P1–P4 token seat badges are restored/kept visible during movement.
-- Invisible `move_step` blockers are no longer treated as visual modals.
+## 0.1.70.4.19 release guard
 
-## 0.1.70.4.18 changes
+This checkpoint is a stable baseline, not a permanent freeze. Future approved UI/gameplay changes may update the implementation and the corresponding regression guard together.
 
-- Card/News titles now adapt from 30px down to 24px when required by wrapped copy.
-- Card/News body copy now adapts from 16px down to 12px before the final text box is locked.
-- The same adaptive fitter applies to future Card/News content, not only currently reported cards.
-- Reaction bubbles moved to HUD-safe vertical lanes:
-  - top lane: y=190
-  - bottom lane: y=530
-- The safe-area regression test accounts for the 1.18x active-player HUD scale and 12px mobile safe margin.
-- Presentation-only: no Host authority, deterministic RNG, reconnect ownership, or WebRTC signaling changes.
+Automated guards now lock:
+
+- reconnect handshake before queued online gameplay intents flush;
+- reclaimed clients control only their own seat;
+- shell state resync after transport reconnect;
+- CPU seats remain autonomous through Host authority;
+- authenticated group-media signaling + peer self-heal remain present;
+- avatar setup remains player-owned with the four-choice launcher;
+- active HUD stays clamped to the logical safe area;
+- P1–P4 token badges remain an invariant during movement;
+- Card/News adaptive text fitting from 0.1.70.4.18 remains active;
+- reaction bubbles retain HUD-safe lanes;
+- controller remains intentionally unsupported;
+- source CI must preserve the public mirror's `.github/workflows/pages.yml`;
+- publisher validates `index.html`, manifest, referenced JS/CSS, BGM and required SFX before push;
+- public Pages workflow stages every compiled root asset generically, so future public files are not silently omitted;
+- canonical public URL is `https://ronvotri.github.io/MeMeMe-Web-Playtest/`.
 
 ## Validation
 
-- MMM MVP CI #3156: SUCCESS
-- GitHub Actions run: `35525656148`
-- Typecheck/build: SUCCESS
-- 0.1.70.4.17 global cinematic ownership + token badge guard: SUCCESS
-- 0.1.70.4.18 adaptive presentation safe area: SUCCESS
+Source CI:
+- MMM MVP CI #3158: SUCCESS
+- run: `35559818520`
+- typecheck/build: SUCCESS
+- 0.1.70.4.17 guard: SUCCESS
+- 0.1.70.4.18 adaptive safe area: SUCCESS
+- 0.1.70.4.19 runtime reliability + release guard: SUCCESS
 - mobile landscape/face style: SUCCESS
 - external playtest package: SUCCESS
+- public mirror release guard: SUCCESS
 - compiled mirror publish: SUCCESS
 
-The compiled mirror currently points at:
-- JS: `./assets/index-CyXhECzx.js`
-- CSS: `./assets/index-BZCErh0i.css`
+Public Pages:
+- mirror commit: `03e2a745389dc3af060b0d04c19ab2a2d3bd4d77`
+- Pages workflow run: `35559863794`
+- conclusion: SUCCESS
 
-Do not call Runtime PASS from CI alone. Ron's screenshots/device playtest remain the runtime authority.
+The earlier Pages staging run on `168f065...` was cancelled only because the source publisher immediately pushed the newer compiled 0.1.70.4.19 mirror; the replacement Pages run above completed successfully.
 
-## Online runtime items still requiring real-device confirmation
+## Runtime acceptance still pending
 
-- client can roll on their own turn;
-- black waiting overlay disappears;
-- P1/P2 can see each other's camera in group media;
-- CPU autoplay behaves correctly;
-- reconnect preserves the active match state.
+CI/package/Pages PASS does not equal Runtime PASS.
+
+Use:
+`docs/PLAYTEST_0.1.70.4.19_RUNTIME_RELEASE_GUARD.md`
+
+Highest-value real-device checks:
+
+1. Desktop/local:
+   - active HUD never clips;
+   - several long TIN TỨC / LÁ BÀI entries do not duplicate or overflow;
+   - reactions do not cover HUD;
+   - P1–P4 token badge never disappears during movement;
+   - Job Hub preview/result flow remains readable.
+
+2. Online two-device:
+   - each human edits only their own avatar;
+   - each human acts only on their own turn;
+   - CPU seats autoplay without Host clicking;
+   - no stale black `CHỜ HOST` overlay.
+
+3. Reconnect:
+   - reload client during active match;
+   - same seat/avatar/match state returns;
+   - no stale lobby;
+   - client can act normally on their next turn.
+
+4. Group media:
+   - P1/P2 see each other;
+   - camera/mic toggle recovers without reloading.
+
+Call **0.1.70.4.19 Runtime PASS** only after Ron confirms the relevant real-device checks.
+
+After Runtime PASS, treat 0.1.70.4.x as the stable baseline and proceed to 0.1.71.
 
 Current WebRTC remains STUN-only. Add TURN only if cross-network real-device testing proves it necessary.
 
 Cloudflare online release remains frozen unless Ron explicitly asks to update it.
 
-Do not resume 0.1.71 yet.
 Do not merge PR #1.
