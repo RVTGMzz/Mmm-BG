@@ -22,7 +22,7 @@ Mirror publish title:
 `Publish compiled playtest 7583836`
 
 Test:
-`https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
+`https://ronvotri.github.io/MeMeMe-Web-Playtest/`
 
 ## 0.1.70.4.17 retained fixes
 
