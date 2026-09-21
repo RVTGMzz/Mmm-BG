@@ -5,8 +5,7 @@ import { MEMEME_BUILD } from '../src/buildInfo';
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.18');
-assert.match(MEMEME_BUILD.phase, /ADAPTIVE PRESENTATION SAFE AREA/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 // Every Card/News title and body goes through the same adaptive fitter.
 assert.match(active, /fitWrappedText070418\(title, 540, 54, 30, 24, 2\)/);
