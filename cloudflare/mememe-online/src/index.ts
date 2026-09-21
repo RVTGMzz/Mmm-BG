@@ -13,6 +13,7 @@ interface SocketAttachment {
   roomCode: string;
   channel: string;
   joinedAt: number;
+  lastSeenAt: number;
 }
 
 interface RelayEnvelope {
@@ -43,6 +44,8 @@ interface LobbyPlayerStored {
 const ONLINE_WINDOW_MS_0704 = 12_000;
 const DISCONNECTED_WINDOW_MS_0704 = 30_000;
 const RECONNECT_GRACE_MS_0704 = 60_000;
+const SOCKET_STALE_MS_070420 = 120_000;
+const TRANSPORT_KEEPALIVE_KIND_070420 = "__transport_keepalive_070420";
 
 function presence0704(player: LobbyPlayerStored, now = Date.now()): LobbyPresence0704 {
   const age = Math.max(0, now - player.lastSeenAt);
@@ -134,9 +137,11 @@ export default {
       return json({
         ok: true,
         service: "mememe-online",
-        milestone: "0.1.70.4.6",
+        milestone: "0.1.70.4.20",
         transport: "websocket-durable-object",
-        lobbyAuthority: true
+        lobbyAuthority: true,
+        socketStaleMs: SOCKET_STALE_MS_070420,
+        transportKeepalive: true
       }, {}, origin);
     }
 
@@ -272,6 +277,30 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return [1, 2, 3].find((seat) => !humanSeats.has(seat));
   }
 
+  private pruneStaleSockets070420(now = Date.now()): number {
+    let live = 0;
+    for (const socket of this.ctx.getWebSockets()) {
+      const attachment = socket.deserializeAttachment() as SocketAttachment | null;
+      if (!attachment) {
+        try { socket.close(4005, "Missing socket identity."); } catch {}
+        continue;
+      }
+
+      // Older hibernated sockets from before 0.1.70.4.20 have no lastSeenAt.
+      // Their joinedAt becomes the migration fallback so ghost sockets can finally
+      // expire instead of holding a custom room code forever.
+      const lastSeenAt = typeof attachment.lastSeenAt === "number"
+        ? attachment.lastSeenAt
+        : attachment.joinedAt;
+      if (!lastSeenAt || now - lastSeenAt > SOCKET_STALE_MS_070420) {
+        try { socket.close(4005, "Stale transport socket."); } catch {}
+        continue;
+      }
+      live += 1;
+    }
+    return live;
+  }
+
   private async roomCanRecycle07046(
     players: LobbyPlayerStored[],
     started: boolean,
@@ -285,11 +314,10 @@ export class MeMeMeRoom extends DurableObject<Env> {
       return Boolean(host && now - host.lastSeenAt > RECONNECT_GRACE_MS_0704);
     }
 
-    // Once a match has started, lobby heartbeats intentionally stop. The room may
-    // therefore look stale while the game is healthy. Only recycle after every
-    // game/media/shell socket is gone AND every remembered human is beyond the
-    // reconnect grace window. This keeps reconnect safe without immortal room codes.
-    const noLiveSockets = this.ctx.getWebSockets().length === 0;
+    // 0.1.70.4.20: Cloudflare hibernation can retain a dead WebSocket object after
+    // the browser is gone. Count only sockets that have sent real transport
+    // keepalives/game traffic recently. Stale sockets are closed and ignored.
+    const noLiveSockets = this.pruneStaleSockets070420(now) === 0;
     const lastSocketActivityAt = await this.ctx.storage.get<number>("lastSocketActivityAt") ?? 0;
     const latestHumanActivityAt = players.reduce(
       (latest, player) => Math.max(latest, player.lastSeenAt),
@@ -666,7 +694,12 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    const attachment: SocketAttachment = { clientId, seatId, role, roomCode, channel, joinedAt: Date.now() };
+    const connectedAt = Date.now();
+    const attachment: SocketAttachment = {
+      clientId, seatId, role, roomCode, channel,
+      joinedAt: connectedAt,
+      lastSeenAt: connectedAt
+    };
     server.serializeAttachment(attachment);
     this.ctx.acceptWebSocket(server);
     await this.ctx.storage.put("lastSocketActivityAt", Date.now());
@@ -678,7 +711,10 @@ export class MeMeMeRoom extends DurableObject<Env> {
   async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer): Promise<void> {
     const sender = socket.deserializeAttachment() as SocketAttachment | null;
     if (!sender) return;
-    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
+    const activityAt = Date.now();
+    sender.lastSeenAt = activityAt;
+    socket.serializeAttachment(sender);
+    await this.ctx.storage.put("lastSocketActivityAt", activityAt);
     const text = typeof message === "string" ? message : new TextDecoder().decode(message);
     // 0.1.70.4.2 profile sync may carry three 320px WebP face stickers.
     if (text.length > 1048576) { socket.close(1009, "Message too large."); return; }
@@ -690,6 +726,11 @@ export class MeMeMeRoom extends DurableObject<Env> {
       socket.send(JSON.stringify({ kind: "relay_error", error: "invalid_envelope" }));
       return;
     }
+
+    const transportPayload = envelope.payload && typeof envelope.payload === "object"
+      ? envelope.payload as Record<string, unknown>
+      : undefined;
+    if (transportPayload?.kind === TRANSPORT_KEEPALIVE_KIND_070420) return;
 
     const outbound = JSON.stringify({ from: sender.clientId, to: envelope.to, payload: envelope.payload });
     let delivered = 0;
@@ -711,14 +752,14 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
   async webSocketClose(socket: WebSocket, code: number, reason: string): Promise<void> {
     const attachment = socket.deserializeAttachment() as SocketAttachment | null;
-    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
+    // Closing/error callbacks are not proof of liveness. Do not refresh
+    // lastSocketActivityAt here or a ghost socket would extend room ownership.
     try { socket.close(code, reason); } catch {}
     if (attachment) this.broadcastPresence(attachment.channel);
   }
 
   async webSocketError(socket: WebSocket): Promise<void> {
     const attachment = socket.deserializeAttachment() as SocketAttachment | null;
-    await this.ctx.storage.put("lastSocketActivityAt", Date.now());
     try { socket.close(1011, "WebSocket error."); } catch {}
     if (attachment) this.broadcastPresence(attachment.channel);
   }
