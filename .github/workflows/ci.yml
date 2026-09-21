@@ -7,6 +7,17 @@ on:
     branches: [main]
 
 jobs:
+  diagnose-room-123123:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect room 123123
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "ROOM_123123_BEGIN"
+          curl -sS -i https://mememe-online.lengochung28191.workers.dev/api/rooms/123123/status || true
+          echo "ROOM_123123_END"
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
