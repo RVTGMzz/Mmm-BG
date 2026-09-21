@@ -1,6 +1,8 @@
-# MMM Online Worker — 0.1.70.2
+# MMM Online Worker — 0.1.70.4.20
 
-Cloudflare Worker + SQLite-backed Durable Object foundation for cross-device MMM rooms.
+Cloudflare Worker + SQLite-backed Durable Object runtime for cross-device MMM rooms.
+
+0.1.70.4.20 adds application-level WebSocket keepalive and stale hibernated-socket pruning so abandoned started rooms can release custom room codes without sacrificing reconnect.
 
 ## Dashboard build settings
 
