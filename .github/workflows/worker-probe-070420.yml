@@ -50,3 +50,5 @@ PY
             --data "{\"hostToken\":\"$token\",\"reason\":\"host_left\"}" >/tmp/close.json
           cat /tmp/close.json
           echo
+
+# one-shot trigger
