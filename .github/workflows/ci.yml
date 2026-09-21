@@ -13,6 +13,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Quick diagnostic room 123123
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "ROOM_123123_BEGIN"
+          curl -sS -i https://mememe-online.lengochung28191.workers.dev/api/rooms/123123/status || true
+          echo "ROOM_123123_END"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
