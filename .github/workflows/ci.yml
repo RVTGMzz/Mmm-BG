@@ -216,6 +216,8 @@ jobs:
         run: npm run test:presentation-adaptive-safearea-070418
       - name: 0.1.70.4.19 runtime reliability + release guard
         run: npm run test:runtime-release-guard-070419
+      - name: 0.1.70.4.19 live two-device reconnect + media relay smoke
+        run: npm run test:online-live-runtime-070419
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
