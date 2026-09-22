@@ -1,6 +1,6 @@
 # Visual Foundation Pass 0.1
 
-Status: **IMPLEMENTATION PLAN**
+Status: **IN PROGRESS — VF-01 + VF-02 IMPLEMENTED**
 
 Canonical visual authority:
 - `docs/VISUAL_STYLE_BIBLE_V0.1.md`
@@ -443,6 +443,33 @@ Must preserve:
 Controller remains intentionally unsupported in this pass.
 
 ---
+
+## 12.1 Current implementation checkpoint
+
+Implemented in source:
+
+- `src/visualFoundationV01.css`
+  - canonical VF colour tokens;
+  - radius/border/spacing tokens;
+  - typography tokens;
+  - soft-depth tokens;
+  - player accent tokens;
+  - canonical button sizing tokens.
+- `src/ui/visualFoundationV01.ts`
+  - reusable button variant/size decorator;
+  - selector-based live-surface decoration;
+  - presentation-only, no gameplay authority.
+- Live adoption:
+  - mode-selection lobby;
+  - online room lobby;
+  - setup footer;
+  - rule-confirm flow;
+  - dynamic online kick button;
+  - Ready button changes from secondary to success skin without changing ready authority.
+- Regression gate:
+  - `tests/visual-foundation-v01.ts`
+
+VF-03 panel/modal has **not** started yet. Do not treat the whole foundation pass as complete.
 
 ## 13. Implementation order
 
