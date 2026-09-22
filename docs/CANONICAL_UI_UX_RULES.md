@@ -76,3 +76,19 @@ The canonical splash logo is `public/assets/mememe-logo-main.png`, a 1024×1024 
 Runtime splash/menu branding must reference that binary master directly. Do not regenerate the official logo from text, base64 fragments, temporary vector placeholders, downscaled WebP exports or synthetic substitutes.
 
 If the repository connector cannot safely write a binary replacement, ask for a manual GitHub upload instead of spending build time reconstructing the asset through text. After replacement, CI must verify the PNG signature, 1024×1024 dimensions and transparency before publication.
+
+
+## 20. Canonical visual direction
+
+The canonical art/style direction is:
+
+`docs/VISUAL_STYLE_BIBLE_V0.1.md`
+
+Its title is intentionally **Visual Style Bible v0.1** and must remain independent from the project/brand name.
+
+When the Visual Style Bible and this UI/UX contract overlap:
+- this document owns interaction/readability/runtime safety;
+- the Visual Style Bible owns colour, shape, material, icon, character, board-world and presentation language;
+- neither document may override gameplay authority or accepted runtime behaviour.
+
+Future visual work should follow the Style Bible instead of introducing isolated one-off skins.
