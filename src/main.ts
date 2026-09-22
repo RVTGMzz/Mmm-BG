@@ -6,6 +6,7 @@ import './ruleSelect067.css';
 import './firstImpression069.css';
 import './mobileReadability07044.css';
 import './uiInteraction07046.css';
+import './visualFoundationV01.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
