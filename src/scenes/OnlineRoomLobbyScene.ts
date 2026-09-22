@@ -13,6 +13,10 @@ import {
   type OnlineLobbyState0703,
 } from '../core/onlineLobby0703';
 import { gameSession } from '../core/session';
+import {
+  decorateVisualFoundationButtonV01,
+  decorateVisualFoundationButtonsV01,
+} from '../ui/visualFoundationV01';
 
 export class OnlineRoomLobbyScene extends Phaser.Scene {
   private root?: HTMLDivElement;
@@ -59,6 +63,12 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
         <p id="online-room-status">Đang đồng bộ phòng...</p>
       </footer>`;
     this.root = root;
+    decorateVisualFoundationButtonsV01(root, [
+      { selector: '#online-copy-code', variant: 'secondary', size: 'sm' },
+      { selector: '#online-ready', variant: 'secondary', size: 'lg' },
+      { selector: '#online-start', variant: 'primary', size: 'lg' },
+      { selector: '#online-leave', variant: 'subtle', size: 'sm' },
+    ]);
     this.lobbyDom = this.add.dom(640, 360, root).setOrigin(0.5);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanupLobbyUi07042());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.cleanupLobbyUi07042());
@@ -254,6 +264,9 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
           <span class="online-ready-state">${ready}</span>${kick}
         </div>`;
       }).join('');
+      roster.querySelectorAll<HTMLButtonElement>('.online-kick').forEach((button) => {
+        decorateVisualFoundationButtonV01(button, 'danger', 'sm');
+      });
     }
 
     const camera = this.root.querySelector<HTMLInputElement>('#room-camera');
@@ -268,6 +281,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     if (readyButton) {
       readyButton.disabled = !me || state.started;
       readyButton.textContent = me?.ready ? '↩ BỎ READY' : '✅ SẴN SÀNG';
+      decorateVisualFoundationButtonV01(readyButton, me?.ready ? 'success' : 'secondary', 'lg');
     }
     const startButton = this.root.querySelector<HTMLButtonElement>('#online-start');
     if (startButton) {
