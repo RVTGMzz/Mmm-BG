@@ -1,0 +1,264 @@
+/* Visual Foundation Pass 0.1 — VF-01 tokens + VF-02 button family.
+ * Imported last so canonical visual primitives can safely override legacy skins
+ * without changing gameplay/authority code.
+ */
+
+:root {
+  /* VF-01: warm toy-like palette */
+  --vf-color-bg-cream: #fff8ea;
+  --vf-color-panel-cream: #fffaf1;
+  --vf-color-panel-warm: #f8ead1;
+  --vf-color-outline-cocoa: #4a302a;
+  --vf-color-outline-soft: #765047;
+  --vf-color-text-main: #3f2b27;
+  --vf-color-text-muted: #75675d;
+  --vf-color-accent-butter: #ffd86b;
+  --vf-color-accent-butter-deep: #e7a93c;
+  --vf-color-accent-coral: #ff8f86;
+  --vf-color-accent-coral-deep: #cf625d;
+  --vf-color-accent-mint: #84d5a1;
+  --vf-color-accent-aqua: #77d9e7;
+  --vf-color-accent-lavender: #b9a6e8;
+  --vf-color-focus: #62bfe0;
+
+  /* Player identity remains independent from action semantics. */
+  --vf-player-p1: #ef6262;
+  --vf-player-p2: #7a62a3;
+  --vf-player-p3: #5f91df;
+  --vf-player-p4: #61b37b;
+
+  /* VF-01: geometry */
+  --vf-radius-sm: 14px;
+  --vf-radius-md: 20px;
+  --vf-radius-lg: 28px;
+  --vf-radius-pill: 999px;
+  --vf-border-standard: 3px;
+  --vf-border-strong: 4px;
+
+  /* VF-01: spacing */
+  --vf-space-1: 4px;
+  --vf-space-2: 8px;
+  --vf-space-3: 12px;
+  --vf-space-4: 16px;
+  --vf-space-5: 24px;
+  --vf-space-6: 32px;
+
+  /* VF-01: typography */
+  --vf-font-ui: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", Inter, system-ui, sans-serif;
+  --vf-text-hero: 48px;
+  --vf-text-modal-title: 32px;
+  --vf-text-cta: 20px;
+  --vf-text-hud: 18px;
+  --vf-text-body: 18px;
+  --vf-text-meta: 14px;
+
+  /* VF-01: depth */
+  --vf-shadow-soft: 0 7px 0 rgba(74, 48, 42, .16), 0 12px 24px rgba(74, 48, 42, .10);
+  --vf-shadow-active: 0 8px 0 rgba(74, 48, 42, .24), 0 14px 28px rgba(74, 48, 42, .16);
+
+  /* VF-02: canonical button sizing */
+  --vf-button-height-sm: 42px;
+  --vf-button-height-md: 52px;
+  --vf-button-height-lg: 66px;
+  --vf-button-radius-sm: 14px;
+  --vf-button-radius-md: 18px;
+  --vf-button-radius-lg: 22px;
+}
+
+/* Base button primitive */
+button.vf-button {
+  --vf-button-bg: var(--vf-color-accent-butter);
+  --vf-button-fg: var(--vf-color-text-main);
+  --vf-button-border: var(--vf-color-outline-cocoa);
+  --vf-button-shadow: #9a6337;
+
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vf-space-2);
+  min-height: var(--vf-button-height-md);
+  box-sizing: border-box;
+  border: var(--vf-border-strong) solid var(--vf-button-border);
+  border-radius: var(--vf-button-radius-md);
+  padding: 0 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,0) 38%),
+    var(--vf-button-bg);
+  color: var(--vf-button-fg);
+  box-shadow:
+    0 5px 0 var(--vf-button-shadow),
+    0 9px 18px rgba(74,48,42,.14);
+  cursor: pointer;
+  font-family: var(--vf-font-ui);
+  font-size: var(--vf-text-cta);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .01em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: none;
+  white-space: nowrap;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease,
+    filter 110ms ease,
+    background-color 110ms ease;
+}
+
+button.vf-button:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+  filter: saturate(1.04) brightness(1.015);
+}
+
+button.vf-button:active:not(:disabled),
+button.vf-button.is-pressed {
+  transform: translateY(4px) scale(.985);
+  box-shadow:
+    0 1px 0 var(--vf-button-shadow),
+    0 4px 8px rgba(74,48,42,.12);
+}
+
+button.vf-button:focus {
+  outline: none;
+}
+
+button.vf-button:focus-visible {
+  outline: 4px solid color-mix(in srgb, var(--vf-color-focus) 72%, white);
+  outline-offset: 3px;
+}
+
+button.vf-button:disabled,
+button.vf-button[aria-disabled="true"] {
+  opacity: .52;
+  cursor: not-allowed;
+  filter: grayscale(.24) saturate(.72);
+  transform: none;
+  box-shadow:
+    0 2px 0 color-mix(in srgb, var(--vf-button-border) 58%, white),
+    0 4px 8px rgba(74,48,42,.07);
+}
+
+/* Variants */
+button.vf-button.vf-button--primary {
+  --vf-button-bg: var(--vf-color-accent-butter);
+  --vf-button-fg: var(--vf-color-text-main);
+  --vf-button-border: var(--vf-color-outline-cocoa);
+  --vf-button-shadow: #b77735;
+}
+
+button.vf-button.vf-button--secondary {
+  --vf-button-bg: var(--vf-color-panel-cream);
+  --vf-button-fg: var(--vf-color-text-main);
+  --vf-button-border: var(--vf-color-outline-cocoa);
+  --vf-button-shadow: #b99b82;
+}
+
+button.vf-button.vf-button--subtle {
+  --vf-button-bg: #f3eadb;
+  --vf-button-fg: var(--vf-color-outline-soft);
+  --vf-button-border: #8c7568;
+  --vf-button-shadow: #c5ae98;
+}
+
+button.vf-button.vf-button--danger {
+  --vf-button-bg: var(--vf-color-accent-coral);
+  --vf-button-fg: #fffaf4;
+  --vf-button-border: var(--vf-color-outline-cocoa);
+  --vf-button-shadow: var(--vf-color-accent-coral-deep);
+}
+
+button.vf-button.vf-button--success {
+  --vf-button-bg: var(--vf-color-accent-mint);
+  --vf-button-fg: var(--vf-color-text-main);
+  --vf-button-border: var(--vf-color-outline-cocoa);
+  --vf-button-shadow: #4f9670;
+}
+
+/* Sizes */
+button.vf-button.vf-button--sm {
+  min-height: var(--vf-button-height-sm);
+  border-width: var(--vf-border-standard);
+  border-radius: var(--vf-button-radius-sm);
+  padding-inline: 13px;
+  font-size: 14px;
+}
+
+button.vf-button.vf-button--md {
+  min-height: var(--vf-button-height-md);
+  border-radius: var(--vf-button-radius-md);
+  padding-inline: 17px;
+  font-size: 17px;
+}
+
+button.vf-button.vf-button--lg {
+  min-height: var(--vf-button-height-lg);
+  border-radius: var(--vf-button-radius-lg);
+  padding-inline: 22px;
+  font-size: 20px;
+}
+
+/* Icon + label composition */
+button.vf-button .vf-button__icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  min-width: 1.15em;
+  font-size: 1.08em;
+  line-height: 1;
+}
+
+button.vf-button .vf-button__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Selected/toggle state has shape + elevation cue, not colour alone. */
+button.vf-button[aria-pressed="true"],
+button.vf-button.is-selected {
+  box-shadow:
+    0 3px 0 var(--vf-button-shadow),
+    0 0 0 4px color-mix(in srgb, var(--vf-color-accent-aqua) 42%, transparent);
+  transform: translateY(2px);
+}
+
+/* Busy state stays legible while preventing a second action. */
+button.vf-button[aria-busy="true"] {
+  cursor: progress;
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  button.vf-button.vf-button--sm {
+    min-height: 44px;
+    font-size: 15px;
+  }
+
+  button.vf-button.vf-button--md {
+    min-height: 54px;
+    font-size: 18px;
+  }
+
+  button.vf-button.vf-button--lg {
+    min-height: 64px;
+    padding-inline: 20px;
+    font-size: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button.vf-button {
+    transition: none;
+  }
+
+  button.vf-button:hover:not(:disabled),
+  button.vf-button:active:not(:disabled),
+  button.vf-button.is-pressed {
+    transform: none;
+  }
+}
