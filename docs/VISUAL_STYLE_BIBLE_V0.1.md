@@ -510,3 +510,21 @@ Recommended first milestone:
 7. then propagate to the rest of the runtime.
 
 This gives the project a reusable visual grammar before touching the full board.
+
+
+---
+
+## 23. Active implementation plan
+
+The first implementation pass for this visual direction is:
+
+`docs/VISUAL_FOUNDATION_PASS_0.1.md`
+
+Implementation order:
+1. button system;
+2. panel/modal shell;
+3. player HUD;
+4. one canonical TIN TỨC sample;
+5. one canonical Job sample.
+
+Do not broadly reskin the game before this foundation passes desktop + real phone landscape validation.
