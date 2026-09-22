@@ -47,4 +47,4 @@ jobs:
           cat /tmp/close.json
           echo
 
-# one-shot trigger v2
+# one-shot trigger v3
