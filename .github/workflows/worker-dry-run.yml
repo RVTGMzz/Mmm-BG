@@ -1,0 +1,25 @@
+name: Worker dry-run compile
+
+on:
+  push:
+    branches:
+      - mmm-mvp-0.1-core
+    paths:
+      - .github/workflows/worker-dry-run.yml
+  workflow_dispatch:
+
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cloudflare/mememe-online
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Wrangler dry-run
+        run: npx wrangler deploy --dry-run --outdir .wrangler-dry-run
