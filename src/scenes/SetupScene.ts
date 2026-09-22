@@ -12,6 +12,7 @@ import {
   prepareForNativePicker07033,
   waitForMobileLandscapeAfterPicker07032,
 } from '../ui/mobileLandscape07031';
+import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -74,6 +75,10 @@ export class SetupScene extends Phaser.Scene {
       <p id="setup-status" class="setup-status"></p>`;
     const setupDom = this.add.dom(640, 410, root).setOrigin(0.5);
     const node = setupDom.node as HTMLDivElement;
+    decorateVisualFoundationButtonsV01(node, [
+      { selector: '#setup-back-mode', variant: 'subtle', size: 'sm' },
+      { selector: '#start-game', variant: 'primary', size: 'lg' },
+    ]);
     this.statusElement = node.querySelector<HTMLParagraphElement>('#setup-status') ?? undefined;
 
     const rulesRoot = document.createElement('div');
@@ -84,6 +89,10 @@ export class SetupScene extends Phaser.Scene {
         <div class="rule-option-grid">${[1,2,3].map((laps) => `<button type="button" class="lap-option rule-option${laps === gameSession.targetLaps ? ' selected' : ''}" data-laps="${laps}" aria-pressed="${laps === gameSession.targetLaps}"><span class="rule-option-number">${laps}</span><strong>${laps} LƯỢT</strong><small>${laps} VÒNG / NGƯỜI</small><span class="rule-option-note">${laps === 1 ? 'NHANH' : laps === 2 ? 'CÂN BẰNG' : 'DÀI'}</span></button>`).join('')}</div>
         <div class="rule-actions"><button type="button" class="rule-back">← QUAY LẠI</button><button type="button" class="rule-confirm">BẮT ĐẦU 🎲</button></div>
       </section>`;
+    decorateVisualFoundationButtonsV01(rulesRoot, [
+      { selector: '.rule-back', variant: 'subtle', size: 'md' },
+      { selector: '.rule-confirm', variant: 'primary', size: 'lg' },
+    ]);
     const rulesDom = this.add.dom(640, 360, rulesRoot).setOrigin(0.5).setVisible(false);
 
     for (const playerId of setupPlayerIds) {
