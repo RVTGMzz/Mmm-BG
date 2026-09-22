@@ -220,6 +220,8 @@ jobs:
         run: npm run test:online-live-runtime-070419
       - name: 0.1.70.4.20 stale room recycle + WebSocket keepalive
         run: npm run test:online-stale-room-recycle-070420
+      - name: Visual Foundation 0.1 VF-01 tokens + VF-02 buttons
+        run: npm run test:visual-foundation-v01
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
@@ -228,11 +230,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MVP 0.1.70.4.20 Stale Room Recycle WebSocket Keepalive build
+      - name: Upload MVP 0.1.70.4.20 + VF-01 VF-02 build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.20-stale-room-recycle-websocket-keepalive
+          name: mmm-playtest-0.1.70.4.20-vf01-vf02
           path: dist
           if-no-files-found: error
           retention-days: 14
