@@ -2,111 +2,112 @@
 
 Branch: `mmm-mvp-0.1-core`
 
-Legacy PR #1 remains Draft/Open on `mememe-mvp-0.1-core`.
+Legacy PR #1 remains Draft/Open.
 Do not merge or mark Ready unless Ron explicitly asks.
 
 ## Current checkpoint
 
 **0.1.70.4.20 — Stale Room Recycle + WebSocket Keepalive**
 
-Primary fix:
-- abandoned started rooms must eventually release reusable custom room codes such as `123123`;
-- active game/media/demo-shell sockets send application-level keepalive every 20 seconds;
-- Worker expires a socket after 120 seconds without real transport activity;
-- hibernated sockets created before 0.1.70.4.20 fall back to `joinedAt`, so old ghost sockets can be pruned;
-- close/error callbacks do not refresh room activity;
-- keepalive packets are consumed inside the Worker and never leak into gameplay/media event handlers.
+Production Worker is LIVE.
 
-## Why 0.1.70.4.20 exists
+Worker health:
+- milestone: `0.1.70.4.20`
+- transport: `websocket-durable-object`
+- lobbyAuthority: `true`
+- socketStaleMs: `120000`
+- transportKeepalive: `true`
 
-Live diagnosis of room `123123` on the previous Worker returned:
+Cloudflare Worker deploy:
+- source commit: `719dda74890892be6990c50056bc73965a6746a4`
+- Workers Build: SUCCESS
+- Build ID: `c632b158-54f4-420f-aede-dd5cb8cbe410`
+- Version ID: `68ff7a16-74d7-49d2-87de-d3ecd97eb196`
 
-- `started: true`
-- `closed: false`
-- Host: disconnected
-- P2: disconnected
-- CPU seats: P3/P4
+## 0.1.70.4.20 fix
 
-The old recycle rule counted every Durable Object WebSocket returned by `getWebSockets()` as alive forever. A hibernated/dead socket could therefore keep a started room code locked indefinitely.
+- active online sockets send application-level keepalive every 20 seconds;
+- a socket becomes stale after 120 seconds without real transport activity;
+- hibernated pre-.20 sockets fall back to `joinedAt` so old ghost sockets can finally expire;
+- stale sockets are closed and ignored by room-recycle authority;
+- close/error callbacks no longer fake liveness by refreshing `lastSocketActivityAt`;
+- transport keepalive is swallowed by the Worker and never leaks to gameplay/media subscribers;
+- a started abandoned room can release its custom code after reconnect grace.
 
-## Source validation
+## Custom room 123123 — LIVE PROOF
 
-Known-good source CI:
-- MMM MVP CI #3177: SUCCESS
-- run: `35683258683`
+The old stuck room `123123` was successfully reclaimed on production .20.
 
-Earlier full .20 CI after phase/test migration:
-- MMM MVP CI #3176: SUCCESS
-- run: `35683212692`
+Probe result:
+- health returned milestone `0.1.70.4.20`;
+- create custom room `123123` returned HTTP `201`;
+- room started fresh with Host only;
+- cleanup/close returned `closed: true` and `closeReason: host_left`.
 
-The .20 gate is:
-- `tests/online-stale-room-recycle-070420.ts`
-- script: `test:online-stale-room-recycle-070420`
+The temporary one-shot room probe workflow was removed after proof.
 
-Historical .19 live Worker smoke remains in CI and verifies:
+## Validation
+
+Full source CI rerun after production .20 became live:
+- MMM MVP CI #3181
+- run: `35754944337`
+- attempt: 2
+- conclusion: SUCCESS
+
+Important gates:
+- typecheck/build: SUCCESS
+- .19 live two-device reconnect + media relay smoke: SUCCESS
+- .20 stale room recycle + WebSocket keepalive: SUCCESS
+- external package validation: SUCCESS
+- compiled mirror publish: SUCCESS
+
+The live .19 smoke covers:
 - create/join/ready/start;
-- post-start P2 reclaim;
-- game relay both directions;
-- simulated client reload;
-- media roster + signal relay.
+- post-start P2 seat reclaim;
+- Host -> P2 and P2 -> Host game relay;
+- simulated P2 socket reload/reconnect;
+- authenticated media roster relay;
+- authenticated media signal relay.
+
+Wrangler Worker dry-run also passes independently.
 
 ## Public frontend
 
-Pages:
+GitHub Pages:
 `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
 
-Public mirror containing the compiled .20 frontend:
+Public compiled mirror remains:
 `f96edc0dd2bba6a67b1f8d84eff8b2e7838f33c4`
 
-Pages workflow:
-- run `35621418803`
-- SUCCESS
+The frontend already contains 0.1.70.4.20. Later source-only workflow/docs commits do not change compiled output.
 
-## Production Worker status — DEPLOY BLOCKED
+## Cloudflare Git integration
 
-The live Worker health endpoint still reports:
+Production Worker now uses:
+- repository: `RVTGMzz/Mmm-BG`
+- branch: `mmm-mvp-0.1-core`
+- root: `/cloudflare/mememe-online`
+- deploy command: `npx wrangler deploy`
 
-`milestone: 0.1.70.4.3`
+The earlier `mememe-mvp-0.1-core` branch is historical and must not be used for production Worker deploys.
 
-A production deploy workflow is now prepared:
+Durable Object binding remains:
+- `MEMEME_ROOMS` -> `mememe-online_MeMeMeRoom`
 
-`.github/workflows/deploy-online-worker.yml`
+Do not delete or recreate the Durable Object binding.
 
-It uses Cloudflare account:
-`0fd870345f30d738da3d55ad72de39ce`
+## Runtime acceptance still pending
 
-GitHub currently has no usable Cloudflare deployment token under any checked alias:
-- `CLOUDFLARE_API_TOKEN`
-- `CF_API_TOKEN`
-- `CLOUDFLARE_WORKERS_TOKEN`
-- `CLOUDFLARE_TOKEN`
+Automated/live infrastructure proof is PASS.
 
-Therefore Wrangler cannot deploy the new Worker yet.
+Do not call full 0.1.70.4.20 Runtime PASS until Ron confirms on real devices:
+1. create room `123123` from the game UI;
+2. second device joins;
+3. each human acts only on own turn;
+4. reload P2 during an active match and reclaim the same seat;
+5. no stale black `CHỜ HOST` overlay;
+6. P1/P2 camera tracks are mutually visible when both enable camera.
 
-Required one-time repository secret:
-`CLOUDFLARE_API_TOKEN`
-
-After the secret is added, rerun **Deploy MeMeMe Online Worker**. The workflow will:
-1. deploy `cloudflare/mememe-online`;
-2. wait for health to report `0.1.70.4.20`;
-3. fail if production did not actually update.
-
-A separate one-shot probe remains temporarily at:
-`.github/workflows/worker-probe-070420.yml`
-
-After production .20 is live, use it to prove that stale custom code `123123` can be reclaimed and closed cleanly, then delete the temporary probe workflow.
-
-## Runtime status
-
-Do **not** call 0.1.70.4.20 Runtime PASS yet.
-
-Pending:
-1. production Worker deploy;
-2. live reclaim of custom room `123123`;
-3. two-device online test;
-4. camera/voice real-device confirmation.
-
-Cloudflare Pages `mwp-test` deployment checks are frontend previews only. They do not deploy the `mememe-online` Worker.
+If those real-device checks pass, close 0.1.70.4.x as the stable baseline and proceed to 0.1.71.
 
 Do not merge PR #1.
-Do not resume 0.1.71 until this checkpoint is resolved.
