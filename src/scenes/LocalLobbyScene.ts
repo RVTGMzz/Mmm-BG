@@ -8,6 +8,7 @@ import {
   createOnlineRoom0703,
   joinOnlineRoom0703,
 } from '../core/onlineLobby0703';
+import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 
 const PRESERVE_SETUP_REGISTRY_KEY = 'mememe-preserve-setup';
 
@@ -65,6 +66,13 @@ export class LocalLobbyScene extends Phaser.Scene {
 
     const dom = this.add.dom(640, 370, root).setOrigin(0.5);
     const node = dom.node as HTMLDivElement;
+    decorateVisualFoundationButtonsV01(node, [
+      { selector: '#lobby-solo', variant: 'primary', size: 'lg' },
+      { selector: '#lobby-local-host', variant: 'primary', size: 'md' },
+      { selector: '#lobby-local-join', variant: 'secondary', size: 'md' },
+      { selector: '#lobby-online-host', variant: 'primary', size: 'md' },
+      { selector: '#lobby-online-join', variant: 'secondary', size: 'md' },
+    ]);
     const status = node.querySelector<HTMLParagraphElement>('#lobby-status');
     const setStatus = (message: string, error = false) => {
       if (!status) return;
