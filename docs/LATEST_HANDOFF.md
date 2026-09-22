@@ -123,9 +123,16 @@ This visual direction is subordinate to the canonical UI/UX runtime-safety contr
 Implementation document:
 `docs/VISUAL_FOUNDATION_PASS_0.1.md`
 
+Current visual implementation status:
+- VF-01 shared design tokens: IMPLEMENTED
+- VF-02 canonical button family: IMPLEMENTED
+- live adoption: mode select, online room, setup footer, rule-confirm flow
+- regression test: `tests/visual-foundation-v01.ts`
+- VF-03 panel/modal shell: NEXT
+
 Canonical rollout order:
-1. shared design tokens;
-2. button family;
+1. shared design tokens ✅;
+2. button family ✅;
 3. panel/modal shell;
 4. player HUD;
 5. one TIN TỨC canonical sample;
