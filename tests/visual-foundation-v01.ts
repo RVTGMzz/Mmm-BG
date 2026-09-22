@@ -51,6 +51,19 @@ assert.match(css, /@media \(pointer: coarse\) and \(orientation: landscape\)/);
 assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
 assert.match(css, /touch-action:\s*manipulation/);
 
+// VF-01.1: Vietnamese glyph stability + secondary placeholder sizing.
+assert.match(css, /--vf-font-ui:\s*system-ui/);
+assert.doesNotMatch(css, /--vf-font-ui:[^\n]*Arial Rounded MT Bold/);
+assert.match(css, /VF-01\.1 Vietnamese typography stabilization/);
+assert.match(css, /\.mememe-lobby-069 input::placeholder/);
+assert.match(css, /font-size:\s*14px/);
+assert.match(css, /font-synthesis:\s*none/);
+
+// VF-02 depth should be visibly toy-like, not only a colour swap.
+assert.match(css, /inset 0 2px 0 rgba\(255,255,255,\.72\)/);
+assert.match(css, /0 6px 0 var\(--vf-button-shadow\)/);
+assert.match(css, /linear-gradient\(180deg, color-mix/);
+
 // Helper is presentation-only and does not gain game authority.
 assert.match(helper, /decorateVisualFoundationButtonV01/);
 assert.match(helper, /decorateVisualFoundationButtonsV01/);
