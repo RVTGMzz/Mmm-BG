@@ -96,6 +96,28 @@ Durable Object binding remains:
 
 Do not delete or recreate the Durable Object binding.
 
+## Visual direction
+
+Canonical visual direction:
+`docs/VISUAL_STYLE_BIBLE_V0.1.md`
+
+Title:
+**Visual Style Bible v0.1**
+
+Direction locked for future presentation work:
+- chibi;
+- cozy;
+- rounded;
+- toy-like;
+- pastel/candy colour;
+- mobile-first oversized readable interaction;
+- soft depth and sticker-like icons;
+- board/world should feel like a playful diorama rather than a technical tile grid.
+
+The supplied casual-game references are directional moodboard material only. Do not copy their proprietary characters, logos, layouts or illustrations one-for-one.
+
+This visual direction is subordinate to the canonical UI/UX runtime-safety contract and must preserve Host authority, deterministic RNG, reconnect ownership, CPU autoplay, modal ownership and mobile safe areas.
+
 ## Runtime acceptance still pending
 
 Automated/live infrastructure proof is PASS.
