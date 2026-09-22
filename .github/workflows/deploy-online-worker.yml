@@ -1,0 +1,62 @@
+name: Deploy MeMeMe Online Worker
+
+on:
+  push:
+    branches:
+      - mmm-mvp-0.1-core
+    paths:
+      - cloudflare/mememe-online/**
+      - .github/workflows/deploy-online-worker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mememe-online-worker-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cloudflare/mememe-online
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Worker dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Deploy mememe-online
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: 0fd870345f30d738da3d55ad72de39ce
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "Missing repository secret CLOUDFLARE_API_TOKEN."
+            exit 2
+          fi
+          npx wrangler deploy
+
+      - name: Verify production health
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 12); do
+            body="$(curl -fsS https://mememe-online.lengochung28191.workers.dev/health || true)"
+            echo "attempt=$i health=$body"
+            if echo "$body" | grep -q '"milestone":"0.1.70.4.20"' \
+              && echo "$body" | grep -q '"transportKeepalive":true'; then
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
