@@ -34,4 +34,4 @@ This checkpoint intentionally touches the Worker root so Cloudflare can run the 
 Deployment checkpoint: 0.1.70.4.20
 
 
-Git integration refresh: RVTGMzz/Mmm-BG / mmm-mvp-0.1-core / 2026-09-22.
+Git integration refresh: RVTGMzz/Mmm-BG / mmm-mvp-0.1-core / corrected Worker build config 2026-09-22.
