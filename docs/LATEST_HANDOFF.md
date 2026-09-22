@@ -128,6 +128,11 @@ Current visual implementation status:
 - VF-02 canonical button family: IMPLEMENTED
 - live adoption: mode select, online room, setup footer, rule-confirm flow
 - regression test: `tests/visual-foundation-v01.ts`
+- VF-01.1 Vietnamese typography stabilization: IMPLEMENTED
+  - removed `ui-rounded / Arial Rounded MT Bold` from canonical VF font stack;
+  - canonical VF surfaces now use Vietnamese-safe system UI glyph coverage;
+  - lobby placeholder is reduced to secondary metadata size so it no longer crowds/clips;
+  - VF-02 primary/secondary buttons have stronger toy-like highlight + depth.
 - VF-03 panel/modal shell: NEXT
 
 Canonical rollout order:
