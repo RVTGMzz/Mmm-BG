@@ -44,7 +44,9 @@
   --vf-space-6: 32px;
 
   /* VF-01: typography */
-  --vf-font-ui: ui-rounded, "Arial Rounded MT Bold", "Trebuchet MS", Inter, system-ui, sans-serif;
+  /* Vietnamese-safe first. Avoid Arial Rounded MT Bold/ui-rounded here because
+   * mixed glyph fallback can make dấu look detached or uneven on Windows. */
+  --vf-font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   --vf-text-hero: 48px;
   --vf-text-modal-title: 32px;
   --vf-text-cta: 20px;
@@ -84,18 +86,22 @@ button.vf-button {
   border-radius: var(--vf-button-radius-md);
   padding: 0 18px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,.30) 0%, rgba(255,255,255,0) 38%),
-    var(--vf-button-bg);
+    linear-gradient(180deg, rgba(255,255,255,.58) 0%, rgba(255,255,255,.18) 34%, rgba(255,255,255,0) 35%),
+    linear-gradient(180deg, color-mix(in srgb, var(--vf-button-bg) 92%, white) 0%, var(--vf-button-bg) 58%, color-mix(in srgb, var(--vf-button-bg) 86%, #b77735) 100%);
   color: var(--vf-button-fg);
   box-shadow:
-    0 5px 0 var(--vf-button-shadow),
-    0 9px 18px rgba(74,48,42,.14);
+    inset 0 2px 0 rgba(255,255,255,.72),
+    inset 0 -2px 0 rgba(74,48,42,.10),
+    0 6px 0 var(--vf-button-shadow),
+    0 11px 20px rgba(74,48,42,.16);
   cursor: pointer;
   font-family: var(--vf-font-ui);
   font-size: var(--vf-text-cta);
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: .01em;
+  letter-spacing: .005em;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
   text-align: center;
   text-decoration: none;
   text-transform: none;
@@ -120,6 +126,8 @@ button.vf-button:active:not(:disabled),
 button.vf-button.is-pressed {
   transform: translateY(4px) scale(.985);
   box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -1px 0 rgba(74,48,42,.12),
     0 1px 0 var(--vf-button-shadow),
     0 4px 8px rgba(74,48,42,.12);
 }
@@ -260,5 +268,66 @@ button.vf-button[aria-busy="true"] {
   button.vf-button:active:not(:disabled),
   button.vf-button.is-pressed {
     transform: none;
+  }
+}
+
+
+/* VF-01.1 Vietnamese typography stabilization.
+ * These live Foundation surfaces now share one glyph-complete stack so buttons,
+ * labels, inputs and placeholders do not jump between unrelated fallback fonts. */
+.mememe-lobby-069,
+.online-room-lobby,
+.mememe-setup-069,
+.mememe-rule-select-069 {
+  font-family: var(--vf-font-ui);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+.mememe-lobby-069 button,
+.mememe-lobby-069 input,
+.mememe-lobby-069 select,
+.mememe-lobby-069 label,
+.online-room-lobby button,
+.online-room-lobby input,
+.online-room-lobby label,
+.mememe-setup-069 button,
+.mememe-setup-069 input,
+.mememe-setup-069 label,
+.mememe-rule-select-069 button {
+  font-family: var(--vf-font-ui);
+}
+
+/* Placeholder copy is secondary metadata, not a headline. Keep Vietnamese
+ * fully visible instead of letting the 17px input weight crowd the field. */
+.mememe-lobby-069 input::placeholder {
+  color: #807872;
+  font-family: var(--vf-font-ui);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+  opacity: 1;
+}
+
+/* Slightly stronger primary identity so VF-02 reads as a deliberate art change
+ * before VF-03 panels arrive. */
+button.vf-button.vf-button--primary {
+  border-color: #55372f;
+  text-shadow: 0 1px 0 rgba(255,255,255,.38);
+}
+
+button.vf-button.vf-button--secondary {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.82) 0%, rgba(255,255,255,.28) 35%, rgba(255,255,255,0) 36%),
+    linear-gradient(180deg, #fffdf7 0%, #fff7ea 100%);
+}
+
+button.vf-button.vf-button--danger {
+  text-shadow: 0 1px 0 rgba(74,48,42,.22);
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .mememe-lobby-069 input::placeholder {
+    font-size: 13px;
   }
 }
