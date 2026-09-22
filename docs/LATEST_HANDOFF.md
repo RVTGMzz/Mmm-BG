@@ -118,6 +118,22 @@ The supplied casual-game references are directional moodboard material only. Do 
 
 This visual direction is subordinate to the canonical UI/UX runtime-safety contract and must preserve Host authority, deterministic RNG, reconnect ownership, CPU autoplay, modal ownership and mobile safe areas.
 
+## Active visual implementation plan
+
+Implementation document:
+`docs/VISUAL_FOUNDATION_PASS_0.1.md`
+
+Canonical rollout order:
+1. shared design tokens;
+2. button family;
+3. panel/modal shell;
+4. player HUD;
+5. one TIN TỨC canonical sample;
+6. one Job canonical sample;
+7. desktop + phone-landscape foundation review.
+
+Do not reskin the entire runtime in one pass. Components are built and validated first, then propagated.
+
 ## Runtime acceptance still pending
 
 Automated/live infrastructure proof is PASS.
