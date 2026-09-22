@@ -36,14 +36,33 @@ jobs:
 
       - name: Deploy mememe-online
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TOKEN_CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          TOKEN_CLOUDFLARE_WORKERS_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_TOKEN }}
+          TOKEN_CLOUDFLARE_TOKEN: ${{ secrets.CLOUDFLARE_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: 0fd870345f30d738da3d55ad72de39ce
         run: |
           set -euo pipefail
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "Missing repository secret CLOUDFLARE_API_TOKEN."
+
+          token=""
+          alias=""
+          for candidate in CLOUDFLARE_API_TOKEN CF_API_TOKEN CLOUDFLARE_WORKERS_TOKEN CLOUDFLARE_TOKEN; do
+            case "$candidate" in
+              CLOUDFLARE_API_TOKEN) value="${TOKEN_CLOUDFLARE_API_TOKEN:-}" ;;
+              CF_API_TOKEN) value="${TOKEN_CF_API_TOKEN:-}" ;;
+              CLOUDFLARE_WORKERS_TOKEN) value="${TOKEN_CLOUDFLARE_WORKERS_TOKEN:-}" ;;
+              CLOUDFLARE_TOKEN) value="${TOKEN_CLOUDFLARE_TOKEN:-}" ;;
+            esac
+            if [ -n "$value" ]; then token="$value"; alias="$candidate"; break; fi
+          done
+
+          if [ -z "$token" ]; then
+            echo "No Cloudflare deploy token found under the supported repository secret aliases."
             exit 2
           fi
+
+          echo "Using Cloudflare token alias: $alias"
+          export CLOUDFLARE_API_TOKEN="$token"
           npx wrangler deploy
 
       - name: Verify production health
