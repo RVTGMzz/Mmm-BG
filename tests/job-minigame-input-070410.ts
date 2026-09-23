@@ -31,4 +31,15 @@ assert.match(mini, /pad\.buttons\[15\]/);
 assert.match(mini, /pad\.buttons\[0\]/);
 assert.doesNotMatch(mini, /stake\.setText\(`THƯỞNG:/);
 
-console.log('[job-minigame-input-070410] PASS single Job card owner + nonblank detail healing + compact Mini Game intro + keyboard/gamepad choice navigation');
+// Regression: the Career Job Hub must accept the same Enter/Space input used
+// by other board screens. The prior A/B/C/Escape-only handler forced a mouse click.
+const picker = readFileSync('src/ui/JobChoicePicker.ts', 'utf8');
+assert.match(picker, /const submitRoll = \(\): void =>/);
+assert.match(picker, /rollHit\.on\('pointerdown', submitRoll\)/);
+assert.match(picker, /event\.code === 'Space'/);
+assert.match(picker, /key === 'enter'/);
+assert.match(picker, /!detailRoot\?\.active && rollHit\.input\?\.enabled/);
+assert.match(picker, /event\.preventDefault\(\);\s*submitRoll\(\)/);
+assert.match(picker, /if \(!canRoll \|\| submitted \|\| !root\.active \|\| !root\.visible/);
+
+console.log('[job-minigame-input-070410] PASS shared pointer/Enter/Space Job roll, spectator/detail guard + compact Mini Game controls');

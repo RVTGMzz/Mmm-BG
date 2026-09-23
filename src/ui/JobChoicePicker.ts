@@ -368,13 +368,16 @@ export function createJobRollPicker(
 
   if (canRoll) enableRoll();
 
-  rollHit.on('pointerdown', () => {
-    if (!canRoll || submitted || !root.active || detailRoot) return;
+  // Pointer and keyboard share one guarded action. The active Job Hub is
+  // the sole owner of the roll input; spectators and open details cannot roll.
+  const submitRoll = (): void => {
+    if (!canRoll || submitted || !root.active || !root.visible || detailRoot?.active || !rollHit.input?.enabled) return;
     submitted = true;
     sfxController.play('ui_confirm');
     setWaiting();
     resolveRoll();
-  });
+  };
+  rollHit.on('pointerdown', submitRoll);
   backdrop.on('pointerdown', () => undefined);
 
   const keyboardHandler = (event: KeyboardEvent): void => {
@@ -382,6 +385,13 @@ export function createJobRollPicker(
     const key = event.key.toLocaleLowerCase();
     if (key === 'escape') {
       closeDetail();
+      return;
+    }
+    if ((key === 'enter' || key === ' ' || event.code === 'Space') && !event.repeat) {
+      if (canRoll && !submitted && !detailRoot?.active && rollHit.input?.enabled) {
+        event.preventDefault();
+        submitRoll();
+      }
       return;
     }
     const index = key === 'a' || key === '1' ? 0 : key === 'b' || key === '2' ? 1 : key === 'c' || key === '3' ? 2 : -1;
