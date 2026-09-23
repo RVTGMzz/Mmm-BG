@@ -11,7 +11,8 @@ assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 assert.match(active, /canonicalJobBody070414/);
 assert.match(active, /if \(impact && copy\.includes\(impact\)\) copy = copy\.replace\(impact, ''\)\.trim\(\)/);
 assert.match(active, /canonicalJobBody070414/);
-assert.match(active, /fixedWidth: isResult \? 260 : 570/);
+assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
+assert.match(active, /fixedWidth: 540/);
 assert.match(active, /if \(seen\.has\(key\)\) return false/);
 
 // Card + News: inherited text is hidden, canonical copy is rebuilt inside fixed bounds.
@@ -31,4 +32,4 @@ assert.match(presentation, /const REACTION_BOTTOM_Y_070418 = 530/);
 assert.match(presentation, /const y = top \? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418/);
 assert.doesNotMatch(presentation, /const y = 195 \+ \(index % 3\) \* 112/);
 
-console.log('[presentation-layout-lock-070414] PASS Job column/dedupe + Card/News text rebuild + avatar-anchored reactions');
+console.log('[presentation-layout-lock-070414] PASS centered Job result/dedupe + Card/News text rebuild + avatar-anchored reactions');
