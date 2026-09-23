@@ -150,27 +150,23 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   private buildLapShuffleNode071(node: BoardNode): Phaser.GameObjects.Container {
     const container = this.add.container(node.x, node.y);
     const fill = this.lapShuffleNodeFill071(node);
-    const plate = this.add.graphics();
-    plate.fillStyle(0xfff8ea, 1);
-    plate.fillRoundedRect(-25, -19, 50, 38, 12);
-    plate.lineStyle(2, 0x4a302a, 0.98);
-    plate.strokeRoundedRect(-25, -19, 50, 38, 12);
 
-    const face = this.add.graphics();
-    face.fillStyle(fill, 1);
-    face.fillRoundedRect(-21, -15, 42, 30, 10);
-    face.lineStyle(1, 0xffffff, 0.46);
-    face.strokeRoundedRect(-20, -14, 40, 27, 9);
+    // Lap Shuffle changes CONTENT, not tile geometry. The previous renderer drew
+    // a rounded rectangle on top of the existing circular board node, which made
+    // every shuffled tile suddenly look like a square nested inside a circle.
+    // Repaint the whole node as the same circular tile silhouette instead.
+    const face = this.add.circle(0, 0, 34, fill, 1)
+      .setStrokeStyle(5, 0x4a302a, 1);
 
     const label = this.add.text(0, 0, this.lapShuffleNodeLabel071(node), {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '12px',
+      fontSize: '14px',
       fontStyle: 'bold',
       color: '#3f2b27',
       align: 'center',
     }).setOrigin(0.5);
 
-    container.add([plate, face, label]);
+    container.add([face, label]);
     return container;
   }
 
