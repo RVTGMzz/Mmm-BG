@@ -28,10 +28,12 @@ assert.match(active, /root\.add\(\[shadow, panel, kicker, title, impact, body, s
 assert.match(active, /const directMoneyTransfer/);
 assert.match(active, /model\.cardEffectType === 'steal_money'/);
 
-// Reaction label/body have deliberate vertical separation.
-assert.match(presentation, /const speaker = this\.scene\.add\.text\(textX, -45,[\s\S]*line\.speakerName/);
-assert.match(presentation, /const text = this\.scene\.add\.text\(textX, -11/);
-assert.match(presentation, /fixedWidth: 226/);
-assert.match(presentation, /setOrigin\(0, 0\)/);
+// Compact reaction label/body preserve separation inside a genuinely safe side rail.
+assert.match(presentation, /const speaker = this\.scene\.add\.text\(/);
+assert.match(presentation, /textX, -43/);
+assert.match(presentation, /const quote = this\.scene\.add\.text\(textX, -13/);
+assert.match(presentation, /fixedWidth: 144/);
+assert.match(presentation, /reactionPlacement070422\(/);
+assert.doesNotMatch(presentation, /fillRoundedRect\(-164, -62, 328/);
 
 console.log('[presentation-spacing-070415] PASS Job source/centered card + Card/News full rebuild + reaction spacing');
