@@ -4,6 +4,12 @@ import type { JobDefinition } from '../core/jobs';
 import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import { playerHudCareer065 } from '../ui/playerHud065';
+import {
+  compactHudCopyVf04,
+  compactHudPlayerNameVf04,
+  drawVisualFoundationHudVf04,
+  HUD_SKIN_VF04,
+} from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardScene064 } from './CareerMinigameBoardScene064';
 
 const JOBS = jobsJson as JobDefinition[];
@@ -94,9 +100,10 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
       // one-line metadata string.
       ui.meta
         .setPosition(-58, 13)
-        .setFontSize(9)
+        .setFontFamily(HUD_SKIN_VF04.fontFamily)
+        .setFontSize(12)
         .setLineSpacing(2)
-        .setFixedSize(184, 38)
+        .setFixedSize(182, 34)
         .setOrigin(0, 0);
     }
     this.redrawHudBackings065();
@@ -110,11 +117,20 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     for (const player of runtime.match.players) {
       const ui = runtime.hud.get(player.id);
       if (!ui) continue;
+      const active = player.id === current.id;
       const career = playerHudCareer065(player, JOBS);
-      const lock = player.cardBlockTurns > 0 ? ` • 🔒${player.cardBlockTurns}` : '';
-      ui.meta.setText(
-        `${career.line1} • 🃏${player.handCardIds.length}/3 • 🏁${player.lapsCompleted ?? 0}${lock}\n${career.line2}`,
-      );
+      const copy = compactHudCopyVf04(career, active, player.handCardIds.length, player.cardBlockTurns);
+      ui.name
+        .setText(compactHudPlayerNameVf04(player.id, player.name, active))
+        .setFontFamily(HUD_SKIN_VF04.fontFamily)
+        .setFontSize(active ? 17 : 16);
+      ui.money
+        .setFontFamily(HUD_SKIN_VF04.fontFamily)
+        .setFontSize(active ? 18 : 17);
+      ui.meta
+        .setFontFamily(HUD_SKIN_VF04.fontFamily)
+        .setFontSize(active ? 11 : 12)
+        .setText(copy.line2 ? `${copy.line1}\n${copy.line2}` : copy.line1);
     }
 
     this.redrawHudBackings065();
@@ -124,16 +140,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
     const runtime = this.runtime065();
     const currentId = runtime.currentPlayer()?.id;
     for (const [playerId, graphic] of this.hudBackings065) {
-      const active = playerId === currentId;
-      graphic.clear();
-      graphic.fillStyle(0xfffbf3, 0.96);
-      graphic.fillRoundedRect(-134, -52, 268, 104, 18);
-      graphic.lineStyle(
-        active ? 6 : 3,
-        active ? 0xffd34d : (PLAYER_COLORS_065[playerId] ?? 0x444444),
-        1,
-      );
-      graphic.strokeRoundedRect(-134, -52, 268, 104, 18);
+      drawVisualFoundationHudVf04(graphic, playerId, playerId === currentId);
     }
   }
 

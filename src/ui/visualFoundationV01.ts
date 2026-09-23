@@ -1,6 +1,6 @@
 export const VISUAL_FOUNDATION_V01 = Object.freeze({
   id: 'visual-foundation-0.1',
-  phases: ['VF-01', 'VF-02', 'VF-03'] as const,
+  phases: ['VF-01', 'VF-02', 'VF-03', 'VF-04'] as const,
   tokenPrefix: '--vf-',
   buttonClass: 'vf-button',
   panelClass: 'vf-panel',

@@ -1,6 +1,6 @@
 # Visual Foundation Pass 0.1
 
-Status: **IN PROGRESS — VF-01 + VF-02 + VF-03 FIRST MODAL IMPLEMENTED; DEVICE RETEST PENDING**
+Status: **IN PROGRESS — VF-01/02/03 IMPLEMENTED IN SOURCE + VF-04 FIRST PLAYER HUD SKIN; DEVICE RETEST PENDING**
 
 Canonical visual authority:
 - `docs/VISUAL_STYLE_BIBLE_V0.1.md`
@@ -482,6 +482,27 @@ News/Card reaction leak still needs independent runtime acceptance. VF-04 HUD,
 VF-05 News/Card and VF-06 Job samples are not yet migrated to Foundation.
 Desktop, real-phone-landscape and Steam Deck controller visual acceptance is
 required before declaring VF-03 complete.
+
+### VF-04 first live player HUD pass
+
+- `src/ui/visualFoundationHudVf04.ts`: one warm toy-like HUD graphic for all
+  four existing player seats, preserving original avatars, labels and authority.
+  Shares the exact 268×104 painted bounds with layout/clamp logic, rather than
+  leaving older code to assume the smaller 252×92 hitbox.
+- Idle: photo/avatar, P1–P4 identity, name, money and a single compact Job line.
+  Active: golden rim/turn marker, slightly stronger type, level, salary and
+  contextual 🃏 / 🔒 detail on the second line.
+- `CareerMinigameBoardScene065` reuses the same skin on all four HUDs.
+  `CareerMinigameBoardScene07044` clamps all four panels against actual
+  dimensions on both desktop and mobile, keeping the existing 1.18/0.96 mobile
+  scale and independent fixed screen-space HUD camera.
+- `tests/visual-foundation-hud-vf04.ts` checks geometry, long labels, idle/
+  active copy, the four canonical anchors and presentation-only source wiring.
+
+VF-04 is **SOURCE + CI GATE, RUNTIME RETEST REQUIRED**. Do not accept visual
+fit on Steam Deck/real phone before Ron views the four corners, longer names,
+active player switch, event modal, token badge and reaction lanes. VF-05 News
+and VF-06 Job are deliberately not reskinned in this pass.
 
 ## 13. Implementation order
 

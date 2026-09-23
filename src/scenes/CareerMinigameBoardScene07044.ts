@@ -9,6 +9,8 @@ import {
 } from '../core/lapShuffle071';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { reactionPlacement070422 } from '../ui/presentationLanes070422';
+import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
+import { canonicalHudPosition0561 } from '../ui/canonicalPresentation0561';
 import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import {
   MOBILE_UI_FONT_07044,
@@ -61,8 +63,8 @@ type Runtime07044 = {
  * and then shrinking it into ant-sized copy on a phone.
  */
 const HUD_SAFE_MARGIN_07046 = 12;
-const HUD_BASE_WIDTH_07046 = 252;
-const HUD_BASE_HEIGHT_07046 = 92;
+const HUD_BASE_WIDTH_07046 = HUD_SKIN_VF04.width;
+const HUD_BASE_HEIGHT_07046 = HUD_SKIN_VF04.height;
 const ACTIVE_HUD_SCALE_07046 = 1.18;
 const IDLE_HUD_SCALE_07046 = 0.96;
 const JOB_UI_FONT_070421 = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
@@ -108,6 +110,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
+    this.syncFoundationHudSafeAreaVf04();
   }
 
   update(): void {
@@ -117,6 +120,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.ensurePlayerTokenBadges070417();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
+    this.syncFoundationHudSafeAreaVf04();
     // Must be the final presentation pass. Later wrappers in the inheritance chain
     // may recreate loose narration after 0682's older modal-ownership guard.
     this.syncFinalModalOwnership070421();
@@ -987,6 +991,17 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.syncMobileLandscapeUi07044();
   }
 
+  private syncFoundationHudSafeAreaVf04(): void {
+    const runtime = this.runtime07044();
+    for (const player of runtime.match.players) {
+      const hud = runtime.hud.get(player.id);
+      if (!hud?.root.active) continue;
+      const anchor = canonicalHudPosition0561(player.id);
+      const safe = clampHudCenterVf04(anchor.x, anchor.y, hud.root.scaleX);
+      hud.root.setPosition(safe.x, safe.y);
+    }
+  }
+
   private syncMobileLandscapeUi07044(): void {
     const runtime = this.runtime07044();
     const currentId = runtime.currentPlayer()?.id;
@@ -1021,6 +1036,10 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
         .setFontFamily(MOBILE_UI_FONT_07044)
         .setFontSize(active ? 23 : 20)
         .setFixedSize(184, 27);
+      ui.meta
+        .setFontFamily(MOBILE_UI_FONT_07044)
+        .setFontSize(active ? 13 : 13)
+        .setFixedSize(182, 34);
 
       for (const child of ui.root.list) {
         if (!(child instanceof Phaser.GameObjects.Text)) continue;

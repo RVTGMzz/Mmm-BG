@@ -228,6 +228,8 @@ jobs:
         run: npm run test:presentation-owner-070422
       - name: Visual Foundation 0.1 VF-01/02/03 tokens buttons and first owned modal
         run: npm run test:visual-foundation-vf03
+      - name: Visual Foundation 0.1 VF-04 four-corner player HUD
+        run: npm run test:visual-foundation-hud-vf04
       - name: Roguelike Lap Shuffle 0.1 deterministic authority
         run: npm run test:roguelike-lap-shuffle-071
       - name: 0.1.70.3.1 mobile landscape and face style
