@@ -4,6 +4,7 @@ import type { MatchEvent } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
 import type { PresentationTimingPolicy } from './presentationFlowPolicy';
+import { reactionPlacement070422 } from './presentationLanes070422';
 import {
   buildPresentationModel,
   type PresentationEventModel,
@@ -13,10 +14,8 @@ import {
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
-// 0.1.70.4.18: keep reaction bubbles clear of the four corner HUD cards,
-// including the 1.18x active-player zoom used on compact landscape.
-const REACTION_TOP_Y_070418 = 190;
-const REACTION_BOTTOM_Y_070418 = 530;
+// 0.1.70.4.22: reaction geometry is owned by presentationLanes070422.
+// Do not put a 328px bubble in the ~240px side rail again.
 
 const KIND_PALETTE: Record<PresentationEventModel['kind'], { panel: number; accent: number; label: string }> = {
   dice_roll: { panel: 0x24211d, accent: 0xffd34d, label: 'DICE' },
@@ -322,7 +321,12 @@ export class MatchPresentationLayer {
     model.reactions.forEach((line, index) => {
       const reactionReveal = Math.min(2200, Math.max(500, line.text.length * 24));
       reactionEnd = Math.max(reactionEnd, 320 + line.delayMs + Math.max(line.durationMs, reactionReveal));
-      this.schedule(320 + line.delayMs, () => this.showReaction(line, index));
+      // An earlier card may have been skipped before this delayed callback runs.
+      // Old reactions must never appear over the next card/news event.
+      this.schedule(320 + line.delayMs, () => {
+        if (this.destroyed || this.currentModel !== model || !this.active?.active) return;
+        this.showReaction(model, line, index);
+      });
     });
 
     this.armTiming(model, Math.max(revealMs, reactionEnd));
@@ -544,53 +548,81 @@ export class MatchPresentationLayer {
     container.add([bg, text]);
   }
 
-  private showReaction(line: PresentationReactionLine, index: number): void {
-    if (this.destroyed || this.currentModel === undefined) return;
+  /**
+   * Only the current model may own reaction balloons. Reaction placement is
+   * centrally tested against the largest modal and active corner HUD bounds.
+   * If there is no safe rail, hide the balloon instead of floating over copy.
+   */
+  private showReaction(
+    model: PresentationEventModel,
+    line: PresentationReactionLine,
+    index: number,
+  ): void {
+    if (this.destroyed || this.currentModel !== model || !this.active?.active) return;
+    const placement = reactionPlacement070422(
+      line.speakerId,
+      index,
+      Number(this.scene.scale.gameSize.width) || 1280,
+      Number(this.scene.scale.gameSize.height) || 720,
+    );
+    if (!placement) return;
     sfxController.play('reaction');
 
-    const speakerId = line.speakerId;
-    const fallbackId = index % 4;
-    const anchorId = speakerId === undefined ? fallbackId : Math.max(0, Math.min(3, speakerId));
-    const left = anchorId === 0 || anchorId === 2;
-    const top = anchorId === 0 || anchorId === 1;
-    const x = left ? 188 : 1092;
-    const y = top ? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418;
-    const color = speakerId === undefined ? 0x746b61 : PLAYER_COLORS[speakerId % PLAYER_COLORS.length];
-    const bubble = this.scene.add.container(x, y).setDepth(910).setAlpha(0);
+    const { x, y, side } = placement;
+    const left = side === 'left';
+    const color = line.speakerId === undefined
+      ? 0x746b61
+      : PLAYER_COLORS[line.speakerId % PLAYER_COLORS.length];
+    const bubble = this.scene.add.container(x, y)
+      .setName('presentation-reaction-bubble-070422')
+      .setDepth(910)
+      .setAlpha(0);
     this.reactionObjects.add(bubble);
 
     const shadow = this.scene.add.graphics();
-    shadow.fillStyle(0x000000, 0.2);
-    shadow.fillRoundedRect(-164, -58, 328, 116, 18);
-    shadow.setPosition(0, 5);
+    shadow.fillStyle(0x000000, 0.17);
+    shadow.fillRoundedRect(-106, -54, 212, 116, 18);
     const bg = this.scene.add.graphics();
-    bg.fillStyle(0xfffbf3, 0.985);
-    bg.fillRoundedRect(-164, -62, 328, 116, 18);
+    bg.fillStyle(0xfffbf3, 0.99);
+    bg.fillRoundedRect(-106, -58, 212, 116, 18);
     bg.lineStyle(3, color, 0.88);
-    bg.strokeRoundedRect(-164, -62, 328, 116, 18);
+    bg.strokeRoundedRect(-106, -58, 212, 116, 18);
 
     const avatar = this.buildAvatar(line.speakerId, line.expression, color);
-    avatar.setPosition(left ? -132 : 132, -2);
-    avatar.setScale(0.9);
-    const textX = left ? -98 : -146;
-    const speaker = this.scene.add.text(textX, -45, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
-      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#4b4239',
+    avatar.setPosition(left ? -82 : 82, -2).setScale(0.78);
+    const textX = left ? -56 : -98;
+    const speaker = this.scene.add.text(
+      textX, -43, `${line.speakerName}  ${EXPRESSION_ICON[line.expression]}`, {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '12px',
+        fontStyle: 'bold',
+        color: '#4b4239',
+        fixedWidth: 144,
+      },
+    );
+    const quote = this.scene.add.text(textX, -13, '', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#201d1a',
+      wordWrap: { width: 144, useAdvancedWrap: true },
+      fixedWidth: 144,
+      fixedHeight: 62,
+      lineSpacing: 2,
+      maxLines: 3,
     });
-    const text = this.scene.add.text(textX, -11, '', {
-      fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#201d1a',
-      wordWrap: { width: 226, useAdvancedWrap: true }, fixedWidth: 226, fixedHeight: 54,
-      lineSpacing: 3, maxLines: 3,
-    }).setOrigin(0, 0);
-
-    bubble.add([shadow, bg, avatar, speaker, text]);
-    bubble.y += top ? -10 : 10;
-    this.revealText(text, line.text);
-    this.scene.tweens.add({ targets: bubble, y, alpha: 1, duration: 180, ease: 'Sine.easeOut' });
+    bubble.add([shadow, bg, avatar, speaker, quote]);
+    bubble.y += y < 360 ? -8 : 8;
+    this.revealText(quote, line.text);
+    this.scene.tweens.add({
+      targets: bubble, y, alpha: 1, duration: 180, ease: 'Sine.easeOut',
+    });
 
     this.schedule(Math.max(850, line.durationMs), () => {
-      if (!bubble.active) return;
+      if (this.destroyed || !bubble.active || this.currentModel !== model) return;
       this.scene.tweens.add({
-        targets: bubble, alpha: 0, y: y - 8, duration: 240, ease: 'Sine.easeIn',
+        targets: bubble, alpha: 0, y: y - 8, duration: 240,
+        ease: 'Sine.easeIn',
         onComplete: () => {
           this.reactionObjects.delete(bubble);
           bubble.destroy();
