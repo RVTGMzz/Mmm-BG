@@ -10,6 +10,8 @@ import {
 type Direction070424 = 'up' | 'down' | 'left' | 'right';
 type Focusable070424 = Phaser.GameObjects.GameObject & {
   input?: Phaser.Types.Input.InteractiveObject | null;
+  active: boolean;
+  visible: boolean;
   parentContainer?: Phaser.GameObjects.Container | null;
   x?: number; y?: number; depth?: number;
   getBounds?: () => Phaser.Geom.Rectangle;
@@ -28,6 +30,10 @@ type SceneRuntime070424 = Phaser.Scene & {
   match?: { turn: { phase: string } };
   cardPickerOpen?: boolean;
   guideObjects?: Phaser.GameObjects.GameObject[];
+  shell?: { status: 'waiting' | 'active' | 'ended' };
+  shellOverlay?: Phaser.GameObjects.GameObject[];
+  finalResultBlocker?: Phaser.GameObjects.Rectangle;
+  podiumRevealBlocker?: Phaser.GameObjects.Rectangle;
 };
 const PAD_EVENT_070424 = 'mememe-gamepad-action-070424';
 export { PAD_EVENT_070424 };
@@ -175,7 +181,7 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
   let connectedPad = -1;
   let state: PadEdgeState070424 = EMPTY_PAD_STATE_070424;
   let currentScene: Phaser.Scene | undefined;
-  let phaserScope: Phaser.GameObjects.Container | undefined;
+  let phaserScope: Phaser.GameObjects.Container | Phaser.Scene | undefined;
   let phaserFocused: Focusable070424 | undefined;
   let focusRing: Phaser.GameObjects.Graphics | undefined;
   let domScope: HTMLElement | undefined;
@@ -201,7 +207,7 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
   };
   const setPhaser = (
     scene: Phaser.Scene,
-    scope: Phaser.GameObjects.Container,
+    scope: Phaser.GameObjects.Container | Phaser.Scene,
     target: Focusable070424 | undefined,
   ): void => {
     if (phaserFocused === target && phaserScope === scope) return;
@@ -301,7 +307,7 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
       // must not fabricate a gameplay decision just to satisfy the B button.
       if (root.name === 'card-hand-picker-modal' || root.name === 'tactical-choice-modal') {
         const cancel = root.list.filter((item): item is Focusable070424 =>
-          item.input?.enabled && item.listenerCount('pointerdown') > 0).at(-1);
+          Boolean(item.input?.enabled) && item.listenerCount('pointerdown') > 0).at(-1);
         cancel?.emit('pointerdown');
         clearPhaser();
       }
@@ -333,23 +339,21 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
       return;
     }
 
+    const minigame = scene.children.list.some((o) =>
+      o instanceof Phaser.GameObjects.Container && o.active && o.visible && o.name === 'minigame-modal');
+    if (minigame) {
+      clearPhaser(); clearDom();
+      // Mini Game uses its own exclusive poll. Never double-confirm its A press.
+      return;
+    }
+
     const jobModal = scene.children.list.find((o): o is Phaser.GameObjects.Container =>
       o instanceof Phaser.GameObjects.Container && o.active && o.visible
       && o.name === 'job-hub-modal');
     if (jobModal) {
       clearPhaser(); clearDom();
-      // The Job Hub has a visible default ROLL focus, full spatial traversal,
-      // spectator permissions, and detail dismiss via a single guarded owner.
+      // Job Hub owns default dice focus, spectator permissions and details.
       scene.events.emit(PAD_EVENT_070424, action);
-      return;
-    }
-
-    const minigame = scene.children.list.some((o) =>
-      o instanceof Phaser.GameObjects.Container && o.active && o.visible && o.name === 'minigame-modal');
-    if (minigame) {
-      clearPhaser(); clearDom();
-      // The Mini Game already polls gamepads for D-pad, stick and A. Never
-      // double-confirm a choice by injecting a second synthetic click.
       return;
     }
 
@@ -397,6 +401,35 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
       return;
     }
 
+    // The final podium is a separate, input-gated UI. No synthetic event may
+    // bypass the reveal blocker or let a Steam Deck rematch before the result
+    // has finished animating. A defaults to CHƠI LẠI when the HOST owns it.
+    if (runtime.shell?.status === 'ended') {
+      if (runtime.finalResultBlocker?.active || runtime.podiumRevealBlocker?.active) {
+        clearPhaser();
+        return;
+      }
+      const buttons = (runtime.shellOverlay ?? []).filter((o): o is Focusable070424 =>
+        visible070424(o) && Boolean(o.input?.enabled) && o.listenerCount('pointerdown') > 0);
+      if (!buttons.length) { clearPhaser(); return; }
+      if (phaserScope !== scene || !phaserFocused || !buttons.includes(phaserFocused)) {
+        clearPhaser();
+        setPhaser(scene, scene, buttons[0]);
+      }
+      if (action === 'confirm') {
+        phaserFocused?.emit('pointerdown');
+        clearPhaser();
+      } else if (action === 'left' || action === 'right' || action === 'up' || action === 'down') {
+        const next = nextSpatialIndex070424(
+          buttons.indexOf(phaserFocused!),
+          buttons.map(uiPoint070424),
+          action,
+        );
+        setPhaser(scene, scene, buttons[next]);
+      }
+      return;
+    }
+
     // Active board: default A always targets the authoritative movement D6.
     // X toggles overview, Y uses a card only on a permitted human PRE_ROLL turn.
     if (scene.scene.key === 'CareerMinigameBoardScene'
@@ -426,19 +459,28 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
       return;
     }
 
-    // Other small scene UI: spatial focus over the interactive controls.
+    // Other Phaser scenes with small sets of interactive buttons.
     const buttons = scene.children.list
       .filter((o): o is Focusable070424 => visible070424(o)
         && Boolean(o.input?.enabled) && o.listenerCount('pointerdown') > 0
         && !(o instanceof Phaser.GameObjects.Rectangle && o.width >= 1100));
     if (buttons.length === 0) { clearPhaser(); return; }
-    const virtual = scene.add.container(0, 0).setDepth(1300).setName('steam-deck-scene-buttons-070424');
-    // No scene object is reparented. This temporary scope is immediately
-    // destroyed after the dispatch and the persistent focus uses scene buttons.
-    virtual.destroy();
-    if (action === 'confirm') {
-      (phaserFocused && buttons.includes(phaserFocused) ? phaserFocused : buttons[0])?.emit('pointerdown');
+    if (phaserScope !== scene || !phaserFocused || !buttons.includes(phaserFocused)) {
+      clearPhaser();
+      setPhaser(scene, scene, buttons[0]);
     }
+    if (action === 'confirm') {
+      phaserFocused?.emit('pointerdown');
+      clearPhaser();
+    } else if (action === 'left' || action === 'right' || action === 'up' || action === 'down') {
+      const next = nextSpatialIndex070424(
+        buttons.indexOf(phaserFocused!),
+        buttons.map(uiPoint070424),
+        action,
+      );
+      setPhaser(scene, scene, buttons[next]);
+    }
+
   };
 
   const tick = (): void => {
