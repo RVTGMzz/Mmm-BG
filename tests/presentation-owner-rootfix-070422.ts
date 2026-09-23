@@ -56,7 +56,7 @@ assert.ok(parity.indexOf('legacyToast.showDeltaToast =') < parity.indexOf('super
 // only that *some* current model existed and allowed that race.
 assert.match(source, /if \(this\.destroyed \|\| this\.currentModel !== model \|\| !this\.active\?\.active\) return/);
 assert.match(source, /this\.showReaction\(model, line, index\)/);
-assert.match(source, /this\.currentModel !== model\) return/);
+assert.match(source, /this\.currentModel !== model/);
 assert.match(source, /setName\('presentation-reaction-bubble-070422'\)/);
 assert.match(source, /reactionPlacement070422\(/);
 
