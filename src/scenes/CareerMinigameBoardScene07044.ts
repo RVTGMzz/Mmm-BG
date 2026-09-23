@@ -10,6 +10,7 @@ import {
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { reactionPlacement070422 } from '../ui/presentationLanes070422';
 import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
+import { NEWS_SHEET_VF05, paintVisualFoundationNewsVf05 } from '../ui/visualFoundationNewsVf05';
 import { canonicalHudPosition0561 } from '../ui/canonicalPresentation0561';
 import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import {
@@ -490,23 +491,28 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const panelColor = isNews ? 0x173c31 : 0x2d203f;
 
     const shadow = this.add.graphics();
-    shadow.fillStyle(0x000000, 0.28);
-    shadow.fillRoundedRect(-366, -145, 732, 306, 24);
-    shadow.setPosition(0, 9);
-
     const panel = this.add.graphics();
-    panel.fillStyle(panelColor, 0.985);
-    panel.fillRoundedRect(-360, -150, 720, 300, 22);
-    panel.lineStyle(3, accent, 0.92);
-    panel.strokeRoundedRect(-360, -150, 720, 300, 22);
-    panel.fillStyle(accent, 1);
-    panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
+    if (isNews) {
+      // VF-05 first sample: restyle only INSIDE the .22 canonical modal owner.
+      // Keep the same exact 720x300 bounds and current reaction/CTA lifecycle.
+      paintVisualFoundationNewsVf05(shadow, panel);
+    } else {
+      shadow.fillStyle(0x000000, 0.28);
+      shadow.fillRoundedRect(-366, -145, 732, 306, 24);
+      shadow.setPosition(0, 9);
+      panel.fillStyle(panelColor, 0.985);
+      panel.fillRoundedRect(-360, -150, 720, 300, 22);
+      panel.lineStyle(3, accent, 0.92);
+      panel.strokeRoundedRect(-360, -150, 720, 300, 22);
+      panel.fillStyle(accent, 1);
+      panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
+    }
 
     const kicker = this.add.text(-322, -118, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '12px',
+      fontSize: isNews ? '14px' : '12px',
       fontStyle: 'bold',
-      color: '#f8f4ec',
+      color: isNews ? '#31543c' : '#f8f4ec',
       fixedWidth: 500,
     });
 
@@ -514,22 +520,22 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '30px',
       fontStyle: 'bold',
-      color: '#ffffff',
+      color: isNews ? '#3f2b27' : '#ffffff',
       fixedWidth: 540,
       wordWrap: { width: 540, useAdvancedWrap: true },
     });
 
     const impact = this.add.text(314, -108, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '19px',
-      color: '#ffffff',
+      fontSize: isNews ? '26px' : '19px',
+      color: isNews ? '#3f2b27' : '#ffffff',
     }).setOrigin(1, 0);
 
     const bodyCopy = this.canonicalCinematicBody070414(model);
     const body = this.add.text(-322, -24, bodyCopy, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '16px',
-      color: '#f4ede4',
+      fontSize: isNews ? '18px' : '16px',
+      color: isNews ? '#59463d' : '#f4ede4',
       fixedWidth: 628,
       wordWrap: { width: 628, useAdvancedWrap: true },
       lineSpacing: 5,
@@ -537,13 +543,18 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const bodyHeight070418 = model.targetId === undefined ? 138 : 116;
     this.fitWrappedText070418(title, 540, 54, 30, 24, 2);
-    this.fitWrappedText070418(body, 628, bodyHeight070418, 16, 12, 5);
+    if (isNews) this.fitWrappedText070418(body, NEWS_SHEET_VF05.bodyWidth, bodyHeight070418, 18, 14, 5);
+    else this.fitWrappedText070418(body, 628, bodyHeight070418, 16, 12, 5);
 
-    const source = this.add.text(316, 126, `${isNews ? 'CITY NEWS' : 'CARD ACTION'} • #${model.eventSeq}`, {
-      fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '9px',
-      color: '#d8d0c6',
-    }).setOrigin(1, 0.5);
+    const source = this.add.text(
+      316, 126,
+      isNews ? '' : `CARD ACTION • #${model.eventSeq}`,
+      {
+        fontFamily: MOBILE_UI_FONT_07044,
+        fontSize: '9px',
+        color: '#d8d0c6',
+      },
+    ).setOrigin(1, 0.5);
 
     root.add([shadow, panel, kicker, title, impact, body, source]);
 

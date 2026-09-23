@@ -115,6 +115,7 @@ assert.match(bible, /VISUAL_FOUNDATION_PASS_0\.1\.md/);
 assert.match(plan, /VF-01/);
 assert.match(plan, /VF-02/);
 assert.match(plan, /VF-04 first live player HUD pass/);
+assert.match(plan, /VF-05 first canonical TIN TỨC visual sample/);
 assert.match(plan, /Component first, screen second/);
 
 console.log('[visual-foundation-v01] PASS VF-01 tokens + VF-02 reusable button family + live adoption');

@@ -6,6 +6,7 @@ import {
   clampHudCenterVf04,
   HUD_SKIN_VF04,
   HUD_PLAYER_ACCENTS_VF04,
+  hudFramePaletteVf041,
 } from '../src/ui/visualFoundationHudVf04';
 import { CANONICAL_HUD_POSITIONS_0561 } from '../src/ui/canonicalPresentation0561';
 import { playerHudCareer065 } from '../src/ui/playerHud065';
@@ -35,6 +36,18 @@ assert.match(compactHudPlayerNameVf04(3, 'Linh', true), /^▶ P4 • Linh$/);
 assert.equal(HUD_SKIN_VF04.width, 268);
 assert.equal(HUD_SKIN_VF04.height, 104);
 assert.equal(HUD_PLAYER_ACCENTS_VF04.length, 4);
+for (let playerId = 0; playerId < 4; playerId += 1) {
+  const idle = hudFramePaletteVf041(playerId, false);
+  const active = hudFramePaletteVf041(playerId, true);
+  assert.equal(idle.outer, HUD_PLAYER_ACCENTS_VF04[playerId]);
+  assert.equal(active.outer, HUD_SKIN_VF04.turnGold, `P${playerId + 1} active gets outer gold`);
+  assert.equal(active.inner, HUD_PLAYER_ACCENTS_VF04[playerId], `P${playerId + 1} retains inner identity`);
+  assert.equal(idle.showTurnMarker, false);
+  assert.equal(active.showTurnMarker, true);
+}
+assert.equal(HUD_SKIN_VF04.identityRingInset - HUD_SKIN_VF04.activeRingInset -
+  (HUD_SKIN_VF04.activeRingWidth + HUD_SKIN_VF04.identityRingWidth) / 2, 4,
+  'cream gutter between gold and player-colour rings must stay visible');
 
 for (const scale of [0.94, 0.96, 1, 1.18]) {
   for (const point of CANONICAL_HUD_POSITIONS_0561) {
@@ -50,7 +63,9 @@ const scene65 = readFileSync('src/scenes/CareerMinigameBoardScene065.ts', 'utf8'
 const scene44 = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const helper = readFileSync('src/ui/visualFoundationHudVf04.ts', 'utf8');
 const main = readFileSync('src/main.ts', 'utf8');
-assert.match(scene65, /drawVisualFoundationHudVf04\(graphic, playerId, playerId === currentId\)/);
+assert.match(scene65, /drawVisualFoundationHudVf04\(/);
+assert.match(scene65, /turnEntryVf041/);
+assert.match(scene65, /duration: 220/);
 assert.match(scene65, /compactHudCopyVf04\(career, active/);
 assert.match(scene65, /compactHudPlayerNameVf04\(player.id, player.name, active\)/);
 assert.match(scene44, /this\.syncFoundationHudSafeAreaVf04\(\)/);
@@ -61,5 +76,9 @@ assert.match(scene44, /ACTIVE_HUD_SCALE_07046 = 1\.18/);
 assert.match(main, /CareerMinigameBoardScene07044 as ActiveBoardScene/);
 assert.match(helper, /fillRoundedRect/);
 assert.match(helper, /strokeRoundedRect/);
+assert.match(helper, /if \(active\)/);
+assert.match(helper, /c.identityRingInset/);
+assert.match(helper, /palette.inner/);
+assert.match(helper, /palette.showTurnMarker/);
 assert.doesNotMatch(helper, /Math\.random|submitIntent\s*\(|MatchState|browserSession/);
 console.log('[visual-foundation-hud-vf04] PASS four-corner painted-bounds clamp + idle/active HUD + preserved authority');

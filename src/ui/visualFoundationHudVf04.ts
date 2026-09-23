@@ -12,9 +12,26 @@ export const HUD_SKIN_VF04 = Object.freeze({
   activeScaleMobile: 1.18,
   idleScaleMobile: 0.96,
   fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
+  activeRingInset: 2,
+  identityRingInset: 9,
+  turnGold: 0xffd86b,
+  activeRingWidth: 4,
+  identityRingWidth: 2,
 });
 
 export const HUD_PLAYER_ACCENTS_VF04 = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b] as const;
+
+/** Colour is player identity. Gold is transient turn state, never a replacement identity. */
+export function hudFramePaletteVf041(playerId: number, active: boolean): {
+  identity: number;
+  outer: number;
+  inner: number;
+  showTurnMarker: boolean;
+} {
+  const identity = HUD_PLAYER_ACCENTS_VF04[playerId] ?? 0x765047;
+  return { identity, outer: active ? HUD_SKIN_VF04.turnGold : identity,
+    inner: identity, showTurnMarker: active };
+}
 
 export interface HudCareerCopyVf04 {
   employed: boolean;
@@ -79,25 +96,45 @@ export function drawVisualFoundationHudVf04(
   graphics: Phaser.GameObjects.Graphics,
   playerId: number,
   active: boolean,
+  turnEntryStrength = 0,
 ): void {
   const c = HUD_SKIN_VF04;
-  const accent = HUD_PLAYER_ACCENTS_VF04[playerId] ?? 0x765047;
+  const palette = hudFramePaletteVf041(playerId, active);
+  const accent = palette.identity;
   const halfW = c.width / 2;
   const halfH = c.height / 2;
-  const stroke = active ? 5 : 3;
   graphics.clear();
 
-  // Single soft cast shadow and a subtle upper edge, no competing outer rings.
-  graphics.fillStyle(0x4a302a, active ? 0.20 : 0.11);
-  graphics.fillRoundedRect(-halfW + 3, -halfH + 6, c.width - 6, c.height - 3, c.radius);
+  // Soft shadow stays *inside* measured 268x104 art bounds.
+  graphics.fillStyle(0x4a302a, active ? 0.17 : 0.10);
+  graphics.fillRoundedRect(-halfW + 4, -halfH + 6, c.width - 8, c.height - 9, c.radius);
   graphics.fillStyle(0xfffaf1, active ? 1 : 0.96);
   graphics.fillRoundedRect(-halfW, -halfH, c.width, c.height, c.radius);
-  graphics.fillStyle(0xffffff, active ? 0.64 : 0.45);
+  graphics.fillStyle(0xffffff, active ? 0.60 : 0.42);
   graphics.fillRoundedRect(-halfW + 8, -halfH + 7, c.width - 16, 25, 14);
   graphics.fillStyle(accent, active ? 1 : 0.86);
   graphics.fillRoundedRect(-halfW + 11, -halfH + 6, c.width - 22, 5, 3);
-  graphics.lineStyle(stroke, active ? 0xffd86b : accent, 1);
-  graphics.strokeRoundedRect(-halfW, -halfH, c.width, c.height, c.radius);
+
+  if (active) {
+    // Two distinct jobs: gold OUTER turn indicator, coloured INNER seat identity.
+    // Separated by a real cream gutter, never a stacked five-pixel gold/blue band.
+    const outer = c.activeRingInset;
+    const inner = c.identityRingInset;
+    graphics.lineStyle(c.activeRingWidth, palette.outer, 0.96);
+    graphics.strokeRoundedRect(
+      -halfW + outer, -halfH + outer, c.width - outer * 2, c.height - outer * 2, c.radius - outer,
+    );
+    graphics.lineStyle(c.identityRingWidth, palette.inner, 0.94);
+    graphics.strokeRoundedRect(
+      -halfW + inner, -halfH + inner, c.width - inner * 2, c.height - inner * 2, c.radius - inner,
+    );
+  } else {
+    const rim = c.activeRingInset + 1;
+    graphics.lineStyle(3, palette.outer, 0.86);
+    graphics.strokeRoundedRect(
+      -halfW + rim, -halfH + rim, c.width - rim * 2, c.height - rim * 2, c.radius - rim,
+    );
+  }
 
   // Sticker frame remains behind the original user photo/avatar, not over it.
   graphics.fillStyle(0x4a302a, 0.16);
@@ -108,10 +145,12 @@ export function drawVisualFoundationHudVf04(
   graphics.strokeRoundedRect(-130, -35, c.avatarFrameWidth, c.avatarFrameHeight, 18);
 
   // Shape + label (▶ in player name) communicates the current player beyond colour.
-  if (active) {
-    graphics.fillStyle(0xffd86b, 1);
-    graphics.fillCircle(116, -38, 6);
+  if (palette.showTurnMarker) {
+    const pop = Math.max(0, Math.min(1, turnEntryStrength));
+    const markerRadius = 6 + 2 * pop;
+    graphics.fillStyle(c.turnGold, 1);
+    graphics.fillCircle(116, -38, markerRadius);
     graphics.lineStyle(2, 0x4a302a, 0.95);
-    graphics.strokeCircle(116, -38, 6);
+    graphics.strokeCircle(116, -38, markerRadius);
   }
 }

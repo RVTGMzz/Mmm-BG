@@ -1,6 +1,6 @@
 # Visual Foundation Pass 0.1
 
-Status: **IN PROGRESS — VF-01/02/03 IMPLEMENTED IN SOURCE + VF-04 FIRST PLAYER HUD SKIN; DEVICE RETEST PENDING**
+Status: **IN PROGRESS — VF-01/02/03 LIVE, VF-04.1 RING POLISH AND VF-05 FIRST NEWS SHEET IN SOURCE; DEVICE RETEST PENDING**
 
 Canonical visual authority:
 - `docs/VISUAL_STYLE_BIBLE_V0.1.md`
@@ -483,6 +483,10 @@ VF-05 News/Card and VF-06 Job samples are not yet migrated to Foundation.
 Desktop, real-phone-landscape and Steam Deck controller visual acceptance is
 required before declaring VF-03 complete.
 
+### VF-04.1 active-turn ring polish
+
+Ron confirmed the gold outer HUD border is **intentional active-turn UI**, not a wrong seat colour. Keep it for whichever P1–P4 currently owns the turn. VF-04.1 distinguishes outer turn gold from the inner player-colour identity outline with a 4px cream gutter. The avatar and upper identity stripe remain the corresponding seat colour; yellow never overrides their identity. On an authoritative turn change, only the small gold turn marker briefly pops (220ms). HUD position/scale remain under the established safe-area and mobile controllers. `hudFramePaletteVf041()` and `tests/visual-foundation-hud-vf04.ts` enforce all four seats, both states and the ring gap. Physical screenshots still required to accept visual taste.
+
 ### VF-04 first live player HUD pass
 
 - `src/ui/visualFoundationHudVf04.ts`: one warm toy-like HUD graphic for all
@@ -503,6 +507,30 @@ VF-04 is **SOURCE + CI GATE, RUNTIME RETEST REQUIRED**. Do not accept visual
 fit on Steam Deck/real phone before Ron views the four corners, longer names,
 active player switch, event modal, token badge and reaction lanes. VF-05 News
 and VF-06 Job are deliberately not reskinned in this pass.
+
+### VF-05 first canonical TIN TỨC visual sample
+
+- `src/ui/visualFoundationNewsVf05.ts`: reusable warm-cream event material with
+  mint ribbon, cocoa frame, sticker icon well and a separate paper-like reading
+  region. The 720x300 material is deliberately painted **inside the original
+  .22 presentation root**, with the same exact event geometry.
+- Active scene `CareerMinigameBoardScene07044` adopts this material only for
+  `model.kind === 'news'`. Card variants retain their existing dark visual
+  until News is reviewed by Ron; no global style swap.
+- VF-05 sample uses 30px dark cocoa headlines, 18px body where copy fits,
+  reducing to 14px only for long content, and removes unnecessary technical
+  footer text from News. It does **not** introduce a new owner, independent
+  toast, reaction position or input handler.
+- `tests/visual-foundation-news-vf05.ts` checks the painted bounds against the
+  existing .22 reaction/HUD safe lanes and verifies use of the established
+  `fitWrappedText070418` and canonical-only News sample. All old .22 owner
+  regressions must still pass.
+
+**Device acceptance pending:** Ron to inspect short/long News, all P1-P4
+reactions, repeated skip and phone landscape. This does not claim the previous
+floating-reaction issue is resolved in a real browser, nor does it migrate
+the entire Card catalogue. Next, only after visual feedback, adapt the
+shared News material into the other event families and VF-06 Job.
 
 ## 13. Implementation order
 

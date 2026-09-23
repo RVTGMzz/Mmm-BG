@@ -55,6 +55,8 @@ type RoundedTextHandle065 = {
 export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   private readonly hudBackings065 = new Map<number, Phaser.GameObjects.Graphics>();
   private readonly hudBorders065 = new Set<Phaser.GameObjects.Rectangle>();
+  private lastTurnPlayerIdVf041?: number;
+  private readonly turnEntryVf041 = { playerId: -1, strength: 0 };
   private readonly roundedRects065 = new Map<Phaser.GameObjects.Rectangle, RoundedRectHandle065>();
   private readonly roundedTexts065 = new Map<Phaser.GameObjects.Text, RoundedTextHandle065>();
 
@@ -69,6 +71,10 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
       this.destroyRoundedProxies065();
       this.hudBackings065.clear();
       this.hudBorders065.clear();
+      this.tweens.killTweensOf(this.turnEntryVf041);
+      this.lastTurnPlayerIdVf041 = undefined;
+      this.turnEntryVf041.playerId = -1;
+      this.turnEntryVf041.strength = 0;
     });
   }
 
@@ -139,8 +145,27 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   private redrawHudBackings065(): void {
     const runtime = this.runtime065();
     const currentId = runtime.currentPlayer()?.id;
+    if (currentId !== this.lastTurnPlayerIdVf041) {
+      // A short marker pop only when authority changes seats. Never tween HUD
+      // position/scale: the existing viewport clamp and mobile camera own those.
+      this.tweens.killTweensOf(this.turnEntryVf041);
+      this.turnEntryVf041.playerId = currentId ?? -1;
+      this.turnEntryVf041.strength = this.lastTurnPlayerIdVf041 === undefined ? 0 : 1;
+      if (this.turnEntryVf041.strength > 0) {
+        this.tweens.add({
+          targets: this.turnEntryVf041,
+          strength: 0,
+          duration: 220,
+          ease: 'Sine.easeOut',
+        });
+      }
+      this.lastTurnPlayerIdVf041 = currentId;
+    }
     for (const [playerId, graphic] of this.hudBackings065) {
-      drawVisualFoundationHudVf04(graphic, playerId, playerId === currentId);
+      drawVisualFoundationHudVf04(
+        graphic, playerId, playerId === currentId,
+        this.turnEntryVf041.playerId === playerId ? this.turnEntryVf041.strength : 0,
+      );
     }
   }
 
