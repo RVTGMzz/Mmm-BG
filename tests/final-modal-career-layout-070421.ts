@@ -5,8 +5,8 @@ import { MEMEME_BUILD } from '../src/buildInfo';
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const picker = readFileSync('src/ui/JobChoicePicker.ts', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.21');
-assert.match(MEMEME_BUILD.phase, /FINAL MODAL OWNERSHIP \+ CAREER LAYOUT/);
+// This is a retained .21 Job-layout regression, not a freeze on future UI patch IDs.
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 // Final active scene, not an old inherited wrapper, owns the last visible frame.
 assert.match(active, /hiddenFinalModalText070421/);
@@ -18,7 +18,7 @@ assert.match(
 assert.match(active, /findNamedTopLevelContainer070421\('job-detail-modal'\)/);
 assert.match(active, /findNamedTopLevelContainer070421\('job-hub-modal'\)/);
 assert.match(active, /canonical\.has\(object\) \|\| protectedObjects\.has\(object\)/);
-assert.match(active, /root\.depth !== 910/);
+assert.match(active, /root\.name !== 'presentation-reaction-bubble-070422'/);
 assert.match(active, /restoreFinalModalText070421/);
 
 // Job result is a compact centered career card instead of split left/right copy.
