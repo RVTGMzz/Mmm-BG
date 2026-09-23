@@ -11,7 +11,7 @@ Read first:
 6. `src/scenes/PresentationParityBoardScene.ts`
 7. `src/scenes/CareerMinigameBoardScene07044.ts`
 8. `tests/presentation-owner-rootfix-070422.ts`
-9. `src/ui/JobChoicePicker.ts`
+9. `src/ui/JobChoicePicker.ts` and `src/ui/jobHubFocus070423.ts`
 10. `tests/job-minigame-input-070410.ts`
 11. `src/ui/MiniGameOverlay.ts` and `src/ui/miniGameLayout070423.ts`
 12. `tests/job-minigame-depth-059.ts` and `tests/roguelike-lap-shuffle-071.ts`
@@ -21,7 +21,7 @@ Current checkpoint:
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
 Current validated source HEAD:
-`e1a965e2869d29461c834d1f07255bd3498ec5a3`
+`a91fbb10ffaaa9710393f541e6b1017b0459ec01`
 
 Important:
 - recurring overlay bug was traced to duplicate visual producers + horizontally unsafe reaction geometry + stale reaction timers + permissive final whitelisting;
@@ -46,5 +46,7 @@ Newest follow-up:
 - visual acceptance remains open for the broader Job layout and border-naturalness feedback.
 
 Latest CI #3214 SUCCESS, mirror `a24b90417b018198651f61bb0e1e8d75fb36412b`, Pages #18 SUCCESS. Four runtime screenshot issues to verify in next session: (1) RPS duel labels/result and HUD layer, (2) Job Hub Enter/Space dice (already shipped with CI #3213), (3) arbitrary News/Card detached text/reactions (source .22, browser proof still required), (4) post-Lap Shuffle double rings (new .23 in-place canonical circle update). Never confuse CI PASS with runtime acceptance.
+
+Latest Job Hub keyboard-only milestone: `a91fbb10ffaaa9710393f541e6b1017b0459ec01`, CI #3215 SUCCESS, compiled mirror `636c4662b72c8adecae7f5d26f7b0421fe99a7a2`, Pages #19 SUCCESS. Visible keyboard focus starts on the dice, arrow keys/Tab move between offered jobs and dice, Enter/Space opens detail or rolls according to focus, detail can be closed without mouse. Runtime acceptance still required for complete mouse-free flow.
 
 At session start, first verify the latest GitHub Actions result for the current branch HEAD, then continue from Ron's newest runtime feedback.

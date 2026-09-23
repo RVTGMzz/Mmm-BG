@@ -4,6 +4,19 @@ Repository: `RVTGMzz/Mmm-BG`
 Branch: `mmm-mvp-0.1-core`  
 PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
+## September 23 keyboard-only Job Hub acceptance
+
+Ron clarified the requirement: *no mouse is needed to finish Job selection*, not merely an extra Enter/Space shortcut. The default **visible keyboard focus is the DICE button**, so Enter/Space immediately requests the authoritative Job D6. Arrow keys and Tab/Shift+Tab move the visible in-game focus between the three offered Job cards and the dice; Enter/Space on a card opens full details, and Enter/Space/Escape/Backspace on details closes them and restores card focus. Arrow Down from any card returns directly to dice. A/B/C and 1/2/3 remain quick shortcuts to the card details. Pointer input still works. Spectators may inspect details but cannot focus/activate the dice.
+
+Source: `src/ui/JobChoicePicker.ts`, pure navigation policy `src/ui/jobHubFocus070423.ts`, regression `tests/job-minigame-input-070410.ts`.
+
+- Source commit: `a91fbb10ffaaa9710393f541e6b1017b0459ec01`.
+- MMM MVP CI **#3215** (run `35840449469`): **SUCCESS**.
+- Public compiled mirror: `636c4662b72c8adecae7f5d26f7b0421fe99a7a2`.
+- Pages **#19** (run `35840548534`): **SUCCESS**.
+- **Runtime human acceptance still required**: without touching the mouse, open Job Hub, press Enter for the default dice; on a separate fresh Job Hub use Up to highlight B, Left/Right to browse A/B/C, Enter to open detail, Escape or Enter to close it, Down to return to dice, then Enter to roll. Also check Tab, Shift+Tab, Space, spectator state and mouse fallback.
+- Preserve the original Host-owned Job D6, CPU autoplay and online ownership. PR #1 stays Draft/Open.
+
 ## September 23 newest validated visual checkpoint
 
 - source: `e1a965e2869d29461c834d1f07255bd3498ec5a3`
