@@ -213,6 +213,32 @@ Retained deterministic sentinels after the intentional gameplay change:
 
 Do not call this feature Runtime PASS until real play confirms one-shuffle-per-lap, locked nodes, correct visible/effective tile identity, two-device parity and reconnect restoration.
 
+## Lap Shuffle Circular Tile Hotfix
+
+Status:
+**CI PASS / PUBLIC DEPLOYED / RUNTIME RETEST REQUIRED**
+
+Runtime feedback:
+- after the first lap shuffle, circular board nodes gained a rounded-square plate inside them.
+
+Root cause:
+- `buildLapShuffleNode071()` rendered shuffled content as a rounded rectangle over the immutable circular node.
+
+Fix:
+- shuffled content now repaints the full node as a radius-34 circle with the canonical dark outline;
+- shuffle still changes only authoritative tile content, never board geometry or locked nodes;
+- regression guard rejects `fillRoundedRect/strokeRoundedRect` inside the Lap Shuffle node renderer.
+
+Validation:
+- source UI commit: `fe2c6a77ad2de895c5e85ee690a97d431fcf5f38`
+- regression commit: `911e64c8e920d1e216d76f1f08244be355d57ed4`
+- MMM MVP CI #3203: SUCCESS
+- Lap Shuffle gate: SUCCESS
+- public mirror: `414b38c45197a13f40b351680df99bde5d5d6f1a`
+- Pages run `35814384565`: SUCCESS
+
+Do not call Runtime PASS until Ron completes one lap and confirms every shuffled tile remains circular.
+
 ## 0.1.70.4.21 — Final Modal Ownership + Career Layout
 
 Status:
