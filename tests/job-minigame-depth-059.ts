@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { MINI_GAME_DUEL_LAYOUT_070423, miniGameDuelFits070423 } from '../src/ui/miniGameLayout070423';
 import { readFile } from 'node:fs/promises';
 import boardJson from '../src/content/city/board_city_mvp.json';
 import jobsJson from '../src/content/core/jobs_mvp.json';
@@ -105,6 +106,12 @@ const scene060 = await readFile('src/scenes/CareerMinigameBoardScene060.ts', 'ut
 const scene061 = await readFile('src/scenes/CareerMinigameBoardScene061.ts', 'utf8');
 const scene069 = await readFile('src/scenes/CareerMinigameBoardScene069.ts', 'utf8');
 const scene0701 = await readFile('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
+const miniOverlay = await readFile('src/ui/MiniGameOverlay.ts', 'utf8');
+assert.ok(miniGameDuelFits070423(), 'both duel cards, names and result rail must stay inside the modal');
+assert.equal(MINI_GAME_DUEL_LAYOUT_070423.cardWidth, 226);
+assert.match(miniOverlay, /setDepth\(1500\)\.setName\('minigame-modal'\)/);
+assert.match(miniOverlay, /l\.nameY/);
+assert.match(miniOverlay, /l\.verdictY/);
 const main = await readFile('src/main.ts', 'utf8');
 const canonical = await readFile('src/ui/canonicalPresentation0561.ts', 'utf8');
 assert(scene059.includes('extends CareerMinigameBoardScene058'));

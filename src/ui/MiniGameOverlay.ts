@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { MINI_GAME_DUEL_LAYOUT_070423 } from './miniGameLayout070423';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import {
@@ -75,7 +76,8 @@ export function startMiniGameOverlay(
   contentId?: string,
 ): MiniGameOverlayRun {
   const slot = miniGameSlot059(contentId);
-  const root = scene.add.container(640, 360).setDepth(990);
+  // The fullscreen Mini Game owns the UI camera above the P1–P4 HUD (depth 1000).
+  const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal');
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
   const panel = scene.add.rectangle(0, 0, 900, 540, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
   const title = scene.add.text(0, -224, `${slot.icon} ${slot.title}`, {
@@ -244,31 +246,45 @@ export function startMiniGameOverlay(
   ) => {
     clearStage();
     subtitle.setText(`${slot.title} • 1 VS 1 • OẲN TÙ XÌ`);
+    const l = MINI_GAME_DUEL_LAYOUT_070423;
 
-    const leftName = scene.add.text(-235, -108, a.name, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#202020', fixedWidth: 240, align: 'center',
+    // Names have their own row, well clear of both cards. Result and replay
+    // status stay in a single bottom rail, never on the card's upper edges.
+    const leftName = scene.add.text(-l.cardCenterX, l.nameY, a.name, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '20px', fontStyle: 'bold', color: '#30251f',
+      fixedWidth: l.cardWidth + 12, align: 'center',
     }).setOrigin(0.5);
-    const rightName = scene.add.text(235, -108, b.name, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '21px', fontStyle: 'bold', color: '#202020', fixedWidth: 240, align: 'center',
+    const rightName = scene.add.text(l.cardCenterX, l.nameY, b.name, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '20px', fontStyle: 'bold', color: '#30251f',
+      fixedWidth: l.cardWidth + 12, align: 'center',
     }).setOrigin(0.5);
-    const leftCard = scene.add.rectangle(-235, 18, 260, 235, 0xffe09a, 1).setStrokeStyle(5, 0x242424, 1);
-    const rightCard = scene.add.rectangle(235, 18, 260, 235, 0xd1b0f0, 1).setStrokeStyle(5, 0x242424, 1);
-    const leftIcon = scene.add.text(-235, 5, '✊', { fontSize: '84px' }).setOrigin(0.5);
-    const rightIcon = scene.add.text(235, 5, '✊', { fontSize: '84px' }).setOrigin(0.5);
-    const leftChoice = scene.add.text(-235, 92, '?', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '17px', fontStyle: 'bold', color: '#202020',
+    const leftCard = scene.add.rectangle(-l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xffe09a, 1)
+      .setStrokeStyle(4, 0x4b332b, 1);
+    const rightCard = scene.add.rectangle(l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xd1b0f0, 1)
+      .setStrokeStyle(4, 0x4b332b, 1);
+    const leftIcon = scene.add.text(-l.cardCenterX, -14, '✊', { fontSize: '70px' }).setOrigin(0.5);
+    const rightIcon = scene.add.text(l.cardCenterX, -14, '✊', { fontSize: '70px' }).setOrigin(0.5);
+    const leftChoice = scene.add.text(-l.cardCenterX, 55, '?', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px',
+      fontStyle: 'bold', color: '#30251f',
     }).setOrigin(0.5);
-    const rightChoice = scene.add.text(235, 92, '?', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '17px', fontStyle: 'bold', color: '#202020',
+    const rightChoice = scene.add.text(l.cardCenterX, 55, '?', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px',
+      fontStyle: 'bold', color: '#30251f',
     }).setOrigin(0.5);
-    const vs = scene.add.text(0, 0, 'VS', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '34px', fontStyle: 'bold', color: '#ef4545',
+    const vs = scene.add.text(0, l.cardCenterY, 'VS', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '32px', fontStyle: 'bold', color: '#ef4545',
     }).setOrigin(0.5);
-    const chant = scene.add.text(0, 142, 'CHUẨN BỊ...', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '24px', fontStyle: 'bold', color: '#5d4773',
+    const chant = scene.add.text(0, l.chantY, 'CHUẨN BỊ...', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '22px',
+      fontStyle: 'bold', color: '#5d4773', fixedWidth: 600, align: 'center',
     }).setOrigin(0.5);
-    const verdict = scene.add.text(0, 180, '', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: '#202020', align: 'center', fixedWidth: 700,
+    const verdict = scene.add.text(0, l.verdictY, '', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '19px',
+      fontStyle: 'bold', color: '#30251f', align: 'center', fixedWidth: 650,
     }).setOrigin(0.5);
     stage.add([leftCard, rightCard, leftName, rightName, leftIcon, rightIcon, leftChoice, rightChoice, vs, chant, verdict]);
 
@@ -280,11 +296,8 @@ export function startMiniGameOverlay(
       rightIcon.setText(cycle[(index + 1) % cycle.length]!);
       scene.tweens.add({
         targets: [leftIcon, rightIcon],
-        scaleX: 1.16,
-        scaleY: 1.16,
-        duration: 120,
-        yoyo: true,
-        ease: 'Back.easeOut',
+        scaleX: 1.12, scaleY: 1.12, duration: 120,
+        yoyo: true, ease: 'Back.easeOut',
       });
       await wait(index === beats.length - 1 ? 420 : 330);
     }
@@ -296,26 +309,24 @@ export function startMiniGameOverlay(
     chant.setText('LẬT KÈO!');
     scene.tweens.add({
       targets: [leftIcon, rightIcon],
-      scaleX: 1.24,
-      scaleY: 1.24,
-      duration: 145,
-      yoyo: true,
-      ease: 'Back.easeOut',
+      scaleX: 1.18, scaleY: 1.18, duration: 145,
+      yoyo: true, ease: 'Back.easeOut',
     });
     scene.cameras.main.shake(95, 0.0011);
     await wait(520);
 
     if (tied) {
-      verdict.setText('🤝 HÒA! CHƠI LẠI');
+      chant.setText('🤝 HÒA KÈO');
+      verdict.setText('CHƠI LẠI!');
     } else {
       const winner = playerById(winnerId ?? -1);
-      verdict.setText(`🏆 ${winner?.name ?? '???'} THẮNG KÈO!`);
-      if (winnerId === a.id) leftCard.setStrokeStyle(7, 0xffd34d, 1);
-      if (winnerId === b.id) rightCard.setStrokeStyle(7, 0xffd34d, 1);
+      chant.setText('🏆 KẾT QUẢ');
+      verdict.setText(`${winner?.name ?? '???'} THẮNG KÈO!`);
+      if (winnerId === a.id) leftCard.setStrokeStyle(5, 0xe7ae35, 1);
+      if (winnerId === b.id) rightCard.setStrokeStyle(5, 0xe7ae35, 1);
     }
     await wait(tied ? 900 : 1150);
   };
-
 
   const showRanking = async (rankingPlayerIds: readonly number[], baseType: MiniGameBaseRewardType) => {
     if (rankingPlayerIds.length === 0) return;

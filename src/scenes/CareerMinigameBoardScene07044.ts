@@ -73,6 +73,16 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   private readonly hiddenFinalModalText070421 = new Map<Phaser.GameObjects.Text, boolean>();
   private lapShuffleVisualRoot071?: Phaser.GameObjects.Container;
   private lapShuffleVisualSignature071 = '';
+  private readonly originalMutableTileVisuals071 = new Map<number, {
+    circle: Phaser.GameObjects.Arc;
+    label: Phaser.GameObjects.Text;
+    color: number;
+    alpha: number;
+    stroke: number;
+    strokeAlpha: number;
+    strokeWidth: number;
+    text: string;
+  }>();
 
   create(): void {
     super.create();
@@ -132,24 +142,83 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     this.lapShuffleVisualRoot071?.destroy(true);
     this.lapShuffleVisualRoot071 = undefined;
-    if (!assignments || assignments.length === 0) return;
+    if (!assignments || assignments.length === 0) {
+      // Only the old source circles are visible when a fresh board resets.
+      for (const original of this.originalMutableTileVisuals071.values()) {
+        if (original.circle.active) {
+          original.circle
+            .setFillStyle(original.color, original.alpha)
+            .setStrokeStyle(original.strokeWidth, original.stroke, original.strokeAlpha);
+        }
+        if (original.label.active) original.label.setText(original.text);
+      }
+      this.originalMutableTileVisuals071.clear();
+      return;
+    }
 
+    // Do not paint a second circle on top of the canonical depth-4 circle.
+    // Its former category-coloured rim was still visible outside the new
+    // radius-34 circle, creating the concentric rings in runtime screenshots.
+    // Change the existing tile's CONTENT/colour/label and preserve its exact
+    // radius, world coordinates, node identity and graph edges.
     const root = this.add.container(0, 0).setDepth(6).setName('lap-shuffle-board-071');
     this.lapShuffleVisualRoot071 = root;
     const mutableIds = mutableBoardNodeIds071(BOARD_07044);
 
     mutableIds.forEach((nodeId, index) => {
       const node = effectiveBoardNode071(BOARD_07044, nodeId, assignments);
+      const fill = this.lapShuffleNodeFill071(node);
+      const labelCopy = this.lapShuffleNodeLabel071(node);
+      const baseCircle = this.children.list.find(
+        (object): object is Phaser.GameObjects.Arc =>
+          object instanceof Phaser.GameObjects.Arc
+          && object.active && object.visible && object.depth === 4
+          && Math.abs(object.x - node.x) < 0.01
+          && Math.abs(object.y - node.y) < 0.01,
+      );
+      const baseLabel = this.children.list.find(
+        (object): object is Phaser.GameObjects.Text =>
+          object instanceof Phaser.GameObjects.Text
+          && object.active && object.depth === 5
+          && Math.abs(object.x - node.x) < 0.01
+          && Math.abs(object.y - node.y) < 0.01,
+      );
+
+      if (baseCircle && baseLabel) {
+        if (!this.originalMutableTileVisuals071.has(nodeId)) {
+          this.originalMutableTileVisuals071.set(nodeId, {
+            circle: baseCircle, label: baseLabel,
+            color: baseCircle.fillColor, alpha: baseCircle.fillAlpha,
+            stroke: baseCircle.strokeColor, strokeAlpha: baseCircle.strokeAlpha,
+            strokeWidth: baseCircle.lineWidth, text: baseLabel.text,
+          });
+        }
+        this.tweens.killTweensOf([baseCircle, baseLabel]);
+        baseCircle.setFillStyle(fill, 1).setStrokeStyle(3, 0x30343b, 1);
+        baseLabel.setText(labelCopy).setAlpha(1).setVisible(true);
+        if (animate) {
+          this.tweens.add({
+            targets: [baseCircle, baseLabel],
+            alpha: { from: 0.66, to: 1 },
+            duration: 260,
+            delay: (index % 12) * 28,
+            ease: 'Sine.easeOut',
+          });
+        } else {
+          baseCircle.setAlpha(1);
+        }
+        return;
+      }
+
+      // Compatibility fallback for an older scene with no canonical tile.
+      // One circle only: the fallback must not sit over an existing base ring.
       const tile = this.buildLapShuffleNode071(node);
       root.add(tile);
-
       if (!animate) return;
       tile.setAlpha(0).setScale(0.66);
       this.tweens.add({
         targets: tile,
-        alpha: 1,
-        scaleX: 1,
-        scaleY: 1,
+        alpha: 1, scaleX: 1, scaleY: 1,
         duration: 260,
         delay: (index % 12) * 28,
         ease: 'Back.easeOut',
@@ -161,13 +230,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const container = this.add.container(node.x, node.y);
     const fill = this.lapShuffleNodeFill071(node);
 
-    // Lap Shuffle changes CONTENT, not tile geometry. The previous renderer drew
-    // a rounded rectangle on top of the existing circular board node, which made
-    // every shuffled tile suddenly look like a square nested inside a circle.
-    // Repaint the whole node as the same circular tile silhouette instead.
+    // Fallback for a missing base node, not an overlay on an existing circle.
     const face = this.add.circle(0, 0, 34, fill, 1)
-      .setStrokeStyle(5, 0x4a302a, 1);
-
+      .setStrokeStyle(3, 0x30343b, 1);
     const label = this.add.text(0, 0, this.lapShuffleNodeLabel071(node), {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '14px',
@@ -203,6 +268,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.lapShuffleVisualRoot071?.destroy(true);
     this.lapShuffleVisualRoot071 = undefined;
     this.lapShuffleVisualSignature071 = '';
+    this.originalMutableTileVisuals071.clear();
   }
 
   /**
@@ -788,11 +854,14 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   private syncFinalModalOwnership070421(): void {
     const presentation = this.runtime07044().presentation;
     const presentationRoot = presentation?.active;
+    const miniGameRoot = this.findNamedTopLevelContainer070421('minigame-modal');
     const detailRoot = this.findNamedTopLevelContainer070421('job-detail-modal');
     const hubRoot = this.findNamedTopLevelContainer070421('job-hub-modal');
 
-    const blockingRoot = detailRoot?.active
-      ? detailRoot
+    const blockingRoot = miniGameRoot?.active
+      ? miniGameRoot
+      : detailRoot?.active
+        ? detailRoot
       : hubRoot?.active
         ? hubRoot
         : presentationRoot?.active && presentationRoot.visible

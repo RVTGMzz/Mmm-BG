@@ -78,6 +78,8 @@ assert.match(finalWhitelist, /root\.name !== 'presentation-reaction-bubble-07042
 assert.match(finalWhitelist, /reactionPlacement070422\(seat, seat\)/);
 assert.doesNotMatch(finalWhitelist, /copy\.startsWith|reactionMarker|\[😐😄😤\]/);
 assert.match(active, /Phaser\.Scenes\.Events\.POST_UPDATE/);
+assert.match(active, /findNamedTopLevelContainer070421\('minigame-modal'\)/);
+assert.match(active, /const blockingRoot = miniGameRoot\?\.active/);
 assert.match(active, /this\.retireLegacyPresentationOverlays070414\(\)/);
 
 for (const text of [parity, source, active]) {

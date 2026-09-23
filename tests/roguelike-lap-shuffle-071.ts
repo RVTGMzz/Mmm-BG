@@ -137,7 +137,11 @@ assert.doesNotMatch(replay, /Math\.random\(/);
 assert.match(scene, /model\.kind === 'board_shuffle'\) this\.syncLapShuffleBoard071\(true\)/);
 assert.match(scene, /setName\('lap-shuffle-board-071'\)/);
 assert.match(scene, /const face = this\.add\.circle\(0, 0, 34, fill, 1\)/);
-assert.match(scene, /\.setStrokeStyle\(5, 0x4a302a, 1\)/);
+assert.match(scene, /baseCircle\.setFillStyle\(fill, 1\)\.setStrokeStyle\(3, 0x30343b, 1\)/);
+assert.match(scene, /if \(baseCircle && baseLabel\)/);
+assert.match(scene, /baseLabel\.setText\(labelCopy\)/);
+assert.match(scene, /originalMutableTileVisuals071/);
+assert.match(scene, /this\.buildLapShuffleNode071\(node\)/);
 const shuffleRenderer = scene.slice(
   scene.indexOf('private buildLapShuffleNode071'),
   scene.indexOf('private lapShuffleNodeFill071'),
