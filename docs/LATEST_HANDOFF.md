@@ -213,6 +213,31 @@ Retained deterministic sentinels after the intentional gameplay change:
 
 Do not call this feature Runtime PASS until real play confirms one-shuffle-per-lap, locked nodes, correct visible/effective tile identity, two-device parity and reconnect restoration.
 
+## 0.1.70.4.21 — Final Modal Ownership + Career Layout
+
+Status:
+**SOURCE IMPLEMENTED / CI RETEST IN PROGRESS**
+
+Runtime feedback that triggered this pass:
+- loose board/event narration could reappear behind a Card/News modal after later scene wrappers ran;
+- Job Hub / nhận việc layout still felt crowded and visually unbalanced.
+
+Changes:
+- final active scene now runs a last-frame modal ownership guard after all inherited update layers;
+- any loose non-canonical Text is hidden while a real modal is active;
+- player HUD/token identity, reaction bubbles and continue hints stay protected;
+- Job Hub is rebuilt as three compact rounded career cards;
+- each Job card keeps one readable Lv1/Lv2/Lv3 salary line and one XEM CHI TIẾT action;
+- redundant “lương khởi điểm” copy is removed;
+- Job detail uses a smaller centered career sheet;
+- Job result presentation is rebuilt as one centered cream/yellow card with “ĐÃ NHẬN VIỆC” instead of split left/right text;
+- Job surfaces use Vietnamese-safe system UI fonts.
+
+Regression gate:
+- `tests/final-modal-career-layout-070421.ts`
+
+Do not call Runtime PASS until Ron rechecks the exact leak screenshot scenario and Job Hub/result flow.
+
 ## Runtime acceptance still pending
 
 Automated/live infrastructure proof is PASS.
