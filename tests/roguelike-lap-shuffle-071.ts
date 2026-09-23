@@ -136,5 +136,12 @@ assert.match(replay, /effectiveBoardNode071\([\s\S]*ctx\.state\.boardContentAssi
 assert.doesNotMatch(replay, /Math\.random\(/);
 assert.match(scene, /model\.kind === 'board_shuffle'\) this\.syncLapShuffleBoard071\(true\)/);
 assert.match(scene, /setName\('lap-shuffle-board-071'\)/);
+assert.match(scene, /const face = this\.add\.circle\(0, 0, 34, fill, 1\)/);
+assert.match(scene, /\.setStrokeStyle\(5, 0x4a302a, 1\)/);
+const shuffleRenderer = scene.slice(
+  scene.indexOf('private buildLapShuffleNode071'),
+  scene.indexOf('private lapShuffleNodeFill071'),
+);
+assert.doesNotMatch(shuffleRenderer, /fillRoundedRect|strokeRoundedRect/, 'shuffle must preserve circular tile geometry');
 
 console.log('[roguelike-lap-shuffle-071] PASS deterministic one-per-lap shuffle + locked nodes + checksum + presentation');
