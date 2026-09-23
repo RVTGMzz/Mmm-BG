@@ -216,7 +216,7 @@ Do not call this feature Runtime PASS until real play confirms one-shuffle-per-l
 ## 0.1.70.4.21 — Final Modal Ownership + Career Layout
 
 Status:
-**SOURCE IMPLEMENTED / CI RETEST IN PROGRESS**
+**SOURCE IMPLEMENTED / CI PASS / PUBLIC DEPLOYED / RUNTIME RETEST REQUIRED**
 
 Runtime feedback that triggered this pass:
 - loose board/event narration could reappear behind a Card/News modal after later scene wrappers ran;
@@ -235,6 +235,19 @@ Changes:
 
 Regression gate:
 - `tests/final-modal-career-layout-070421.ts`
+
+Validation:
+- source HEAD: `d9cb0623f8f5db8dfaae2206e456eec9fd460b4a`
+- MMM MVP CI #3201
+- run: `35813758452`
+- conclusion: SUCCESS
+- 0.1.70.4.21 final modal ownership + career layout: SUCCESS
+- Roguelike Lap Shuffle gate: SUCCESS
+- package validation: SUCCESS
+- compiled mirror publish: SUCCESS
+- public mirror: `6a87a8072de9d9f3cddf48021468d1dfe76c07a6`
+- Pages run: `35813830898`
+- Pages conclusion: SUCCESS
 
 Do not call Runtime PASS until Ron rechecks the exact leak screenshot scenario and Job Hub/result flow.
 
