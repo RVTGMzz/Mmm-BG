@@ -20,13 +20,14 @@ Read first:
 15. `src/ui/visualFoundationV01.ts` and `src/visualFoundationV01.css` (VF-03)
 16. `src/ui/visualFoundationHudVf04.ts` and `src/scenes/CareerMinigameBoardScene065.ts` (VF-04)
 17. `tests/visual-foundation-hud-vf04.ts` and `docs/VISUAL_FOUNDATION_PASS_0.1.md`
-18. Ron's newest runtime screenshots/feedback
+18. `src/ui/visualFoundationNewsVf05.ts` and `tests/visual-foundation-news-vf05.ts` (VF-05)
+19. Ron's newest runtime screenshots/feedback
 
 Current checkpoint:
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
 Current validated source HEAD:
-`f4c55e2e53ce90b40196cf603efaf86cd37f127d`
+`b86d9b5283658953b2b17fee52173acae858e21f`
 
 Important:
 - recurring overlay bug was traced to duplicate visual producers + horizontally unsafe reaction geometry + stale reaction timers + permissive final whitelisting;
@@ -56,6 +57,6 @@ Latest Job Hub keyboard-only milestone: `a91fbb10ffaaa9710393f541e6b1017b0459ec0
 
 Newest Steam Deck .25 source `6f9507e1cff75914b56bf0f4a75ac6e7de27abb8`, CI #3219 SUCCESS, mirror `473fcf21a0a7797d7525309eac00a210e061c281`, Pages #22 SUCCESS. Mouse-free browser Gamepad play from Splash, CHỌN CÁCH CHƠI mode A-edit/↑↓/A-save/B-cancel, Setup, Roll For Order, authoritative board D6, Job Hub default dice, branch/target cards, Mini Game, and final result input is source-implemented and automatically gated, but requires a real Steam Deck/Steam Input/Chromium retest before any Runtime PASS statement. Current latest docs in `docs/STEAM_DECK_WEB_070425.md`.
 
-Current newest visual milestone is `f4c55e2` (CI #3222 SUCCESS, compiled mirror `bbf37689cad6f122b8bccb5ec15046cfcb3ed591`, Pages #24 SUCCESS). VF-04 source only until Ron confirms real Steam Deck + mobile appearance. Read `docs/VISUAL_FOUNDATION_PASS_0.1.md`, actual player HUD skin and all four-corner clamps before any VF-05 propagation. Old overlay/reaction and Lap Shuffle runtime acceptance stays open.
+Current latest visual milestone is `b86d9b5`, CI #3224 SUCCESS, compiled mirror `7e1ad18f1c1d593f595a26da2d7e0c896043ecdd`, Pages #25 SUCCESS. VF-04.1 keeps active outer GOLD turn signal and INNER P1-P4 seat-colour identity separated by a 4px gutter; 220ms marker animation. VF-05 samples only TIN TỨC with warm paper inside the original .22 owner, preserving News/Card reaction lanes. Read updated `docs/VISUAL_FOUNDATION_PASS_0.1.md` before next style changes, and do not reskin all cards at once. Device and overlay-leak acceptance remain pending.
 
 At session start, first verify the latest GitHub Actions result for the current branch HEAD, then continue from Ron's newest runtime feedback.

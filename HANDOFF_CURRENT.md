@@ -4,6 +4,30 @@ Repository: `RVTGMzz/Mmm-BG`
 Branch: `mmm-mvp-0.1-core`  
 Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
+## September 24 VF-04.1 + VF-05 first News visual sample
+
+Ron clarified that the **gold border is intentional active-turn state** and should NOT be removed. The player's colour remains permanent identity. VF-04.1 now paints:
+- P1 red / P2 blue / P3 yellow-orange / P4 green for each avatar, upper identity stripe and INNER HUD ring;
+- golden OUTER ring only on the authoritative active player's HUD, with a clear 4px cream gutter between the gold and player-colour rings;
+- a small gold turn marker that pops for 220ms on real turn changes, without tweening HUD position or scale. Earlier measured 268x104 four-corner clamps and screen-space camera ownership remain intact.
+- `hudFramePaletteVf041` + extended `tests/visual-foundation-hud-vf04.ts` lock the two simultaneous signals for all 4 seats.
+
+VF-05's **first reference News presentation** is also implemented in the existing .22 canonical modal, not in a duplicate overlay:
+- `src/ui/visualFoundationNewsVf05.ts`: pastel mint header, warm cream rounded paper, cocoa outline, sticker icon well and quiet reading panel at the exact previous 720x300 geometry.
+- `CareerMinigameBoardScene07044.rebuildCanonicalCinematicText070414` applies it only to `model.kind === 'news'`; all Card-family dark materials remain unchanged until separately reviewed.
+- 30px dark title, 18px body where content fits, adaptive fallback 14px for long News, reduced developer metadata. No extra toast, scene container, gameplay/input owner, RNG or network actions.
+- `tests/visual-foundation-news-vf05.ts` verifies material + unchanged modal/HUD/reaction bounds for all P1–P4. Existing .22 presentation ownership and Lap Shuffle tests are retained.
+- `tests/canonical-ui-ux-contract.ts` now accurately checks already-shipped Steam Deck browser Gamepad support rather than the obsolete 'Controller support is deferred' assertion.
+
+**Validated source commit:** `b86d9b5283658953b2b17fee52173acae858e21f`.
+**Source CI #3224:** run `35902453594`, SUCCESS.
+**Compiled public mirror:** `7e1ad18f1c1d593f595a26da2d7e0c896043ecdd`.
+**GitHub Pages #25:** run `35902579777`, SUCCESS.
+
+**RUNTIME DEVICE RETEST REQUIRED**. Desktop/phone landscape/Steam Deck: make P2 active (blue inner ring, gold outer ring) and rotate through P1–P4; confirm gold moves with turn and no card is misidentified. Inspect various short/long News events, P1–P4 reaction rail geometry, rapid skip to catch stray legacy text. The .22 recurring leak is NOT considered visually accepted until Ron's browser screenshots confirm. Test a full Lap Shuffle and Steam Deck play later; do not silently close previous pending runtime issues. PR #1 remains Draft/Open. Do not start 0.1.71.
+
+Next visual step after runtime feedback: refine the News reference if needed; apply the same Foundation to a **single** LÁ BÀI sample (not the entire card catalogue at once), then VF-06 Job. Keep design tokens and modal ownership centralized.
+
 ## September 24 Visual Foundation checkpoint: VF-03 + VF-04
 
 **Latest validated source:** `f4c55e2e53ce90b40196cf603efaf86cd37f127d`
@@ -46,7 +70,7 @@ PR #1 remains Draft/Open; do not merge or move to Ready. Keep prior .22 News/Car
 Status: **SOURCE + PUBLIC PAGES DEPLOYED / CI PASS / RUNTIME RETEST REQUIRED**
 
 Current validated **source/CI/Public Pages** HEAD:
-`f4c55e2e53ce90b40196cf603efaf86cd37f127d`
+`b86d9b5283658953b2b17fee52173acae858e21f`
 
 Validated source checkpoint:
 - MMM MVP CI **#3212**
