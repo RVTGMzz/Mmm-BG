@@ -8,6 +8,7 @@ import {
   mutableBoardNodeIds071,
 } from '../core/lapShuffle071';
 import type { PresentationEventModel } from '../ui/presentationModel';
+import { reactionPlacement070422 } from '../ui/presentationLanes070422';
 import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import {
   MOBILE_UI_FONT_07044,
@@ -30,6 +31,7 @@ type Hud07044 = {
 type Presentation07044 = {
   active?: Phaser.GameObjects.Container;
   currentModel?: PresentationEventModel;
+  continueHint?: Phaser.GameObjects.Text;
   isBlocking(): boolean;
   showLanding(model: PresentationEventModel): void;
   showCinematic(model: PresentationEventModel): void;
@@ -85,6 +87,14 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreDetachedCinematicText070417());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restoreFinalModalText070421());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreFinalModalText070421());
+    // Old fixes ran only inside Scene.update(), but late tweens/timers could
+    // introduce a detached label before the render pass. Enforce final modal
+    // ownership again at POST_UPDATE, after all inherited scene updates.
+    const postUpdateOwner = (): void => this.syncFinalModalOwnership070421();
+    this.events.on(Phaser.Scenes.Events.POST_UPDATE, postUpdateOwner);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.events.off(Phaser.Scenes.Events.POST_UPDATE, postUpdateOwner);
+    });
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
@@ -794,6 +804,10 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       return;
     }
 
+    // A legacy Card/News panel is an alternate visual owner, not an allowed
+    // side-card. Retire its WHOLE container, never just its Text descendants.
+    this.retireLegacyPresentationOverlays070414();
+
     const canonical = new Set<Phaser.GameObjects.GameObject>();
     this.collectDisplayObjects070417(blockingRoot, canonical);
     if (detailRoot?.active && hubRoot?.active) this.collectDisplayObjects070417(hubRoot, canonical);
@@ -822,20 +836,29 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     text: Phaser.GameObjects.Text,
     blockingDepth: number,
   ): boolean {
-    const copy = this.normalizePresentationCopy070412(text.text);
-    if (copy.startsWith('space / enter / click') || copy.startsWith('chạm / click')) return true;
+    // Never whitelist arbitrary strings such as "CLICK" or an emoji at depth
+    // 910: old overlays were accidentally allowed through that heuristic.
+    // Only the exact continue hint and a named reaction from the current
+    // presentation's geometrically safe side rail can coexist with the modal.
+    if (text === this.runtime07044().presentation?.continueHint) return true;
 
     let root = text.parentContainer;
     while (root?.parentContainer) root = root.parentContainer;
-    if (!root || root.depth < blockingDepth || root.depth !== 910) return false;
+    if (
+      !root?.active
+      || !root.visible
+      || root.name !== 'presentation-reaction-bubble-070422'
+      || root.depth <= blockingDepth
+    ) return false;
 
-    let reactionMarker = false;
-    this.visitDisplayTree07044(root.list, (candidate) => {
-      if (candidate instanceof Phaser.GameObjects.Text && /[😐😄😤]/u.test(candidate.text)) {
-        reactionMarker = true;
-      }
+    return [0, 1, 2, 3].some((seat) => {
+      const lane = reactionPlacement070422(seat, seat);
+      return Boolean(
+        lane
+        && Math.abs(root.x - lane.x) <= 1
+        && Math.abs(root.y - lane.y) <= 18,
+      );
     });
-    return reactionMarker;
   }
 
   private findNamedTopLevelContainer070421(name: string): Phaser.GameObjects.Container | undefined {
