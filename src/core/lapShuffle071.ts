@@ -40,6 +40,15 @@ export function isBoardNodeLockedForShuffle071(
   return false;
 }
 
+export function shouldTriggerBoardShuffle071(
+  completedLap: number,
+  lastShuffleLap: number | undefined,
+): boolean {
+  const lap = Math.max(0, Math.floor(completedLap));
+  const last = Math.max(0, Math.floor(lastShuffleLap ?? 0));
+  return lap > 0 && lap > last;
+}
+
 export function mutableBoardNodeIds071(board: BoardDefinition): number[] {
   return board.nodes
     .filter((node) => !isBoardNodeLockedForShuffle071(board, node))
