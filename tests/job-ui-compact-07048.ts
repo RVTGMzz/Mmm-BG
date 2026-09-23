@@ -25,9 +25,9 @@ assert.match(mini, /subtitle\.setVisible\(false\)/);
 assert.match(mini, /stake\.setVisible\(false\)/);
 assert.match(mini, /Hạng \$\{index \+ 1\} •/);
 
-assert.match(picker, /780, 370/);
-assert.match(picker, /fixedWidth: 640/);
+assert.match(picker, /748,\n      352/);
+assert.match(picker, /fixedWidth: 610/);
 assert.match(ownership, /const jobDetailRoot = this\.findNamedTopLevelContainer0682\('job-detail-modal'\)/);
 assert.match(ownership, /jobDetailRoot\?\.active/);
 
-console.log('[job-ui-compact-07048] PASS concise Job copy + wider Job card + clean ranking + visible Job detail');
+console.log('[job-ui-compact-07048] PASS concise Job copy + compact 3-card hub + clean ranking + visible Job detail');
