@@ -63,10 +63,12 @@ const HUD_BASE_WIDTH_07046 = 252;
 const HUD_BASE_HEIGHT_07046 = 92;
 const ACTIVE_HUD_SCALE_07046 = 1.18;
 const IDLE_HUD_SCALE_07046 = 0.96;
+const JOB_UI_FONT_070421 = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
 
 export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 {
   private compactLandscape07044 = false;
   private readonly hiddenDetachedCinematicText070417 = new Map<Phaser.GameObjects.Text, boolean>();
+  private readonly hiddenFinalModalText070421 = new Map<Phaser.GameObjects.Text, boolean>();
   private lapShuffleVisualRoot071?: Phaser.GameObjects.Container;
   private lapShuffleVisualSignature071 = '';
 
@@ -81,6 +83,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.destroyLapShuffleBoard071());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restoreDetachedCinematicText070417());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreDetachedCinematicText070417());
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restoreFinalModalText070421());
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreFinalModalText070421());
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
@@ -93,6 +97,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.ensurePlayerTokenBadges070417();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
+    // Must be the final presentation pass. Later wrappers in the inheritance chain
+    // may recreate loose narration after 0682's older modal-ownership guard.
+    this.syncFinalModalOwnership070421();
   }
 
   private runtime07044(): Runtime07044 {
@@ -656,67 +663,91 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       .setDepth(900)
       .setName('job-presentation-card')
       .setAlpha(0)
-      .setScale(0.96);
+      .setScale(0.965);
     presentation.active = root;
 
     const isResult = model.title.includes('NHẬN VIỆC');
-
     const shadow = this.add.graphics();
-    shadow.fillStyle(0x000000, 0.22);
-    shadow.fillRoundedRect(-416, -126, 832, 262, 28);
-    shadow.setPosition(0, 9);
+    shadow.fillStyle(0x3e2b25, 0.22);
+    shadow.fillRoundedRect(-382, -116, 764, 244, 26);
 
     const panel = this.add.graphics();
-    panel.fillStyle(0x2c2925, 0.985);
-    panel.fillRoundedRect(-410, -130, 820, 260, 26);
-    panel.lineStyle(5, 0xffd34d, 0.96);
-    panel.strokeRoundedRect(-410, -130, 820, 260, 26);
+    panel.fillStyle(0xfff8ec, 0.995);
+    panel.fillRoundedRect(-382, -124, 764, 244, 26);
+    panel.lineStyle(4, 0x4b332b, 1);
+    panel.strokeRoundedRect(-382, -124, 764, 244, 26);
 
-    const eyebrow = this.add.text(0, -100, model.eyebrow, {
-      fontFamily: MOBILE_UI_FONT_07044,
+    const header = this.add.graphics();
+    header.fillStyle(isResult ? 0xffc94d : 0xffd76c, 1);
+    header.fillRoundedRect(-360, -104, 720, 52, { tl: 17, tr: 17, bl: 10, br: 10 });
+
+    const eyebrow = this.add.text(-332, -78, model.eyebrow, {
+      fontFamily: JOB_UI_FONT_070421,
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#694d41',
+      fixedWidth: 520,
+    }).setOrigin(0, 0.5);
+
+    const dieMatch = model.title.match(/🎲\s*(\d)/u);
+    const dieChip = this.add.text(325, -78, dieMatch ? `🎲 ${dieMatch[1]}` : '💼', {
+      fontFamily: JOB_UI_FONT_070421,
       fontSize: '13px',
       fontStyle: 'bold',
-      color: '#d9d1c7',
-      fixedWidth: 680,
-      align: 'center',
-    }).setOrigin(0.5);
+      color: '#49342c',
+      backgroundColor: '#fff5d4',
+      padding: { x: 10, y: 5 },
+    }).setOrigin(1, 0.5);
 
-    const icon = this.add.text(isResult ? -320 : -315, isResult ? 8 : -10, model.impact || '💼', {
+    const icon = this.add.text(-304, 18, model.impact || '💼', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: isResult ? '54px' : '46px',
+      fontSize: '50px',
     }).setOrigin(0.5);
 
-    const jobBodyCopy = this.canonicalJobBody070414(model);
-    const title = this.add.text(isResult ? 190 : 60, isResult ? -24 : -48, model.title, {
-      fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: isResult ? '28px' : '30px',
+    const displayTitle = isResult ? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ';
+    const title = this.add.text(36, -12, displayTitle, {
+      fontFamily: JOB_UI_FONT_070421,
+      fontSize: '27px',
       fontStyle: 'bold',
-      color: '#ffffff',
-      fixedWidth: isResult ? 320 : 570,
+      color: '#34251f',
+      fixedWidth: 530,
       align: 'center',
-      wordWrap: { width: isResult ? 320 : 570, useAdvancedWrap: true },
     }).setOrigin(0.5);
 
-    const body = this.add.text(isResult ? -240 : 60, isResult ? 24 : 38, jobBodyCopy, {
-      fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: isResult ? '16px' : '17px',
-      color: '#f4ede4',
-      fixedWidth: isResult ? 260 : 570,
-      fixedHeight: isResult ? 92 : 88,
-      align: isResult ? 'left' : 'center',
-      wordWrap: { width: isResult ? 260 : 570, useAdvancedWrap: true },
-      lineSpacing: isResult ? 10 : 7,
+    const bodyLines = [
+      this.canonicalJobBody070414(model),
+      ...(model.summary && model.summary !== model.description ? [model.summary] : []),
+    ].filter(Boolean);
+    const body = this.add.text(36, 52, bodyLines.join('\n'), {
+      fontFamily: JOB_UI_FONT_070421,
+      fontSize: '16px',
+      fontStyle: isResult ? 'bold' : 'normal',
+      color: '#59463d',
+      fixedWidth: 540,
+      fixedHeight: 82,
+      align: 'center',
+      wordWrap: { width: 540, useAdvancedWrap: true },
+      lineSpacing: 5,
       maxLines: 3,
-    }).setOrigin(isResult ? 0 : 0.5, 0.5);
+    }).setOrigin(0.5);
 
-    const hit = this.add.rectangle(0, 0, 820, 260, 0xffffff, 0.001)
+    const hint = this.add.text(326, 99, 'chạm để tiếp tục', {
+      fontFamily: JOB_UI_FONT_070421,
+      fontSize: '10px',
+      fontStyle: 'bold',
+      color: '#9a8174',
+    }).setOrigin(1, 0.5);
+
+    const hit = this.add.rectangle(0, -2, 764, 244, 0xffffff, 0.001)
       .setInteractive({ useHandCursor: true });
 
-    root.add([shadow, panel, eyebrow, icon, title, body, hit]);
+    root.add([shadow, panel, header, eyebrow, dieChip, icon, title, body, hint, hit]);
     root.bringToTop(eyebrow);
+    root.bringToTop(dieChip);
     root.bringToTop(icon);
     root.bringToTop(title);
     root.bringToTop(body);
+    root.bringToTop(hint);
 
     sfxController.play('ui_confirm');
     this.tweens.add({
@@ -736,7 +767,96 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     };
 
     hit.on('pointerdown', close);
-    this.time.delayedCall(Math.max(model.holdMs, 1900), close);
+    this.time.delayedCall(Math.max(model.holdMs, 1750), close);
+  }
+
+  /**
+   * 0.1.70.4.21 final modal ownership.
+   *
+   * 0682 used to be the last visual wrapper. It is no longer last, so later
+   * presentation layers can recreate board narration after its guard runs.
+   * This final scene owns the visible frame and suppresses every non-canonical
+   * loose Text while a real modal is active, while preserving HUD/token identity,
+   * continue hints and reaction bubbles.
+   */
+  private syncFinalModalOwnership070421(): void {
+    const presentation = this.runtime07044().presentation;
+    const presentationRoot = presentation?.active;
+    const detailRoot = this.findNamedTopLevelContainer070421('job-detail-modal');
+    const hubRoot = this.findNamedTopLevelContainer070421('job-hub-modal');
+
+    const blockingRoot = detailRoot?.active
+      ? detailRoot
+      : hubRoot?.active
+        ? hubRoot
+        : presentationRoot?.active && presentationRoot.visible
+          ? presentationRoot
+          : undefined;
+
+    if (!blockingRoot?.active || !blockingRoot.visible) {
+      this.restoreFinalModalText070421();
+      return;
+    }
+
+    const canonical = new Set<Phaser.GameObjects.GameObject>();
+    this.collectDisplayObjects070417(blockingRoot, canonical);
+    if (detailRoot?.active && hubRoot?.active) this.collectDisplayObjects070417(hubRoot, canonical);
+
+    const protectedObjects = new Set<Phaser.GameObjects.GameObject>();
+    for (const ui of this.runtime07044().hud.values()) {
+      this.collectDisplayObjects070417(ui.root, protectedObjects);
+    }
+    for (const visual of this.runtime07044().visuals.values()) {
+      this.collectDisplayObjects070417(visual.token, protectedObjects);
+    }
+
+    this.visitDisplayTree07044(this.children.list, (object) => {
+      if (!(object instanceof Phaser.GameObjects.Text) || !object.visible) return;
+      if (canonical.has(object) || protectedObjects.has(object)) return;
+      if (this.isAllowedFinalModalAuxiliary070421(object, blockingRoot.depth)) return;
+
+      if (!this.hiddenFinalModalText070421.has(object)) {
+        this.hiddenFinalModalText070421.set(object, object.visible);
+      }
+      object.setVisible(false);
+    });
+  }
+
+  private isAllowedFinalModalAuxiliary070421(
+    text: Phaser.GameObjects.Text,
+    blockingDepth: number,
+  ): boolean {
+    const copy = this.normalizePresentationCopy070412(text.text);
+    if (copy.startsWith('space / enter / click') || copy.startsWith('chạm / click')) return true;
+
+    let root = text.parentContainer;
+    while (root?.parentContainer) root = root.parentContainer;
+    if (!root || root.depth < blockingDepth || root.depth !== 910) return false;
+
+    let reactionMarker = false;
+    this.visitDisplayTree07044(root.list, (candidate) => {
+      if (candidate instanceof Phaser.GameObjects.Text && /[😐😄😤]/u.test(candidate.text)) {
+        reactionMarker = true;
+      }
+    });
+    return reactionMarker;
+  }
+
+  private findNamedTopLevelContainer070421(name: string): Phaser.GameObjects.Container | undefined {
+    return this.children.list.find(
+      (object): object is Phaser.GameObjects.Container =>
+        object instanceof Phaser.GameObjects.Container
+        && object.active
+        && object.visible
+        && object.name === name,
+    );
+  }
+
+  private restoreFinalModalText070421(): void {
+    for (const [text, wasVisible] of this.hiddenFinalModalText070421) {
+      if (text.scene && text.active) text.setVisible(wasVisible);
+    }
+    this.hiddenFinalModalText070421.clear();
   }
 
   private applyMobileLandscapeUi07044(): void {
