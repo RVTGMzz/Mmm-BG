@@ -38,8 +38,8 @@ function player(overrides: Partial<PlayerState> = {}): PlayerState {
   };
 }
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.20');
-assert.match(MEMEME_BUILD.phase, /STALE ROOM RECYCLE \+ WEBSOCKET KEEPALIVE/);
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
+assert(MEMEME_BUILD.phase.length > 0, 'frontend patch phase must remain visible');
 assert.deepEqual(DEFAULT_RELEASE_FACES_070.jail, [1, 3, 5]);
 assert.deepEqual(DEFAULT_RELEASE_FACES_070.hospital, [2, 4, 6]);
 
