@@ -4,6 +4,24 @@ Repository: `RVTGMzz/Mmm-BG`
 Branch: `mmm-mvp-0.1-core`  
 Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
+## September 24 Visual Foundation checkpoint: VF-03 + VF-04
+
+**Latest validated source:** `f4c55e2e53ce90b40196cf603efaf86cd37f127d`
+**MMM MVP CI #3222:** run `35896619775` **SUCCESS** (all existing regression gates and new VF-04).
+**Public compiled mirror:** `bbf37689cad6f122b8bccb5ec15046cfcb3ed591`.
+**GitHub Pages #24:** run `35896759597` **SUCCESS**.
+
+Completed in source:
+- VF-01 palette / radius / spacing / typography tokens and VF-02 reusable button family remain live.
+- VF-03 `5d8d2e3`: shared soft-panel/modals in `src/ui/visualFoundationV01.ts` and `src/visualFoundationV01.css`, first production application to the Avatar Choice modal. One header/body/footer, focus trap, Escape/B dismissal, focus restored to opener, Steam Deck modal-focus priority. Source CI #3220 and public Pages #23 SUCCESS.
+- VF-04 `f4c55e2`: new shared `src/ui/visualFoundationHudVf04.ts` paints the **actual** 268x104 four-corner player HUD in one reusable style: warm cream, soft cocoa cast shadow, existing P1-P4 colours, original player photo, sticker frame and a visible active-turn golden rim/marker. Idle text: avatar, name, money and compact career only. Active: stronger type plus optional salary, hand/lock context.
+- VF-04 wired in inherited `CareerMinigameBoardScene065`; latest active `CareerMinigameBoardScene07044` now clamps against the **real 268x104 art bounds** in both desktop and phone-landscape viewports. This fixes the long-standing old 252x92 hitbox / larger 268x104 skin geometry mismatch. Preserve old logical anchors, camera, 1.18 active / 0.96 idle mobile scale, P1-P4 token badges, online seat ownership.
+- New `tests/visual-foundation-hud-vf04.ts` checks player copy, long names/jobs and every corner at several scales. `tests/visual-foundation-v01.ts` covers VF-03 first modal and the VF-04 plan.
+
+**NOT Runtime PASS:** Ron plans device tests later. On phone landscape and Steam Deck, visually inspect P1–P4 corners with long names, turn transitions, reaction side rails, blocking TIN TỨC / LÁ BÀI, Avatar Choice and Job Hub. Automated geometry and source tests do not verify actual font glyph rasterization or every animation frame. Prior News/Card text leakage and Lap Shuffle visual issues remain independently pending Ron's real-browser acceptance.
+
+**Next visual work after runtime screenshots:** VF-05, one canonical TIN TỨC / LÁ BÀI event surface using the reusable VF-03 owner and established .22 safe-lane reaction policy; VF-06 one canonical Job sample. Do not reskin every screen with isolated one-off changes. No gameplay RNG, economy, Host authority or Worker updates. PR #1 stays Draft/Open; do not merge.
+
 ## September 23 Steam Deck Gamepad .24/.25 checkpoint
 
 Validated latest source: `6f9507e1cff75914b56bf0f4a75ac6e7de27abb8`. MMM MVP CI **#3219**, run `35862236340`: **SUCCESS**. Public mirror: `473fcf21a0a7797d7525309eac00a210e061c281`. GitHub Pages **#22**, run `35862360068`: **SUCCESS**.
@@ -28,7 +46,7 @@ PR #1 remains Draft/Open; do not merge or move to Ready. Keep prior .22 News/Car
 Status: **SOURCE + PUBLIC PAGES DEPLOYED / CI PASS / RUNTIME RETEST REQUIRED**
 
 Current validated **source/CI/Public Pages** HEAD:
-`6f9507e1cff75914b56bf0f4a75ac6e7de27abb8`
+`f4c55e2e53ce90b40196cf603efaf86cd37f127d`
 
 Validated source checkpoint:
 - MMM MVP CI **#3212**

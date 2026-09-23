@@ -2,7 +2,7 @@
 
 Status: **MANDATORY DESIGN CONTRACT**
 
-These rules apply to every current and future MeMeMe screen, HUD, modal, popup, card and mobile layout unless Ron explicitly approves an exception. Controller support is deferred until it receives its own runtime acceptance pass.
+These rules apply to every current and future MeMeMe screen, HUD, modal, popup, card and mobile layout unless Ron explicitly approves an exception. Steam Deck web-controller routing is implemented and passes CI, but real-device runtime acceptance is still pending.
 
 The purpose is to prevent the recurring loop of adding too much information, shrinking text to make it fit, then rebuilding the UI later.
 
@@ -19,7 +19,7 @@ A normal persistent HUD/card should target at most three readable lines. Player 
 Idle cards stay compact. The active player's card scales up moderately, strengthens focus without relying on colour alone, and may reveal one extra context line such as salary/status. The expanded card must stay inside its HUD safe area.
 
 ## 5. Focus must communicate interaction
-Selectable cards need a clear focus state for touch/click and keyboard. Never require hover for a core action. Do not advertise controller input until the controller runtime is accepted.
+Selectable cards need a clear focus state for touch/click, keyboard and the installed browser Gamepad controller. Never require hover for a core action. Source/CI support is not proof of real Steam Deck acceptance.
 
 ## 6. Job Hub uses compact cards plus optional details
 Default Job cards show only slot/D6 range, art/icon, job name and compact salary. Long prose and percentage breakdowns stay out of the default surface. A concise preview opens with touch/click or keyboard and closes with Esc, outside tap/click or explicit close.
@@ -43,7 +43,7 @@ At any moment the screen should have one dominant action/message: roll, choose, 
 When crowded: remove duplicate information → shorten copy → move detail behind interaction → reorganize layout → only then adjust typography modestly.
 
 ## 13. Touch and keyboard are the supported input surface
-Core actions and details reachable by touch/click need understandable keyboard routes where supported. Controller helpers may remain in source, but must not be wired into runtime or advertised until a dedicated controller milestone is accepted.
+Core actions and details reachable by touch/click need understandable keyboard routes. The 0.1.70.4.24/.25 browser Gamepad controller is now wired into the runtime, with dedicated ownership and automated regression gates; full Steam Deck/Steam Input/Chromium acceptance still requires human playtesting.
 
 ## 14. Do not encode meaning only by colour
 Active turn, selected option, danger, disabled and success/failure states need another cue such as scale, icon, border, label, motion or shape.

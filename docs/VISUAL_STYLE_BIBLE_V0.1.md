@@ -395,7 +395,7 @@ Requirements:
 - popups fit without browser zoom;
 - no hover-only interaction;
 - touch/click + keyboard remain the supported runtime inputs;
-- do not advertise controller support yet.
+- browser Gamepad/Steam Deck controller routes are implemented and pass CI, but real-device acceptance is pending; every focused control must remain visible without a pointer.
 
 ---
 
