@@ -17,7 +17,12 @@ assert.match(rules, /Text must stay inside its owner/);
 assert.match(rules, /Floating bubbles must respect viewport edges/);
 assert.match(rules, /Reduce copy before reducing font size/);
 assert.match(rules, /Touch and keyboard are the supported input surface/);
-assert.match(rules, /Controller support is deferred/);
+// The web gamepad milestone superseded the old controller-deferred policy.
+assert.match(rules, /Steam Deck web-controller routing is implemented/);
+assert.match(rules, /real-device runtime acceptance is still pending/);
+const main = readFileSync('src/main.ts', 'utf8');
+assert.match(main, /installSteamDeckController070424\(game\)/);
+assert.doesNotMatch(main, /installGlobalGamepadUiNavigation0651\(game\)/);
 assert.match(rules, /Do not encode meaning only by colour/);
 assert.match(rules, /Soft rounded surfaces are the default shape language/);
 assert.match(rules, /soft rounded corners by default/);
