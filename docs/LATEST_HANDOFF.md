@@ -6,7 +6,7 @@ PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
 ## Current checkpoint
 
-**0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
+**0.1.70.4.22 — Presentation Single Owner + Safe Reactions + Job Keyboard Hotfix**
 
 Status: **SOURCE IMPLEMENTED / CI PASS / RUNTIME RETEST REQUIRED**
 
@@ -15,6 +15,16 @@ Validated source:
 - MMM MVP CI **#3212**
 - run: `35832680818`
 - conclusion: **SUCCESS**
+
+Newest source/hotfix:
+- `f1b94158ed273d7347795a72c29e9af0bd8fbc63`
+- Job Hub now handles Enter and Space using the same guarded action as the dice click.
+- Repeated keys, spectators, waiting state, and open detail must not roll.
+- regression `tests/job-minigame-input-070410.ts` updated.
+- MMM MVP CI **#3213** / run `35832935529`: **SUCCESS**.
+- public compiled mirror `05dc1532f7ef9dda39392f0ca9a44dc3204b1f21`.
+- Pages **#17** / run `35833039190`: **SUCCESS**.
+- Keep both keyboard and overlay fixes at **RUNTIME RETEST REQUIRED** until Ron checks real gameplay.
 
 Root-cause audit:
 `docs/PRESENTATION_OWNERSHIP_AUDIT_070422.md`
@@ -37,7 +47,7 @@ Runtime acceptance still required:
 2. all P1–P4 reaction positions;
 3. rapid skip across consecutive events;
 4. no delta/event toast behind the canonical modal;
-5. Job Hub/result remains readable;
+5. Job Hub/result remains readable; Enter and Space trigger its dice exactly once while A/B/C details and Escape keep working;
 6. one full Lap Shuffle still keeps every shuffled tile circular.
 
 Do not call Runtime PASS from CI alone.

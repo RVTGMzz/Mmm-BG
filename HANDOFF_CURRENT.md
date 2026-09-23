@@ -10,8 +10,8 @@ Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly a
 
 Status: **SOURCE IMPLEMENTED / CI PASS / RUNTIME RETEST REQUIRED**
 
-Current branch HEAD at handoff preparation:
-`81341ad5c12604ba878f13b5b7a599e1897ecc7a`
+Current validated runtime source HEAD:
+`f1b94158ed273d7347795a72c29e9af0bd8fbc63`
 
 Validated source checkpoint:
 - MMM MVP CI **#3212**
@@ -19,9 +19,24 @@ Validated source checkpoint:
 - source head `81341ad5c12604ba878f13b5b7a599e1897ecc7a`
 - conclusion: **SUCCESS**
 - typecheck/build and the new .22 gate passed
-- current later HEAD only contains handoff/documentation commits with CI-skip markers
+- follow-up Job Hub Enter/Space code commit `f1b94158ed273d7347795a72c29e9af0bd8fbc63`: MMM MVP CI **#3213** (`35832935529`) **SUCCESS**, including Job input and .22 presentation gates
+- published mirror `05dc1532f7ef9dda39392f0ca9a44dc3204b1f21`: Pages **#17** (`35833039190`) **SUCCESS**
 
 Do **not** call Runtime PASS until Ron retests the exact overlay/reaction cases in browser.
+
+## September 23 follow-up: Job Hub keyboard hotfix
+
+The user's Job Hub dice button accepted clicks but the hub's keyboard handler only handled A/B/C/1/2/3 and Escape. The separate Mini Game keyboard test did not cover the Job dice button.
+
+Source: `src/ui/JobChoicePicker.ts`.
+- Job dice button and Enter/Space now call the same guarded `submitRoll()` action.
+- Repeated keys, spectators/waiting turns, and an open Job detail cannot trigger a roll.
+- The key suppresses browser default only when an authorized roll is available.
+- Existing A/B/C/1/2/3 detail shortcuts and Escape-to-close stay intact.
+- Regression in `tests/job-minigame-input-070410.ts`.
+- CI #3213 and public Pages #17: SUCCESS.
+
+**Runtime retest required:** press Enter and Space separately in a fresh Job Hub; verify only one authoritative roll each time. Confirm keyboard does nothing in a spectator's waiting panel and while Job detail is open. The keyboard hotfix does not claim to fix the user's broader layout or decorative border feedback.
 
 ## Why the recurring overlay bug kept returning
 
@@ -153,7 +168,7 @@ Priority 1, reproduce the exact recurring presentation bug:
 
 Priority 2:
 6. Recheck Job Hub / nhận việc layout.
-7. Recheck keyboard roll on Job choice flow.
+7. Recheck Enter/Space Job Hub roll on keyboard, A/B/C details, Escape close, and spectator/waiting protection.
 8. Complete one lap and confirm every shuffled tile remains circular.
 9. Retest online P1/P2 ownership/reconnect/media when convenient.
 

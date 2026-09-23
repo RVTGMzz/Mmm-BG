@@ -11,13 +11,15 @@ Read first:
 6. `src/scenes/PresentationParityBoardScene.ts`
 7. `src/scenes/CareerMinigameBoardScene07044.ts`
 8. `tests/presentation-owner-rootfix-070422.ts`
-9. Ron's newest runtime screenshots/feedback
+9. `src/ui/JobChoicePicker.ts`
+10. `tests/job-minigame-input-070410.ts`
+11. Ron's newest runtime screenshots/feedback
 
 Current checkpoint:
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
 Current handoff HEAD:
-`81341ad5c12604ba878f13b5b7a599e1897ecc7a`
+`f1b94158ed273d7347795a72c29e9af0bd8fbc63`
 
 Important:
 - recurring overlay bug was traced to duplicate visual producers + horizontally unsafe reaction geometry + stale reaction timers + permissive final whitelisting;
@@ -34,5 +36,11 @@ Also retain:
 - PR #1 stays Draft/Open;
 - never merge PR #1 unless Ron explicitly asks;
 - keep visible labels TIN TỨC / LÁ BÀI.
+
+Newest follow-up:
+- source `f1b94158ed273d7347795a72c29e9af0bd8fbc63` adds Enter/Space to authoritative Job Hub dice;
+- CI #3213 PASS; mirror `05dc1532f7ef9dda39392f0ca9a44dc3204b1f21` and Pages #17 SUCCESS;
+- test mouse/Enter/Space parity, spectator/waiting lock and A/B/C/ESC detail controls in browser;
+- visual acceptance remains open for the broader Job layout and border-naturalness feedback.
 
 At session start, first verify the latest GitHub Actions result for the current branch HEAD, then continue from Ron's newest runtime feedback.
