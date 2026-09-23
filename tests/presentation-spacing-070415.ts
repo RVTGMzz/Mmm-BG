@@ -14,11 +14,12 @@ assert.match(replay, /summary: ''/);
 assert.match(replay, /description: `\$\{job\.title\} • \$\{jobSalary\(job, 1\)\} B\$\/cổng\.`/);
 assert.doesNotMatch(replay, /description: `\$\{job\.icon\} \$\{job\.title\}/);
 
-// Job result uses a fixed two-column grid.
+// Job result uses one centered card with a dedicated result title and body.
 assert.match(active, /const isResult = model\.title\.includes\('NHẬN VIỆC'\)/);
-assert.match(active, /const title = this\.add\.text\(isResult \? 190 : 60/);
-assert.match(active, /const body = this\.add\.text\(isResult \? -240 : 60/);
-assert.match(active, /fixedWidth: isResult \? 260 : 570/);
+assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
+assert.match(active, /const title = this\.add\.text\(36, -12, displayTitle/);
+assert.match(active, /const body = this\.add\.text\(36, 52, bodyLines\.join/);
+assert.match(active, /fixedWidth: 540/);
 
 // Card/News removes every inherited child, including graphics/footer strips.
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
@@ -33,8 +34,4 @@ assert.match(presentation, /const text = this\.scene\.add\.text\(textX, -11/);
 assert.match(presentation, /fixedWidth: 226/);
 assert.match(presentation, /setOrigin\(0, 0\)/);
 
-const leftBodyRight = -240 + 260;
-const rightTitleLeft = 190 - 320 / 2;
-assert.ok(leftBodyRight < rightTitleLeft, 'Job result columns must have a visible gap');
-
-console.log('[presentation-spacing-070415] PASS Job source/grid + Card/News full rebuild + reaction spacing');
+console.log('[presentation-spacing-070415] PASS Job source/centered card + Card/News full rebuild + reaction spacing');
