@@ -49,7 +49,13 @@ assert.equal(reactionPlacement070422(2, 2, 1280, 450), null);
 // telemetry stays in the log but can never spawn a second on-screen toast.
 assert.match(parity, /legacyToast\.showEventToast = \(\) => undefined/);
 assert.match(parity, /legacyToast\.showDeltaToast = \(\) => undefined/);
-assert.ok(parity.indexOf('legacyToast.showDeltaToast =') < parity.indexOf('\n    super.create();'), 'the legacy toasts must be disabled before the actual inherited create call');
+const createStart = parity.indexOf('  create(): void {');
+const superCreate = parity.indexOf('    super.create();', createStart);
+const disableEventToast = parity.indexOf('legacyToast.showEventToast = () => undefined;', createStart);
+const disableDeltaToast = parity.indexOf('legacyToast.showDeltaToast = () => undefined;', createStart);
+assert.ok(createStart >= 0 && superCreate > createStart, 'create() / super.create() must exist');
+assert.ok(disableEventToast > createStart && disableEventToast < superCreate, 'event toast must be disabled before super.create()');
+assert.ok(disableDeltaToast > createStart && disableDeltaToast < superCreate, 'delta toast must be disabled before super.create()');
 
 // Late callbacks MUST retain the originating model, never reuse a reaction
 // from a skipped Card on the next News. The previous implementation checked
