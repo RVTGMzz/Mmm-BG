@@ -23,6 +23,7 @@ const KIND_PALETTE: Record<PresentationEventModel['kind'], { panel: number; acce
   move_step: { panel: 0x24211d, accent: 0xffd34d, label: 'MOVE' },
   tile_land: { panel: 0x312d28, accent: 0xffd34d, label: 'LANDING' },
   ready_bonus: { panel: 0x173c31, accent: 0xffd34d, label: 'READY BONUS' },
+  board_shuffle: { panel: 0x28485a, accent: 0x77d9e7, label: 'BOARD SHIFT' },
   card_draw: { panel: 0x332543, accent: 0xb997d6, label: 'CARD DROP' },
   card_blocked: { panel: 0x473b2c, accent: 0xffd34d, label: 'HAND LIMIT' },
   card_play: { panel: 0x2d203f, accent: 0xd4a8ff, label: 'CARD ACTION' },
@@ -307,6 +308,10 @@ export class MatchPresentationLayer {
     this.playModelSfx(model);
     this.spawnBurst(palette.accent, model.rarity === 'SSR' ? 18 : 10, 640, 330);
     if (model.kind === 'card_draw' || model.kind === 'card_play') this.spawnCardFlip(palette.accent);
+    if (model.kind === 'board_shuffle') {
+      this.spawnBurst(palette.accent, 22, 640, 330);
+      this.scene.cameras.main.shake(180, 0.0012);
+    }
     if (model.rarity === 'SSR') this.scene.cameras.main.shake(120, 0.0016);
 
     this.scene.tweens.add({
@@ -428,7 +433,7 @@ export class MatchPresentationLayer {
 
   private playModelSfx(model: PresentationEventModel): void {
     let cue: SfxCue = 'land';
-    if (model.kind === 'ready_bonus') cue = 'ready';
+    if (model.kind === 'ready_bonus' || model.kind === 'board_shuffle') cue = 'ready';
     else if (model.kind === 'card_draw') cue = 'card_draw';
     else if (model.kind === 'card_play' || model.kind === 'card_blocked') cue = 'card_play';
     else if (model.kind === 'news') cue = 'news';
