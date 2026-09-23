@@ -74,6 +74,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     super.create();
     this.installCanonicalJobPresentation070411();
     this.installFinalCardLayout070412();
+    this.installLapShufflePresentation071();
     this.ensurePlayerTokenBadges070417();
     this.syncLapShuffleBoard071(false);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroyLapShuffleBoard071());
@@ -90,7 +91,6 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.retireLegacyPresentationOverlays070414();
     this.syncCanonicalCinematicOwnership070417();
     this.ensurePlayerTokenBadges070417();
-    this.syncLapShuffleBoard071(true);
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
   }
@@ -245,6 +245,22 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       if (!isCard && !isNews) return;
       this.rebuildCanonicalCinematicText070414(presentation.active, model);
       this.syncCanonicalCinematicOwnership070417();
+    };
+  }
+
+  /**
+   * Apply the new board layout at the exact presentation beat where the global
+   * shuffle event reaches the screen. Authority may already have finished the
+   * roll, but the visual board must not spoil the transformation early.
+   */
+  private installLapShufflePresentation071(): void {
+    const presentation = this.runtime07044().presentation;
+    if (!presentation) return;
+
+    const originalShowCinematic = presentation.showCinematic.bind(presentation);
+    presentation.showCinematic = (model: PresentationEventModel) => {
+      if (model.kind === 'board_shuffle') this.syncLapShuffleBoard071(true);
+      originalShowCinematic(model);
     };
   }
 
