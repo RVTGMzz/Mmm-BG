@@ -8,10 +8,10 @@ Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly a
 
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
-Status: **SOURCE IMPLEMENTED / CI PASS / RUNTIME RETEST REQUIRED**
+Status: **SOURCE + PUBLIC PAGES DEPLOYED / CI PASS / RUNTIME RETEST REQUIRED**
 
 Current validated runtime source HEAD:
-`f1b94158ed273d7347795a72c29e9af0bd8fbc63`
+`e1a965e2869d29461c834d1f07255bd3498ec5a3`
 
 Validated source checkpoint:
 - MMM MVP CI **#3212**
@@ -23,6 +23,38 @@ Validated source checkpoint:
 - published mirror `05dc1532f7ef9dda39392f0ca9a44dc3204b1f21`: Pages **#17** (`35833039190`) **SUCCESS**
 
 Do **not** call Runtime PASS until Ron retests the exact overlay/reaction cases in browser.
+
+## September 23 visual follow-up: Mini Game duel + single-ring Lap Shuffle
+
+Ron re-sent three runtime screenshots: (1) the OẲN TÙ XÌ duel layout had names/result crowded against card rims and undimmed corner HUD, (2) a long News/Card narrative could appear to the left of the canonical card, and (3) post-shuffle circles had mismatched double category-colour rims.
+
+**Validated source:** `e1a965e2869d29461c834d1f07255bd3498ec5a3`
+**MMM MVP CI #3214:** run `35836401072`, SUCCESS.
+**Public mirror:** `a24b90417b018198651f61bb0e1e8d75fb36412b`.
+**GitHub Pages #18:** run `35836498719`, SUCCESS.
+
+What is now implemented:
+- `src/ui/MiniGameOverlay.ts`: the fullscreen Mini Game root is a named, depth-1500 modal above HUD depth 1000. OẲN TÙ XÌ has smaller 226x190 cards, names in a separate row, a dedicated bottom result/replay rail, and Vietnamese-safe type.
+- `src/ui/miniGameLayout070423.ts` defines a pure, geometry-tested layout for both cards, player labels and the result footer.
+- The .22 final modal guard now recognizes the real `minigame-modal` as the top owner, so prior presentation text cannot leak over a Mini Game.
+- `src/scenes/CareerMinigameBoardScene07044.ts`: Lap Shuffle repaints each existing depth-4 canonical circle and depth-5 label in place. It does NOT stack a second radius-34 disc over the original category-coloured rim; original radius, coordinates, path geometry and locked nodes are retained. Fallback circle is only used if an original circle truly does not exist.
+- The long News/Card narration issue had already received the **0.1.70.4.22** source-level fix (duplicate toast producers disabled, geometry-safe named reactions, exact event ownership and POST_UPDATE modal guard). This patch does not claim an additional unverified runtime fix for that screenshot.
+
+Automated regression:
+- `tests/job-minigame-depth-059.ts`: pure duel geometry and full-screen modal depth.
+- `tests/roguelike-lap-shuffle-071.ts`: base-circle in-place recolouring, label update, and circular fallback.
+- `tests/presentation-owner-rootfix-070422.ts`: Mini Game is a named high-priority modal owner.
+
+**All automated gates pass; real-browser visual acceptance is still pending.**
+
+Fresh browser acceptance:
+1. Hard-refresh the Pages playtest and run RPS with both tie and winner. Both names must clear card tops, no replay text may cover the upper rims, and HUD must sit behind the dimmer.
+2. In Job Hub, Enter and Space must roll exactly once when permitted; A/B/C and Escape still inspect/close detail. Spectator/waiting cannot roll.
+3. Play several different TIN TỨC / LÁ BÀI with long and transfer descriptions. There must be no separate sentence floating to the left or behind the canonical modal. Rapidly skip events to catch stale reactions.
+4. Complete a lap. Check that all mutable shuffled circles have ONE border, no older category ring, correct new colour and icon. Confirm locked nodes preserve identity.
+5. Repeat visuals on landscape mobile and after reconnect if available.
+
+Retain production Worker .20 and online authority untouched. PR #1 remains Draft/Open; do not merge. Do not resume 0.1.71 until runtime acceptance.
 
 ## September 23 follow-up: Job Hub keyboard hotfix
 

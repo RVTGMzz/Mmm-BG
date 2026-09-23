@@ -4,6 +4,19 @@ Repository: `RVTGMzz/Mmm-BG`
 Branch: `mmm-mvp-0.1-core`  
 PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
+## September 23 newest validated visual checkpoint
+
+- source: `e1a965e2869d29461c834d1f07255bd3498ec5a3`
+- CI #3214 / `35836401072`: SUCCESS
+- public mirror: `a24b90417b018198651f61bb0e1e8d75fb36412b`
+- Pages #18 / `35836498719`: SUCCESS
+- named depth-1500 fullscreen Mini Game, revised RPS duel name/card/footer geometry, pure geometry regression
+- Lap Shuffle now edits existing canonical circle+label instead of painting a second circle on top of its original coloured rim
+- .22 duplicate toasts/reaction modal guard retained and tested; screenshot's detached News/Card text still needs real-browser retest
+- prior Job Hub Enter/Space hotfix retained
+- new test files: `src/ui/miniGameLayout070423.ts`, extended `.059`, `.071`, and `.22` guards.
+- browser acceptance **PENDING** for exact four screenshot issues, including mobile viewport and full-lap shuffle.
+
 ## Current checkpoint
 
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions + Job Keyboard Hotfix**

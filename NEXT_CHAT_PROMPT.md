@@ -13,13 +13,15 @@ Read first:
 8. `tests/presentation-owner-rootfix-070422.ts`
 9. `src/ui/JobChoicePicker.ts`
 10. `tests/job-minigame-input-070410.ts`
-11. Ron's newest runtime screenshots/feedback
+11. `src/ui/MiniGameOverlay.ts` and `src/ui/miniGameLayout070423.ts`
+12. `tests/job-minigame-depth-059.ts` and `tests/roguelike-lap-shuffle-071.ts`
+13. Ron's newest runtime screenshots/feedback
 
 Current checkpoint:
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
-Current handoff HEAD:
-`f1b94158ed273d7347795a72c29e9af0bd8fbc63`
+Current validated source HEAD:
+`e1a965e2869d29461c834d1f07255bd3498ec5a3`
 
 Important:
 - recurring overlay bug was traced to duplicate visual producers + horizontally unsafe reaction geometry + stale reaction timers + permissive final whitelisting;
@@ -42,5 +44,7 @@ Newest follow-up:
 - CI #3213 PASS; mirror `05dc1532f7ef9dda39392f0ca9a44dc3204b1f21` and Pages #17 SUCCESS;
 - test mouse/Enter/Space parity, spectator/waiting lock and A/B/C/ESC detail controls in browser;
 - visual acceptance remains open for the broader Job layout and border-naturalness feedback.
+
+Latest CI #3214 SUCCESS, mirror `a24b90417b018198651f61bb0e1e8d75fb36412b`, Pages #18 SUCCESS. Four runtime screenshot issues to verify in next session: (1) RPS duel labels/result and HUD layer, (2) Job Hub Enter/Space dice (already shipped with CI #3213), (3) arbitrary News/Card detached text/reactions (source .22, browser proof still required), (4) post-Lap Shuffle double rings (new .23 in-place canonical circle update). Never confuse CI PASS with runtime acceptance.
 
 At session start, first verify the latest GitHub Actions result for the current branch HEAD, then continue from Ron's newest runtime feedback.
