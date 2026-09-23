@@ -1,9 +1,58 @@
-# MeMeMe — Latest Handoff
+# Mmm-BG — Latest Handoff
 
-Branch: `mmm-mvp-0.1-core`
+Repository: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-core`  
+PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
-Legacy PR #1 remains Draft/Open.
-Do not merge or mark Ready unless Ron explicitly asks.
+## Current checkpoint
+
+**0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
+
+Status: **SOURCE IMPLEMENTED / CI PASS / RUNTIME RETEST REQUIRED**
+
+Validated source:
+- head: `81341ad5c12604ba878f13b5b7a599e1897ecc7a`
+- MMM MVP CI **#3212**
+- run: `35832680818`
+- conclusion: **SUCCESS**
+
+Root-cause audit:
+`docs/PRESENTATION_OWNERSHIP_AUDIT_070422.md`
+
+What changed:
+- both inherited legacy visual toast producers are disabled before `super.create()`;
+- reaction balloons use one tested geometry policy, `src/ui/presentationLanes070422.ts`;
+- old 328px side bubbles that physically intruded into the modal are no longer accepted by regression tests;
+- delayed reactions are bound to the exact originating presentation model;
+- canonical reaction containers are explicitly named and registered;
+- final modal ownership runs again at `POST_UPDATE`;
+- whole legacy Card/News containers are retired instead of hiding only selected Text children;
+- arbitrary depth/emoji/text whitelisting is removed.
+
+Primary regression:
+`tests/presentation-owner-rootfix-070422.ts`
+
+Runtime acceptance still required:
+1. several different TIN TỨC and LÁ BÀI;
+2. all P1–P4 reaction positions;
+3. rapid skip across consecutive events;
+4. no delta/event toast behind the canonical modal;
+5. Job Hub/result remains readable;
+6. one full Lap Shuffle still keeps every shuffled tile circular.
+
+Do not call Runtime PASS from CI alone.
+
+## Canonical handoff files
+
+- `HANDOFF_CURRENT.md`
+- `NEXT_CHAT_PROMPT.md`
+- this file
+
+The next chat should verify the latest branch/head and then prioritize Ron's newest runtime screenshot feedback.
+
+---
+
+## Retained historical/current context below
 
 ## Current checkpoint
 
