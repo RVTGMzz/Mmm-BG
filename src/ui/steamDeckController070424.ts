@@ -124,6 +124,10 @@ function domItems070424(root: HTMLElement): HTMLElement[] {
 function activeDom070424(scene: Phaser.Scene): HTMLElement | undefined {
   const settings = document.querySelector<HTMLElement>('#mememe-settings.is-open');
   if (settings) return settings;
+  // A visible owned DOM modal gets controller focus before any setup fields
+  // behind its backdrop. This is presentation routing only, never authority.
+  const modal = document.querySelector<HTMLElement>('.vf-modal:not([hidden])');
+  if (modal && domVisible070424(modal)) return modal;
   const nodes = scene.children.list
     .filter((o): o is Phaser.GameObjects.DOMElement =>
       o instanceof Phaser.GameObjects.DOMElement && o.active && o.visible)

@@ -1,6 +1,6 @@
 # Visual Foundation Pass 0.1
 
-Status: **IN PROGRESS — VF-01 + VF-02 IMPLEMENTED**
+Status: **IN PROGRESS — VF-01 + VF-02 + VF-03 FIRST MODAL IMPLEMENTED; DEVICE RETEST PENDING**
 
 Canonical visual authority:
 - `docs/VISUAL_STYLE_BIBLE_V0.1.md`
@@ -469,7 +469,19 @@ Implemented in source:
 - Regression gate:
   - `tests/visual-foundation-v01.ts`
 
-VF-03 panel/modal has **not** started yet. Do not treat the whole foundation pass as complete.
+VF-03 now has its first shared implementation: `decorateVisualFoundationPanelV01`
+and `bindVisualFoundationModalV01` in `src/ui/visualFoundationV01.ts`. The
+first live adoption is the setup Avatar Choice modal, with one owned header,
+four large choice buttons, a footer, keyboard Tab trap, Esc dismissal,
+focus return to its opener and safe scroll on phone landscape. Controller
+focus now prioritizes that open dialog above background setup fields.
+
+**Important:** VF-03 is a first reference implementation, not a claim that
+every Phaser event/Card/News modal has been migrated. The recurring generic
+News/Card reaction leak still needs independent runtime acceptance. VF-04 HUD,
+VF-05 News/Card and VF-06 Job samples are not yet migrated to Foundation.
+Desktop, real-phone-landscape and Steam Deck controller visual acceptance is
+required before declaring VF-03 complete.
 
 ## 13. Implementation order
 

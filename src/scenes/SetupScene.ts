@@ -12,7 +12,11 @@ import {
   prepareForNativePicker07033,
   waitForMobileLandscapeAfterPicker07032,
 } from '../ui/mobileLandscape07031';
-import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
+import {
+  bindVisualFoundationModalV01,
+  decorateVisualFoundationButtonsV01,
+  decorateVisualFoundationPanelV01,
+} from '../ui/visualFoundationV01';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -75,7 +79,12 @@ export class SetupScene extends Phaser.Scene {
       <p id="setup-status" class="setup-status"></p>`;
     const setupDom = this.add.dom(640, 410, root).setOrigin(0.5);
     const node = setupDom.node as HTMLDivElement;
+    node.querySelectorAll<HTMLElement>('.face-choice-panel').forEach((panel) => {
+      decorateVisualFoundationPanelV01(panel, 'wide');
+    });
     decorateVisualFoundationButtonsV01(node, [
+      { selector: '.face-choice-grid button', variant: 'secondary', size: 'lg' },
+      { selector: '.face-choice-close', variant: 'subtle', size: 'md' },
       { selector: '#setup-back-mode', variant: 'subtle', size: 'sm' },
       { selector: '#start-game', variant: 'primary', size: 'lg' },
     ]);
@@ -104,12 +113,13 @@ export class SetupScene extends Phaser.Scene {
       const batchInput = node.querySelector<HTMLInputElement>(`#face-batch-${player.id}`);
       const oneForAllInput = node.querySelector<HTMLInputElement>(`#face-one-${player.id}`);
       const choiceMenu = node.querySelector<HTMLElement>(`#face-choice-menu-${player.id}`);
-      const closeChoiceMenu = () => {
-        if (choiceMenu) choiceMenu.hidden = true;
-      };
-      const openChoiceMenu = () => {
-        if (choiceMenu) choiceMenu.hidden = false;
-      };
+      const choiceLauncher = node.querySelector<HTMLButtonElement>(`#face-menu-${player.id}`);
+      const ownedModal = choiceMenu && choiceLauncher
+        ? bindVisualFoundationModalV01(choiceMenu, choiceLauncher)
+        : undefined;
+      const closeChoiceMenu = () => ownedModal?.close();
+      const openChoiceMenu = () => ownedModal?.open();
+      if (ownedModal) this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => ownedModal.destroy());
 
       node.querySelector<HTMLButtonElement>(`#face-menu-${player.id}`)?.addEventListener('click', openChoiceMenu);
       node.querySelector<HTMLButtonElement>(`#face-choice-close-${player.id}`)?.addEventListener('click', closeChoiceMenu);
@@ -208,16 +218,16 @@ export class SetupScene extends Phaser.Scene {
       <input id="face-batch-${playerId}" class="face-hidden-input" type="file" accept="image/*" multiple />
       <input id="face-one-${playerId}" class="face-hidden-input" type="file" accept="image/*" />
     </div>
-    <div id="face-choice-menu-${playerId}" class="face-choice-menu" hidden>
+    <div id="face-choice-menu-${playerId}" class="face-choice-menu vf-modal" tabindex="-1" hidden>
       <section class="face-choice-panel" role="dialog" aria-modal="true" aria-label="Chọn cách tạo avatar">
-        <strong>CHỌN CÁCH TẠO AVATAR</strong>
-        <div class="face-choice-grid">
+        <header class="vf-panel__header"><strong>CHỌN CÁCH TẠO AVATAR</strong></header>
+        <div class="vf-panel__body"><div class="face-choice-grid">
           <button id="face-library-3-${playerId}" type="button"><span class="face-choice-icon">📚</span><span>3 ẢNH</span></button>
           <button id="face-library-one-${playerId}" type="button"><span class="face-choice-icon">🪄</span><span>1 ẢNH</span></button>
           <button id="face-camera-3-${playerId}" type="button"><span class="face-choice-icon">📷</span><span>CHỤP 3</span></button>
           <button id="face-camera-one-${playerId}" type="button"><span class="face-choice-icon">🤳</span><span>CHỤP 1</span></button>
-        </div>
-        <button id="face-choice-close-${playerId}" class="face-choice-close" type="button">ĐÓNG</button>
+        </div></div>
+        <footer class="vf-panel__footer"><button id="face-choice-close-${playerId}" class="face-choice-close" type="button">ĐÓNG</button></footer>
       </section>
     </div>`;
     const roleRow = `<div class="player-role-row-069">${isCpu

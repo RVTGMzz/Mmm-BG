@@ -331,3 +331,89 @@ button.vf-button.vf-button--danger {
     font-size: 13px;
   }
 }
+
+/* VF-03 shared panel/modal material. One shell owns header/body/footer and
+ * leaves a clear central reading lane. First adoption: avatar choice modal. */
+.vf-panel {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  max-width: min(100%, 960px);
+  border: var(--vf-border-strong) solid var(--vf-color-outline-cocoa);
+  border-radius: var(--vf-radius-lg);
+  background: linear-gradient(168deg, #fffdf5, var(--vf-color-panel-cream) 70%, var(--vf-color-panel-warm));
+  box-shadow: var(--vf-shadow-soft), inset 0 3px 0 rgba(255,255,255,.8);
+  color: var(--vf-color-text-main);
+  font-family: var(--vf-font-ui);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+.vf-panel--compact { max-width: 450px; }
+.vf-panel--normal { max-width: 680px; }
+.vf-panel--wide { max-width: 960px; }
+.vf-panel--event { max-width: 800px; }
+.vf-panel__header { padding-bottom: var(--vf-space-4); }
+.vf-panel__header strong {
+  display: block;
+  margin: 0;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 850;
+  line-height: 1.2;
+}
+.vf-panel__body { min-width: 0; }
+.vf-panel__footer {
+  display: flex;
+  justify-content: center;
+  gap: var(--vf-space-3);
+  margin-top: var(--vf-space-4);
+}
+.vf-modal[hidden] { display: none !important; }
+.vf-modal:focus { outline: none; }
+/* The avatar menu is the first fully migrated VF-03 modal. Its backdrop dims
+ * unrelated setup controls, while the inside uses one owned reading surface. */
+.face-choice-menu.vf-modal {
+  border-radius: var(--vf-radius-lg);
+  background: rgba(30, 26, 24, .72);
+  overscroll-behavior: contain;
+}
+.face-choice-panel.vf-panel {
+  width: min(680px, calc(100% - 20px));
+  max-height: min(605px, calc(100dvh - 64px));
+  padding: clamp(14px, 2vw, 24px);
+  overflow-y: auto;
+  border-color: var(--vf-color-outline-cocoa);
+  text-align: center;
+}
+.face-choice-panel.vf-panel .vf-panel__header strong { margin: 0; }
+.face-choice-panel.vf-panel .face-choice-grid { gap: var(--vf-space-3); }
+.face-choice-panel.vf-panel .face-choice-grid button.vf-button {
+  display: flex;
+  flex-direction: column;
+  min-height: 106px;
+  white-space: normal;
+  border-radius: var(--vf-radius-md);
+  padding: 10px;
+  line-height: 1.12;
+}
+.face-choice-panel.vf-panel .face-choice-grid button.vf-button:nth-child(1) {
+  --vf-button-bg: var(--vf-color-accent-butter);
+  background: linear-gradient(180deg,#fff6da,var(--vf-color-accent-butter));
+}
+.face-choice-panel.vf-panel .face-choice-grid button.vf-button:nth-child(2) {
+  --vf-button-bg: #f9e4be;
+  background: linear-gradient(180deg,#fffefa,#f9e4be);
+}
+.face-choice-panel.vf-panel .face-choice-grid button.vf-button:nth-child(3) {
+  --vf-button-bg: var(--vf-color-accent-mint);
+  background: linear-gradient(180deg,#edffef,var(--vf-color-accent-mint));
+}
+.face-choice-panel.vf-panel .face-choice-grid button.vf-button:nth-child(4) {
+  --vf-button-bg: var(--vf-color-accent-aqua);
+  background: linear-gradient(180deg,#eefaff,var(--vf-color-accent-aqua));
+}
+.face-choice-panel.vf-panel .face-choice-icon { line-height: 1; margin-bottom: 6px; }
+.face-choice-panel.vf-panel .vf-panel__footer .vf-button { min-width: 180px; }
+@media (pointer: coarse) and (orientation: landscape) {
+  .face-choice-panel.vf-panel { max-height: calc(100dvh - 42px); }
+  .face-choice-panel.vf-panel .face-choice-grid button.vf-button { min-height: 92px; }
+}

@@ -91,6 +91,25 @@ assert.match(setup, /selector: '#start-game', variant: 'primary', size: 'lg'/);
 assert.match(setup, /selector: '\.rule-confirm', variant: 'primary', size: 'lg'/);
 assert.match(setup, /selector: '#setup-back-mode', variant: 'subtle'/);
 
+// VF-03 shared panel/modal shell and first ownership example.
+assert.match(helper, /decorateVisualFoundationPanelV01/);
+assert.match(helper, /bindVisualFoundationModalV01/);
+assert.match(helper, /root.addEventListener\('keydown', onKey\)/);
+assert.match(helper, /event.key === 'Escape'/);
+assert.match(helper, /event.key !== 'Tab'/);
+assert.match(css, /\.vf-panel\s*\{/);
+assert.match(css, /\.vf-panel__header/);
+assert.match(css, /\.vf-panel__body/);
+assert.match(css, /\.vf-panel__footer/);
+assert.match(css, /\.face-choice-panel\.vf-panel/);
+assert.match(setup, /decorateVisualFoundationPanelV01\(panel, 'wide'\)/);
+assert.match(setup, /bindVisualFoundationModalV01\(choiceMenu, choiceLauncher\)/);
+assert.match(setup, /class="face-choice-menu vf-modal"/);
+assert.match(setup, /class="vf-panel__footer"/);
+const controller = readFileSync('src/ui/steamDeckController070424.ts','utf8');
+assert.match(controller, /\.vf-modal:not\(\[hidden\]\)/);
+assert.doesNotMatch(helper, /submitIntent|MatchState|Math\.random|browserSession|gameSession/);
+
 // Documentation authority stays wired to implementation.
 assert.match(bible, /VISUAL_FOUNDATION_PASS_0\.1\.md/);
 assert.match(plan, /VF-01/);

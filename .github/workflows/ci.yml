@@ -226,8 +226,8 @@ jobs:
         run: npm run test:final-modal-career-070421
       - name: 0.1.70.4.22 presentation single owner + safe reactions
         run: npm run test:presentation-owner-070422
-      - name: Visual Foundation 0.1 VF-01 tokens + VF-02 buttons
-        run: npm run test:visual-foundation-v01
+      - name: Visual Foundation 0.1 VF-01/02/03 tokens buttons and first owned modal
+        run: npm run test:visual-foundation-vf03
       - name: Roguelike Lap Shuffle 0.1 deterministic authority
         run: npm run test:roguelike-lap-shuffle-071
       - name: 0.1.70.3.1 mobile landscape and face style
