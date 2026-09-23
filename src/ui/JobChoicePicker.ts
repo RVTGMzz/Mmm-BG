@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
 import { jobSalary, type JobDefinition } from '../core/jobs';
+import { nextJobHubFocus070423, type JobHubFocus, type JobHubNavKey } from './jobHubFocus070423';
 
 export interface JobRollPickerOptions {
   canRoll?: boolean;
@@ -96,6 +97,10 @@ export function createJobRollPicker(
   const cardHits: Phaser.GameObjects.Rectangle[] = [];
   let detailRoot: Phaser.GameObjects.Container | undefined;
   let submitted = false;
+  // Keyboard focus is a real in-game selection, not the OS mouse pointer.
+  // An active player starts on ROLL and can finish the entire Job flow with Enter.
+  let focused: JobHubFocus = canRoll ? 'roll' : 0;
+  let renderKeyboardFocus = (): void => undefined;
 
   const setCardInteractive = (enabled: boolean): void => {
     for (const hit of cardHits) {
@@ -127,6 +132,7 @@ export function createJobRollPicker(
     restoreHubVisuals();
     setCardInteractive(true);
     restoreRollInteraction();
+    renderKeyboardFocus();
   };
 
   const openDetail = (index: number): void => {
@@ -140,6 +146,7 @@ export function createJobRollPicker(
     const risky = job.risk === 'crime';
     const detail = scene.add.container(640, 360).setDepth(995).setName('job-detail-modal');
     detailRoot = detail;
+    renderKeyboardFocus(); // The detail sheet owns the focus until it closes.
     const dim = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.78).setInteractive();
     const detailShell = roundedPanel070421(
       scene,
@@ -314,7 +321,14 @@ export function createJobRollPicker(
       scene.tweens.killTweensOf(card);
       scene.tweens.add({ targets: card, scaleX: 1, scaleY: 1, duration: 100 });
     });
-    hit.on('pointerdown', () => openDetail(index));
+    hit.on('pointerover', () => {
+      focused = index as 0 | 1 | 2;
+      renderKeyboardFocus();
+    });
+    hit.on('pointerdown', () => {
+      focused = index as 0 | 1 | 2;
+      openDetail(index);
+    });
   });
 
   const rollShadow = scene.add.graphics();
@@ -337,6 +351,45 @@ export function createJobRollPicker(
   const rollHit = scene.add.rectangle(0, 215, 356, 62, 0xffffff, 0.001);
   root.add([rollShadow, rollFace, rollText, rollHit]);
 
+  // An always-visible focus outline makes the default ENTER action obvious.
+  // It wraps one target at a time and never requires an actual mouse cursor.
+  const focusRing = scene.add.graphics().setName('job-hub-keyboard-focus-070423');
+  const focusHint = scene.add.text(
+    0, 151,
+    canRoll
+      ? '← → CHỌN NGHỀ  •  ↑ ↓ VỀ XÚC XẮC  •  ENTER / SPACE XÁC NHẬN'
+      : '← → XEM NGHỀ  •  ENTER / SPACE XEM CHI TIẾT',
+    {
+      fontFamily: JOB_FONT_070421, fontSize: '12px',
+      fontStyle: 'bold', color: '#69534b', align: 'center',
+    },
+  ).setOrigin(0.5);
+  root.add([focusRing, focusHint]);
+
+  renderKeyboardFocus = (): void => {
+    focusRing.clear();
+    if (!root.active || !root.visible || submitted || detailRoot?.active) {
+      focusRing.setVisible(false);
+      return;
+    }
+    if (focused === 'roll' && (!canRoll || !rollHit.input?.enabled)) {
+      focusRing.setVisible(false);
+      return;
+    }
+    focusRing.setVisible(true);
+    const x = focused === 'roll' ? 0 : JOB_CARD_X_070421[focused];
+    const y = focused === 'roll' ? 215 : 0;
+    const width = focused === 'roll' ? 368 : 262;
+    const height = focused === 'roll' ? 76 : 242;
+    focusRing.lineStyle(5, 0x4b94e8, 1);
+    focusRing.strokeRoundedRect(x - width / 2, y - height / 2, width, height, 23);
+  };
+  rollHit.on('pointerover', () => {
+    if (!canRoll) return;
+    focused = 'roll';
+    renderKeyboardFocus();
+  });
+
   let resolveRoll!: () => void;
   const rolled = new Promise<void>((resolve) => {
     resolveRoll = resolve;
@@ -352,6 +405,8 @@ export function createJobRollPicker(
     rollFace.strokeRoundedRect(-178, 184, 356, 62, 20);
     rollHit.setInteractive({ useHandCursor: true });
     rollText.setText(label).setFontSize(19).setColor('#3d2924');
+    focused = 'roll';
+    renderKeyboardFocus();
   };
 
   const setWaiting = (label = '⏳ ĐÃ BẤM • CHỜ HOST...') => {
@@ -364,9 +419,11 @@ export function createJobRollPicker(
     rollFace.lineStyle(4, 0x6c5b50, 1);
     rollFace.strokeRoundedRect(-178, 184, 356, 62, 20);
     rollText.setText(label).setFontSize(14).setColor('#5b4e46');
+    renderKeyboardFocus();
   };
 
   if (canRoll) enableRoll();
+  else renderKeyboardFocus();
 
   // Pointer and keyboard share one guarded action. The active Job Hub is
   // the sole owner of the roll input; spectators and open details cannot roll.
@@ -381,21 +438,67 @@ export function createJobRollPicker(
   backdrop.on('pointerdown', () => undefined);
 
   const keyboardHandler = (event: KeyboardEvent): void => {
-    if (!root.active) return;
+    if (!root.active || !root.visible) return;
     const key = event.key.toLocaleLowerCase();
-    if (key === 'escape') {
-      closeDetail();
-      return;
-    }
-    if ((key === 'enter' || key === ' ' || event.code === 'Space') && !event.repeat) {
-      if (canRoll && !submitted && !detailRoot?.active && rollHit.input?.enabled) {
-        event.preventDefault();
-        submitRoll();
+    const consume = (): void => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
+    // Detail sheet: Enter/Space closes it, restoring keyboard focus to the
+    // chosen career card. Escape and Backspace work as a second way back.
+    if (detailRoot?.active) {
+      if (key === 'escape' || key === 'backspace' || key === 'enter' || key === ' ' || event.code === 'Space') {
+        consume();
+        if (!event.repeat) closeDetail();
       }
       return;
     }
-    const index = key === 'a' || key === '1' ? 0 : key === 'b' || key === '2' ? 1 : key === 'c' || key === '3' ? 2 : -1;
-    if (index >= 0) openDetail(index);
+
+    if (key === 'escape' || key === 'backspace') {
+      consume();
+      focused = canRoll ? 'roll' : 0;
+      renderKeyboardFocus();
+      return;
+    }
+
+    const directions: Record<string, JobHubNavKey> = {
+      arrowleft: 'left', arrowright: 'right',
+      arrowup: 'up', arrowdown: 'down',
+    };
+    const direction = key === 'tab'
+      ? (event.shiftKey ? 'shift-tab' : 'tab')
+      : directions[key];
+    if (direction) {
+      consume();
+      focused = nextJobHubFocus070423(focused, direction, canRoll);
+      renderKeyboardFocus();
+      return;
+    }
+
+    // Existing quick keys remain useful: A/B/C or 1/2/3 open a career sheet.
+    const index = key === 'a' || key === '1' ? 0
+      : key === 'b' || key === '2' ? 1
+        : key === 'c' || key === '3' ? 2 : -1;
+    if (index >= 0) {
+      consume();
+      if (event.repeat) return;
+      focused = index as 0 | 1 | 2;
+      openDetail(index);
+      return;
+    }
+
+    if (key === 'enter' || key === ' ' || event.code === 'Space') {
+      consume();
+      if (event.repeat) return;
+      if (focused === 'roll') {
+        // The default focus makes ENTER / SPACE an immediate dice roll without
+        // first moving an OS cursor to the button.
+        submitRoll();
+      } else {
+        openDetail(focused);
+      }
+    }
   };
   scene.input.keyboard?.on('keydown', keyboardHandler);
 

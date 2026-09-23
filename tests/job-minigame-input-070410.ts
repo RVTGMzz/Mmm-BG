@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { MEMEME_BUILD } from '../src/buildInfo';
+import { nextJobHubFocus070423, type JobHubFocus } from '../src/ui/jobHubFocus070423';
 
 const mini = readFileSync('src/ui/MiniGameOverlay.ts', 'utf8');
 const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
@@ -31,15 +32,44 @@ assert.match(mini, /pad\.buttons\[15\]/);
 assert.match(mini, /pad\.buttons\[0\]/);
 assert.doesNotMatch(mini, /stake\.setText\(`THƯỞNG:/);
 
-// Regression: the Career Job Hub must accept the same Enter/Space input used
-// by other board screens. The prior A/B/C/Escape-only handler forced a mouse click.
+// Keyboard-only acceptance: active Job Hub defaults to the dice, not a card.
 const picker = readFileSync('src/ui/JobChoicePicker.ts', 'utf8');
-assert.match(picker, /const submitRoll = \(\): void =>/);
+assert.match(picker, /let focused: JobHubFocus = canRoll \? 'roll' : 0/);
+assert.match(picker, /setName\('job-hub-keyboard-focus-070423'\)/);
+assert.match(picker, /if \(focused === 'roll'\)/);
 assert.match(picker, /rollHit\.on\('pointerdown', submitRoll\)/);
-assert.match(picker, /event\.code === 'Space'/);
+assert.match(picker, /nextJobHubFocus070423\(focused, direction, canRoll\)/);
 assert.match(picker, /key === 'enter'/);
-assert.match(picker, /!detailRoot\?\.active && rollHit\.input\?\.enabled/);
-assert.match(picker, /event\.preventDefault\(\);\s*submitRoll\(\)/);
+assert.match(picker, /event\.code === 'Space'/);
+assert.match(picker, /key === 'tab'/);
+assert.match(picker, /event\.shiftKey/);
+assert.match(picker, /event\.preventDefault\(\)/);
+assert.match(picker, /if \(detailRoot\?\.active\)/);
 assert.match(picker, /if \(!canRoll \|\| submitted \|\| !root\.active \|\| !root\.visible/);
+assert.match(picker, /!rollHit\.input\?\.enabled/);
 
-console.log('[job-minigame-input-070410] PASS shared pointer/Enter/Space Job roll, spectator/detail guard + compact Mini Game controls');
+// A/B/C may be browsed by arrows, Tab and Shift+Tab. Down always returns
+// focus to the dice on an active player's turn; spectators cannot focus it.
+assert.equal(nextJobHubFocus070423('roll', 'up', true), 1);
+assert.equal(nextJobHubFocus070423('roll', 'left', true), 0);
+assert.equal(nextJobHubFocus070423('roll', 'right', true), 2);
+assert.equal(nextJobHubFocus070423(0, 'right', true), 1);
+assert.equal(nextJobHubFocus070423(1, 'right', true), 2);
+assert.equal(nextJobHubFocus070423(2, 'left', true), 1);
+assert.equal(nextJobHubFocus070423(2, 'down', true), 'roll');
+assert.equal(nextJobHubFocus070423(0, 'down', true), 'roll');
+assert.equal(nextJobHubFocus070423(1, 'down', true), 'roll');
+assert.equal(nextJobHubFocus070423(0, 'down', false), 0);
+assert.equal(nextJobHubFocus070423('roll', 'down', false), 0);
+assert.equal(nextJobHubFocus070423('roll', 'tab', true), 0);
+assert.equal(nextJobHubFocus070423(2, 'tab', true), 'roll');
+assert.equal(nextJobHubFocus070423('roll', 'shift-tab', true), 2);
+assert.equal(nextJobHubFocus070423(2, 'tab', false), 0);
+assert.equal(nextJobHubFocus070423(0, 'shift-tab', false), 2);
+
+let focus: JobHubFocus = 'roll';
+for (const direction of ['up', 'right', 'down'] as const) {
+  focus = nextJobHubFocus070423(focus, direction, true);
+}
+assert.equal(focus, 'roll', 'arrow-only player must always be able to return to dice');
+console.log('[job-minigame-input-070410] PASS default dice focus, arrow/Tab job preview, keyboard detail close and spectator-safe Enter/Space');
