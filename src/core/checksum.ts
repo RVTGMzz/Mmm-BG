@@ -47,6 +47,12 @@ function canonicalMatchPayload(match: MatchState): string {
           remainingSteps: match.pendingJobMovement.remainingSteps,
         }
       : undefined,
+    boardContentAssignments: match.boardContentAssignments
+      ? [...match.boardContentAssignments]
+          .sort((left, right) => left.nodeId - right.nodeId)
+          .map((entry) => ({ nodeId: entry.nodeId, sourceNodeId: entry.sourceNodeId }))
+      : undefined,
+    lastBoardShuffleLap: Math.max(0, Math.floor(match.lastBoardShuffleLap ?? 0)),
   });
 }
 
