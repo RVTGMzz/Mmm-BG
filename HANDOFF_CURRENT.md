@@ -8,23 +8,18 @@ Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly a
 
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
-Status: **SOURCE IMPLEMENTED / LAST FULL CI SUCCESS ON FUNCTIONALLY EQUIVALENT SOURCE / HEAD CI RUNNING / RUNTIME RETEST REQUIRED**
+Status: **SOURCE IMPLEMENTED / CI PASS / RUNTIME RETEST REQUIRED**
 
 Current branch HEAD at handoff preparation:
 `81341ad5c12604ba878f13b5b7a599e1897ecc7a`
 
-Latest completed full CI success before the final test-only assertion cleanup:
-- MMM MVP CI **#3211**
-- run `35830428531`
-- head `15d26c2b2d11a414ad3a6d027fc02f567ff08a9d`
-- conclusion: **SUCCESS**
-
-Current HEAD validation:
+Validated source checkpoint:
 - MMM MVP CI **#3212**
 - run `35832680818`
-- head `81341ad5c12604ba878f13b5b7a599e1897ecc7a`
-- was still running when this handoff was written
-- the HEAD delta after the successful run is test/assertion cleanup only, not gameplay authority
+- source head `81341ad5c12604ba878f13b5b7a599e1897ecc7a`
+- conclusion: **SUCCESS**
+- typecheck/build and the new .22 gate passed
+- current later HEAD only contains handoff/documentation commits with CI-skip markers
 
 Do **not** call Runtime PASS until Ron retests the exact overlay/reaction cases in browser.
 
