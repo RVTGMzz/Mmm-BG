@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import {
   EMPTY_PAD_STATE_070424,
   nextSpatialIndex070424,
+  cycleSelectOption070425,
   padEdges070424,
   type PadAction070424,
   type PadEdgeState070424,
@@ -186,6 +187,8 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
   let focusRing: Phaser.GameObjects.Graphics | undefined;
   let domScope: HTMLElement | undefined;
   let domFocused: HTMLElement | undefined;
+  let domSelectEditing = false;
+  let domSelectOriginalIndex = -1;
   let statusTimer = 0;
 
   const say = (): void => {
@@ -193,7 +196,21 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
     window.clearTimeout(statusTimer);
     statusTimer = window.setTimeout(() => { status.style.opacity = '0'; }, 2400);
   };
+  const finishDomSelect070425 = (commit: boolean): void => {
+    if (!domSelectEditing) return;
+    if (!commit && domFocused instanceof HTMLSelectElement && domSelectOriginalIndex >= 0) {
+      domFocused.selectedIndex = domSelectOriginalIndex;
+      domFocused.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    domSelectEditing = false;
+    domSelectOriginalIndex = -1;
+    status.textContent = '🎮 TAY CẦM • A CHỌN  B QUAY LẠI';
+    status.style.opacity = '0';
+  };
   const clearDom = (): void => {
+    // A disconnect, scene change or menu close must not leave a SELECT in
+    // half-edited state. Roll the preview back unless A confirmed it.
+    finishDomSelect070425(false);
     domFocused?.classList.remove('mememe-pad-focus-070424');
     domScope = undefined;
     domFocused = undefined;
@@ -246,6 +263,7 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
       target.focus({ preventScroll: true });
     };
     if (action === 'back') {
+      if (domSelectEditing) { finishDomSelect070425(false); return; }
       if (domFocused instanceof HTMLInputElement && domFocused.type !== 'checkbox') {
         domFocused.blur(); return;
       }
@@ -264,17 +282,33 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
       if (domFocused instanceof HTMLInputElement && domFocused.type !== 'checkbox') {
         domFocused.focus(); return; // Steam+X opens Deck's on-screen keyboard.
       }
-      if (domFocused instanceof HTMLSelectElement) { domFocused.focus(); return; }
+      if (domFocused instanceof HTMLSelectElement) {
+        if (domSelectEditing) {
+          finishDomSelect070425(true);
+        } else {
+          domSelectEditing = true;
+          domSelectOriginalIndex = domFocused.selectedIndex;
+          status.textContent = '🎮 ↑↓ ĐỔI LỰA CHỌN • A LƯU • B HỦY';
+          window.clearTimeout(statusTimer);
+          status.style.opacity = '1';
+        }
+        return;
+      }
       domFocused.click();
       return;
     }
     if (action === 'overview' || action === 'card') return;
     if (!domFocused) return;
-    if (domFocused instanceof HTMLSelectElement && (action === 'left' || action === 'right')) {
-      const delta = action === 'left' ? -1 : 1;
-      const next = Math.max(0, Math.min(domFocused.options.length - 1, domFocused.selectedIndex + delta));
-      if (!domFocused.options[next]?.disabled) {
+    if (domFocused instanceof HTMLSelectElement && (
+      domSelectEditing || action === 'left' || action === 'right'
+    )) {
+      // A opens a select's edit mode. D-pad UP/DOWN then browse its choices,
+      // without unexpectedly jumping to another menu control.
+      const step: -1 | 1 = action === 'left' || action === 'up' ? -1 : 1;
+      const next = cycleSelectOption070425(domFocused.selectedIndex, Array.from(domFocused.options), step);
+      if (next !== domFocused.selectedIndex && next >= 0) {
         domFocused.selectedIndex = next;
+        domFocused.dispatchEvent(new Event('input', { bubbles: true }));
         domFocused.dispatchEvent(new Event('change', { bubbles: true }));
       }
       return;

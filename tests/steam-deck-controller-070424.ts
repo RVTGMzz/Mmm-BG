@@ -5,6 +5,7 @@ import {
   axisDirection070424,
   padEdges070424,
   nextSpatialIndex070424,
+  cycleSelectOption070425,
 } from '../src/ui/steamDeckPadPolicy070424';
 
 const pad = (pressed: number[] = [], x = 0, y = 0) => ({
@@ -33,6 +34,11 @@ const centered = padEdges070424(pad([], 0), stick.next);
 assert.deepEqual(padEdges070424(pad([], -0.95), centered.next).actions, ['left']);
 // Simultaneous stick + D-pad only navigates once, before confirm.
 assert.deepEqual(padEdges070424(pad([14, 0], -0.9)).actions, ['left', 'confirm']);
+assert.equal(cycleSelectOption070425(0, [{disabled:false},{disabled:true},{disabled:false}], 1), 2);
+assert.equal(cycleSelectOption070425(2, [{disabled:false},{disabled:true},{disabled:false}], 1), 0);
+assert.equal(cycleSelectOption070425(0, [{disabled:false},{disabled:true},{disabled:false}], -1), 2);
+assert.equal(cycleSelectOption070425(0, [{disabled:true},{disabled:true}], 1), 0);
+assert.equal(cycleSelectOption070425(0, [], 1), -1);
 const points = [{ x: 100, y: 0 }, { x: 200, y: 0 }, { x: 300, y: 0 }];
 assert.equal(nextSpatialIndex070424(1, points, 'left'), 0);
 assert.equal(nextSpatialIndex070424(1, points, 'right'), 2);
@@ -57,6 +63,15 @@ assert.match(owner, /const dom = activeDom070424\(scene\)/);
 assert.match(owner, /runtime\.presentation\?\.isBlocking\(\)/);
 assert.match(owner, /dice\.list\.find/);
 assert.match(owner, /roll\.input\?\.enabled/);
+assert.match(owner, /domSelectEditing/);
+assert.match(owner, /finishDomSelect070425\(false\)/);
+assert.match(owner, /finishDomSelect070425\(true\)/);
+assert.match(owner, /cycleSelectOption070425\(domFocused\.selectedIndex/);
+const settings = readFileSync('src/ui/SettingsPanel.ts', 'utf8');
+const settingsCss = readFileSync('src/settings.css', 'utf8');
+assert.match(settings, /STEAM DECK \/ TAY CẦM/);
+assert.match(settings, /Steam \+ X/);
+assert.match(settingsCss, /max-height: calc\(100dvh - 72px\)/);
 assert.match(owner, /runtime\.canControlCurrentPlayer\?\.\(\)/);
 assert.match(job, /scene\.events\.on\(PAD_EVENT_070424, padHandler\)/);
 assert.match(job, /scene\.events\.off\(PAD_EVENT_070424, padHandler\)/);

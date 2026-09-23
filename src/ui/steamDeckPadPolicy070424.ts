@@ -78,3 +78,18 @@ export function nextSpatialIndex070424(
   if (direction === 'up' || direction === 'left') return points.length - 1;
   return 0;
 }
+
+/** Skip unavailable entries and wrap inside a native HTML SELECT on a Deck. */
+export function cycleSelectOption070425(
+  selectedIndex: number,
+  options: readonly { disabled: boolean }[],
+  step: -1 | 1,
+): number {
+  if (options.length === 0) return -1;
+  let index = selectedIndex >= 0 && selectedIndex < options.length ? selectedIndex : 0;
+  for (let count = 0; count < options.length; count += 1) {
+    index = (index + step + options.length) % options.length;
+    if (!options[index]!.disabled) return index;
+  }
+  return selectedIndex;
+}

@@ -78,6 +78,8 @@
   border-radius: 20px;
   background: rgba(255, 250, 240, 0.985);
   box-shadow: 0 8px 0 rgba(32, 32, 32, 0.18);
+  max-height: calc(100dvh - 72px);
+  overflow-y: auto;
 }
 
 .settings-panel[hidden] {
@@ -249,3 +251,12 @@
     top: 44px;
   }
 }
+
+/* The guide is scrollable on 1280×800 Steam Deck and short mobile viewports. */
+.settings-controller-guide p {
+  margin: 4px 0;
+  color: #534a40;
+  font-size: 10px;
+  line-height: 1.38;
+}
+.settings-controller-guide b { color: #24211d; }

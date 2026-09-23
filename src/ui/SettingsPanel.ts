@@ -103,6 +103,15 @@ export function installSettingsPanel(): void {
           <button class="settings-toggle settings-fullscreen-toggle" type="button" aria-label="Bật/tắt toàn màn hình">⛶ TOÀN MÀN HÌNH</button>
         </div>
       </div>
+      <div class="settings-section settings-controller-guide">
+        <div class="settings-section-title">🎮 STEAM DECK / TAY CẦM</div>
+        <p><b>A</b> xác nhận / đổ xúc xắc • <b>B</b> quay lại</p>
+        <p><b>D-pad / cần trái</b> di chuyển lựa chọn</p>
+        <p><b>X</b> tổng quan bàn cờ • <b>Y</b> dùng Lá Bài</p>
+        <p><b>☰ (Start)</b> mở cài đặt</p>
+        <p>Trong menu: A mở danh sách, ↑↓ đổi, A lưu, B hủy.</p>
+        <p>Nhập tên/mã phòng: chọn ô rồi bấm Steam + X mở bàn phím ảo.</p>
+      </div>
     </section>
   `;
   document.body.appendChild(root);
