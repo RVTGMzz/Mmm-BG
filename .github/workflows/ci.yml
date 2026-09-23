@@ -220,6 +220,8 @@ jobs:
         run: npm run test:online-live-runtime-070419
       - name: 0.1.70.4.20 stale room recycle + WebSocket keepalive
         run: npm run test:online-stale-room-recycle-070420
+      - name: 0.1.70.4.21 final modal ownership + career layout
+        run: npm run test:final-modal-career-070421
       - name: Visual Foundation 0.1 VF-01 tokens + VF-02 buttons
         run: npm run test:visual-foundation-v01
       - name: Roguelike Lap Shuffle 0.1 deterministic authority
@@ -232,11 +234,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MVP 0.1.70.4.20 + Visual Foundation + Lap Shuffle build
+      - name: Upload MVP 0.1.70.4.21 + Career Layout + Lap Shuffle build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.20-vf01-vf02-lap-shuffle
+          name: mmm-playtest-0.1.70.4.21-career-layout-lap-shuffle
           path: dist
           if-no-files-found: error
           retention-days: 14
