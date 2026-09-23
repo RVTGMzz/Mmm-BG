@@ -359,8 +359,8 @@ export function createJobRollPicker(
   const focusHint = scene.add.text(
     0, 151,
     canRoll
-      ? '← → CHỌN NGHỀ  •  ↑ ↓ VỀ XÚC XẮC  •  ENTER / SPACE XÁC NHẬN'
-      : '← → XEM NGHỀ  •  ENTER / SPACE XEM CHI TIẾT',
+      ? '← → / D-PAD: CHỌN  •  ENTER / A: XEM, ĐỔ  •  ESC / B: QUAY LẠI'
+      : '← → / D-PAD: XEM NGHỀ  •  ENTER / A: CHI TIẾT',
     {
       fontFamily: JOB_FONT_070421, fontSize: '12px',
       fontStyle: 'bold', color: '#69534b', align: 'center',

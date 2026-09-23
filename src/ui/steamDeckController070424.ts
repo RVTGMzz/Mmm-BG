@@ -513,7 +513,8 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
     state = edge.next;
     if (scene && scene.sys.isActive()) for (const action of edge.actions) {
       handleScene(scene, action);
-      say();
+      // The initial controller hint is transient. Never keep it on screen
+      // during every D-pad press: it would cover the P4 corner HUD.
       // A click can change the active scene; never dispatch a second
       // button from the same frame to a stale scene/controller owner.
       if (game.scene.getScenes(true).at(-1) !== scene) break;

@@ -25,7 +25,7 @@ export class SplashScene069 extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor('#f4ead7');
     const logo = this.add.image(640, 292, LOGO_KEY_069).setAlpha(0).setScale(0.48);
-    const prompt = this.add.text(640, 590, 'CHẠM ĐỂ BẮT ĐẦU', {
+    const prompt = this.add.text(640, 590, '🎮 A / ENTER / CHẠM ĐỂ BẮT ĐẦU', {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
       fontSize: '24px',
       fontStyle: 'bold',
