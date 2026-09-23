@@ -22,7 +22,7 @@ export function showTacticalChoicePicker(
   const pressurePercent = Math.round(Math.min(1, Math.max(0, card.effect.taxPercent)) * 100);
 
   return new Promise<TacticalCardChoice | undefined>((resolve) => {
-    const root = scene.add.container(640, 360).setDepth(675);
+    const root = scene.add.container(640, 360).setDepth(675).setName('tactical-choice-modal');
     const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.62).setInteractive();
     const panel = scene.add.rectangle(0, 0, 780, 430, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
     const title = scene.add.text(0, -170, `${card.title} • CHỌN KÈO`, {

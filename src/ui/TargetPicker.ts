@@ -11,7 +11,7 @@ export function showTargetPicker<T extends PlayerState>(
   if (candidates.length === 0) return Promise.resolve(undefined);
 
   return new Promise((resolve) => {
-    const root = scene.add.container(640, 360).setDepth(600);
+    const root = scene.add.container(640, 360).setDepth(600).setName('target-picker-modal');
     const objects: Phaser.GameObjects.GameObject[] = [];
 
     const dim = scene.add

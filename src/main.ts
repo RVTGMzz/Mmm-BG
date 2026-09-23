@@ -10,6 +10,7 @@ import './visualFoundationV01.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
+import { installSteamDeckController070424 } from './ui/steamDeckController070424';
 import {
   installMobileLandscapeGuard07031,
   requireMobileLandscapeBeforeGame07035,
@@ -82,8 +83,9 @@ async function bootMeMeMe07035(): Promise<void> {
 
   installSettingsPanel();
   const game = new Phaser.Game(config);
-  // 0.1.70.4.6: controller support is not part of the accepted runtime yet.
-  // Keep the legacy helper in source, but do not install global gamepad navigation.
+  // Single native Gamepad owner for Steam Deck; modal owners keep authority.
+  const disposeSteamDeckController = installSteamDeckController070424(game);
+  game.events.once(Phaser.Core.Events.DESTROY, disposeSteamDeckController);
 
   let viewportRefreshFrame = 0;
   const refreshMobileViewport066 = () => {

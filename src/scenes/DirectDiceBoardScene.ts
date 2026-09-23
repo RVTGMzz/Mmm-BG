@@ -66,7 +66,8 @@ export class DirectDiceBoardScene extends TacticalChoiceBoardScene {
   }
 
   private createDirectDice(): void {
-    const container = this.add.container(640, 344).setDepth(918).setVisible(false).setAlpha(0);
+    const container = this.add.container(640, 344).setDepth(918).setVisible(false).setAlpha(0)
+      .setName('direct-turn-dice');
     this.directDice = container;
 
     const glow = this.add.circle(0, 0, 78, 0xffd34d, 0.12);

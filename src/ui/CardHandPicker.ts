@@ -43,7 +43,7 @@ export function showCardHandPicker(
   if (entries.length === 0) return Promise.resolve(undefined);
 
   return new Promise<CardHandSelection | undefined>((resolve) => {
-    const root = scene.add.container(640, 360).setDepth(650);
+    const root = scene.add.container(640, 360).setDepth(650).setName('card-hand-picker-modal');
     const backdrop = scene.add
       .rectangle(0, 0, 1280, 720, 0x111111, 0.58)
       .setInteractive();

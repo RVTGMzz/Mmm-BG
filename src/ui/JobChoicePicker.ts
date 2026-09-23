@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
 import { jobSalary, type JobDefinition } from '../core/jobs';
 import { nextJobHubFocus070423, type JobHubFocus, type JobHubNavKey } from './jobHubFocus070423';
+import { PAD_EVENT_070424 } from './steamDeckController070424';
+import type { PadAction070424 } from './steamDeckPadPolicy070424';
 
 export interface JobRollPickerOptions {
   canRoll?: boolean;
@@ -500,6 +502,29 @@ export function createJobRollPicker(
       }
     }
   };
+  // Controller shares the exact keyboard focus and guarded authoritative roll.
+  // No synthesized browser key: doing that can advance an inherited cinematic.
+  const padHandler = (action: PadAction070424): void => {
+    if (!root.active || !root.visible) return;
+    if (detailRoot?.active) {
+      if (action === 'confirm' || action === 'back') closeDetail();
+      return;
+    }
+    if (action === 'back') {
+      focused = canRoll ? 'roll' : 0;
+      renderKeyboardFocus();
+      return;
+    }
+    if (action === 'up' || action === 'down' || action === 'left' || action === 'right') {
+      focused = nextJobHubFocus070423(focused, action, canRoll);
+      renderKeyboardFocus();
+      return;
+    }
+    if (action !== 'confirm' || submitted) return;
+    if (focused === 'roll') submitRoll();
+    else openDetail(focused);
+  };
+  scene.events.on(PAD_EVENT_070424, padHandler);
   scene.input.keyboard?.on('keydown', keyboardHandler);
 
   return {
@@ -509,6 +534,7 @@ export function createJobRollPicker(
     setReady: enableRoll,
     close: () => {
       scene.input.keyboard?.off('keydown', keyboardHandler);
+      scene.events.off(PAD_EVENT_070424, padHandler);
       closeDetail();
       if (root.active) root.destroy(true);
     },

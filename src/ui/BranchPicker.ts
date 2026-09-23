@@ -49,7 +49,7 @@ export function showBranchPicker<T extends PlayerState>(
   if (options.length === 1) return Promise.resolve(options[0].edge);
 
   return new Promise((resolve) => {
-    const root = scene.add.container(640, 510).setDepth(960).setAlpha(0).setScale(0.96);
+    const root = scene.add.container(640, 510).setDepth(960).setAlpha(0).setScale(0.96).setName('branch-picker-modal');
     const panel = scene.add.graphics();
     panel.fillStyle(0x202633, 0.93);
     panel.fillRoundedRect(-322, -108, 644, 216, 18);
