@@ -44,6 +44,10 @@ import {
 } from './minigameRewards';
 import { applyNewsEffect, drawWeightedNews, type NewsDefinition } from './news';
 import { isPlayerFinished060 } from './pacingEconomy060';
+import {
+  effectiveBoardNode071,
+  shuffleBoardContent071,
+} from './lapShuffle071';
 import { createRandomSource } from './rng';
 import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
 import {
@@ -225,7 +229,11 @@ function enterSpecialHold057(ctx: ReplayContext, player: PlayerState, location: 
 }
 
 function resolveSpecialLanding057(ctx: ReplayContext, player: PlayerState): boolean {
-  const node = getBoardNode(ctx.board, player.nodeId);
+  const node = effectiveBoardNode071(
+    ctx.board,
+    player.nodeId,
+    ctx.state.boardContentAssignments,
+  );
   const hold = specialHoldForGate057(node);
   if (hold) {
     enterSpecialHold057(ctx, player, hold);
@@ -257,7 +265,11 @@ function resolveSpecialLanding057(ctx: ReplayContext, player: PlayerState): bool
 }
 
 function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolutionResult {
-  const node = getBoardNode(ctx.board, player.nodeId);
+  const node = effectiveBoardNode071(
+    ctx.board,
+    player.nodeId,
+    ctx.state.boardContentAssignments,
+  );
 
   appendMatchEvent(
     ctx.state,
@@ -438,6 +450,34 @@ function appendReadyPass060(ctx: ReplayContext, player: PlayerState): boolean {
     jobLevel: player.jobLevel ?? 0,
     affectedPlayerIds: String(player.id),
   }, player.id);
+
+  // Roguelike Lap Shuffle:
+  // only the FIRST player to reach each lap index can mutate the board.
+  // The board graph/coordinates never move; only mutable tile content bundles do.
+  const lapIndex = player.lapsCompleted;
+  const lastShuffleLap = Math.max(0, Math.floor(ctx.state.lastBoardShuffleLap ?? 0));
+  if (lapIndex > lastShuffleLap) {
+    const shuffle = shuffleBoardContent071(
+      ctx.board,
+      ctx.state.boardContentAssignments,
+      ctx.state.rng,
+    );
+    ctx.state.boardContentAssignments = shuffle.assignments;
+    ctx.state.lastBoardShuffleLap = lapIndex;
+
+    appendMatchEvent(ctx.state, 'board_shuffle', {
+      lap: lapIndex,
+      triggeredByPlayerId: player.id,
+      mutableCount: shuffle.mutableNodeIds.length,
+      changedCount: shuffle.changedNodeIds.length,
+      title: 'BÀN CỜ ĐÃ BIẾN ĐỔI!',
+      impact: '🔀',
+      description: `${player.name} là người đầu tiên chạm vạch xuất phát của vòng ${lapIndex}. Các ô tự do đã tráo vị trí.`,
+      summary: 'Bệnh viện, Đồn Cảnh sát, Nghề và các ô thoát đặc biệt vẫn giữ nguyên.',
+      affectedPlayerIds: ctx.state.players.map((entry) => entry.id).join(','),
+    }, player.id);
+  }
+
   return finishLocked;
 }
 
@@ -495,7 +535,11 @@ function replayMovementSegment(
       if (finishLocked) break;
     }
 
-    const steppedNode = getBoardNode(ctx.board, edge.to);
+    const steppedNode = effectiveBoardNode071(
+      ctx.board,
+      edge.to,
+      ctx.state.boardContentAssignments,
+    );
     if (steppedNode.feature !== 'job') continue;
 
     transition(ctx, 'RESOLVING_TILE');
