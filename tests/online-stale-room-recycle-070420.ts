@@ -6,8 +6,9 @@ const transport = readFileSync('src/core/onlineTransport0702.ts', 'utf8');
 const worker = readFileSync('cloudflare/mememe-online/src/index.ts', 'utf8');
 const workerPackage = readFileSync('cloudflare/mememe-online/package.json', 'utf8');
 
-assert.equal(MEMEME_BUILD.version, '0.1.70.4.20');
-assert.match(MEMEME_BUILD.phase, /STALE ROOM RECYCLE \+ WEBSOCKET KEEPALIVE/);
+// Frontend presentation may advance while the production Worker intentionally
+// remains on its validated 0.1.70.4.20 transport contract.
+assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 // Client transport emits an application-level heartbeat only while a live socket is open.
 assert.match(transport, /ONLINE_KEEPALIVE_INTERVAL_MS_070420 = 20_000/);
