@@ -25,11 +25,13 @@ assert.match(base, /if \(!directMoneyTransfer \|\| amount <= 0\) return/);
 assert.doesNotMatch(base, /model\.summary \|\|/);
 assert.match(finalScene, /model\.targetName && directMoneyTransfer && amount > 0/);
 
-assert.match(base, /fillRoundedRect\(-164, -62, 328, 116, 18\)/);
-assert.match(base, /const speaker = this\.scene\.add\.text\(textX, -45/);
-assert.match(base, /const text = this\.scene\.add\.text\(textX, -11/);
-assert.match(base, /fixedWidth: 226, fixedHeight: 54/);
-assert.match(base, /lineSpacing: 3, maxLines: 3/);
-assert.match(base, /setOrigin\(0, 0\)/);
+assert.match(base, /fillRoundedRect\(-106, -58, 212, 116, 18\)/);
+assert.match(base, /const speaker = this\.scene\.add\.text\(/);
+assert.match(base, /const quote = this\.scene\.add\.text\(textX, -13/);
+assert.match(base, /fixedWidth: 144/);
+assert.match(base, /fixedHeight: 62/);
+assert.match(base, /lineSpacing: 2/);
+assert.match(base, /maxLines: 3/);
+assert.match(base, /reactionPlacement070422\(/);
 
 console.log('[presentation-semantic-footer-070416] PASS semantic card footer + separated reaction lanes');
