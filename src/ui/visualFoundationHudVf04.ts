@@ -28,7 +28,7 @@ export interface HudCompactCopyVf04 {
   line2: string;
 }
 
-/** Copy is not MatchState: title fits inside the physical HUD, detail stays elsewhere. */
+/** Presentation-only copy: short lines fit the physical HUD; full detail stays elsewhere. */
 export function compactHudCopyVf04(
   career: HudCareerCopyVf04,
   active: boolean,
