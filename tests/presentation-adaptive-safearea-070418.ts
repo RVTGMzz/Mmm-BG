@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { MEMEME_BUILD } from '../src/buildInfo';
+import { PRESENTATION_LANES_070422, reactionPlacement070422 } from '../src/ui/presentationLanes070422';
 
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
@@ -13,23 +14,32 @@ assert.match(active, /fitWrappedText070418\(body, 628, bodyHeight070418, 16, 12,
 assert.match(active, /while \(fontSize > minFontSize && text\.height > height\)/);
 assert.match(active, /text\.setFixedSize\(width, height\)/);
 
-// Reaction bubbles use HUD-safe lanes rather than magic values hugging the corners.
-assert.match(presentation, /const REACTION_TOP_Y_070418 = 190/);
-assert.match(presentation, /const REACTION_BOTTOM_Y_070418 = 530/);
-assert.match(presentation, /const y = top \? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418/);
-
-// The compact active HUD uses 92px base height at 1.18x with a 12px safe margin.
-// Verify the reaction panel (top=-62, bottom=+54) keeps a visible gap.
-const hudHalfHeight = 92 * 1.18 * 0.5;
-const topHudCenter = Math.max(62, 12 + hudHalfHeight);
-const topHudBottom = topHudCenter + hudHalfHeight;
-const bottomHudCenter = Math.min(658, 720 - 12 - hudHalfHeight);
-const bottomHudTop = bottomHudCenter - hudHalfHeight;
-const topReactionTop = 190 - 62;
-const bottomReactionBottom = 530 + 54;
-
-assert.ok(topReactionTop - topHudBottom >= 6, 'top reaction lane must clear an active top HUD');
-assert.ok(bottomHudTop - bottomReactionBottom >= 6, 'bottom reaction lane must clear an active bottom HUD');
+// The old 328px reaction at x188 entered the canonical modal by 94px.
+// Check full rectangular geometry horizontally AND vertically for every seat.
+const lanes = PRESENTATION_LANES_070422;
+assert.match(presentation, /reactionPlacement070422\(/);
+for (const seat of [0, 1, 2, 3]) {
+  const reaction = reactionPlacement070422(seat, seat);
+  assert.ok(reaction);
+  const left = reaction.x - reaction.width / 2;
+  const right = reaction.x + reaction.width / 2;
+  const top = reaction.y - reaction.height / 2;
+  const bottom = reaction.y + reaction.height / 2;
+  assert.ok(left >= lanes.margin && right <= 1280 - lanes.margin);
+  assert.ok(top >= lanes.margin && bottom <= 720 - lanes.margin);
+  assert.ok(
+    reaction.side === 'left'
+      ? right + lanes.modalGap <= lanes.modalLeft
+      : left - lanes.modalGap >= lanes.modalRight,
+    'reaction must remain clear of widest canonical card',
+  );
+  assert.ok(
+    seat <= 1
+      ? top >= lanes.hudTopBottom + lanes.margin
+      : bottom <= lanes.hudBottomTop - lanes.margin,
+    'reaction must remain clear of active HUD',
+  );
+}
 
 // This pass remains presentation-only.
 assert.doesNotMatch(active, /submitIntent\(/);
