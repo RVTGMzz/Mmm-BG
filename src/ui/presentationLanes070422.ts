@@ -36,8 +36,8 @@ export interface ReactionPlacement070422 {
 export function reactionPlacement070422(
   speakerId: number | undefined,
   index: number,
-  viewportWidth = PRESENTATION_LANES_070422.viewportWidth,
-  viewportHeight = PRESENTATION_LANES_070422.viewportHeight,
+  viewportWidth: number = PRESENTATION_LANES_070422.viewportWidth,
+  viewportHeight: number = PRESENTATION_LANES_070422.viewportHeight,
 ): ReactionPlacement070422 | null {
   const seat = speakerId === undefined ? index % 4 : Math.max(0, Math.min(3, speakerId));
   const side = seat === 0 || seat === 2 ? 'left' : 'right';
