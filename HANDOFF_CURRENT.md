@@ -1,151 +1,173 @@
-# MeMeMe — HANDOFF CURRENT
+# Mmm-BG — HANDOFF CURRENT
 
-Branch: `mememe-mvp-0.1-core`
-PR: #1 (Draft/Open)
+Repository: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-core`  
+Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
-**Do not merge PR #1 or mark it Ready unless Ron explicitly asks.**
+## Current checkpoint
 
-## Current milestone
+**0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
 
-**MVP 0.1.70.4.5 — Online Runtime Shell + Group Media + Mobile Readability**
+Status: **SOURCE IMPLEMENTED / LAST FULL CI SUCCESS ON FUNCTIONALLY EQUIVALENT SOURCE / HEAD CI RUNNING / RUNTIME RETEST REQUIRED**
 
-Status: **PUBLIC TEST BUILD DEPLOYED / PENDING REAL-DEVICE RUNTIME ACCEPTANCE**
+Current branch HEAD at handoff preparation:
+`81341ad5c12604ba878f13b5b7a599e1897ecc7a`
 
-Do not resume 0.1.71 yet.
+Latest completed full CI success before the final test-only assertion cleanup:
+- MMM MVP CI **#3211**
+- run `35830428531`
+- head `15d26c2b2d11a414ad3a6d027fc02f567ff08a9d`
+- conclusion: **SUCCESS**
 
-## Runtime authority
+Current HEAD validation:
+- MMM MVP CI **#3212**
+- run `35832680818`
+- head `81341ad5c12604ba878f13b5b7a599e1897ecc7a`
+- was still running when this handoff was written
+- the HEAD delta after the successful run is test/assertion cleanup only, not gameplay authority
 
-Runtime source:
-`66dba6cf04f6f5959d2b0dc340719465336835a8`
+Do **not** call Runtime PASS until Ron retests the exact overlay/reaction cases in browser.
 
-Public mirror:
-`db577149ff3467b5119c8ab63edc4df20bd55a11`
+## Why the recurring overlay bug kept returning
 
-Public Pages:
-- run **#51**
-- SUCCESS
+This was not one bad TIN TỨC/LÁ BÀI item.
 
-Test URL:
-`https://ronvotri.github.io/ronvotri-MeMeMe-Web-Playtest/`
+Root causes found in `docs/PRESENTATION_OWNERSHIP_AUDIT_070422.md`:
 
-Cloudflare Worker:
-`https://mememe-online.lengochung28191.workers.dev`
+1. **Two independent visual feedback producers existed.**
+   - `showEventToast()` had already been disabled.
+   - `showDeltaToast()` was still alive and could draw another label for the same state packet.
+   - .22 disables both legacy toast producers before inherited `super.create()`, while retaining log telemetry.
 
-PR #1 remains Draft/Open.
+2. **Old reaction safe-area tests checked vertical spacing but missed horizontal collision.**
+   - historical bubble: 328px wide centered at x=188
+   - right edge = 352
+   - widest canonical modal begins at x=258
+   - so the reaction physically intruded 94px into the main modal.
 
-## Retained online room contract
+3. **Delayed reaction callbacks were not tied tightly enough to their originating event.**
+   - a stale reaction timer could survive event transition and appear over the next Card/News.
+   - .22 binds delayed reaction render/dismiss to the exact `PresentationEventModel`.
 
-- Host = P1.
-- Humans auto-seat P2 -> P3 -> P4.
-- CPU Fill never blocks real humans; humans replace CPU placeholders in join order.
-- Custom room code is optional, 4–8 A-Z/0-9 characters; empty means auto-generated.
-- Ready / Kick / CPU Fill remain Host-controlled.
-- Camera/Voice permission is room policy only; each player still turns their own device on/off.
-- 3-second lobby heartbeat.
-- presence: Online / Reconnecting / Disconnected.
-- 60-second reconnect grace.
-- duplicate-device reconnect identity lock.
-- Host Leave closes the pre-match room.
-- authenticated existing clients may reconnect to their original seat after Start.
-- new humans cannot join after Start.
+4. **The final modal guard had permissive depth/emoji/text heuristics.**
+   - .22 only allows the exact continue hint plus explicitly named canonical reaction containers.
+   - final ownership is rechecked in Phaser `POST_UPDATE`, after inherited wrappers.
 
-## 0.1.70.4.2 Participation ownership
+## .22 source changes
 
-- Lobby DOM + heartbeat timer are explicitly destroyed on scene transition.
-- No stale lobby UI should remain clickable behind the game.
-- Every online human routes through SetupScene and edits only their own seat/avatar.
-- Online setup shows only the local seat card.
-- CPU seats are not edited in avatar setup.
-- 3-face avatar profile is synced through the Turn Order authority channel.
-- profile payload limit was raised enough for three 320px WebP face stickers.
-- Host waits for all expected human seats before locking Roll For Order claims.
-- CPU Roll For Order is automatic.
-- CPU board turns use the existing authoritative test-bot decision path.
-- Online waiting overlay no longer offers a mid-match return-to-lobby control.
+### New geometry policy
+`src/ui/presentationLanes070422.ts`
 
-## 0.1.70.4.3 Group Camera / Voice
+- pure deterministic geometry helper
+- 1280x720 canonical UI viewport
+- 212x116 reaction bubbles
+- left/right side rails fully outside the largest Card/News modal
+- reserves active top/bottom HUD areas
+- reserves viewport margins
+- if the viewport cannot fit a legal rail, the secondary reaction is hidden instead of covering the main event
 
-Implemented `src/ui/OnlineGroupMedia07043.ts`:
-- real WebRTC peer connections;
-- signaling uses the authenticated online `media` logical channel;
-- host relays client-to-client signaling;
-- room roster is synchronized through the Host;
-- mesh connections are established between all real human peers;
-- STUN currently uses `stun:stun.l.google.com:19302`;
-- each player starts Camera/Mic OFF;
-- each player may independently turn their own camera/mic on;
-- Host policy can allow/deny camera and voice but cannot force-enable another device;
-- remote players fall back to their static avatar when video is off;
-- local preview is muted;
-- group media starts on the active online board and stops on scene shutdown.
+### Canonical presentation
+`src/ui/MatchPresentationLayer.ts`
 
-Important: this is currently **STUN-only**. Cross-network WebRTC may still fail on restrictive NAT/mobile networks; add TURN only if real-device testing proves it is necessary.
+- reaction callback receives its originating model
+- stale event reaction cannot render after model changes
+- canonical reaction container name:
+  `presentation-reaction-bubble-070422`
+- no `Math.random()`
+- no gameplay authority/RNG changes
 
-## 0.1.70.4.4 Mobile UI readability
+### Legacy producer cleanup
+`src/scenes/PresentationParityBoardScene.ts`
 
-Presentation-only pass:
-- larger mobile landscape lobby copy;
-- larger online room player/status text;
-- larger avatar editor and camera controls;
-- larger rule selector controls;
-- larger board/player HUD via retained presentation subclasses;
-- group-media strip resized for mobile;
-- canonical gameplay authority/RNG remains unchanged.
+Before inherited create:
+- `legacyToast.showEventToast = () => undefined`
+- `legacyToast.showDeltaToast = () => undefined`
 
-## 0.1.70.4.5 Online board auto-start
+The event log remains available. Only duplicate on-screen legacy UI is retired.
 
-The screenshot feedback showed clients stuck behind:
-`CHỜ HOST BẮT ĐẦU...`
+### Final-frame ownership
+`src/scenes/CareerMinigameBoardScene07044.ts`
 
-Fix:
-- when the online Host reaches the Demo board after Ready + Roll For Order, Host immediately calls shell `begin(...)`;
-- authoritative `shell=active` is broadcast;
-- reconnecting/late existing clients request `shell_state` and receive the already-active state;
-- manual DEMO Start remains only for solo/hotseat fallback.
+- final modal ownership guard also runs at `POST_UPDATE`
+- entire legacy Card/News overlay containers are retired when a canonical modal owns the screen
+- arbitrary depth-910 or emoji/text content is no longer whitelisted
+- exact continue hint is allowed
+- only named canonical safe-rail reactions are allowed
 
-This should remove the black waiting overlay and allow the correct remote human to roll on their own turn.
+## Regression gates
 
-## Validation
+Primary new gate:
+`tests/presentation-owner-rootfix-070422.ts`
 
-Runtime `66dba6c...`:
-- Push CI **#3100** SUCCESS
-- PR CI **#3101** SUCCESS
-- Steam Deck/Web **#355** SUCCESS
-- Cloudflare Workers Build SUCCESS
-- Publisher **#311** SUCCESS
-- Online Participation gate PASS
-- Online Runtime Shell + Group Media gate PASS
-- Mobile UI Readability gate PASS
-- Online Board Auto-start gate PASS
-- Pages **#51** SUCCESS
+It checks:
+- old 328px geometry is demonstrably invalid
+- P1/P2/P3/P4 reaction rectangles fully fit outside the modal and HUD
+- fallback reactions fit
+- small viewport returns `null`, not an overlapping panel
+- both legacy toast producers are disabled before inherited create
+- reaction timers require exact model identity
+- final whitelist is object/owner based
+- final POST_UPDATE ownership guard exists
 
-## Human runtime tests still required
+Retained tests were updated so they no longer bless the old x188 / 328px geometry:
+- `tests/presentation-layout-lock-070414.ts`
+- `tests/presentation-spacing-070415.ts`
+- `tests/presentation-semantic-footer-070416.ts`
+- `tests/presentation-adaptive-safearea-070418.ts`
+- `tests/runtime-release-guard-070419.ts`
 
-Do **not** call Online Runtime PASS yet.
+## Other retained current work
 
-Highest-priority test:
-1. Host + P2 enter online room.
-2. Both finish their own avatar setup.
-3. Roll For Order completes.
-4. Board opens without persistent black `CHỜ HOST BẮT ĐẦU` overlay.
-5. When P2 is current actor, P2 can roll from P2 device.
-6. CPU P3/P4 roll and play automatically.
-7. With Camera Allowed, P1 turns camera on and P2 sees P1 video.
-8. P2 turns camera on and P1 sees P2 video.
-9. Both video tiles are visible in the same group media strip.
-10. Turning camera off restores static avatar.
-11. Voice remains individually opt-in.
-12. Reload/reconnect P2 and confirm original seat + active shell recover.
+### Visual Foundation
+Canonical docs:
+- `docs/VISUAL_STYLE_BIBLE_V0.1.md`
+- `docs/VISUAL_FOUNDATION_PASS_0.1.md`
 
-If group camera works only on same Wi-Fi but fails across different networks, keep signaling code and add TURN rather than rewriting the media model.
+Implemented:
+- VF-01 shared tokens
+- VF-02 button family
+- Vietnamese-safe system UI typography
 
-## Mobile flow
+Next visual stage after runtime UI stability:
+- **VF-03 panel/modal shell**
+- then player HUD
+- then one canonical TIN TỨC
+- then one canonical Job
+- only then propagate across the game
 
-Phone boot contract:
-**XOAY NGANG -> INTRO -> GAME**
+Do not reskin everything at once.
 
-Rotate UI is tappable and attempts fullscreen + landscape lock before Phaser is created.
+### Roguelike Lap Shuffle 0.1
+Implemented and deterministic:
+- first player reaching Start for a lap triggers one global reshuffle for that lap
+- locked: Start, Job, Police/Jail gate+hold+3 exits, Hospital gate+hold+3 exits
+- mutable: News, Card, money, Mini Game, Lottery, normal spaces
+- HOST serializable RNG only
+- checksum/replay/reconnect covered
+- circular-tile visual hotfix already landed
+- still needs runtime acceptance after a full lap
 
-Keep visible vocabulary **TIN TỨC / LÁ BÀI**.
-Keep `specialHoldSourceJobId` authoritative.
+## Runtime tests for the next chat
+
+Priority 1, reproduce the exact recurring presentation bug:
+1. Trigger several different TIN TỨC and LÁ BÀI, not only previously reported items.
+2. Confirm there is only one main modal owner.
+3. Confirm no old delta/event toast leaks behind/left of the card.
+4. Confirm P1/P2/P3/P4 reaction bubbles remain in side rails and never cross the main modal or HUD.
+5. Rapidly skip several Card/News events. An old event reaction must never appear on the next event.
+
+Priority 2:
+6. Recheck Job Hub / nhận việc layout.
+7. Recheck keyboard roll on Job choice flow.
+8. Complete one lap and confirm every shuffled tile remains circular.
+9. Retest online P1/P2 ownership/reconnect/media when convenient.
+
+Public playtest URL remains:
+`https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+
+Production Worker remains the retained .20 Worker integration. Do not rewrite online authority while fixing presentation.
+
+Keep visible game vocabulary:
+**TIN TỨC / LÁ BÀI**
+
 Do not merge PR #1.
