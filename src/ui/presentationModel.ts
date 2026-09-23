@@ -27,6 +27,7 @@ export type PresentationKind =
   | 'move_step'
   | 'tile_land'
   | 'ready_bonus'
+  | 'board_shuffle'
   | 'card_draw'
   | 'card_blocked'
   | 'card_play'
@@ -341,6 +342,23 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
   if (event.type === 'tile_land') {
     if (dataString(event, 'featureType')) return undefined;
     return tileLandingModel(event, players);
+  }
+
+  if (event.type === 'board_shuffle') {
+    const lap = dataNumber(event, 'lap') ?? 1;
+    const changedCount = dataNumber(event, 'changedCount') ?? 0;
+    return {
+      ...base,
+      kind: 'board_shuffle',
+      eyebrow: `${base.actorName} • DẪN ĐẦU VÒNG ${lap}`,
+      title: title || 'BÀN CỜ ĐÃ BIẾN ĐỔI!',
+      rarity: '',
+      impact: impact || '🔀',
+      description: description || `${base.actorName} là người đầu tiên chạm lại vạch xuất phát.`,
+      summary: summary || `${changedCount} ô đã đổi nội dung.`,
+      reactions: [],
+      holdMs: 1900,
+    };
   }
 
   if (event.type === 'ready_pass') {
