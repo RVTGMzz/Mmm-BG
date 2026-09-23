@@ -80,6 +80,7 @@ interface PresentationBoardInternals {
 
 interface LegacyToastHook {
   showEventToast(title: string, body: string): void;
+  showDeltaToast(lines: string[]): void;
 }
 
 export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
@@ -99,8 +100,15 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
   private routeBanner?: Phaser.GameObjects.Container;
 
   create(): void {
+    // This canonical presentation scene must have ONE visual feedback owner.
+    // The inherited PlaytestDemoBoardScene still records status deltas/logs,
+    // but its independent legacy toast was never disabled. Every Card/News
+    // could therefore draw a second UI overlay before/alongside the modal.
+    // Disable both legacy visual toast producers BEFORE super.create() installs
+    // the inherited applyNetworkState callbacks; keep the diagnostic logs.
     const legacyToast = this as unknown as LegacyToastHook;
     legacyToast.showEventToast = () => undefined;
+    legacyToast.showDeltaToast = () => undefined;
 
     super.create();
 
