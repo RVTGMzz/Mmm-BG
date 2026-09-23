@@ -2,8 +2,13 @@ import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
 import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
+import {
+  boardShuffleSignature071,
+  effectiveBoardNode071,
+  mutableBoardNodeIds071,
+} from '../core/lapShuffle071';
 import type { PresentationEventModel } from '../ui/presentationModel';
-import type { BoardDefinition, PlayerState } from '../core/types';
+import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import {
   MOBILE_UI_FONT_07044,
   isCompactLandscape07044,
@@ -62,12 +67,17 @@ const IDLE_HUD_SCALE_07046 = 0.96;
 export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 {
   private compactLandscape07044 = false;
   private readonly hiddenDetachedCinematicText070417 = new Map<Phaser.GameObjects.Text, boolean>();
+  private lapShuffleVisualRoot071?: Phaser.GameObjects.Container;
+  private lapShuffleVisualSignature071 = '';
 
   create(): void {
     super.create();
     this.installCanonicalJobPresentation070411();
     this.installFinalCardLayout070412();
     this.ensurePlayerTokenBadges070417();
+    this.syncLapShuffleBoard071(false);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroyLapShuffleBoard071());
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.destroyLapShuffleBoard071());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restoreDetachedCinematicText070417());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreDetachedCinematicText070417());
     this.compactLandscape07044 = isCompactLandscape07044();
@@ -80,12 +90,106 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.retireLegacyPresentationOverlays070414();
     this.syncCanonicalCinematicOwnership070417();
     this.ensurePlayerTokenBadges070417();
+    this.syncLapShuffleBoard071(true);
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
   }
 
   private runtime07044(): Runtime07044 {
     return this as unknown as Runtime07044;
+  }
+
+
+  /**
+   * Roguelike Lap Shuffle visual mirror.
+   *
+   * Authority lives entirely in MatchState/replay. This layer only mirrors the
+   * authoritative content assignment over the immutable board geometry.
+   */
+  private syncLapShuffleBoard071(animate: boolean): void {
+    const runtime = this.runtime07044();
+    const assignments = runtime.match.boardContentAssignments;
+    const signature = boardShuffleSignature071(assignments);
+    if (signature === this.lapShuffleVisualSignature071) return;
+    this.lapShuffleVisualSignature071 = signature;
+
+    this.lapShuffleVisualRoot071?.destroy(true);
+    this.lapShuffleVisualRoot071 = undefined;
+    if (!assignments || assignments.length === 0) return;
+
+    const root = this.add.container(0, 0).setDepth(6).setName('lap-shuffle-board-071');
+    this.lapShuffleVisualRoot071 = root;
+    const mutableIds = mutableBoardNodeIds071(BOARD_07044);
+
+    mutableIds.forEach((nodeId, index) => {
+      const node = effectiveBoardNode071(BOARD_07044, nodeId, assignments);
+      const tile = this.buildLapShuffleNode071(node);
+      root.add(tile);
+
+      if (!animate) return;
+      tile.setAlpha(0).setScale(0.66);
+      this.tweens.add({
+        targets: tile,
+        alpha: 1,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 260,
+        delay: (index % 12) * 28,
+        ease: 'Back.easeOut',
+      });
+    });
+  }
+
+  private buildLapShuffleNode071(node: BoardNode): Phaser.GameObjects.Container {
+    const container = this.add.container(node.x, node.y);
+    const fill = this.lapShuffleNodeFill071(node);
+    const plate = this.add.graphics();
+    plate.fillStyle(0xfff8ea, 1);
+    plate.fillRoundedRect(-25, -19, 50, 38, 12);
+    plate.lineStyle(2, 0x4a302a, 0.98);
+    plate.strokeRoundedRect(-25, -19, 50, 38, 12);
+
+    const face = this.add.graphics();
+    face.fillStyle(fill, 1);
+    face.fillRoundedRect(-21, -15, 42, 30, 10);
+    face.lineStyle(1, 0xffffff, 0.46);
+    face.strokeRoundedRect(-20, -14, 40, 27, 9);
+
+    const label = this.add.text(0, 0, this.lapShuffleNodeLabel071(node), {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#3f2b27',
+      align: 'center',
+    }).setOrigin(0.5);
+
+    container.add([plate, face, label]);
+    return container;
+  }
+
+  private lapShuffleNodeFill071(node: BoardNode): number {
+    if (node.feature === 'minigame') return 0xf4b38d;
+    if (node.contentId === 'SPECIAL_LOTTERY') return 0xffd86b;
+    if (node.type === 'money') return (node.value ?? 0) >= 0 ? 0xffd86b : 0xff8f86;
+    if (node.type === 'news') return 0x84d5a1;
+    if (node.type === 'card') return 0xb9a6e8;
+    return 0xfffaf1;
+  }
+
+  private lapShuffleNodeLabel071(node: BoardNode): string {
+    if (node.feature === 'minigame') return '🎮';
+    if (node.contentId === 'SPECIAL_LOTTERY') return '🎰';
+    if (node.type === 'news') return '!';
+    if (node.type === 'card') return '?';
+    if (node.type === 'money') return (node.value ?? 0) >= 0 ? '$+' : '$−';
+    return '•';
+  }
+
+  private destroyLapShuffleBoard071(): void {
+    this.tweens.killTweensOf(this.lapShuffleVisualRoot071?.list ?? []);
+    this.lapShuffleVisualRoot071?.destroy(true);
+    this.lapShuffleVisualRoot071 = undefined;
+    this.lapShuffleVisualSignature071 = '';
   }
 
   /**
