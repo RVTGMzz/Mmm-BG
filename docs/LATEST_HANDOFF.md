@@ -76,10 +76,18 @@ Wrangler Worker dry-run also passes independently.
 GitHub Pages:
 `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
 
-Public compiled mirror remains:
-`f96edc0dd2bba6a67b1f8d84eff8b2e7838f33c4`
+Current public compiled mirror:
+`73684a5a0dcb810c1a378f081dec5dd0a0bd5604`
 
-The frontend already contains 0.1.70.4.20. Later source-only workflow/docs commits do not change compiled output.
+Pages workflow:
+- run: `35811832269`
+- conclusion: SUCCESS
+
+This public build contains:
+- 0.1.70.4.20 Worker-compatible frontend;
+- Visual Foundation VF-01 + VF-02;
+- Vietnamese typography stabilization;
+- Roguelike Lap Shuffle 0.1.
 
 ## Cloudflare Git integration
 
@@ -146,6 +154,65 @@ Canonical rollout order:
 
 Do not reskin the entire runtime in one pass. Components are built and validated first, then propagated.
 
+## Roguelike Lap Shuffle 0.1
+
+Implementation document:
+`docs/ROGUELIKE_LAP_SHUFFLE_0.1.md`
+
+Status:
+**IMPLEMENTED / CI PASS / RUNTIME RETEST REQUIRED**
+
+Rule:
+- first player to cross Start for lap N triggers exactly one global shuffle for lap N;
+- later players reaching the same lap do not reshuffle;
+- graph topology and coordinates stay fixed;
+- tile content bundles move together.
+
+Locked positions:
+- Start;
+- Job;
+- Police/Jail gate + hold;
+- Jail Exit 1/2/3;
+- Hospital gate + hold;
+- Hospital Exit 1/2/3.
+
+Mutable pool includes:
+- TIN TỨC;
+- LÁ BÀI;
+- money +/-;
+- Mini Game;
+- Lottery;
+- ordinary spaces.
+
+Authority:
+- uses serializable HOST RNG only;
+- no `Math.random()`;
+- layout lives in MatchState;
+- layout is checksum-covered;
+- layout serializes for reconnect/snapshot;
+- replay deterministically reconstructs the same shuffle.
+
+Presentation:
+- global `board_shuffle` event;
+- “BÀN CỜ ĐÃ BIẾN ĐỔI!”;
+- board tiles update on the presentation beat, not early;
+- shuffled tiles pop/flip into their authoritative identities.
+
+Validation:
+- MMM MVP CI #3192
+- run: `35811772094`
+- conclusion: SUCCESS
+- typecheck/build: SUCCESS
+- retained outlier replay rebased intentionally for the new HOST RNG consumption;
+- `test:roguelike-lap-shuffle-071`: SUCCESS
+- compiled mirror publish: SUCCESS
+
+Retained deterministic sentinels after the intentional gameplay change:
+- seed 611102 checksum `70355e64`;
+- seed 611112 checksum `143e052b`.
+
+Do not call this feature Runtime PASS until real play confirms one-shuffle-per-lap, locked nodes, correct visible/effective tile identity, two-device parity and reconnect restoration.
+
 ## Runtime acceptance still pending
 
 Automated/live infrastructure proof is PASS.
@@ -158,6 +225,6 @@ Do not call full 0.1.70.4.20 Runtime PASS until Ron confirms on real devices:
 5. no stale black `CHỜ HOST` overlay;
 6. P1/P2 camera tracks are mutually visible when both enable camera.
 
-If those real-device checks pass, close 0.1.70.4.x as the stable baseline and proceed to 0.1.71.
+0.1.70.4.20 online acceptance is still not formally closed. By explicit user request, the Roguelike Lap Shuffle gameplay layer has already been implemented on the active playtest branch; do not interpret that as a retroactive Runtime PASS for the .20 online checkpoint.
 
 Do not merge PR #1.
