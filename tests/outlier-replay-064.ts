@@ -16,50 +16,51 @@ const runtime = {
 
 // This test file keeps its historical 0.1.64 filename because CI/package paths already
 // consume it, but the canonical outlier fingerprints below are intentionally rebased
-// for 0.1.70 Career Traits. The gameplay update changes Job draws and special-release odds.
+// for 0.1.71 Roguelike Lap Shuffle. The gameplay update consumes HOST RNG when the
+// first player reaches each lap and then resolves later landings against the shuffled layout.
 const OUTLIERS = [
   {
     seed: 611102,
-    reason: '0.1.70-longest-match',
-    checksum: '56c6487d',
-    turns: 92,
-    commands: 145,
-    submitted: 128,
-    moneyTotal: 1570,
-    spread: 177,
-    movement: 76,
-    release: 22,
+    reason: '0.1.71-roguelike-lap-shuffle-longest-match',
+    checksum: '70355e64',
+    turns: 94,
+    commands: 146,
+    submitted: 129,
+    moneyTotal: 1585,
+    spread: 158,
+    movement: 78,
+    release: 21,
     cards: 14,
-    news: 8,
+    news: 12,
     mini: 12,
-    miniPayout: 565,
+    miniPayout: 555,
     jobs: 4,
     lotteryCount: 1,
     lotteryPayout: 40,
     finishOrderPlayerIds: [3, 2, 1, 0],
-    finalMoney: [365, 323, 500, 382],
+    finalMoney: [385, 330, 488, 382],
     finishOrderBySeat: [4, 3, 2, 1],
   },
   {
     seed: 611112,
-    reason: '0.1.70-largest-money-spread',
-    checksum: 'a5aa724b',
-    turns: 76,
-    commands: 124,
-    submitted: 110,
-    moneyTotal: 1885,
-    spread: 399,
-    movement: 68,
-    release: 15,
-    cards: 14,
-    news: 8,
-    mini: 10,
-    miniPayout: 380,
+    reason: '0.1.71-roguelike-lap-shuffle-largest-money-spread',
+    checksum: '143e052b',
+    turns: 75,
+    commands: 118,
+    submitted: 104,
+    moneyTotal: 1555,
+    spread: 111,
+    movement: 66,
+    release: 14,
+    cards: 15,
+    news: 11,
+    mini: 6,
+    miniPayout: 275,
     jobs: 3,
-    lotteryCount: 2,
-    lotteryPayout: 180,
+    lotteryCount: 1,
+    lotteryPayout: 60,
     finishOrderPlayerIds: [1, 2, 0, 3],
-    finalMoney: [432, 341, 372, 740],
+    finalMoney: [452, 341, 380, 382],
     finishOrderBySeat: [3, 1, 2, 4],
   },
 ] as const;
@@ -121,14 +122,14 @@ for (const { fixture, run } of runs) {
 }
 
 const lines = [
-  'MeMeMe OUTLIER REPLAY PACK 0.1.70',
-  'Career Traits intentionally change Jail/Hospital release odds and expand the Job pool from 10 to 12.',
+  'MeMeMe OUTLIER REPLAY PACK 0.1.71',
+  'Roguelike Lap Shuffle intentionally consumes HOST RNG and changes later tile outcomes after the first finisher crosses each lap.',
   'Historical 0.1.63.4 fingerprints remain in tests/outlier-replay-0634.ts and are not rewritten.',
   ...runs.flatMap((entry) => fingerprintLine(entry)),
-  'LOCKED: exact 0.1.70 Career Traits outlier fingerprints selected from the 32-match deterministic batch.',
+  'LOCKED: exact 0.1.71 Roguelike Lap Shuffle outlier fingerprints for the retained deterministic sentinels.',
 ];
 const text = lines.join('\n');
 const outputPath = process.env.OUTLIER_REPLAY_OUTPUT?.trim();
 if (outputPath) writeFileSync(outputPath, `${text}\n`, 'utf8');
 console.log(text);
-console.log(`[outlier-replay-064] PASS 0.1.70 fingerprints locked for seeds=${OUTLIERS.map((fixture) => fixture.seed).join(',')} output=${outputPath || '(stdout only)'}`);
+console.log(`[outlier-replay-064] PASS 0.1.71 lap-shuffle fingerprints locked for seeds=${OUTLIERS.map((fixture) => fixture.seed).join(',')} output=${outputPath || '(stdout only)'}`);
