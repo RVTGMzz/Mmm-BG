@@ -40,7 +40,7 @@ assert(!scene.includes('rootContainerDepth0682'), 'depth alone must never whitel
 assert(!scene.includes('if (text.parentContainer) return;'), 'nested legacy text must not bypass modal ownership');
 assert(!scene.includes('Math.random'));
 assert(!scene.includes('submitIntent('));
-assert.match(jobPicker, /CHẠM ĐỂ XEM/);
+assert.match(jobPicker, /XEM CHI TIẾT/);
 assert.match(jobPicker, /detailRoot/);
 assert.doesNotMatch(jobPicker, /scene\.events\.on\('mememe-ui-back'/);
 assert(!jobPicker.includes('Math.random'));
