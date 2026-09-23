@@ -24,12 +24,10 @@ assert.match(active, /const body = this\.add\.text\(-322, -24, bodyCopy/);
 assert.match(active, /fixedWidth: 628/);
 assert.match(active, /retireLegacyPresentationOverlays070414/);
 
-// Reaction bubbles: deterministic avatar-corner anchors.
-assert.match(presentation, /const anchorId = speakerId === undefined \? fallbackId/);
-assert.match(presentation, /const x = left \? 188 : 1092/);
-assert.match(presentation, /const REACTION_TOP_Y_070418 = 190/);
-assert.match(presentation, /const REACTION_BOTTOM_Y_070418 = 530/);
-assert.match(presentation, /const y = top \? REACTION_TOP_Y_070418 : REACTION_BOTTOM_Y_070418/);
-assert.doesNotMatch(presentation, /const y = 195 \+ \(index % 3\) \* 112/);
+// Reaction bubbles now use a measured 212px side rail. The old 328px
+// width physically entered the main modal even when the vertical test passed.
+assert.match(presentation, /reactionPlacement070422\(/);
+assert.match(presentation, /setName\('presentation-reaction-bubble-070422'\)/);
+assert.doesNotMatch(presentation, /fillRoundedRect\(-164, -62, 328/);
 
 console.log('[presentation-layout-lock-070414] PASS centered Job result/dedupe + Card/News text rebuild + avatar-anchored reactions');
