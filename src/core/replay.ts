@@ -46,6 +46,7 @@ import { applyNewsEffect, drawWeightedNews, type NewsDefinition } from './news';
 import { isPlayerFinished060 } from './pacingEconomy060';
 import {
   effectiveBoardNode071,
+  shouldTriggerBoardShuffle071,
   shuffleBoardContent071,
 } from './lapShuffle071';
 import { createRandomSource } from './rng';
@@ -455,8 +456,7 @@ function appendReadyPass060(ctx: ReplayContext, player: PlayerState): boolean {
   // only the FIRST player to reach each lap index can mutate the board.
   // The board graph/coordinates never move; only mutable tile content bundles do.
   const lapIndex = player.lapsCompleted;
-  const lastShuffleLap = Math.max(0, Math.floor(ctx.state.lastBoardShuffleLap ?? 0));
-  if (lapIndex > lastShuffleLap) {
+  if (shouldTriggerBoardShuffle071(lapIndex, ctx.state.lastBoardShuffleLap)) {
     const shuffle = shuffleBoardContent071(
       ctx.board,
       ctx.state.boardContentAssignments,
