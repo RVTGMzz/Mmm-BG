@@ -1,5 +1,6 @@
 import { computeMatchChecksum } from './checksum';
 import { isPlayerFinished060 } from './pacingEconomy060';
+import type { BoardContentAssignment071 } from './lapShuffle071';
 import { createRngState, type SerializableRngState } from './rng';
 import type { TurnPhase, TurnPhaseSnapshot } from './turnPhase';
 import type { PlayerState } from './types';
@@ -67,6 +68,10 @@ export interface MatchState {
   pendingJobOfferIds?: string[];
   pendingJobPlayerId?: number;
   pendingJobMovement?: PendingJobMovement;
+  /** Roguelike board content permutation. Graph topology and coordinates never move. */
+  boardContentAssignments?: BoardContentAssignment071[];
+  /** Highest lap index that has already triggered the one-per-lap global shuffle. */
+  lastBoardShuffleLap?: number;
 }
 
 export interface CreateMatchOptions {
@@ -94,6 +99,27 @@ function normalizePlayOrder(order: readonly number[] | undefined, playerCount: n
   if (unique.size !== playerCount) return undefined;
   if (!expected.every((id) => unique.has(id))) return undefined;
   return normalized;
+}
+
+function normalizeBoardContentAssignmentsState071(
+  assignments: readonly BoardContentAssignment071[] | undefined,
+): BoardContentAssignment071[] | undefined {
+  if (!assignments || assignments.length === 0) return undefined;
+  const seen = new Set<number>();
+  const normalized = assignments
+    .filter((entry) =>
+      Number.isInteger(entry.nodeId)
+      && Number.isInteger(entry.sourceNodeId)
+      && entry.nodeId >= 0
+      && entry.sourceNodeId >= 0
+      && !seen.has(entry.nodeId),
+    )
+    .map((entry) => {
+      seen.add(entry.nodeId);
+      return { nodeId: entry.nodeId, sourceNodeId: entry.sourceNodeId };
+    })
+    .sort((left, right) => left.nodeId - right.nodeId);
+  return normalized.length > 0 ? normalized : undefined;
 }
 
 function normalizePlayers(players: PlayerState[]): PlayerState[] {
@@ -275,6 +301,8 @@ export function deserializeMatchState(serialized: string): MatchState {
       ...current,
       players: normalizePlayers(current.players),
       pendingJobMovement: current.pendingJobMovement ? { ...current.pendingJobMovement } : undefined,
+      boardContentAssignments: normalizeBoardContentAssignmentsState071(current.boardContentAssignments),
+      lastBoardShuffleLap: Math.max(0, Math.floor(current.lastBoardShuffleLap ?? 0)) || undefined,
     };
   }
 
@@ -287,6 +315,8 @@ export function deserializeMatchState(serialized: string): MatchState {
       players: normalizePlayers(legacy.players),
       commandLog,
       nextCommandSeq: legacy.nextCommandSeq ?? commandLog.length + 1,
+      boardContentAssignments: normalizeBoardContentAssignmentsState071(legacy.boardContentAssignments),
+      lastBoardShuffleLap: Math.max(0, Math.floor(legacy.lastBoardShuffleLap ?? 0)) || undefined,
     };
   }
 
