@@ -9,6 +9,7 @@ import {
 } from '../core/lapShuffle071';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { reactionPlacement070422 } from '../ui/presentationLanes070422';
+import { isDetachedCinematicCopy070423 } from '../ui/presentationTextOwnership070423';
 import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
 import { NEWS_SHEET_VF05, paintVisualFoundationNewsVf05 } from '../ui/visualFoundationNewsVf05';
 import { canonicalHudPosition0561 } from '../ui/canonicalPresentation0561';
@@ -377,26 +378,16 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const canonical = new Set<Phaser.GameObjects.GameObject>();
     this.collectDisplayObjects070417(root, canonical);
 
-    const ownedCopy = new Set<string>();
-    const own = (value: string): void => {
-      const normalized = this.normalizePresentationCopy070412(value);
-      if (normalized.length >= 5) ownedCopy.add(normalized);
-    };
-
-    own(model.eyebrow);
-    own(model.title);
-    own(model.description);
-    own(model.summary);
-    for (const line of model.description.split(/\n+/)) own(line);
-    for (const line of model.summary.split(/\n+/)) {
-      own(line);
-      own(`→ ${line}`);
-    }
+    const ownedValues = [
+      model.eyebrow,
+      model.title,
+      model.description,
+      model.summary,
+    ];
 
     this.visitDisplayTree07044(this.children.list, (object) => {
       if (!(object instanceof Phaser.GameObjects.Text) || canonical.has(object) || !object.visible) return;
-      const copy = this.normalizePresentationCopy070412(object.text);
-      if (!ownedCopy.has(copy)) return;
+      if (!isDetachedCinematicCopy070423(object.text, ownedValues)) return;
       if (!this.hiddenDetachedCinematicText070417.has(object)) {
         this.hiddenDetachedCinematicText070417.set(object, object.visible);
       }
@@ -490,8 +481,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const accent = isNews ? 0x9bcf74 : 0xd4a8ff;
     const panelColor = isNews ? 0x173c31 : 0x2d203f;
 
-    const shadow = this.add.graphics();
-    const panel = this.add.graphics();
+    root.setScrollFactor(0);
+
+    // Create modal children off the Scene Display List. They are rendered only
+    // through the canonical owner root, so the world camera can never pick up a
+    // loose description/result line and fling it outside the card.
+    const shadow = new Phaser.GameObjects.Graphics(this);
+    const panel = new Phaser.GameObjects.Graphics(this);
     if (isNews) {
       // VF-05 first sample: restyle only INSIDE the .22 canonical modal owner.
       // Keep the same exact 720x300 bounds and current reaction/CTA lifecycle.
@@ -508,7 +504,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
     }
 
-    const kicker = this.add.text(-322, -118, model.eyebrow, {
+    const kicker = new Phaser.GameObjects.Text(this, -322, -118, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: isNews ? '14px' : '12px',
       fontStyle: 'bold',
@@ -516,37 +512,42 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fixedWidth: 500,
     });
 
-    const title = this.add.text(-322, -88, model.title, {
+    const title = new Phaser.GameObjects.Text(this, -322, -88, model.title, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '30px',
       fontStyle: 'bold',
       color: isNews ? '#3f2b27' : '#ffffff',
       fixedWidth: 540,
       wordWrap: { width: 540, useAdvancedWrap: true },
+      maxLines: 2,
     });
 
-    const impact = this.add.text(314, -108, model.impact || '•', {
+    const impact = new Phaser.GameObjects.Text(this, 314, -108, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
       fontSize: isNews ? '26px' : '19px',
       color: isNews ? '#3f2b27' : '#ffffff',
     }).setOrigin(1, 0);
 
     const bodyCopy = this.canonicalCinematicBody070414(model);
-    const body = this.add.text(-322, -24, bodyCopy, {
+    const body = new Phaser.GameObjects.Text(this, -322, -24, bodyCopy, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: isNews ? '18px' : '16px',
       color: isNews ? '#59463d' : '#f4ede4',
       fixedWidth: 628,
       wordWrap: { width: 628, useAdvancedWrap: true },
       lineSpacing: 5,
+      maxLines: 5,
     });
 
     const bodyHeight070418 = model.targetId === undefined ? 138 : 116;
     this.fitWrappedText070418(title, 540, 54, 30, 24, 2);
     if (isNews) this.fitWrappedText070418(body, NEWS_SHEET_VF05.bodyWidth, bodyHeight070418, 18, 14, 5);
     else this.fitWrappedText070418(body, 628, bodyHeight070418, 16, 12, 5);
+    body.setMaxLines(5);
+    title.setMaxLines(2);
 
-    const source = this.add.text(
+    const source = new Phaser.GameObjects.Text(
+      this,
       316, 126,
       isNews ? '' : `CARD ACTION • #${model.eventSeq}`,
       {
@@ -559,7 +560,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     root.add([shadow, panel, kicker, title, impact, body, source]);
 
     if (model.rarity) {
-      const rarityText = this.add.text(275, -118, model.rarity, {
+      const rarityText = new Phaser.GameObjects.Text(this, 275, -118, model.rarity, {
         fontFamily: MOBILE_UI_FONT_07044,
         fontSize: '10px',
         fontStyle: 'bold',
@@ -577,7 +578,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       || model.cardEffectType === 'tactical_choice';
     if (model.kind === 'card_play' && model.targetName && directMoneyTransfer && amount > 0) {
       const action = `${model.targetName} • ${amount} B$ • ${model.actorName}`;
-      const actionText = this.add.text(0, 112, action, {
+      const actionText = new Phaser.GameObjects.Text(this, 0, 112, action, {
         fontFamily: MOBILE_UI_FONT_07044,
         fontSize: '11px',
         fontStyle: 'bold',

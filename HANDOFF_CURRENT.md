@@ -1,5 +1,25 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 Card/News content containment hotfix — screenshot root fix
+
+Ron supplied two runtime screenshots that reproduce the long-standing Card/News failure:
+- **Kéo Hai Cửa**: description + result escaped left of the purple Card while the canonical body area was empty;
+- **Hoàn Tiền Bất Ngờ**: `+25B$ / → CPU 4 nhận 25B escaped left of the warm News sheet.
+
+The previous guards were not sufficient because one inherited producer could emit **description + arrow-summary inside one loose Text object**. The semantic owner guard compared whole strings/individual values, so the combined block did not match and survived. The canonical rebuild also created modal Text via `this.add.text(...)` before parenting, leaving an avoidable window for camera routing of a loose child.
+
+Root fix:
+- new pure policy `src/ui/presentationTextOwnership070423.ts` compares semantic **lines**, stripping arrow/bullet prefixes;
+- a detached Text is suppressed only when every meaningful line belongs to the active Card/News model, so HUD/reaction text is not caught;
+- screenshot-exact Card and News strings are regression fixtures;
+- canonical Card/News text/graphics are now created **off the Scene Display List** with `new Phaser.GameObjects.*` and rendered only through the single owner container;
+- canonical owner root is `scrollFactor(0)`;
+- title/body get hard `maxLines` plus existing fixed-size adaptive boxes;
+- no card-specific IDs/titles are used by runtime logic. The fix applies to all current/future Card and News copy.
+
+Canonical regression:
+- `tests/presentation-content-containment-070423.ts`
+
 ## September 24 CH-02G KHÓC NHÈ neutral layered runtime proof
 
 The first actual Character layer binaries are now wired into Character Select for **KHÓC NHÈ / neutral only**.

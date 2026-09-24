@@ -226,6 +226,8 @@ jobs:
         run: npm run test:final-modal-career-070421
       - name: 0.1.70.4.22 presentation single owner + safe reactions
         run: npm run test:presentation-owner-070422
+      - name: 0.1.70.4.22 Card/News content containment hotfix
+        run: npm run test:presentation-content-070423
       - name: Visual Foundation 0.1 VF-01/02/03 tokens buttons and first owned modal
         run: npm run test:visual-foundation-vf03
       - name: Visual Foundation 0.1 VF-04 four-corner player HUD
