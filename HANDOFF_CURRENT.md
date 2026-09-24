@@ -1,5 +1,37 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 Character System foundation — CH-01
+
+Ron re-confirmed the older Character idea and expanded it into a locked direction: final MeMeMe players are not just circular avatars. Every participant will eventually choose a Character before Ready/Start. The human player owns seat/name/face input; the Character owns body/silhouette/costume, pose set, reaction profile and passive IDs.
+
+Key decisions now canonical:
+- varied cast across age/gender presentation, silhouette and personality; demographics never mechanically imply a passive;
+- the real player face is composited into the selected Character rather than being the whole avatar;
+- circular face crop is no longer the future default for Character art; use head/hair-aware source + normalized face socket;
+- current three captures neutral/happy/angry remain practical input, while Character poses may use richer emotions with deterministic fallback;
+- future TIN TỨC/LÁ BÀI pipeline: Player → Character → context/emotion → pose → face composite → event surface;
+- Character reactions migrate from seat-default personality to Character reaction profiles;
+- passives will be data-driven and HOST-authoritative when implemented. CH-01 does not activate any passive gameplay or add RNG/state mutation.
+
+New canonical spec:
+- `docs/CHARACTER_SYSTEM_SPEC_V0.1.md`
+- `src/core/characterSystem.ts`
+
+CH-01 source foundation:
+- `PlayerProfile.characterId?: string` is transitional/optional until Character Select exists;
+- `gameSession.setCharacter/getCharacterId/hasCharacterSelections`;
+- normalized face-socket schema;
+- Character pose/emotion/portrait/passive schema;
+- deterministic richer-emotion → neutral/happy/angry capture fallback;
+- no final roster invented yet.
+
+**Validated source commit:** `6fb9b7129512439ec32909726da7e5a3197c1fe2`.
+**MMM MVP CI #3225:** run `35937980934`, **SUCCESS**.
+**Compiled public mirror:** `5e23515240745c7b84301277fe82669ab2729074`.
+**GitHub Pages #26:** run `35938077099`, **SUCCESS**.
+
+This is a source/schema milestone, not a visual Runtime PASS. Existing Setup remains intentionally unchanged. Next Character work should preserve the non-circular source needed for future compositing, then design the first actual starter Character + Character Select proof before making selection mandatory. Do not activate passives or mass-reskin TIN TỨC/LÁ BÀI yet.
+
 Repository: `RVTGMzz/Mmm-BG`  
 Branch: `mmm-mvp-0.1-core`  
 Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.

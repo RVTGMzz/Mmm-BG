@@ -21,7 +21,22 @@ Read first:
 16. `src/ui/visualFoundationHudVf04.ts` and `src/scenes/CareerMinigameBoardScene065.ts` (VF-04)
 17. `tests/visual-foundation-hud-vf04.ts` and `docs/VISUAL_FOUNDATION_PASS_0.1.md`
 18. `src/ui/visualFoundationNewsVf05.ts` and `tests/visual-foundation-news-vf05.ts` (VF-05)
-19. Ron's newest runtime screenshots/feedback
+19. `docs/CHARACTER_SYSTEM_SPEC_V0.1.md`, `src/core/characterSystem.ts` and `src/core/session.ts` (CH-01)
+20. Ron's newest runtime screenshots/feedback
+
+Current Character checkpoint:
+**CH-01 — Character System + face-composite foundation**
+
+Validated Character source:
+`6fb9b7129512439ec32909726da7e5a3197c1fe2`
+- CI #3225 / run `35937980934`: SUCCESS
+- compiled mirror `5e23515240745c7b84301277fe82669ab2729074`
+- Pages #26 / run `35938077099`: SUCCESS
+- final direction: Character required before match once CH-02 UI exists; Character owns body/poses/reaction profile/passive IDs; human player owns face/name/seat;
+- do not make circular crop the future Character default;
+- no passive gameplay is live yet;
+- do not invent the final roster without Ron's art/design review;
+- next technical Character step: retain non-circular face source for compositing, then first real Character + Character Select proof.
 
 Current checkpoint:
 **0.1.70.4.22 — Presentation Single Owner + Safe Reactions**
