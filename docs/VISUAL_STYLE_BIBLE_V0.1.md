@@ -9,6 +9,138 @@ This document defines the visual direction for future UI, board, HUD, modal, ico
 
 The supplied reference set establishes the desired **visual language**, not assets to copy. Do not reproduce another game's characters, logos, layouts, illustrations or proprietary UI one-for-one.
 
+## 0. Compact reference lock — September 24
+
+Use this section as the fast art/UI checkpoint before producing any new screen, Character, TIN TỨC, LÁ BÀI or promotional game art.
+
+### Core mood
+
+**Cute party board game + toy diorama + expressive meme energy.**
+
+Locked words:
+
+**Chibi · Cozy · Rounded · Toy-like · Juicy · Playful · Readable**
+
+Avoid drifting into:
+- generic web-app UI;
+- hard sci-fi;
+- casino/gloss overload;
+- photorealistic character bodies;
+- unrelated anime styling;
+- flat grey prototype panels that visually belong to another product.
+
+### Shape + material
+
+- large rounded forms;
+- warm cream/paper surfaces rather than pure white;
+- cocoa/dark-brown outlines rather than default pure black;
+- soft plastic / sticker / painted-toy material language;
+- short soft shadow below components;
+- subtle top-edge highlight;
+- pressed controls physically compress rather than only changing colour;
+- pill shapes are for tags/badges, not every control.
+
+### Colour grammar
+
+Primary family:
+- cream / ivory / warm beige;
+- butter yellow;
+- mint;
+- coral;
+- aqua;
+- lavender;
+- cocoa outlines.
+
+P1–P4 colours remain player identity. **Gold is active-turn state**, not a replacement player colour.
+
+### Typography
+
+- Vietnamese-safe rounded/soft sans;
+- friendly without becoming babyish;
+- hierarchy is title → action/effect → body → metadata;
+- never rescue a crowded layout by shrinking essential text into micro-copy.
+
+### MeMeMe brand DNA
+
+The three expression marks associated with the logo are a **signature system**, not incidental decoration.
+
+They should inspire:
+- reaction badges;
+- Character mood states;
+- event accents;
+- loading/result moments;
+- small sticker motifs.
+
+Use them deliberately. Do not flood every surface with random emoji.
+
+### Character visual contract
+
+Characters must look born from the same world as the UI and board:
+- stylized/chibi proportions;
+- strong readable silhouette;
+- toy-like body language;
+- costume and pose carry personality before text does;
+- avoid realistic body art with a pasted-on face.
+
+The four starter archetypes must feel different even in silhouette:
+- **KHÓC NHÈ**: theatrical, emotional, expressive;
+- **CAU CÓ**: rigid, angular, closed posture;
+- **LO LẮNG**: compact, prepared, cautious;
+- **TĂNG ĐỘNG**: leaning, springy, always in motion.
+
+### Face-composite contract
+
+- circular crop is only a compatibility avatar treatment, **not** the future Character-art default;
+- preserve head/hair/forehead/chin;
+- Character art provides a normalized face/head socket;
+- support round, long, narrow, angular and square faces without changing the whole template;
+- TIN TỨC usually presents the Character more editorially;
+- LÁ BÀI usually treats the Character more like a sticker/cutout;
+- special moments may use a larger hero cutout.
+
+### Event surfaces
+
+**TIN TỨC**
+- controlled editorial/poster/paper feeling;
+- Character + event art should carry the moment;
+- clean hierarchy and one dominant result/action.
+
+**LÁ BÀI**
+- more playful and kinetic;
+- sticker/cutout energy;
+- stronger reaction accents;
+- still uses the same typography, spacing, border and material family.
+
+Unique art is welcome, but anatomy stays shared. Do not create a different UI system for every card.
+
+### Character Select
+
+Character Select is a showcase, not a form.
+
+Priority:
+1. large Character art;
+2. archetype/personality;
+3. one short identity line;
+4. one concise passive summary;
+5. selected/preview state;
+6. face-on-Character preview.
+
+Avoid dense stat cards and tiny descriptive text.
+
+### Motion
+
+Motion should feel springy and physical:
+- press ~80–120 ms;
+- modal/card entrance ~160–240 ms;
+- brief bounce/pop for reactions;
+- no decorative animation that delays input or runs everywhere forever.
+
+### Golden rule
+
+> If one screen looks good by itself but looks like it came from a different game when placed beside another MeMeMe screen, it is still wrong.
+
+**Consistency first, flourish second.**
+
 ---
 
 ## 1. North-star direction

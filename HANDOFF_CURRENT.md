@@ -1,5 +1,26 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 compact Visual Style Bible lock
+
+Ron reconfirmed that all new UI/Character work must stay visually aligned with the earlier game UI reference set rather than drifting into a new style.
+
+Canonical document remains:
+- `docs/VISUAL_STYLE_BIBLE_V0.1.md`
+
+A compact reference-lock section is now added at the top of that file. It explicitly locks:
+- Chibi / Cozy / Rounded / Toy-like / Juicy / Playful / Readable;
+- warm cream + cocoa + butter/mint/coral/aqua/lavender material family;
+- soft toy depth instead of flat web-app panels;
+- logo expression marks as core brand DNA;
+- Character art must share the same world language as HUD/cards/board;
+- circular face crop is compatibility-only, not the future Character-art default;
+- TIN TỨC = more editorial/paper/poster;
+- LÁ BÀI = more kinetic sticker/cutout;
+- Character Select = large art first, not a text-heavy stat form;
+- consistency across screens outranks one-off visual flourish.
+
+This compact lock is the checkpoint for the upcoming **KHÓC NHÈ art proof + Character Select visual proof**.
+
 ## September 24 CH-02A starter roster lock
 
 Ron approved the first four foundational Character archetypes:

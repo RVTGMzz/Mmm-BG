@@ -22,7 +22,8 @@ Read first:
 17. `tests/visual-foundation-hud-vf04.ts` and `docs/VISUAL_FOUNDATION_PASS_0.1.md`
 18. `src/ui/visualFoundationNewsVf05.ts` and `tests/visual-foundation-news-vf05.ts` (VF-05)
 19. `docs/CHARACTER_SYSTEM_SPEC_V0.1.md`, `src/core/characterSystem.ts` and `src/core/session.ts` (CH-01)
-20. Ron's newest runtime screenshots/feedback
+20. `docs/VISUAL_STYLE_BIBLE_V0.1.md` compact reference lock (September 24)
+21. Ron's newest runtime screenshots/feedback
 
 Current Character checkpoint:
 **CH-02A — Four-character starter roster locked**
@@ -36,6 +37,7 @@ Validated latest Character source:
 - passives remain concept-only and `live: false`
 - final names, gender presentation and art are not locked
 - next: KHÓC NHÈ art proof + Character Select visual proof + face-on-Character preview
+- before generating/designing Character art, obey the compact reference lock in `docs/VISUAL_STYLE_BIBLE_V0.1.md`: same chibi/cozy/rounded/toy-like world, warm cream/cocoa materials, logo-expression DNA, no photorealistic-body style drift
 
 Historical foundation:
 **CH-01.1 — Character System + non-circular face-source foundation**
