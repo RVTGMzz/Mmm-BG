@@ -15,9 +15,12 @@ export interface StarterPassiveConcept {
   live: false;
 }
 
+export type StarterCharacterGenderPresentation = 'female' | 'male';
+
 export interface StarterCharacterDefinition extends CharacterDefinition {
   archetype: StarterCharacterArchetype;
   archetypeLabel: string;
+  genderPresentation: StarterCharacterGenderPresentation;
   ageBand: {
     min: number;
     max: number;
@@ -35,8 +38,8 @@ export interface StarterCharacterDefinition extends CharacterDefinition {
  * first Character Select proof. Personal character names, gender presentation
  * and final art are intentionally not locked here.
  *
- * Age/style are presentation direction only. Gameplay may never infer a
- * passive from age, gender or demographic tags.
+ * Age/style/gender presentation are presentation direction only. Gameplay may
+ * never infer a passive from age, gender or demographic tags.
  */
 export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
   {
@@ -44,6 +47,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
     displayNameKey: 'character.starter.crybaby.name',
     archetype: 'crybaby',
     archetypeLabel: 'KHÓC NHÈ',
+    genderPresentation: 'female',
     ageBand: { min: 55, max: 65 },
     styleDirection: 'Có gu, hơi màu mè, nhiều phụ kiện; silhouette mềm nhưng rất sân khấu.',
     bodyLanguage: [
@@ -78,6 +82,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
     displayNameKey: 'character.starter.grumpy.name',
     archetype: 'grumpy',
     archetypeLabel: 'CAU CÓ',
+    genderPresentation: 'male',
     ageBand: { min: 40, max: 50 },
     styleDirection: 'Chỉnh tề, sắc cạnh, màu gọn; silhouette thẳng và hơi khó gần.',
     bodyLanguage: [
@@ -112,6 +117,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
     displayNameKey: 'character.starter.anxious.name',
     archetype: 'anxious',
     archetypeLabel: 'LO LẮNG',
+    genderPresentation: 'male',
     ageBand: { min: 28, max: 35 },
     styleDirection: 'Neat/planner-core, nhiều túi nhỏ và vật dụng; silhouette gọn nhưng luôn có cảm giác chuẩn bị quá kỹ.',
     bodyLanguage: [
@@ -146,6 +152,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
     displayNameKey: 'character.starter.hyper.name',
     archetype: 'hyper',
     archetypeLabel: 'TĂNG ĐỘNG',
+    genderPresentation: 'female',
     ageBand: { min: 18, max: 24 },
     styleDirection: 'Streetwear/sporty, màu sáng, sticker và phụ kiện chuyển động; silhouette nghiêng, bật, luôn có momentum.',
     bodyLanguage: [

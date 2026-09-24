@@ -240,6 +240,8 @@ jobs:
         run: npm run test:image
       - name: CH-02A four-character starter roster contract
         run: npm run test:character-starter-ch02
+      - name: CH-02B Random Character and Secret Baby contract
+        run: npm run test:character-random-ch02b
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package

@@ -11,10 +11,11 @@ The first MeMeMe starter roster contains exactly four foundational personalities
 
 They intentionally span four different age bands and four strongly different visual rhythms. The goal is that a player can identify the Character from silhouette/body language before reading text.
 
-Personal character names and gender presentation are **not locked yet**. The archetype is not required to become the final character name.
+Personal character names are **not locked yet**. Gender presentation is now locked for the four starter archetypes: KHÓC NHÈ female, CAU CÓ male, LO LẮNG male, TĂNG ĐỘNG female. The archetype is not required to become the final character name.
 
 ## 1. KHÓC NHÈ
 
+- gender presentation: **female**
 - age direction: **55–65**
 - style: expressive, fashionable, slightly theatrical, accessory-rich
 - silhouette: soft/theatrical
@@ -30,6 +31,7 @@ Passive concept: **ĐƯỢC DỖ**
 
 ## 2. CAU CÓ
 
+- gender presentation: **male**
 - age direction: **40–50**
 - style: sharp, tidy, controlled
 - silhouette: upright/angular
@@ -45,6 +47,7 @@ Passive concept: **ĐỪNG CHỌC TUI**
 
 ## 3. LO LẮNG
 
+- gender presentation: **male**
 - age direction: **28–35**
 - style: neat/planner-core, prepared, many small useful items
 - silhouette: compact/prepared
@@ -60,6 +63,7 @@ Passive concept: **LO XA**
 
 ## 4. TĂNG ĐỘNG
 
+- gender presentation: **female**
 - age direction: **18–24**
 - style: bright streetwear/sporty, stickers and moving accessories
 - silhouette: dynamic/leaning

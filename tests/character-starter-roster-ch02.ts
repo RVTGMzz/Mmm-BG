@@ -9,6 +9,11 @@ assert.equal(STARTER_CHARACTERS_V01.length, 4, 'starter roster must contain exac
 
 const expectedArchetypes = ['crybaby', 'grumpy', 'anxious', 'hyper'];
 assert.deepEqual(starterCharacterArchetypesV01(), expectedArchetypes);
+assert.deepEqual(
+  STARTER_CHARACTERS_V01.map((character) => character.genderPresentation),
+  ['female', 'male', 'male', 'female'],
+  'starter gender presentation must match the approved CH-02B roster',
+);
 
 const ids = STARTER_CHARACTERS_V01.map((character) => character.id);
 assert.equal(new Set(ids).size, ids.length, 'starter character IDs must be unique');

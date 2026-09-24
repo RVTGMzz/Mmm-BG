@@ -60,7 +60,7 @@ Transitional rule:
 - online clients may select only their own seat;
 - CPU characters must be assigned deterministically by HOST authority.
 
-Whether duplicate Characters are allowed in one match is still open and must be decided with the first real roster.
+Fixed-choice duplicate policy is still open. For CH-02B RANDOM batches, starter duplicates are avoided whenever roster capacity permits, and the Secret Baby is capped at one per match batch.
 
 ## 4. Character data model
 
@@ -291,6 +291,16 @@ Character body/pose artwork should not bake:
 - **no passive gameplay mutation yet**.
 
 ### CH-02 — Starter roster + Character Select
+
+CH-02B extension:
+- RANDOM (?) uses HOST-authoritative serializable RNG;
+- each RANDOM slot has a 5% Secret Baby eligibility roll;
+- Secret Baby is RANDOM-only, hidden from normal roster selection, and capped at one per batch;
+- multi-player RANDOM resolves as a concealed shuffled batch revealed at match start;
+- canonical design: `docs/CHARACTER_RANDOM_SECRET_BABY_CH02B.md`;
+- canonical resolver: `src/core/characterRandomSelectionCh02b.ts`.
+
+### CH-02A — Starter roster
 - starter cast direction locked to **KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG** across four distinct age/style bands;
 - canonical roster data: `src/content/core/characters_starter_v01.ts`;
 - roster design sheet: `docs/CHARACTER_STARTER_ROSTER_V0.1.md`;
