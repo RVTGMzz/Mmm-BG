@@ -20,6 +20,17 @@ Root fix:
 Canonical regression:
 - `tests/presentation-content-containment-070423.ts`
 
+Validation:
+- validated source HEAD: `8a1ca0b37c10c44d9cfb8b92607233728408761a`
+- MMM MVP CI #3239 / run `36030534270`: **SUCCESS**
+- legacy layout-lock / global-owner / adaptive-safe-area / .22 owner tests: **SUCCESS**
+- screenshot-specific containment regression: **SUCCESS**
+- compiled public mirror: `e95b7caf9d190387d3327ebf66a6971499390974`
+- GitHub Pages #31 / run `36030638473`: **SUCCESS**
+- public playtest: `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+
+The two screenshot failures are now explicit regression fixtures, not title-specific runtime patches. Future Card/News body copy must remain container-owned and may not escape through a combined description + summary Text object.
+
 ## September 24 CH-02G KHÓC NHÈ neutral layered runtime proof
 
 The first actual Character layer binaries are now wired into Character Select for **KHÓC NHÈ / neutral only**.

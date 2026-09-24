@@ -1,5 +1,22 @@
 # Mmm-BG — Latest Handoff
 
+## September 24 Card/News content containment root fix
+
+Runtime screenshots from Ron exposed the same long-standing class of failure on both **Kéo Hai Cửa** and **Hoàn Tiền Bất Ngờ**: description/result copy was being drawn outside the canonical modal while the modal body looked empty.
+
+Root cause and fix:
+- an inherited producer could combine description + arrow-summary into one loose Text object, bypassing the older whole-string semantic guard;
+- the new semantic ownership helper compares line-by-line and suppresses only loose Text whose meaningful lines all belong to the active Card/News;
+- canonical modal Text/Graphics are now created off the Scene Display List and rendered only through the single owner container;
+- the owner root is scroll-factor locked;
+- title/body use hard max-line + fixed-size adaptive bounds;
+- runtime logic is content-agnostic and does not special-case the reported card/news titles.
+
+Validated source: `8a1ca0b37c10c44d9cfb8b92607233728408761a`  
+CI #3239: **SUCCESS**  
+Mirror: `e95b7caf9d190387d3327ebf66a6971499390974`  
+Pages #31: **SUCCESS**
+
 ## September 24 CH-02G KHÓC NHÈ neutral layered runtime proof
 
 The Character system is now beyond schema-only work: **KHÓC NHÈ / neutral** has a real layered runtime proof in Character Select.

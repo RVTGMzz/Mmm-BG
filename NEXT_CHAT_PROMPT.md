@@ -1,3 +1,15 @@
+Current presentation containment checkpoint:
+**Card/News container-owned content hotfix**
+
+Validated source:
+`8a1ca0b37c10c44d9cfb8b92607233728408761a`
+- CI #3239 / run `36030534270`: SUCCESS
+- mirror `e95b7caf9d190387d3327ebf66a6971499390974`
+- Pages #31 / run `36030638473`: SUCCESS
+- screenshot regressions Kéo Hai Cửa + Hoàn Tiền Bất Ngờ are now test fixtures
+- do not reintroduce modal children via loose `this.add.text` in canonical Card/News rebuild
+- keep semantic line-level detached-copy suppression generic, never card-title-specific
+
 # NEXT CHAT PROMPT — Mmm-BG
 
 Continue the board game from `HANDOFF_CURRENT.md` in repo `RVTGMzz/Mmm-BG`, branch `mmm-mvp-0.1-core`.
