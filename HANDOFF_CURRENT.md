@@ -1,6 +1,36 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02E layered Character art production contract
+
+The approved Drive concepts now have a canonical production-layer manifest without adding the concept binaries to Git.
+
+Canonical files:
+- `src/content/core/character_art_manifest_v01.ts`
+- `docs/CHARACTER_ART_LAYER_PIPELINE_CH02E.md`
+- `tests/character-art-layer-pipeline-ch02e.ts`
+
+Locked export contract:
+- 1024×1536 transparent master per pose;
+- seven emotions per Character;
+- `body-back.webp` behind the player head;
+- `foreground.webp` above the player head;
+- `face-mask.webp` for an irregular head-safe mask;
+- no hard circular Character mask;
+- socket coordinates are deliberately **not guessed** until the final layers exist;
+- manifests remain `layer-export-pending` until measured;
+- Secret Baby production art may exist but must not be imported by normal Character Select before reveal;
+- Secret Baby pacifier belongs in foreground so it overlaps the inserted face naturally.
+
+Next art proof: **KHÓC NHÈ / neutral** layered export only, then real-face fit validation before scaling to all poses.
+
 ## September 24 CH-02D non-circular face-composite proof
+
+Validation completed before CH-02E:
+- CH-02D source: `7fdcaaaa6a804410f3b6b80b02b23cff9e30e755`
+- MMM MVP CI #3233 / run `35970840484`: **SUCCESS**
+- public mirror: `c46d96546c8bb4b094d38d20796b5ea185ca2ff7`
+- Pages #29 / run `35970955572`: **SUCCESS**
+
 
 CH-02D now connects captured player faces to Character Select without regressing to the old circular crop.
 

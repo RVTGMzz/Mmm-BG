@@ -246,6 +246,8 @@ jobs:
         run: npm run test:character-select-ch02c
       - name: CH-02D non-circular Character face composite contract
         run: npm run test:character-face-ch02d
+      - name: CH-02E layered Character art production contract
+        run: npm run test:character-art-ch02e
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package
