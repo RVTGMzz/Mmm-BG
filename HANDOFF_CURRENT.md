@@ -23,6 +23,13 @@ Locked export contract:
 
 Next art proof: **KHÓC NHÈ / neutral** layered export only, then real-face fit validation before scaling to all poses.
 
+Validation:
+- CH-02E source: `84bf2526d67e228e81170e5f19a0361fa194ccfe`
+- MMM MVP CI #3234 / run `35971193043`: **SUCCESS**
+- CH-02A through CH-02E gates: **SUCCESS**
+- compiled public mirror stays at `c46d96546c8bb4b094d38d20796b5ea185ca2ff7` because CH-02E adds only production-art manifest/docs/tests and does not change the runtime bundle.
+- Pages #29 remains the current validated public build.
+
 ## September 24 CH-02D non-circular face-composite proof
 
 Validation completed before CH-02E:
