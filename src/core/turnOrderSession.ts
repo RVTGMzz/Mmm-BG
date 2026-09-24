@@ -40,12 +40,20 @@ function normalizeProfile07042(
   const compositeFaces: Partial<Record<TurnOrderFaceExpression07042, string>> = {};
   for (const key of ['neutral', 'happy', 'angry'] as const) {
     const value = profile.faces?.[key];
-    if (typeof value === 'string' && value.startsWith('data:image/') && value.length <= 220_000) {
-      faces[key] = value;
+    if (typeof value === 'string') {
+      if (!value.startsWith('data:image/') || value.length > 220_000) {
+        // Keep the legacy 220 KB guard explicit for 0.1.70.4.2 compatibility.
+      } else {
+        faces[key] = value;
+      }
     }
     const composite = profile.compositeFaces?.[key];
-    if (typeof composite === 'string' && composite.startsWith('data:image/') && composite.length <= 700_000) {
-      compositeFaces[key] = composite;
+    if (typeof composite === 'string') {
+      if (!composite.startsWith('data:image/') || composite.length > 700_000) {
+        // Non-circular sources are larger, but still bounded before transport.
+      } else {
+        compositeFaces[key] = composite;
+      }
     }
   }
   let characterChoice: TurnOrderCharacterChoiceCh02c | undefined;
