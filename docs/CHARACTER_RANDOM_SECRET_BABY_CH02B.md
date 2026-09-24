@@ -185,3 +185,27 @@ Canonical runtime files:
 - `src/scenes/TurnOrderScene.ts`
 
 This is the functional proof. Production cutout art / face-on-Character compositing remains the next visual asset milestone.
+
+
+## CH-02D non-circular face-composite foundation
+
+CH-02D locks the bridge between the current face capture flow and future layered Character art.
+
+Implemented:
+- shared resolver `src/core/characterFaceCompositeCh02d.ts`;
+- Character pose emotion deterministically selects one of the existing neutral/happy/angry captures;
+- resolver **always prefers `compositeSourceDataUrl`** over the circular HUD derivative;
+- circular `dataUrl` remains compatibility fallback only;
+- selected fixed Character card now shows a small live proof using the non-circular source;
+- the proof intentionally avoids a hard circular mask;
+- online Turn Order profile sync now carries bounded `compositeFaces` in addition to legacy circular faces;
+- remote profiles restore `compositeSourceDataUrl`, so future in-match Character reactions can use the same source on every client.
+
+Important visual limitation:
+- CH-02D is a **technical face-source proof**, not final body/face artwork;
+- approved Drive concept sheets remain visual authority;
+- final production Character assets still need layered body/foreground/mask exports before the face can appear physically embedded in hair/costume;
+- RANDOM does not preview a face-on-Character before reveal because its Character identity is intentionally concealed.
+
+Next art/runtime milestone should replace this proof frame with real layered Character portrait assets:
+`background/body → player head source → face socket/mask → foreground hair/accessories → reaction FX/text`.

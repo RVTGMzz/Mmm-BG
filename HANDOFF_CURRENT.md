@@ -1,5 +1,21 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02D non-circular face-composite proof
+
+CH-02D now connects captured player faces to Character Select without regressing to the old circular crop.
+
+Implemented:
+- `src/core/characterFaceCompositeCh02d.ts` chooses the deterministic capture for a Character emotion;
+- non-circular `compositeSourceDataUrl` is always preferred; circular avatar is fallback only;
+- selected fixed Character cards preview the player's retained non-circular head source;
+- RANDOM cards remain visually concealed and do not reveal a Character body/face combination early;
+- online Turn Order profile wire now syncs bounded `compositeFaces`;
+- remote profiles restore the non-circular source for future Character reactions;
+- no passive behavior changed;
+- no approved concept sheet is bundled into runtime yet.
+
+This is a source/transport proof. Final face-in-character art still requires production layered assets from the approved Drive concepts.
+
 ## September 24 CH-02C Character Select + concealed RANDOM reveal
 
 Runtime wiring has started on top of the approved CH-02B contract.

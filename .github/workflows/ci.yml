@@ -244,6 +244,8 @@ jobs:
         run: npm run test:character-random-ch02b
       - name: CH-02C Character Select and concealed reveal runtime contract
         run: npm run test:character-select-ch02c
+      - name: CH-02D non-circular Character face composite contract
+        run: npm run test:character-face-ch02d
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package
