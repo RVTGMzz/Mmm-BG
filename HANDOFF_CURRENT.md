@@ -19,6 +19,15 @@ Behavior:
 
 Next acceptance: real photos with different face shapes on desktop, Steam Deck and mobile landscape. If the neutral proof survives, replace the preview-sized export with the full production neutral layers before generating the other six emotions.
 
+Validation:
+- CH-02F source `d73f637ccf67c2d71d0d12e87e780cdbea8da12a`: CI #3235 / run `35975065152` **SUCCESS**
+- CH-02G source `0983a95fdf328e7ef68376226457c9fb63b5ef5c`: CI #3236 / run `35978534196` **SUCCESS**
+- CH-02A through CH-02G gates: **SUCCESS**
+- compiled public mirror: `c40aea0cd65af24ff18d3bfe90a459d80e8a0166`
+- GitHub Pages #30 / run `35978666671`: **SUCCESS**
+- public playtest: `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+- runtime/device visual acceptance is still required before promoting the proof socket or generating the remaining poses.
+
 ## September 24 CH-02F KHÓC NHÈ neutral face-fit proof
 
 The first KHÓC NHÈ neutral layering experiment is complete at proof level.

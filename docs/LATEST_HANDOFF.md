@@ -1,5 +1,33 @@
 # Mmm-BG — Latest Handoff
 
+## September 24 CH-02G KHÓC NHÈ neutral layered runtime proof
+
+The Character system is now beyond schema-only work: **KHÓC NHÈ / neutral** has a real layered runtime proof in Character Select.
+
+Runtime assets:
+- `public/assets/characters/starter-crybaby/neutral/body-back.webp`
+- `public/assets/characters/starter-crybaby/neutral/face-mask.webp`
+- `public/assets/characters/starter-crybaby/neutral/foreground.webp`
+
+Current behavior:
+- selecting KHÓC NHÈ with a captured face uses the retained non-circular face source;
+- the face is clipped by the Character mask, then the Character foreground/hair/props render above it;
+- other starter Characters still use the CH-02D face-only fallback;
+- RANDOM stays concealed and Secret Baby art is not preloaded into normal Character Select;
+- this proof is intentionally 128×192, not the final 1024×1536 production export;
+- the measured proof socket lives under `runtimeProof`; final `faceSocket` remains unset and the Character remains `layer-export-pending`.
+
+Validation:
+- CH-02F source `d73f637ccf67c2d71d0d12e87e780cdbea8da12a`: CI #3235 / run `35975065152` **SUCCESS**
+- CH-02G source `0983a95fdf328e7ef68376226457c9fb63b5ef5c`: CI #3236 / run `35978534196` **SUCCESS**
+- CH-02A through CH-02G gates: **SUCCESS**
+- compiled public mirror: `c40aea0cd65af24ff18d3bfe90a459d80e8a0166`
+- GitHub Pages #30 / run `35978666671`: **SUCCESS**
+- public playtest: `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+- runtime/device visual acceptance is still required before promoting the proof socket or generating the remaining poses.
+
+Next step: Ron should visually test KHÓC NHÈ with real face images on desktop/Steam Deck/mobile landscape. Fix fit/crop first. Only after the neutral proof is accepted should the full neutral production export and then the other six poses be authored.
+
 ## September 24 CH-02B Random Character + Secret Baby
 
 Ron approved the RANDOM (?) hunt mechanic and Secret Baby direction.

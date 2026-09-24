@@ -26,17 +26,20 @@ Read first:
 21. Ron's newest runtime screenshots/feedback
 
 Current Character checkpoint:
-**CH-02B — RANDOM Character + Secret Baby contract**
+**CH-02G — KHÓC NHÈ neutral layered runtime proof**
 
 Validated latest Character source:
-`20ea08e6244563cafdd221e2437b8bbcf03d072e`
-- CI #3228 / run `35955486677`: SUCCESS
-- Secret Baby is RANDOM-only, 5% eligibility per RANDOM slot, max one Secret per batch
-- 2–4 RANDOM seats resolve as a concealed HOST-authoritative shuffled batch
-- reveal at match start; do not leak assignment in lobby UI
-- passive `BÉ CƯNG CỦA VŨ TRỤ` remains concept-only / `live: false`
-- next: wire RANDOM (?) into Character Select + concealed multi-player reveal flow; Secret art/reveal follows after concealment is safe
-- starter gender presentation locked: female KHÓC NHÈ, male CAU CÓ, male LO LẮNG, female TĂNG ĐỘNG
+`0983a95fdf328e7ef68376226457c9fb63b5ef5c`
+- CI #3236 / run `35978534196`: SUCCESS
+- public mirror `c40aea0cd65af24ff18d3bfe90a459d80e8a0166`
+- Pages #30 / run `35978666671`: SUCCESS
+- KHÓC NHÈ / neutral now has real WebP body/mask/foreground runtime proof assets
+- captured non-circular face source is rendered through the Character mask in Character Select
+- asset is preview-sized 128×192; final 1024×1536 production socket is NOT yet authoritative
+- other 3 starters remain on CH-02D fallback
+- RANDOM remains concealed; normal Character Select must never preload Secret Baby art
+- passives remain concept-only / live=false
+- next: real-photo + Steam Deck/mobile fit acceptance; fix crop/socket before full neutral export and before generating the other six emotions
 
 Historical checkpoint:
 **CH-02A — Four-character starter roster locked**
