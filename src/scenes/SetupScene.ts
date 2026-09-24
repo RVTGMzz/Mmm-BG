@@ -6,6 +6,7 @@ import { browserSession } from '../core/browserSession';
 import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import { STARTER_CHARACTERS_V01 } from '../content/core/characters_starter_v01';
+import { resolveCharacterFaceCompositeCh02d } from '../core/characterFaceCompositeCh02d';
 import { faceTextureKey } from '../systems/faces';
 import { FaceCameraCapture07033 } from '../ui/FaceCameraCapture07033';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
@@ -108,6 +109,10 @@ export class SetupScene extends Phaser.Scene {
         <div class="character-card-grid-ch02c">
           ${STARTER_CHARACTERS_V01.map((character) => `
             <button type="button" class="character-card-ch02c" data-character-id="${character.id}">
+              <span class="character-face-proof-ch02d" aria-hidden="true">
+                <img class="character-face-source-ch02d" alt="" />
+                <span class="character-face-proof-label-ch02d">MẶT CỦA BẠN</span>
+              </span>
               <span class="character-emoji-ch02c">${characterEmoji[character.id] ?? '🎭'}</span>
               <strong>${character.archetypeLabel}</strong>
               <small>${character.genderPresentation === 'female' ? 'NỮ' : 'NAM'} · ${character.ageBand.min}–${character.ageBand.max}</small>
@@ -151,12 +156,25 @@ export class SetupScene extends Phaser.Scene {
       if (characterOwner) characterOwner.textContent = player ? `P${player.id + 1} · ${player.name}` : 'CPU / RANDOM';
       const mode = playerId === undefined ? undefined : gameSession.getCharacterSelectionMode(playerId);
       const selectedId = playerId === undefined ? undefined : gameSession.getCharacterId(playerId);
+      const faceComposite = player ? resolveCharacterFaceCompositeCh02d(player.faces, 'neutral') : undefined;
       for (const button of characterRoot.querySelectorAll<HTMLButtonElement>('.character-card-ch02c')) {
         const active = button.dataset.characterMode === 'random'
           ? mode === 'random'
           : mode === 'fixed' && button.dataset.characterId === selectedId;
         button.classList.toggle('selected', active);
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        const facePreview = button.querySelector<HTMLImageElement>('.character-face-source-ch02d');
+        const showFaceProof = Boolean(active && faceComposite && button.dataset.characterId);
+        button.classList.toggle('face-preview-active-ch02d', showFaceProof);
+        if (facePreview) {
+          if (showFaceProof && faceComposite) {
+            facePreview.src = faceComposite.sourceDataUrl;
+            facePreview.dataset.sourceKind = faceComposite.sourceKind;
+          } else {
+            facePreview.removeAttribute('src');
+            delete facePreview.dataset.sourceKind;
+          }
+        }
       }
       if (characterConfirm) characterConfirm.disabled = !mode;
       if (characterSummary) {

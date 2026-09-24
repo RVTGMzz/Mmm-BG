@@ -541,9 +541,11 @@ export class TurnOrderScene extends Phaser.Scene {
   private toWireProfile07042(playerId: number): TurnOrderProfileWire07042 {
     const player = gameSession.players[playerId];
     const faces: Partial<Record<FaceExpression, string>> = {};
+    const compositeFaces: Partial<Record<FaceExpression, string>> = {};
     for (const expression of ['neutral', 'happy', 'angry'] as const) {
       const asset = player?.faces[expression];
       if (asset?.dataUrl) faces[expression] = asset.dataUrl;
+      if (asset?.compositeSourceDataUrl) compositeFaces[expression] = asset.compositeSourceDataUrl;
     }
     const mode = gameSession.getCharacterSelectionMode(playerId);
     const characterId = gameSession.getCharacterId(playerId);
@@ -556,6 +558,7 @@ export class TurnOrderScene extends Phaser.Scene {
       seatId: playerId,
       name: player?.name ?? `Player ${playerId + 1}`,
       faces,
+      ...(Object.keys(compositeFaces).length ? { compositeFaces } : {}),
       ...(characterChoice ? { characterChoice } : {}),
     };
   }
@@ -574,6 +577,7 @@ export class TurnOrderScene extends Phaser.Scene {
       if (!dataUrl) continue;
       gameSession.setFace(profile.seatId, expression, {
         dataUrl,
+        compositeSourceDataUrl: profile.compositeFaces?.[expression],
         textureKey: faceTextureKey(profile.seatId, expression),
         originalName: `online-p${profile.seatId + 1}-${expression}.webp`,
       });

@@ -25,6 +25,8 @@ export interface TurnOrderProfileWire07042 {
   seatId: number;
   name: string;
   faces: Partial<Record<TurnOrderFaceExpression07042, string>>;
+  /** CH-02D retained non-circular source used by future Character sockets. */
+  compositeFaces?: Partial<Record<TurnOrderFaceExpression07042, string>>;
   characterChoice?: TurnOrderCharacterChoiceCh02c;
 }
 
@@ -35,11 +37,16 @@ function normalizeProfile07042(
   if (!profile || profile.seatId !== expectedSeatId || expectedSeatId < 0 || expectedSeatId > 3) return undefined;
   const name = profile.name.trim().slice(0, 18) || `Player ${expectedSeatId + 1}`;
   const faces: Partial<Record<TurnOrderFaceExpression07042, string>> = {};
+  const compositeFaces: Partial<Record<TurnOrderFaceExpression07042, string>> = {};
   for (const key of ['neutral', 'happy', 'angry'] as const) {
     const value = profile.faces?.[key];
-    if (typeof value !== 'string') continue;
-    if (!value.startsWith('data:image/') || value.length > 220_000) continue;
-    faces[key] = value;
+    if (typeof value === 'string' && value.startsWith('data:image/') && value.length <= 220_000) {
+      faces[key] = value;
+    }
+    const composite = profile.compositeFaces?.[key];
+    if (typeof composite === 'string' && composite.startsWith('data:image/') && composite.length <= 700_000) {
+      compositeFaces[key] = composite;
+    }
   }
   let characterChoice: TurnOrderCharacterChoiceCh02c | undefined;
   if (profile.characterChoice?.mode === 'random') {
@@ -51,7 +58,13 @@ function normalizeProfile07042(
   ) {
     characterChoice = { mode: 'fixed', characterId: profile.characterChoice.characterId };
   }
-  return { seatId: expectedSeatId, name, faces, ...(characterChoice ? { characterChoice } : {}) };
+  return {
+    seatId: expectedSeatId,
+    name,
+    faces,
+    ...(Object.keys(compositeFaces).length ? { compositeFaces } : {}),
+    ...(characterChoice ? { characterChoice } : {}),
+  };
 }
 
 export type TurnOrderMessage =
@@ -157,7 +170,7 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
     this.transport = transport;
     this.rollD6 = rollD6;
     this.playerNames.forEach((name, seatId) => {
-      this.profiles.set(seatId, { seatId, name, faces: {} });
+      this.profiles.set(seatId, { seatId, name, faces: {}, compositeFaces: {} });
     });
   }
 

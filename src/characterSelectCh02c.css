@@ -111,3 +111,53 @@
   .character-card-ch02c small, .character-passive-ch02c { font-size: 10px; }
   .character-select-summary-ch02c { margin: 9px 0 7px; font-size: 12px; }
 }
+
+
+/* CH-02D face-composite proof.
+   This intentionally does not crop to a hard circle. It previews the retained
+   transformed head source inside the selected Character card while production
+   body/foreground socket assets are still being authored. */
+.character-face-proof-ch02d {
+  display: none;
+  position: relative;
+  width: 78px;
+  height: 78px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: -2px;
+  border: 2px solid #8b6f60;
+  border-radius: 22px 22px 26px 26px;
+  background: #fffaf0;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.95), 0 4px 0 rgba(90,60,49,.10);
+}
+
+.face-preview-active-ch02d .character-face-proof-ch02d { display: flex; }
+
+.character-face-source-ch02d {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 16px;
+}
+
+.character-face-proof-label-ch02d {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid #8b6f60;
+  background: #fff3bd;
+  color: #665044;
+  font: 900 8px/1 Arial, sans-serif;
+  letter-spacing: .03em;
+}
+
+@media (max-width: 900px), (max-height: 520px) {
+  .character-face-proof-ch02d { width: 58px; height: 58px; border-radius: 17px; }
+  .character-face-source-ch02d { width: 53px; height: 53px; border-radius: 12px; }
+  .character-face-proof-label-ch02d { font-size: 7px; bottom: -9px; }
+}
