@@ -100,3 +100,22 @@ Canonical starter data:
 `src/content/core/characters_starter_v01.ts`
 
 CH-02A is deliberately **not** a passive implementation. All passive concepts carry `live: false`.
+
+
+## Approved visual reference
+
+Approved concept sheets are stored in Google Drive to keep Git history light.
+
+Canonical manifest:
+`docs/art/character-concepts/README.md`
+
+Drive visual source:
+`https://drive.google.com/drive/folders/1NGZQXRXWSiKGVNjjDawJzvnboFcfZHoN?usp=drive_link`
+
+Current approved starter files:
+- `khocnhe.webp`
+- `cauco.webp`
+- `lolang.webp`
+- `tangdong.webp`
+
+These are reference sheets, not runtime-ready layered assets.

@@ -1,5 +1,24 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 approved Character concept art authority
+
+Ron uploaded the approved concept sheets to a shared Google Drive folder so the repo does not accumulate repeated large binary revisions.
+
+Canonical Drive folder:
+`https://drive.google.com/drive/folders/1NGZQXRXWSiKGVNjjDawJzvnboFcfZHoN?usp=drive_link`
+
+Canonical manifest:
+`docs/art/character-concepts/README.md`
+
+Approved current files:
+- `khocnhe.webp`
+- `cauco.webp`
+- `lolang.webp`
+- `tangdong.webp`
+- `embe.webp`
+
+These five WebP references total under 1 MB, but the binary art remains in Drive. Git stores only the manifest/spec links. Treat Drive art + `docs/VISUAL_STYLE_BIBLE_V0.1.md` as the visual authority for upcoming Character Select, face-composite, pose and Secret reveal work. Do not silently regenerate a different Character design.
+
 ## September 24 CH-02B Random Character + Secret Baby
 
 Ron approved the RANDOM (?) hunt mechanic and Secret Baby direction.

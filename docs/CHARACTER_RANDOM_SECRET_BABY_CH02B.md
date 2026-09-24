@@ -148,3 +148,17 @@ Source acceptance:
 - CI regression passes.
 
 Runtime acceptance remains pending until Character Select / Start flow actually wires RANDOM and the reveal.
+
+
+## Approved Secret Baby visual reference
+
+Approved Secret Baby concept sheet:
+`embe.webp`
+
+Canonical Drive folder:
+`https://drive.google.com/drive/folders/1NGZQXRXWSiKGVNjjDawJzvnboFcfZHoN?usp=drive_link`
+
+Canonical art manifest:
+`docs/art/character-concepts/README.md`
+
+The approved concept is a bald crawling baby with pacifier and bossy/overpowered attitude. This sheet is visual reference only; runtime reveal art must later be separated into proper layers/masks and must not expose the Secret in normal Character Select.
