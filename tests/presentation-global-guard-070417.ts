@@ -17,9 +17,10 @@ assert.match(finalScene, /model\.kind === 'card_draw'/);
 assert.match(finalScene, /model\.kind === 'card_play'/);
 assert.match(finalScene, /model\.kind === 'card_blocked'/);
 assert.match(finalScene, /model\.kind === 'news'/);
-assert.match(finalScene, /own\(model\.description\)/);
-assert.match(finalScene, /own\(model\.summary\)/);
-assert.match(finalScene, /model\.description\.split\(\/\\n\+\//);
+assert.match(finalScene, /const ownedValues = \[/);
+assert.match(finalScene, /model\.description/);
+assert.match(finalScene, /model\.summary/);
+assert.match(finalScene, /isDetachedCinematicCopy070423\(object\.text, ownedValues\)/);
 assert.match(finalScene, /hiddenDetachedCinematicText070417/);
 assert.doesNotMatch(finalScene, /Phí Thành Phố Đồng Loạt/);
 
