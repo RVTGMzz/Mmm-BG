@@ -1,5 +1,39 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02A starter roster lock
+
+Ron approved the first four foundational Character archetypes:
+
+1. **KHÓC NHÈ** — age direction 55–65, expressive/fashionable/theatrical;
+2. **CAU CÓ** — 40–50, sharp/tidy/angular;
+3. **LO LẮNG** — 28–35, planner-core/prepared/cautious;
+4. **TĂNG ĐỘNG** — 18–24, bright street/sporty/dynamic.
+
+Canonical source:
+- `src/content/core/characters_starter_v01.ts`
+- `docs/CHARACTER_STARTER_ROSTER_V0.1.md`
+- `tests/character-starter-roster-ch02.ts`
+
+Locked design principles:
+- archetype and final personal character name are separate;
+- personal names, gender presentation and final art are still pending art review;
+- age/style are presentation only and must never mechanically imply a passive;
+- each Character has its own unique reaction profile ID, pose set ID and one **concept-only** passive;
+- every starter passive remains `live: false`; there is still no passive gameplay resolver;
+- first art proof should be **KHÓC NHÈ** because its wide emotional range makes face-composite problems easiest to spot.
+
+Current passive concepts:
+- KHÓC NHÈ: **ĐƯỢC DỖ** — consolation-style benefit after a meaningful setback;
+- CAU CÓ: **ĐỪNG CHỌC TUI** — counter/reaction direction when directly targeted;
+- LO LẮNG: **LO XA** — preparation/risk-awareness direction;
+- TĂNG ĐỘNG: **KHÔNG NGỒI YÊN** — movement/Mini Game/action-streak direction.
+
+**Validated source commit:** `797c965e2cdfc97b282ca15c4d01460247a1426f`.
+**MMM MVP CI #3227:** run `35939124535`, **SUCCESS**.
+The new CH-02A roster contract step passed. Public compiled mirror did not change because this milestone adds typed source/design data that is not yet imported into the runtime bundle.
+
+Next Character step: create the first **KHÓC NHÈ art proof + Character Select visual proof**, then bind the existing non-circular captured face source into that Character preview before enforcing mandatory selection.
+
 ## September 24 Character face-source follow-up — CH-01.1
 
 The current round avatar remains visually unchanged, but face capture now also preserves a **512×512 non-circular transformed composite source** for future Character head/face sockets.

@@ -25,6 +25,19 @@ Read first:
 20. Ron's newest runtime screenshots/feedback
 
 Current Character checkpoint:
+**CH-02A — Four-character starter roster locked**
+
+Validated latest Character source:
+`797c965e2cdfc97b282ca15c4d01460247a1426f`
+- CI #3227 / run `35939124535`: SUCCESS
+- starter archetypes: KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG
+- canonical data: `src/content/core/characters_starter_v01.ts`
+- canonical design sheet: `docs/CHARACTER_STARTER_ROSTER_V0.1.md`
+- passives remain concept-only and `live: false`
+- final names, gender presentation and art are not locked
+- next: KHÓC NHÈ art proof + Character Select visual proof + face-on-Character preview
+
+Historical foundation:
 **CH-01.1 — Character System + non-circular face-source foundation**
 
 Validated latest Character source:
