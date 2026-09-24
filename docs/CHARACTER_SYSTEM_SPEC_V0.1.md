@@ -291,8 +291,11 @@ Character body/pose artwork should not bake:
 - **no passive gameplay mutation yet**.
 
 ### CH-02 — Starter roster + Character Select
-- design starter cast;
-- author first Character art;
+- starter cast direction locked to **KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG** across four distinct age/style bands;
+- canonical roster data: `src/content/core/characters_starter_v01.ts`;
+- roster design sheet: `docs/CHARACTER_STARTER_ROSTER_V0.1.md`;
+- personal names, gender presentation, final art and passive numbers remain pending art/design review;
+- author first Character art, starting with KHÓC NHÈ;
 - make Character selection mandatory at Ready/Start;
 - keyboard/touch/Steam Deck navigation;
 - online seat ownership;
