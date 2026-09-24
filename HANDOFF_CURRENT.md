@@ -17,6 +17,16 @@ Implemented:
 - approved Drive sheets remain reference-only and are not bundled directly into runtime;
 - direct one-face editing now also retains `compositeSourceDataUrl`, matching the existing batch/camera paths.
 
+Validation:
+- source commit: `268e9b5d3a6d500bfdb487e4479f59a74159f151`
+- MMM MVP CI #3229 / run `35967947457`: **SUCCESS**
+- CH-02A / CH-02B / CH-02C gates: **SUCCESS**
+- compiled public mirror: `6ab14eb2245082a8c5cfe8e16e44552b32a9bf64`
+- GitHub Pages #28 / run `35968051860`: **SUCCESS**
+- public URL remains `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+
+Runtime device acceptance is still required. Next test should verify sequential selection, RANDOM concealment, reveal timing, online Host/client ownership and Steam Deck focus.
+
 ## September 24 approved Character concept art authority
 
 Ron uploaded the approved concept sheets to a shared Google Drive folder so the repo does not accumulate repeated large binary revisions.
