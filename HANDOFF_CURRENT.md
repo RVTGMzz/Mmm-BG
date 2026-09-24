@@ -1,5 +1,20 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02F KHÓC NHÈ neutral face-fit proof
+
+The first KHÓC NHÈ neutral layering experiment is complete at proof level.
+
+Validated direction:
+- one non-circular Character socket handles round / long / square / narrow head proportions;
+- source aspect ratio is preserved, so faces are not stretched into one universal oval;
+- composition stays body → player head → mask/socket → foreground → FX/UI;
+- prototype socket calibration is proof-only and is not promoted to runtime manifest until the exact final transparent layer binaries are committed;
+- do not generate all seven emotions yet. One neutral runtime asset must pass real-device + real-photo tests first.
+
+Canonical CH-02F:
+- `src/core/characterFaceSocketFitCh02f.ts`
+- `tests/character-face-socket-fit-ch02f.ts`
+- `docs/CHARACTER_KHOCNHE_NEUTRAL_FACE_FIT_CH02F.md`
 ## September 24 CH-02E layered Character art production contract
 
 The approved Drive concepts now have a canonical production-layer manifest without adding the concept binaries to Git.

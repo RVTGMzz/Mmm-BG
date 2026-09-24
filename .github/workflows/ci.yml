@@ -248,6 +248,8 @@ jobs:
         run: npm run test:character-face-ch02d
       - name: CH-02E layered Character art production contract
         run: npm run test:character-art-ch02e
+      - name: CH-02F KHÓC NHÈ neutral face-shape fit contract
+        run: npm run test:character-face-fit-ch02f
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package
