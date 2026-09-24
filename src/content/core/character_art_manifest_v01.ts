@@ -48,6 +48,17 @@ export interface CharacterArtPoseManifestV01 {
    * deliberately leave this undefined instead of inventing coordinates.
    */
   faceSocket?: NormalizedFaceSocket;
+  /**
+   * Preview-sized runtime proof. This is deliberately separate from the final
+   * production faceSocket so a low-resolution validation asset cannot become
+   * the permanent authoring authority by accident.
+   */
+  runtimeProof?: {
+    width: number;
+    height: number;
+    faceSocket: NormalizedFaceSocket;
+    milestone: 'CH-02G';
+  };
 }
 
 export interface CharacterArtManifestV01 {
@@ -64,12 +75,32 @@ function posePath(characterId: string, emotion: CharacterEmotion, file: string):
 }
 
 function plannedPoses(characterId: string): CharacterArtPoseManifestV01[] {
-  return CHARACTER_ART_EMOTIONS_V01.map((emotion) => ({
-    emotion,
-    bodyBackAsset: posePath(characterId, emotion, 'body-back.webp'),
-    foregroundAsset: posePath(characterId, emotion, 'foreground.webp'),
-    faceMaskAsset: posePath(characterId, emotion, 'face-mask.webp'),
-  }));
+  return CHARACTER_ART_EMOTIONS_V01.map((emotion) => {
+    const base: CharacterArtPoseManifestV01 = {
+      emotion,
+      bodyBackAsset: posePath(characterId, emotion, 'body-back.webp'),
+      foregroundAsset: posePath(characterId, emotion, 'foreground.webp'),
+      faceMaskAsset: posePath(characterId, emotion, 'face-mask.webp'),
+    };
+    if (characterId === 'starter-crybaby' && emotion === 'neutral') {
+      return {
+        ...base,
+        runtimeProof: {
+          width: 128,
+          height: 192,
+          faceSocket: {
+            x: 0.5,
+            y: 0.2734375,
+            scale: 0.359375,
+            rotationDeg: 0,
+            padding: 0.08,
+          },
+          milestone: 'CH-02G',
+        },
+      };
+    }
+    return base;
+  });
 }
 
 function manifest(

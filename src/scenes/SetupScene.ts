@@ -109,6 +109,15 @@ export class SetupScene extends Phaser.Scene {
         <div class="character-card-grid-ch02c">
           ${STARTER_CHARACTERS_V01.map((character) => `
             <button type="button" class="character-card-ch02c" data-character-id="${character.id}">
+              ${character.id === 'starter-crybaby' ? `
+                <span class="character-layered-proof-ch02g" aria-hidden="true">
+                  <img class="character-layered-body-ch02g" src="./assets/characters/starter-crybaby/neutral/body-back.webp" alt="" />
+                  <span class="character-layered-mask-ch02g" style="-webkit-mask-image:url('./assets/characters/starter-crybaby/neutral/face-mask.webp');mask-image:url('./assets/characters/starter-crybaby/neutral/face-mask.webp')">
+                    <img class="character-layered-face-ch02g" alt="" />
+                  </span>
+                  <img class="character-layered-foreground-ch02g" src="./assets/characters/starter-crybaby/neutral/foreground.webp" alt="" />
+                  <span class="character-layered-label-ch02g">NEUTRAL PROOF</span>
+                </span>` : ''}
               <span class="character-face-proof-ch02d" aria-hidden="true">
                 <img class="character-face-source-ch02d" alt="" />
                 <span class="character-face-proof-label-ch02d">MẶT CỦA BẠN</span>
@@ -164,10 +173,26 @@ export class SetupScene extends Phaser.Scene {
         button.classList.toggle('selected', active);
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
         const facePreview = button.querySelector<HTMLImageElement>('.character-face-source-ch02d');
+        const layeredFace = button.querySelector<HTMLImageElement>('.character-layered-face-ch02g');
         const showFaceProof = Boolean(active && faceComposite && button.dataset.characterId);
-        button.classList.toggle('face-preview-active-ch02d', showFaceProof);
+        const showCrybabyLayeredProof = Boolean(
+          showFaceProof
+          && button.dataset.characterId === 'starter-crybaby'
+          && layeredFace,
+        );
+        button.classList.toggle('layered-preview-active-ch02g', showCrybabyLayeredProof);
+        button.classList.toggle('face-preview-active-ch02d', showFaceProof && !showCrybabyLayeredProof);
+        if (layeredFace) {
+          if (showCrybabyLayeredProof && faceComposite) {
+            layeredFace.src = faceComposite.sourceDataUrl;
+            layeredFace.dataset.sourceKind = faceComposite.sourceKind;
+          } else {
+            layeredFace.removeAttribute('src');
+            delete layeredFace.dataset.sourceKind;
+          }
+        }
         if (facePreview) {
-          if (showFaceProof && faceComposite) {
+          if (showFaceProof && !showCrybabyLayeredProof && faceComposite) {
             facePreview.src = faceComposite.sourceDataUrl;
             facePreview.dataset.sourceKind = faceComposite.sourceKind;
           } else {

@@ -1,5 +1,24 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02G KHÓC NHÈ neutral layered runtime proof
+
+The first actual Character layer binaries are now wired into Character Select for **KHÓC NHÈ / neutral only**.
+
+Runtime proof assets:
+- `public/assets/characters/starter-crybaby/neutral/body-back.webp`
+- `public/assets/characters/starter-crybaby/neutral/face-mask.webp`
+- `public/assets/characters/starter-crybaby/neutral/foreground.webp`
+
+Behavior:
+- selecting KHÓC NHÈ with a captured face renders the retained non-circular player source inside the Character mask and puts the approved-style Character foreground above it;
+- the previous CH-02D face-only proof remains the fallback for the other three starters;
+- RANDOM remains concealed and does not preload/display Secret Baby art;
+- this first asset is intentionally preview-sized 128×192 to validate the runtime stack cheaply before committing full 1024×1536 production exports;
+- exact proof socket is recorded under `runtimeProof`, while the final production `faceSocket` remains unset;
+- the whole Character remains `layer-export-pending`; one neutral proof is not enough to declare production art complete.
+
+Next acceptance: real photos with different face shapes on desktop, Steam Deck and mobile landscape. If the neutral proof survives, replace the preview-sized export with the full production neutral layers before generating the other six emotions.
+
 ## September 24 CH-02F KHÓC NHÈ neutral face-fit proof
 
 The first KHÓC NHÈ neutral layering experiment is complete at proof level.

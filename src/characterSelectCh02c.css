@@ -161,3 +161,89 @@
   .character-face-source-ch02d { width: 53px; height: 53px; border-radius: 12px; }
   .character-face-proof-label-ch02d { font-size: 7px; bottom: -9px; }
 }
+
+
+/* CH-02G — first real layered Character Select proof.
+   Only KHÓC NHÈ / neutral uses production-style layers for now.
+   RANDOM and the other starter Characters keep the previous safe fallback. */
+.character-layered-proof-ch02g {
+  display: none;
+  position: relative;
+  width: 86px;
+  height: 129px;
+  flex: 0 0 auto;
+  margin: -8px 0 -2px;
+  filter: drop-shadow(0 5px 4px rgba(75, 48, 35, .16));
+}
+
+.layered-preview-active-ch02g .character-layered-proof-ch02g { display: block; }
+.layered-preview-active-ch02g .character-face-proof-ch02d,
+.layered-preview-active-ch02g .character-emoji-ch02c { display: none !important; }
+
+.character-layered-body-ch02g,
+.character-layered-foreground-ch02g,
+.character-layered-mask-ch02g {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.character-layered-body-ch02g,
+.character-layered-foreground-ch02g {
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.character-layered-body-ch02g { z-index: 1; }
+
+.character-layered-mask-ch02g {
+  z-index: 2;
+  overflow: hidden;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.character-layered-face-ch02g {
+  position: absolute;
+  left: 32%;
+  top: 14%;
+  width: 36%;
+  aspect-ratio: 1;
+  height: auto;
+  object-fit: cover;
+  object-position: center 45%;
+  transform: scale(1.08);
+  transform-origin: center;
+}
+
+.character-layered-foreground-ch02g { z-index: 3; }
+
+.character-layered-label-ch02g {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 3px 7px;
+  border: 1px solid #8b6f60;
+  border-radius: 999px;
+  background: rgba(255, 243, 189, .94);
+  color: #665044;
+  font: 900 7px/1 Arial, sans-serif;
+  letter-spacing: .035em;
+}
+
+@media (max-width: 900px), (max-height: 520px) {
+  .character-layered-proof-ch02g {
+    width: 62px;
+    height: 93px;
+    margin: -6px 0 -2px;
+  }
+  .character-layered-label-ch02g { font-size: 6px; padding: 2px 5px; }
+}
