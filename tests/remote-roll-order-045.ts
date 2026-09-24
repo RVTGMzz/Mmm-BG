@@ -29,6 +29,12 @@ const client = new TurnOrderClientSession(
   'client-p2-test',
   1,
   hub.createEndpoint('client-p2-test'),
+  {
+    seatId: 1,
+    name: 'Remote P2',
+    faces: {},
+    characterChoice: { mode: 'random' },
+  },
 );
 
 host.subscribe((event) => hostEvents.push(event));
@@ -74,6 +80,12 @@ assert.equal(rollCalls, 2, 'host-owned roll should consume exactly one authorita
 
 host.announceTie([0, 1], 2);
 host.finalizeOrder([1, 0, 2, 3]);
+host.revealCharactersCh02c([
+  { playerId: 0, characterId: 'starter-crybaby', source: 'fixed' },
+  { playerId: 1, characterId: 'secret-baby', source: 'random' },
+  { playerId: 2, characterId: 'starter-anxious', source: 'fixed' },
+  { playerId: 3, characterId: 'starter-hyper', source: 'fixed' },
+]);
 host.startMatch();
 assert(
   clientEvents.some((event) => event.kind === 'tie_group' && event.playerIds.join(',') === '0,1'),
@@ -82,6 +94,17 @@ assert(
 assert(
   clientEvents.some((event) => event.kind === 'final_order' && event.order.join(',') === '1,0,2,3'),
   'client must receive the exact host-finalized play order',
+);
+assert(
+  hostEvents.some((event) => event.kind === 'profile_update'
+    && event.profile.seatId === 1
+    && event.profile.characterChoice?.mode === 'random'),
+  'remote RANDOM intent must reach HOST without a revealed Character id',
+);
+assert(
+  clientEvents.some((event) => event.kind === 'character_reveal'
+    && event.assignments.some((assignment) => assignment.playerId === 1 && assignment.characterId === 'secret-baby')),
+  'Secret Character identity must be sent only by the dedicated reveal event',
 );
 assert(clientEvents.some((event) => event.kind === 'start_match'), 'host must explicitly release clients into the match');
 

@@ -162,3 +162,26 @@ Canonical art manifest:
 `docs/art/character-concepts/README.md`
 
 The approved concept is a bald crawling baby with pacifier and bossy/overpowered attitude. This sheet is visual reference only; runtime reveal art must later be separated into proper layers/masks and must not expose the Secret in normal Character Select.
+
+
+## CH-02C runtime wiring follow-up
+
+CH-02C now begins the live runtime flow:
+- Setup shows four starter Character choices + one RANDOM (?) card;
+- Secret Baby is not named or shown in normal Character Select;
+- local/hotseat humans select sequentially;
+- CPU seats default to RANDOM;
+- online owned seats send only a fixed starter ID or `mode: random` through the existing Turn Order profile wire;
+- HOST resolves the RANDOM batch with a serializable pregame RNG;
+- RANDOM assignments stay private until a dedicated `character_reveal` message;
+- Turn Order owns the first simple match-start reveal overlay, including the stronger Secret Baby reveal beat;
+- approved Drive concept sheets are still reference art only, so CH-02C uses styled runtime cards rather than embedding full concept sheets.
+
+Canonical runtime files:
+- `src/core/characterPregameCh02c.ts`
+- `src/characterSelectCh02c.css`
+- `src/scenes/SetupScene.ts`
+- `src/core/turnOrderSession.ts`
+- `src/scenes/TurnOrderScene.ts`
+
+This is the functional proof. Production cutout art / face-on-Character compositing remains the next visual asset milestone.

@@ -1,5 +1,22 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02C Character Select + concealed RANDOM reveal
+
+Runtime wiring has started on top of the approved CH-02B contract.
+
+Implemented:
+- Setup sequential Character Select with **KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG / RANDOM (?)**;
+- RANDOM UI does not reveal Secret Baby name, art or 5% rate;
+- human selection is required before continuing; CPU seats default to RANDOM;
+- fixed choices store a starter ID; RANDOM stores only an unresolved intent;
+- online Turn Order profile wire carries fixed starter ID or `mode: random`, never a Secret assignment;
+- HOST resolves the full batch through `src/core/characterPregameCh02c.ts` using a serializable RNG state and no `Math.random()`;
+- dedicated `character_reveal` protocol message is the first point where RANDOM identity is sent to remote clients;
+- Turn Order now owns a single reveal overlay; RANDOM cards show ? first and flip one by one;
+- Secret Baby gets a stronger text reveal beat: `SECRET! EM BÉ BÁ ĐẠO`;
+- approved Drive sheets remain reference-only and are not bundled directly into runtime;
+- direct one-face editing now also retains `compositeSourceDataUrl`, matching the existing batch/camera paths.
+
 ## September 24 approved Character concept art authority
 
 Ron uploaded the approved concept sheets to a shared Google Drive folder so the repo does not accumulate repeated large binary revisions.

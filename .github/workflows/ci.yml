@@ -242,6 +242,8 @@ jobs:
         run: npm run test:character-starter-ch02
       - name: CH-02B Random Character and Secret Baby contract
         run: npm run test:character-random-ch02b
+      - name: CH-02C Character Select and concealed reveal runtime contract
+        run: npm run test:character-select-ch02c
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package

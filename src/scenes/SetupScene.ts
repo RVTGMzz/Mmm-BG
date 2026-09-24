@@ -5,6 +5,7 @@ import { MEMEME_BUILD } from '../buildInfo';
 import { browserSession } from '../core/browserSession';
 import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
+import { STARTER_CHARACTERS_V01 } from '../content/core/characters_starter_v01';
 import { faceTextureKey } from '../systems/faces';
 import { FaceCameraCapture07033 } from '../ui/FaceCameraCapture07033';
 import { FaceImageEditor } from '../ui/FaceImageEditor';
@@ -89,6 +90,150 @@ export class SetupScene extends Phaser.Scene {
       { selector: '#start-game', variant: 'primary', size: 'lg' },
     ]);
     this.statusElement = node.querySelector<HTMLParagraphElement>('#setup-status') ?? undefined;
+
+    // CH-02C: sequential Character Select. Approved concept art remains external
+    // reference for now; this runtime proof locks selection/Random ownership first.
+    const characterRoot = document.createElement('div');
+    characterRoot.className = 'mememe-character-select-ch02c';
+    const characterEmoji: Record<string, string> = {
+      'starter-crybaby': '😭',
+      'starter-grumpy': '😠',
+      'starter-anxious': '😰',
+      'starter-hyper': '🤪',
+    };
+    characterRoot.innerHTML = `
+      <section class="character-select-panel-ch02c">
+        <div class="character-select-kicker-ch02c">CHỌN NHÂN VẬT</div>
+        <div class="character-select-owner-ch02c" id="character-owner-ch02c"></div>
+        <div class="character-card-grid-ch02c">
+          ${STARTER_CHARACTERS_V01.map((character) => `
+            <button type="button" class="character-card-ch02c" data-character-id="${character.id}">
+              <span class="character-emoji-ch02c">${characterEmoji[character.id] ?? '🎭'}</span>
+              <strong>${character.archetypeLabel}</strong>
+              <small>${character.genderPresentation === 'female' ? 'NỮ' : 'NAM'} · ${character.ageBand.min}–${character.ageBand.max}</small>
+              <span class="character-passive-ch02c">${character.passiveConcept.label}</span>
+            </button>`).join('')}
+          <button type="button" class="character-card-ch02c character-random-ch02c" data-character-mode="random">
+            <span class="character-emoji-ch02c">🎲</span>
+            <strong>RANDOM (?)</strong>
+            <small>ÚP KẾT QUẢ TỚI KHI VÀO TRẬN</small>
+            <span class="character-passive-ch02c">Có thể có điều bất ngờ…</span>
+          </button>
+        </div>
+        <div class="character-select-summary-ch02c" id="character-summary-ch02c">Chọn một nhân vật hoặc RANDOM (?).</div>
+        <div class="character-select-actions-ch02c">
+          <button type="button" class="character-back-ch02c">← QUAY LẠI</button>
+          <button type="button" class="character-confirm-ch02c" disabled>XÁC NHẬN →</button>
+        </div>
+      </section>`;
+    const characterDom = this.add.dom(640, 370, characterRoot).setOrigin(0.5).setVisible(false);
+    decorateVisualFoundationButtonsV01(characterRoot, [
+      { selector: '.character-card-ch02c', variant: 'secondary', size: 'md' },
+      { selector: '.character-back-ch02c', variant: 'subtle', size: 'md' },
+      { selector: '.character-confirm-ch02c', variant: 'primary', size: 'lg' },
+    ]);
+
+    for (const cpuSeatId of config.cpuSeatIds) {
+      if (!gameSession.getCharacterSelectionMode(cpuSeatId)) {
+        gameSession.setCharacterSelection(cpuSeatId, 'random');
+      }
+    }
+
+    const characterHumanIds = setupPlayerIds.filter((playerId) => !browserSession.isCpuSeat(playerId));
+    let characterHumanIndex = 0;
+    const characterOwner = characterRoot.querySelector<HTMLElement>('#character-owner-ch02c');
+    const characterSummary = characterRoot.querySelector<HTMLElement>('#character-summary-ch02c');
+    const characterConfirm = characterRoot.querySelector<HTMLButtonElement>('.character-confirm-ch02c');
+
+    const renderCharacterSelection = (): void => {
+      const playerId = characterHumanIds[characterHumanIndex];
+      const player = playerId === undefined ? undefined : gameSession.players[playerId];
+      if (characterOwner) characterOwner.textContent = player ? `P${player.id + 1} · ${player.name}` : 'CPU / RANDOM';
+      const mode = playerId === undefined ? undefined : gameSession.getCharacterSelectionMode(playerId);
+      const selectedId = playerId === undefined ? undefined : gameSession.getCharacterId(playerId);
+      for (const button of characterRoot.querySelectorAll<HTMLButtonElement>('.character-card-ch02c')) {
+        const active = button.dataset.characterMode === 'random'
+          ? mode === 'random'
+          : mode === 'fixed' && button.dataset.characterId === selectedId;
+        button.classList.toggle('selected', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      }
+      if (characterConfirm) characterConfirm.disabled = !mode;
+      if (characterSummary) {
+        if (mode === 'random') {
+          characterSummary.textContent = '🎲 RANDOM đã khóa • Kết quả vẫn úp cho tới lúc reveal.';
+        } else if (selectedId) {
+          const chosen = STARTER_CHARACTERS_V01.find((character) => character.id === selectedId);
+          characterSummary.textContent = chosen
+            ? `${chosen.archetypeLabel} • Nội tại: ${chosen.passiveConcept.label}`
+            : 'Đã chọn nhân vật.';
+        } else {
+          characterSummary.textContent = 'Chọn một nhân vật hoặc RANDOM (?).';
+        }
+      }
+    };
+
+    const finishCharacterSelection = (): void => {
+      characterDom.setVisible(false);
+      if (onlineOwnSetup && config.mode === 'client') {
+        this.startGame();
+        return;
+      }
+      rulesDom.setVisible(true);
+      selectLaps(gameSession.targetLaps);
+    };
+
+    const openCharacterSelection = (): void => {
+      setupDom.setVisible(false);
+      rulesDom.setVisible(false);
+      if (characterHumanIds.length === 0) {
+        finishCharacterSelection();
+        return;
+      }
+      const firstMissing = characterHumanIds.findIndex((playerId) => !gameSession.getCharacterSelectionMode(playerId));
+      characterHumanIndex = firstMissing >= 0 ? firstMissing : 0;
+      characterDom.setVisible(true);
+      renderCharacterSelection();
+    };
+
+    for (const button of characterRoot.querySelectorAll<HTMLButtonElement>('[data-character-id]')) {
+      button.addEventListener('click', () => {
+        const playerId = characterHumanIds[characterHumanIndex];
+        const characterId = button.dataset.characterId;
+        if (playerId === undefined || !characterId) return;
+        gameSession.setCharacterSelection(playerId, 'fixed', characterId);
+        sfxController.play('ui_confirm');
+        renderCharacterSelection();
+      });
+    }
+    characterRoot.querySelector<HTMLButtonElement>('[data-character-mode="random"]')?.addEventListener('click', () => {
+      const playerId = characterHumanIds[characterHumanIndex];
+      if (playerId === undefined) return;
+      gameSession.setCharacterSelection(playerId, 'random');
+      sfxController.play('ui_confirm');
+      renderCharacterSelection();
+    });
+    characterRoot.querySelector<HTMLButtonElement>('.character-back-ch02c')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
+      if (characterHumanIndex > 0) {
+        characterHumanIndex -= 1;
+        renderCharacterSelection();
+        return;
+      }
+      characterDom.setVisible(false);
+      setupDom.setVisible(true);
+    });
+    characterConfirm?.addEventListener('click', () => {
+      const playerId = characterHumanIds[characterHumanIndex];
+      if (playerId === undefined || !gameSession.getCharacterSelectionMode(playerId)) return;
+      sfxController.play('ui_confirm');
+      if (characterHumanIndex < characterHumanIds.length - 1) {
+        characterHumanIndex += 1;
+        renderCharacterSelection();
+        return;
+      }
+      finishCharacterSelection();
+    });
 
     const rulesRoot = document.createElement('div');
     rulesRoot.className = 'mememe-rule-select mememe-rule-select-069';
@@ -192,15 +337,15 @@ export class SetupScene extends Phaser.Scene {
     node.querySelector<HTMLButtonElement>('#start-game')?.addEventListener('click', () => {
       if (!this.captureNames(node)) return;
       sfxController.play('ui_confirm');
-      if (onlineOwnSetup && config.mode === 'client') {
-        this.startGame();
-        return;
-      }
-      setupDom.setVisible(false);
-      rulesDom.setVisible(true);
-      selectLaps(gameSession.targetLaps);
+      openCharacterSelection();
     });
-    rulesRoot.querySelector<HTMLButtonElement>('.rule-back')?.addEventListener('click', () => { sfxController.play('ui_confirm'); rulesDom.setVisible(false); setupDom.setVisible(true); });
+    rulesRoot.querySelector<HTMLButtonElement>('.rule-back')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
+      rulesDom.setVisible(false);
+      characterDom.setVisible(true);
+      characterHumanIndex = Math.max(0, characterHumanIds.length - 1);
+      renderCharacterSelection();
+    });
     rulesRoot.querySelector<HTMLButtonElement>('.rule-confirm')?.addEventListener('click', () => this.startGame());
   }
 
@@ -248,7 +393,12 @@ export class SetupScene extends Phaser.Scene {
     try {
       const expressionMeta = EXPRESSIONS.find((item) => item.id === expression);
       const edited = await FaceImageEditor.open(file, expressionMeta?.label); if (!edited) { this.setStatus('', false); return; }
-      gameSession.setFace(playerId, expression, { dataUrl: edited.dataUrl, textureKey: faceTextureKey(playerId, expression), originalName: file.name });
+      gameSession.setFace(playerId, expression, {
+        dataUrl: edited.dataUrl,
+        compositeSourceDataUrl: edited.compositeSourceDataUrl,
+        textureKey: faceTextureKey(playerId, expression),
+        originalName: file.name,
+      });
       if (preview) preview.src = edited.dataUrl; slot?.classList.add('has-image'); this.setStatus('✓ Đã lưu mặt', false);
     } catch (error) { this.setStatus(error instanceof Error ? error.message : 'Không xử lý được ảnh.', true); }
     finally { slot?.classList.remove('loading'); input.value = ''; }

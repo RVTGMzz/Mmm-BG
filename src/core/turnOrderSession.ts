@@ -1,4 +1,6 @@
 import type { LocalTransportAdapter, LocalTransportMessage } from './localTransport';
+import { getStarterCharacterV01 } from '../content/core/characters_starter_v01';
+import { SECRET_BABY_CHARACTER_ID } from '../content/core/character_secret_baby_v01';
 
 export interface TurnOrderPrompt {
   promptId: string;
@@ -9,10 +11,21 @@ export interface TurnOrderPrompt {
 
 export type TurnOrderFaceExpression07042 = 'neutral' | 'happy' | 'angry';
 
+export type TurnOrderCharacterChoiceCh02c =
+  | { mode: 'fixed'; characterId: string }
+  | { mode: 'random' };
+
+export interface TurnOrderCharacterAssignmentCh02c {
+  playerId: number;
+  characterId: string;
+  source: 'fixed' | 'random';
+}
+
 export interface TurnOrderProfileWire07042 {
   seatId: number;
   name: string;
   faces: Partial<Record<TurnOrderFaceExpression07042, string>>;
+  characterChoice?: TurnOrderCharacterChoiceCh02c;
 }
 
 function normalizeProfile07042(
@@ -28,7 +41,17 @@ function normalizeProfile07042(
     if (!value.startsWith('data:image/') || value.length > 220_000) continue;
     faces[key] = value;
   }
-  return { seatId: expectedSeatId, name, faces };
+  let characterChoice: TurnOrderCharacterChoiceCh02c | undefined;
+  if (profile.characterChoice?.mode === 'random') {
+    characterChoice = { mode: 'random' };
+  } else if (
+    profile.characterChoice?.mode === 'fixed'
+    && typeof profile.characterChoice.characterId === 'string'
+    && getStarterCharacterV01(profile.characterChoice.characterId)
+  ) {
+    characterChoice = { mode: 'fixed', characterId: profile.characterChoice.characterId };
+  }
+  return { seatId: expectedSeatId, name, faces, ...(characterChoice ? { characterChoice } : {}) };
 }
 
 export type TurnOrderMessage =
@@ -43,6 +66,7 @@ export type TurnOrderMessage =
   | { kind: 'roll_reject'; roomCode: string; clientId: string; promptId: string; reason: string }
   | { kind: 'tie_group'; roomCode: string; playerIds: number[]; value: number }
   | { kind: 'final_order'; roomCode: string; order: number[] }
+  | { kind: 'character_reveal'; roomCode: string; assignments: TurnOrderCharacterAssignmentCh02c[] }
   | { kind: 'start_match'; roomCode: string };
 
 export type TurnOrderEvent =
@@ -53,6 +77,7 @@ export type TurnOrderEvent =
   | { kind: 'result'; promptId: string; playerId: number; value: number }
   | { kind: 'tie_group'; playerIds: number[]; value: number }
   | { kind: 'final_order'; order: number[] }
+  | { kind: 'character_reveal'; assignments: TurnOrderCharacterAssignmentCh02c[] }
   | { kind: 'start_match' };
 
 export type TurnOrderEventHandler = (event: TurnOrderEvent) => void;
@@ -236,6 +261,28 @@ export class TurnOrderHostSession extends TurnOrderEventSource {
     const normalized = [...order];
     this.transport.send({ kind: 'final_order', roomCode: this.roomCode, order: normalized });
     this.emit({ kind: 'final_order', order: normalized });
+  }
+
+  revealCharactersCh02c(assignments: readonly TurnOrderCharacterAssignmentCh02c[]): void {
+    const playerIds = assignments.map((assignment) => assignment.playerId);
+    if (
+      assignments.length !== this.playerNames.length
+      || new Set(playerIds).size !== this.playerNames.length
+      || !this.playerNames.every((_, playerId) => playerIds.includes(playerId))
+    ) {
+      throw new Error('Character reveal must assign exactly one Character to every player.');
+    }
+    const normalized = assignments.map((assignment) => {
+      const validCharacter = Boolean(getStarterCharacterV01(assignment.characterId))
+        || assignment.characterId === SECRET_BABY_CHARACTER_ID;
+      if (!validCharacter) throw new Error(`Unknown Character reveal id: ${assignment.characterId}`);
+      if (assignment.source === 'fixed' && assignment.characterId === SECRET_BABY_CHARACTER_ID) {
+        throw new Error('Secret Baby cannot be directly fixed-selected.');
+      }
+      return { ...assignment };
+    }).sort((a, b) => a.playerId - b.playerId);
+    this.transport.send({ kind: 'character_reveal', roomCode: this.roomCode, assignments: normalized });
+    this.emit({ kind: 'character_reveal', assignments: normalized });
   }
 
   startMatch(): void {
@@ -485,6 +532,13 @@ export class TurnOrderClientSession extends TurnOrderEventSource {
     }
     if (payload.kind === 'final_order') {
       this.emit({ kind: 'final_order', order: [...payload.order] });
+      return;
+    }
+    if (payload.kind === 'character_reveal') {
+      this.emit({
+        kind: 'character_reveal',
+        assignments: payload.assignments.map((assignment) => ({ ...assignment })),
+      });
       return;
     }
     if (payload.kind === 'start_match') {

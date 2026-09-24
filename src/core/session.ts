@@ -1,6 +1,7 @@
 export type FaceExpression = 'neutral' | 'happy' | 'angry';
 export type PersonalityTag = 'mean' | 'whiny' | 'gossip' | 'chill';
 export type MatchLapTarget = 1 | 2 | 3;
+export type CharacterSelectionMode = 'fixed' | 'random';
 import type { CharacterId } from './characterSystem';
 
 const DEFAULT_PERSONALITIES: PersonalityTag[] = ['mean', 'whiny', 'gossip', 'chill'];
@@ -26,6 +27,8 @@ export interface PlayerProfile {
    * character-select gate will require this before a player can Ready/start.
    */
   characterId?: CharacterId;
+  /** CH-02C pre-match intent. RANDOM stays unresolved until the reveal beat. */
+  characterSelectionMode?: CharacterSelectionMode;
   /**
    * Legacy/current reaction personality. Character reaction profiles will
    * supersede this gradually; keep it for old saves and current content.
@@ -73,6 +76,34 @@ class GameSession {
     const player = this.players[playerId];
     if (!player) return;
     player.name = name.trim() || `Player ${playerId + 1}`;
+  }
+
+  setCharacterSelection(
+    playerId: number,
+    mode: CharacterSelectionMode | undefined,
+    characterId?: CharacterId,
+  ): void {
+    const player = this.players[playerId];
+    if (!player) return;
+    if (!mode) {
+      delete player.characterSelectionMode;
+      delete player.characterId;
+      return;
+    }
+    player.characterSelectionMode = mode;
+    if (mode === 'fixed' && characterId) {
+      player.characterId = characterId;
+    } else {
+      delete player.characterId;
+    }
+  }
+
+  getCharacterSelectionMode(playerId: number): CharacterSelectionMode | undefined {
+    return this.players[playerId]?.characterSelectionMode;
+  }
+
+  hasCharacterSelectionIntents(): boolean {
+    return this.players.every((player) => Boolean(player.characterSelectionMode));
   }
 
   setCharacter(playerId: number, characterId: CharacterId | undefined): void {

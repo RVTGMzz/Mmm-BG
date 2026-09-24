@@ -10,7 +10,14 @@ import {
   type TurnOrderEvent,
   type TurnOrderMessage,
   type TurnOrderProfileWire07042,
+  type TurnOrderCharacterAssignmentCh02c,
 } from '../core/turnOrderSession';
+import {
+  characterDisplayLabelCh02c,
+  createPregameCharacterRngCh02c,
+  resolveCharacterAssignmentsCh02c,
+  type CharacterRevealAssignmentCh02c,
+} from '../core/characterPregameCh02c';
 import { faceTextureKey } from '../systems/faces';
 
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
@@ -40,6 +47,7 @@ export class TurnOrderScene extends Phaser.Scene {
   private hostOrderSession?: TurnOrderHostSession;
   private clientOrderSession?: TurnOrderClientSession;
   private unsubscribeOrder?: () => void;
+  private pendingCharacterAssignmentsCh02c?: CharacterRevealAssignmentCh02c[];
 
   constructor() {
     super('TurnOrderScene');
@@ -166,9 +174,11 @@ export class TurnOrderScene extends Phaser.Scene {
   }
 
   private async runSoloCeremony(): Promise<void> {
+    this.pendingCharacterAssignmentsCh02c = this.resolveCharacterAssignmentsCh02c();
     const ids = gameSession.players.map((player) => player.id);
     const order = await this.resolveSoloGroup(ids, 1);
     this.applyFinalOrder(order);
+    await this.revealCharactersCh02c(this.pendingCharacterAssignmentsCh02c ?? []);
     this.showFinalOrder(order, false);
 
     await new Promise<void>((resolve) => {
@@ -199,6 +209,7 @@ export class TurnOrderScene extends Phaser.Scene {
 
     session.lockClaims();
     this.refreshOwnerLabels();
+    this.pendingCharacterAssignmentsCh02c = this.resolveCharacterAssignmentsCh02c();
 
     const remoteSeats = session.claimedSeatIds.map((seatId) => `P${seatId + 1}`).join(', ');
     this.promptText?.setText(expectedRemoteSeats.length > 0 ? '✅ MỌI NGƯỜI ĐÃ KẾT NỐI' : '🤖 CPU ĐÃ SẴN SÀNG');
@@ -213,6 +224,9 @@ export class TurnOrderScene extends Phaser.Scene {
     const order = await this.resolveHostGroup(ids, 1);
     this.applyFinalOrder(order);
     session.finalizeOrder(order);
+    const characterAssignments = this.pendingCharacterAssignmentsCh02c ?? [];
+    session.revealCharactersCh02c(characterAssignments as TurnOrderCharacterAssignmentCh02c[]);
+    await this.revealCharactersCh02c(characterAssignments);
     this.showFinalOrder(order, false);
 
     await new Promise<void>((resolve) => { this.waitingResolver = resolve; });
@@ -452,6 +466,11 @@ export class TurnOrderScene extends Phaser.Scene {
       return;
     }
 
+    if (event.kind === 'character_reveal') {
+      void this.revealCharactersCh02c(event.assignments);
+      return;
+    }
+
     if (event.kind === 'start_match') {
       this.scene.start('DemoBoardScene');
     }
@@ -526,10 +545,18 @@ export class TurnOrderScene extends Phaser.Scene {
       const asset = player?.faces[expression];
       if (asset?.dataUrl) faces[expression] = asset.dataUrl;
     }
+    const mode = gameSession.getCharacterSelectionMode(playerId);
+    const characterId = gameSession.getCharacterId(playerId);
+    const characterChoice = mode === 'random'
+      ? { mode: 'random' as const }
+      : mode === 'fixed' && characterId
+        ? { mode: 'fixed' as const, characterId }
+        : undefined;
     return {
       seatId: playerId,
       name: player?.name ?? `Player ${playerId + 1}`,
       faces,
+      ...(characterChoice ? { characterChoice } : {}),
     };
   }
 
@@ -537,6 +564,11 @@ export class TurnOrderScene extends Phaser.Scene {
     if (!Number.isInteger(profile.seatId) || profile.seatId < 0 || profile.seatId > 3) return;
     gameSession.setPlayerName(profile.seatId, profile.name);
     this.nameTexts.get(profile.seatId)?.setText(gameSession.players[profile.seatId]?.name ?? profile.name);
+    if (profile.characterChoice?.mode === 'random') {
+      gameSession.setCharacterSelection(profile.seatId, 'random');
+    } else if (profile.characterChoice?.mode === 'fixed') {
+      gameSession.setCharacterSelection(profile.seatId, 'fixed', profile.characterChoice.characterId);
+    }
     for (const expression of ['neutral', 'happy', 'angry'] as const) {
       const dataUrl = profile.faces?.[expression];
       if (!dataUrl) continue;
@@ -546,6 +578,76 @@ export class TurnOrderScene extends Phaser.Scene {
         originalName: `online-p${profile.seatId + 1}-${expression}.webp`,
       });
     }
+  }
+
+  private resolveCharacterAssignmentsCh02c(): CharacterRevealAssignmentCh02c[] {
+    for (const player of gameSession.players) {
+      if (!gameSession.getCharacterSelectionMode(player.id)) {
+        gameSession.setCharacterSelection(player.id, 'random');
+      }
+    }
+    const intents = gameSession.players.map((player) => ({
+      playerId: player.id,
+      mode: gameSession.getCharacterSelectionMode(player.id) ?? 'random',
+      ...(gameSession.getCharacterSelectionMode(player.id) === 'fixed' && player.characterId
+        ? { characterId: player.characterId }
+        : {}),
+    }));
+    const salt = `${browserSession.current.roomCode}|${browserSession.current.mode}|character-ch02c`;
+    return resolveCharacterAssignmentsCh02c(intents, createPregameCharacterRngCh02c(salt));
+  }
+
+  private async revealCharactersCh02c(
+    assignments: readonly TurnOrderCharacterAssignmentCh02c[] | readonly CharacterRevealAssignmentCh02c[],
+  ): Promise<void> {
+    if (!assignments.length) return;
+    for (const assignment of assignments) gameSession.setCharacter(assignment.playerId, assignment.characterId);
+
+    const overlay = this.add.container(0, 0).setDepth(1650).setName('character-reveal-ch02c');
+    const dimmer = this.add.rectangle(640, 360, 1280, 720, 0x30251f, 0.72);
+    const panel = this.add.rectangle(640, 360, 1130, 520, 0xfff9ec, 1).setStrokeStyle(5, 0x5a3c31, 1);
+    const title = this.add.text(640, 142, '🎭 NHÂN VẬT ĐÃ CHỐT!', {
+      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '38px', fontStyle: 'bold', color: '#3b2a24',
+    }).setOrigin(0.5);
+    const note = this.add.text(640, 184, 'RANDOM được mở ngay trước khi vào trận.', {
+      fontFamily: 'Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#776458',
+    }).setOrigin(0.5);
+    overlay.add([dimmer, panel, title, note]);
+
+    const revealTexts: Array<{ text: Phaser.GameObjects.Text; assignment: TurnOrderCharacterAssignmentCh02c | CharacterRevealAssignmentCh02c }> = [];
+    assignments.forEach((assignment, index) => {
+      const x = 220 + index * 280;
+      const player = gameSession.players[assignment.playerId];
+      const card = this.add.rectangle(x, 365, 235, 275, assignment.source === 'random' ? 0xeee5ff : 0xffffff, 1)
+        .setStrokeStyle(4, assignment.source === 'random' ? 0x9c78c4 : PLAYER_COLORS[assignment.playerId] ?? 0x8c6e5d, 1);
+      const seat = this.add.text(x, 265, `P${assignment.playerId + 1} · ${player?.name ?? ''}`, {
+        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#514138',
+        fixedWidth: 210, align: 'center',
+      }).setOrigin(0.5);
+      const value = this.add.text(x, 365,
+        assignment.source === 'random' ? '?' : characterDisplayLabelCh02c(assignment.characterId), {
+          fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+          fontSize: assignment.source === 'random' ? '66px' : '25px', fontStyle: 'bold', color: '#2f2723',
+          align: 'center', fixedWidth: 210, wordWrap: { width: 205 },
+        }).setOrigin(0.5);
+      const source = this.add.text(x, 465, assignment.source === 'random' ? '🎲 RANDOM' : 'ĐÃ CHỌN', {
+        fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#7a685c',
+      }).setOrigin(0.5);
+      overlay.add([card, seat, value, source]);
+      revealTexts.push({ text: value, assignment });
+    });
+
+    await this.pause(420);
+    for (const item of revealTexts.filter((entry) => entry.assignment.source === 'random')) {
+      sfxController.play('ui_confirm');
+      const isSecret = item.assignment.characterId === 'secret-baby';
+      item.text.setFontSize(isSecret ? 25 : 26).setColor(isSecret ? '#b15b00' : '#2f2723').setText(
+        isSecret ? '✨ SECRET! ✨\nEM BÉ BÁ ĐẠO 🍼' : characterDisplayLabelCh02c(item.assignment.characterId),
+      );
+      await this.pause(isSecret ? 820 : 360);
+    }
+    await this.pause(760);
+    overlay.destroy(true);
   }
 
   private ownerLabel(playerId: number): string {
