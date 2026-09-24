@@ -6,7 +6,13 @@ import type { CharacterId } from './characterSystem';
 const DEFAULT_PERSONALITIES: PersonalityTag[] = ['mean', 'whiny', 'gossip', 'chill'];
 
 export interface FaceAsset {
+  /** Current circular sticker used by the existing HUD/presentation. */
   dataUrl: string;
+  /**
+   * CH-01.1 non-circular transformed source for future Character face sockets.
+   * Optional keeps old in-memory/session profiles compatible.
+   */
+  compositeSourceDataUrl?: string;
   textureKey: string;
   originalName?: string;
 }

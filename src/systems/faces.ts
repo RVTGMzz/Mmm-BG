@@ -1,4 +1,5 @@
 export const FACE_RUNTIME_SIZE = 320;
+export const FACE_COMPOSITE_SOURCE_SIZE = 512;
 
 export type FaceStylePreset = 'game-soft' | 'original';
 export const DEFAULT_FACE_STYLE_PRESET: FaceStylePreset = 'game-soft';
@@ -106,6 +107,62 @@ export function drawFaceSticker(
   ctx.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
   ctx.filter = previousFilter;
   ctx.restore();
+}
+
+/**
+ * Renders a non-circular, head-safe source using the same editor transform.
+ * This is intentionally not shown as the normal HUD avatar. It preserves
+ * hair/head pixels outside the circular sticker so the future Character
+ * compositor has useful source material without retaining the whole photo.
+ */
+export function drawFaceCompositeSource(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  transform: FaceTransform,
+  size: number,
+  stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET,
+): void {
+  const resolved = clampFaceTransform(transform);
+  const center = size / 2;
+  const naturalWidth = Math.max(1, image.naturalWidth || image.width);
+  const naturalHeight = Math.max(1, image.naturalHeight || image.height);
+
+  // Match the current avatar face diameter as the framing baseline, but do not
+  // apply the circular clip. Pixels outside the old avatar circle survive.
+  const framingDiameter = size * FACE_RADIUS_RATIO * 2;
+  const coverScale = Math.max(framingDiameter / naturalWidth, framingDiameter / naturalHeight);
+  const scale = coverScale * resolved.zoom;
+  const drawWidth = naturalWidth * scale;
+  const drawHeight = naturalHeight * scale;
+  const offsetScale = size * FACE_RADIUS_RATIO * 0.92;
+
+  ctx.clearRect(0, 0, size, size);
+  ctx.save();
+  ctx.translate(
+    center + resolved.offsetX * offsetScale,
+    center + resolved.offsetY * offsetScale,
+  );
+  ctx.rotate((resolved.rotation * Math.PI) / 180);
+  const previousFilter = ctx.filter;
+  ctx.filter = FACE_STYLE_FILTERS[stylePreset];
+  ctx.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+  ctx.filter = previousFilter;
+  ctx.restore();
+}
+
+export function encodeFaceCompositeSource(
+  image: HTMLImageElement,
+  transform: FaceTransform,
+  stylePreset: FaceStylePreset = DEFAULT_FACE_STYLE_PRESET,
+): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = FACE_COMPOSITE_SOURCE_SIZE;
+  canvas.height = FACE_COMPOSITE_SOURCE_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Trình duyệt không hỗ trợ Canvas 2D.');
+
+  drawFaceCompositeSource(ctx, image, transform, FACE_COMPOSITE_SOURCE_SIZE, stylePreset);
+  return canvas.toDataURL('image/webp', 0.88);
 }
 
 export function renderFacePreview(

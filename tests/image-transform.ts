@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
-import { clampFaceTransform, DEFAULT_FACE_TRANSFORM, FACE_RUNTIME_SIZE } from '../src/systems/faces';
+import {
+  clampFaceTransform,
+  DEFAULT_FACE_TRANSFORM,
+  FACE_COMPOSITE_SOURCE_SIZE,
+  FACE_RUNTIME_SIZE,
+} from '../src/systems/faces';
 
 assert.equal(FACE_RUNTIME_SIZE, 320);
+assert.equal(FACE_COMPOSITE_SOURCE_SIZE, 512);
 assert.deepEqual(clampFaceTransform(DEFAULT_FACE_TRANSFORM), DEFAULT_FACE_TRANSFORM);
 
 assert.deepEqual(
@@ -19,4 +25,4 @@ assert.deepEqual(
   DEFAULT_FACE_TRANSFORM,
 );
 
-console.log('[image-transform] PASS crop transform bounds + 320px runtime target locked');
+console.log('[image-transform] PASS crop bounds + 320px avatar + 512px Character composite source locked');

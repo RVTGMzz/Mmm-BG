@@ -273,6 +273,7 @@ export class SetupScene extends Phaser.Scene {
         for (const expression of EXPRESSIONS) {
           gameSession.setFace(playerId, expression.id, {
             dataUrl: edited.dataUrl,
+            compositeSourceDataUrl: edited.compositeSourceDataUrl,
             textureKey: faceTextureKey(playerId, expression.id),
             originalName: files[0].name,
           });
@@ -295,6 +296,7 @@ export class SetupScene extends Phaser.Scene {
 
         gameSession.setFace(playerId, expression.id, {
           dataUrl: edited.dataUrl,
+          compositeSourceDataUrl: edited.compositeSourceDataUrl,
           textureKey: faceTextureKey(playerId, expression.id),
           originalName: file.name,
         });
@@ -341,6 +343,7 @@ export class SetupScene extends Phaser.Scene {
         for (const expression of EXPRESSIONS) {
           gameSession.setFace(playerId, expression.id, {
             dataUrl: edited.dataUrl,
+            compositeSourceDataUrl: edited.compositeSourceDataUrl,
             textureKey: faceTextureKey(playerId, expression.id),
             originalName: file.name,
           });
@@ -362,6 +365,7 @@ export class SetupScene extends Phaser.Scene {
 
         gameSession.setFace(playerId, expression.id, {
           dataUrl: edited.dataUrl,
+          compositeSourceDataUrl: edited.compositeSourceDataUrl,
           textureKey: faceTextureKey(playerId, expression.id),
           originalName: file.name,
         });

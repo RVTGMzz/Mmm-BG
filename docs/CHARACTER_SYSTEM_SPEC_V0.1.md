@@ -286,6 +286,7 @@ Character body/pose artwork should not bake:
 - optional `characterId` in pre-match player profile;
 - face socket helpers;
 - richer emotion → three-capture deterministic fallback;
+- current avatar editor keeps its 320×320 circular derivative **and** a 512×512 non-circular transformed composite source, so later Character sockets are not forced to reuse a circle;
 - this spec;
 - **no passive gameplay mutation yet**.
 
@@ -335,7 +336,8 @@ Do not, in this milestone:
 CH-01 is accepted at source level when:
 - project typechecks/builds;
 - existing runtime tests stay green;
-- current Setup still works unchanged;
+- current Setup flow still works with the same visible avatar behavior;
+- face editing preserves a non-circular composite source while retaining the current circular avatar derivative;
 - `PlayerProfile` can store/clear a Character ID without making old flows invalid;
 - face socket helpers reject invalid normalized positions;
 - richer emotion mapping has deterministic fallback;

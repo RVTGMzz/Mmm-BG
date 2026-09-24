@@ -2,6 +2,7 @@ import {
   clampFaceTransform,
   DEFAULT_FACE_STYLE_PRESET,
   DEFAULT_FACE_TRANSFORM,
+  encodeFaceCompositeSource,
   encodeFaceSticker,
   loadFaceImage,
   renderFacePreview,
@@ -10,7 +11,13 @@ import {
 } from '../systems/faces';
 
 export interface FaceImageEditorResult {
+  /** Existing circular HUD/avatar derivative. */
   dataUrl: string;
+  /**
+   * Non-circular transformed source retained for future Character face sockets.
+   * It is not used as the normal avatar by current runtime.
+   */
+  compositeSourceDataUrl: string;
   transform: FaceTransform;
   stylePreset: FaceStylePreset;
 }
@@ -66,7 +73,7 @@ export class FaceImageEditor {
                 <button class="face-editor-cancel" type="button">HỦY</button>
                 <button class="face-editor-confirm" type="button">DÙNG ẢNH NÀY ✓</button>
               </div>
-              <p class="face-editor-note">Avatar vẫn xuất 320×320 WebP. Giao diện chỉnh ảnh ưu tiên landscape nhưng vùng crop vẫn vuông để khớp avatar tròn trong game.</p>
+              <p class="face-editor-note">Canh đủ trán, tóc và cằm. MeMeMe vẫn tạo avatar tròn hiện tại, đồng thời giữ một bản nguồn không cắt tròn để sau này ghép mặt vào nhân vật.</p>
             </div>
           </div>
         </section>
@@ -218,6 +225,7 @@ export class FaceImageEditor {
         const resolved = clampFaceTransform(transform);
         finish({
           dataUrl: encodeFaceSticker(image, resolved, stylePreset),
+          compositeSourceDataUrl: encodeFaceCompositeSource(image, resolved, stylePreset),
           transform: resolved,
           stylePreset,
         });
