@@ -20,7 +20,8 @@ assert.match(active, /rebuildCanonicalCinematicText070414/);
 assert.match(active, /const isNews = model\.kind === 'news'/);
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
 assert.match(active, /child\.destroy\(\)/);
-assert.match(active, /const body = this\.add\.text\(-322, -24, bodyCopy/);
+assert.match(active, /const body = new Phaser\.GameObjects\.Text\(this, -322, -24, bodyCopy/);
+assert.match(active, /root\.setScrollFactor\(0\)/);
 assert.match(active, /fixedWidth: 628/);
 assert.match(active, /retireLegacyPresentationOverlays070414/);
 
