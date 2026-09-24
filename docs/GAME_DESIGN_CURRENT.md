@@ -176,12 +176,18 @@ Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tr
 - Rarity: `N / R / SR / SSR`
 - Có `Impact_Level` riêng
 
-### Personalization
-- Tên player chèn động vào system log/dialogue
-- Khuôn mặt thật có thể ghép vào avatar/card/situation art
-- Reaction random từ pool theo event/personality
-- MVP ưu tiên auto-reaction
-- Audio ưu tiên non-verbal/generic để dễ localization
+### Character + personalization system — direction locked
+- Mỗi người chơi cuối cùng **bắt buộc chọn một Character** trước khi Ready/Start. CH-01 giữ `characterId` optional chỉ để không phá Setup hiện tại trước khi Character Select được xây.
+- Character và người chơi là hai lớp khác nhau: **người chơi** sở hữu seat/name/face input; **Character** sở hữu body/silhouette/costume, pose set, reaction profile và passive IDs.
+- Dàn Character hướng tới đa dạng nam/nữ, trẻ/lớn tuổi, vóc dáng/phong cách/cá tính. Demographic presentation không tự động quyết định passive; passive thuộc từng Character cụ thể, tránh stereotype.
+- Khuôn mặt thật được composite vào body/pose Character. **Không dùng crop tròn làm mặc định**; ưu tiên freeform head/hair crop + normalized face socket để mặt tròn, dài, nhọn đều fit.
+- Capture thực dụng hiện tại vẫn là `neutral / happy / angry`; pose Character có thể giàu cảm xúc hơn và map deterministically về ba face capture cho tới khi capture pipeline mở rộng.
+- Reaction hiện tại vẫn dùng legacy personality pool để tương thích; hướng dài hạn là `reactionProfileId` theo Character + event context.
+- Passive sẽ data-driven và chỉ được resolve ở HOST khi milestone passive thật sự triển khai; CH-01 **không** thêm gameplay mutation.
+- TIN TỨC / LÁ BÀI tương lai render theo pipeline: **Player → Character → context/emotion → pose → face composite → card/news surface**.
+- Chi tiết canonical: `docs/CHARACTER_SYSTEM_SPEC_V0.1.md` và schema foundation `src/core/characterSystem.ts`.
+- Tên player vẫn chèn động vào system log/dialogue.
+- Audio ưu tiên non-verbal/generic để dễ localization.
 
 ### Production philosophy
 - Bắt đầu MVP ít content
@@ -191,10 +197,10 @@ Khoảng cách Mini Game quanh main loop xấp xỉ **8 / 9 / 9 / 9 / 9 ô**, tr
 
 ## B. Hướng mạnh nhưng cần PoC
 
-### Face input
-Khả năng dùng 3 nhóm mặt: neutral / positive / negative.
+### Face input / Character compositor
+Current capture vẫn dùng 3 nhóm thực dụng: neutral / happy / angry.
 
-Cần test consent, crop, storage, quality và fallback nếu người chơi từ chối camera.
+PoC tiếp theo phải test consent, head/hair-aware crop, storage, quality, face-socket fit và fallback nếu người chơi từ chối camera. Circular crop không còn là default art direction; Character pose cung cấp normalized face socket.
 
 ### Art style
 Hướng hiện tại nghiêng về stylized toy/collage city, sticker-like HUD/characters, outline rõ, màu tươi nhưng vẫn ưu tiên readability.
@@ -260,9 +266,14 @@ Không coi framework/protocol cụ thể là tech decision final nếu chưa đ�
 12. Presentation layer xử lý camera, art, reaction, audio mà không tạo gameplay state thứ hai.
 13. Turn manager chuyển người tiếp theo.
 
-## E. Face-card rendering model
+## E. Character / face-card rendering model
 
-Asset schema dùng normalized coordinates 0..1 cho face slots để scale đa độ phân giải.
+Asset schema dùng normalized coordinates 0..1 cho Character face sockets để scale đa độ phân giải.
+
+Canonical pipeline:
+**Player → Character → event context → emotion pose → captured-face fallback → composite → TIN TỨC/LÁ BÀI/HUD surface**.
+
+Không bake player face vào Character art. Character art giữ body/pose/mask; runtime gắn face theo socket. Xem `docs/CHARACTER_SYSTEM_SPEC_V0.1.md`.
 
 ## F. Rarity philosophy
 

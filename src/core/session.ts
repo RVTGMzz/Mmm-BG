@@ -1,6 +1,7 @@
 export type FaceExpression = 'neutral' | 'happy' | 'angry';
 export type PersonalityTag = 'mean' | 'whiny' | 'gossip' | 'chill';
 export type MatchLapTarget = 1 | 2 | 3;
+import type { CharacterId } from './characterSystem';
 
 const DEFAULT_PERSONALITIES: PersonalityTag[] = ['mean', 'whiny', 'gossip', 'chill'];
 
@@ -13,6 +14,16 @@ export interface FaceAsset {
 export interface PlayerProfile {
   id: number;
   name: string;
+  /**
+   * CH-01 character-selection foundation.
+   * Optional only while the existing Setup flow is being migrated. The final
+   * character-select gate will require this before a player can Ready/start.
+   */
+  characterId?: CharacterId;
+  /**
+   * Legacy/current reaction personality. Character reaction profiles will
+   * supersede this gradually; keep it for old saves and current content.
+   */
   personality: PersonalityTag;
   faces: Partial<Record<FaceExpression, FaceAsset>>;
 }
@@ -56,6 +67,24 @@ class GameSession {
     const player = this.players[playerId];
     if (!player) return;
     player.name = name.trim() || `Player ${playerId + 1}`;
+  }
+
+  setCharacter(playerId: number, characterId: CharacterId | undefined): void {
+    const player = this.players[playerId];
+    if (!player) return;
+    if (!characterId) {
+      delete player.characterId;
+      return;
+    }
+    player.characterId = characterId;
+  }
+
+  getCharacterId(playerId: number): CharacterId | undefined {
+    return this.players[playerId]?.characterId;
+  }
+
+  hasCharacterSelections(): boolean {
+    return this.players.every((player) => Boolean(player.characterId));
   }
 
   setPersonality(playerId: number, personality: PersonalityTag): void {
