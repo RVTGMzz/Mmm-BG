@@ -46,7 +46,11 @@ const cssSource = await readFile('src/characterSelectCh02c.css', 'utf8');
 assert(setupSource.includes('resolveCharacterFaceCompositeCh02d(player.faces'), 'Character Select must use the shared composite resolver');
 assert(setupSource.includes('faceComposite.sourceDataUrl'), 'selected Character card must preview retained head source');
 assert(protocolSource.includes('compositeFaces?: Partial<Record<TurnOrderFaceExpression07042, string>>'), 'online profile wire must carry non-circular sources');
-assert(protocolSource.includes('value.length <= 700_000') || protocolSource.includes('composite.length <= 700_000'), 'wire must bound composite image payloads');
+assert(
+  protocolSource.includes('composite.length <= 700_000')
+    || protocolSource.includes('composite.length > 700_000'),
+  'wire must bound composite image payloads',
+);
 assert(turnSource.includes('compositeSourceDataUrl: profile.compositeFaces?.[expression]'), 'remote profile must restore composite face source');
 assert(cssSource.includes('does not crop to a hard circle'), 'preview CSS must explicitly preserve non-circular direction');
 
