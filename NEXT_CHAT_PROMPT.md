@@ -25,6 +25,19 @@ Read first:
 20. Ron's newest runtime screenshots/feedback
 
 Current Character checkpoint:
+**CH-01.1 — Character System + non-circular face-source foundation**
+
+Validated latest Character source:
+`bfa7c9cb28688928c3d4d56c32c41ee60e837d05`
+- CI #3226 / run `35938294090`: SUCCESS
+- compiled mirror `b660aa8324a26f41c2a99907555484e767568b1e`
+- Pages #27 / run `35938377240`: SUCCESS
+- current circular avatar stays unchanged;
+- face editor also stores a 512×512 non-circular transformed source for future Character sockets;
+- no passive gameplay is live;
+- next Character implementation: first real starter Character + Character Select proof, then face-on-Character preview.
+
+Historical foundation immediately before it:
 **CH-01 — Character System + face-composite foundation**
 
 Validated Character source:

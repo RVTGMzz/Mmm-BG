@@ -1,5 +1,26 @@
 # Mmm-BG — Latest Handoff
 
+## September 24 Character face-source follow-up — CH-01.1
+
+The current round avatar remains visually unchanged, but face capture now also preserves a **512×512 non-circular transformed composite source** for future Character head/face sockets.
+
+Implementation:
+- `src/systems/faces.ts`: `FACE_COMPOSITE_SOURCE_SIZE = 512`, `drawFaceCompositeSource()`, `encodeFaceCompositeSource()`;
+- the source uses the same user framing/rotation/style but **does not apply the circular clip**, so hair/head pixels outside the old avatar circle survive;
+- `FaceImageEditorResult` returns both the existing circular `dataUrl` and `compositeSourceDataUrl`;
+- `FaceAsset.compositeSourceDataUrl?` is optional for compatibility;
+- all current Setup image/camera paths retain both derivatives;
+- current HUD/avatar still uses the old circular sticker, so this is groundwork rather than a visible reskin;
+- editor copy now asks the user to keep forehead/hair/chin in frame for future Character compositing;
+- `tests/image-transform.ts` locks the existing 320px avatar target and new 512px composite source target.
+
+**Validated source commit:** `bfa7c9cb28688928c3d4d56c32c41ee60e837d05`.
+**MMM MVP CI #3226:** run `35938294090`, **SUCCESS**.
+**Compiled public mirror:** `b660aa8324a26f41c2a99907555484e767568b1e`.
+**GitHub Pages #27:** run `35938377240`, **SUCCESS**.
+
+No passive, Host authority, RNG, reconnect, Worker or event ownership behavior changed. Next Character milestone should be the **first real starter Character + Character Select proof**, then preview the captured face on that Character before making selection mandatory.
+
 ## September 24 Character System foundation — CH-01
 
 Ron re-confirmed the older Character idea and expanded it into a locked direction: final MeMeMe players are not just circular avatars. Every participant will eventually choose a Character before Ready/Start. The human player owns seat/name/face input; the Character owns body/silhouette/costume, pose set, reaction profile and passive IDs.
