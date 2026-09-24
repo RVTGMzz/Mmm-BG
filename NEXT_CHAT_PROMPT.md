@@ -26,6 +26,19 @@ Read first:
 21. Ron's newest runtime screenshots/feedback
 
 Current Character checkpoint:
+**CH-02B — RANDOM Character + Secret Baby contract**
+
+Validated latest Character source:
+`20ea08e6244563cafdd221e2437b8bbcf03d072e`
+- CI #3228 / run `35955486677`: SUCCESS
+- Secret Baby is RANDOM-only, 5% eligibility per RANDOM slot, max one Secret per batch
+- 2–4 RANDOM seats resolve as a concealed HOST-authoritative shuffled batch
+- reveal at match start; do not leak assignment in lobby UI
+- passive `BÉ CƯNG CỦA VŨ TRỤ` remains concept-only / `live: false`
+- next: wire RANDOM (?) into Character Select + concealed multi-player reveal flow; Secret art/reveal follows after concealment is safe
+- starter gender presentation locked: female KHÓC NHÈ, male CAU CÓ, male LO LẮNG, female TĂNG ĐỘNG
+
+Historical checkpoint:
 **CH-02A — Four-character starter roster locked**
 
 Validated latest Character source:

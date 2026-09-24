@@ -1,5 +1,54 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 24 CH-02B Random Character + Secret Baby
+
+Ron approved the RANDOM (?) hunt mechanic and Secret Baby direction.
+
+Canonical source/design:
+- `src/content/core/character_secret_baby_v01.ts`
+- `src/core/characterRandomSelectionCh02b.ts`
+- `docs/CHARACTER_RANDOM_SECRET_BABY_CH02B.md`
+- `tests/character-random-secret-baby-ch02b.ts`
+
+Locked rules:
+- Secret working archetype: **EM BÉ BÁ ĐẠO** 👶🍼, crawling + pacifier + unexpectedly bossy attitude;
+- Secret Baby is **RANDOM-only** and absent from the normal starter roster;
+- direct selection helper rejects the Secret ID;
+- each RANDOM player contributes one independent **5% Secret eligibility roll**;
+- 2–4 RANDOM players resolve together as one concealed batch;
+- at most **one Secret Baby** can exist in the RANDOM batch even if multiple 5% rolls hit;
+- normal Character tokens are filled from the starter roster, avoiding duplicates when capacity permits;
+- the resulting tokens are shuffled before seat assignment, so the player whose eligibility roll hit is not necessarily the player who receives the Secret;
+- reveal timing is `match_start`; the intended UX is face-down ? cards → spread/shuffle → assignment → flip/reveal;
+- resolver uses serializable authoritative RNG only; no `Math.random()`;
+- CH-02B does **not** activate Secret or starter passives yet.
+
+Secret passive concept:
+- working name: **BÉ CƯNG CỦA VŨ TRỤ**;
+- should feel materially stronger/special than starter passives;
+- current direction is bounded protection/mitigation from a meaningful negative event;
+- exact cadence/numbers remain pending balance;
+- `live: false` remains locked.
+
+Starter presentation also corrected and locked:
+- KHÓC NHÈ: female, 55–65;
+- CAU CÓ: male, 40–50;
+- LO LẮNG: male, 28–35;
+- TĂNG ĐỘNG: female, 18–24.
+
+**Validated source:** `20ea08e6244563cafdd221e2437b8bbcf03d072e`.
+**MMM MVP CI #3228:** run `35955486677`, **SUCCESS**.
+Both CH-02A and new CH-02B regression gates passed.
+
+The public compiled mirror did not change because CH-02B is currently typed pregame/design logic not yet imported into the live Character Select runtime.
+
+Next CH-02 work:
+1. wire the visible RANDOM (?) option into Character Select;
+2. keep Secret assignment private to Host until the reveal beat;
+3. implement the multi-RANDOM spread/shuffle/reveal presentation;
+4. add Secret Baby art/reveal only after the runtime concealment contract is safe;
+5. still do not activate passive gameplay until its authoritative balance milestone.
+
 ## September 24 compact Visual Style Bible lock
 
 Ron reconfirmed that all new UI/Character work must stay visually aligned with the earlier game UI reference set rather than drifting into a new style.
