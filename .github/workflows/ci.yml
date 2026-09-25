@@ -238,6 +238,8 @@ jobs:
         run: npm run test:visual-foundation-card-vf051
       - name: Visual Foundation 0.1 VF-06 canonical Job Hub sample
         run: npm run test:visual-foundation-job-vf06
+      - name: Visual Foundation 0.1 VF-07 Mini Game runtime acceptance gate
+        run: npm run test:visual-foundation-minigame-vf07
       - name: Roguelike Lap Shuffle 0.1 deterministic authority
         run: npm run test:roguelike-lap-shuffle-071
       - name: 0.1.70.3.1 mobile landscape and face style
