@@ -315,15 +315,30 @@ export function startMiniGameOverlay(
       await wait(index === beats.length - 1 ? 420 : 330);
     }
 
+    chant.setText('LẬT KÈO!');
+    leftCard.setScale(0.92, 1);
+    rightCard.setScale(0.92, 1);
+    leftIcon.setAlpha(0);
+    rightIcon.setAlpha(0);
+    leftChoice.setAlpha(0);
+    rightChoice.setAlpha(0);
+    scene.tweens.add({
+      targets: [leftCard, rightCard],
+      scaleX: { from: 0.92, to: 1 }, duration: 150, ease: 'Back.easeOut',
+    });
+    await wait(110);
     leftIcon.setText(rpsIcon(choiceA));
     rightIcon.setText(rpsIcon(choiceB));
     leftChoice.setText(rpsLabel(choiceA));
     rightChoice.setText(rpsLabel(choiceB));
-    chant.setText('LẬT KÈO!');
     scene.tweens.add({
-      targets: [leftIcon, rightIcon],
-      scaleX: 1.18, scaleY: 1.18, duration: 145,
-      yoyo: true, ease: 'Back.easeOut',
+      targets: [leftIcon, rightIcon, leftChoice, rightChoice],
+      alpha: { from: 0, to: 1 }, scaleX: { from: 0.82, to: 1 }, scaleY: { from: 0.82, to: 1 },
+      duration: 170, ease: 'Back.easeOut',
+    });
+    scene.tweens.add({
+      targets: vs,
+      scaleX: { from: 1.35, to: 1 }, scaleY: { from: 1.35, to: 1 }, duration: 180, ease: 'Back.easeOut',
     });
     scene.cameras.main.shake(95, 0.0011);
     await wait(520);
