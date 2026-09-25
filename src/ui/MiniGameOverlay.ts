@@ -366,17 +366,26 @@ export function startMiniGameOverlay(
       const rewardCopy = reward > 0 ? `+${reward}` : '0';
       return `${medals[index] ?? `${index + 1}.`} Hạng ${index + 1} • ${player?.name ?? `P${id + 1}`} • ${rewardCopy} B$`;
     }).join('\n');
+    const rowLines = rows.split('\n');
     const body = scene.add.text(0, 20, rows, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '22px',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: rowLines.length >= 4 ? '19px' : '22px',
       fontStyle: 'bold',
-      color: '#4f4740',
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'left',
-      lineSpacing: 16,
+      lineSpacing: rowLines.length >= 4 ? 11 : 16,
       fixedWidth: 620,
     }).setOrigin(0.5);
-    stage.add([podiumPaper, podiumRibbon, heading, body]);
-    scene.tweens.add({ targets: [podiumPaper, podiumRibbon, heading, body], y: '-=8', alpha: { from: 0.25, to: 1 }, duration: 210, ease: 'Back.easeOut' });
+    const rewardHint = scene.add.text(0, 142, 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center',
+      fixedWidth: 620,
+    }).setOrigin(0.5);
+    stage.add([podiumPaper, podiumRibbon, heading, body, rewardHint]);
+    scene.tweens.add({ targets: [podiumPaper, podiumRibbon, heading, body, rewardHint], y: '-=8', alpha: { from: 0.25, to: 1 }, duration: 210, ease: 'Back.easeOut' });
     await wait(2100);
   };
 
