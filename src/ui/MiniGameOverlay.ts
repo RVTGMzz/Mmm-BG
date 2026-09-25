@@ -130,7 +130,7 @@ export function startMiniGameOverlay(
         const focused = index === selectedIndex;
         box
           .setScale(focused ? 1.055 : 1)
-          .setStrokeStyle(focused ? 7 : 4, focused ? 0x5d4773 : 0x242424, 1);
+          .setStrokeStyle(focused ? 7 : 4, focused ? MINI_GAME_VISUAL_VF07.choiceFocusStroke : MINI_GAME_VISUAL_VF07.shellStroke, 1);
       });
     };
 
@@ -181,7 +181,7 @@ export function startMiniGameOverlay(
     choices.forEach((choice, index) => {
       const x = (index - (choices.length - 1) / 2) * spacing;
       const box = scene.add.rectangle(x, 35, 160, 155, choice.fill, 1)
-        .setStrokeStyle(4, 0x242424, 1)
+        .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 1)
         .setInteractive({ useHandCursor: true });
       boxes.push(box);
       const icon = scene.add.text(x, 8, choice.icon, { fontSize: '42px' }).setOrigin(0.5);
@@ -232,13 +232,20 @@ export function startMiniGameOverlay(
 
   const showResult = async (heading: string, body: string, ms = 1700) => {
     clearStage();
-    const head = scene.add.text(0, -40, heading, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '30px', fontStyle: 'bold', color: '#202020', align: 'center',
+    const resultPaper = scene.add.rectangle(0, 10, 720, 270, MINI_GAME_VISUAL_VF07.resultFill, 1)
+      .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
+    const resultBadge = scene.add.rectangle(0, -88, 330, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+      .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.5);
+    const head = scene.add.text(0, -88, heading, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '28px', fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 300,
     }).setOrigin(0.5);
-    const text = scene.add.text(0, 35, body, {
-      fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#4f4740', align: 'center', fixedWidth: 680, lineSpacing: 7,
+    const text = scene.add.text(0, 38, body, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '16px',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 650, lineSpacing: 7,
     }).setOrigin(0.5);
-    stage.add([head, text]);
+    stage.add([resultPaper, resultBadge, head, text]);
+    scene.tweens.add({ targets: [resultPaper, resultBadge, head, text], scaleX: { from: 0.96, to: 1 }, scaleY: { from: 0.96, to: 1 }, alpha: { from: 0.35, to: 1 }, duration: 190, ease: 'Back.easeOut' });
     await wait(ms);
   };
 
@@ -342,11 +349,15 @@ export function startMiniGameOverlay(
     stake.setVisible(false);
 
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
+    const podiumPaper = scene.add.rectangle(0, 12, 700, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
+      .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
+    const podiumRibbon = scene.add.rectangle(0, -126, 390, 62, MINI_GAME_VISUAL_VF07.headerFill, 1)
+      .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45);
     const heading = scene.add.text(0, -126, '🏆 BẢNG XẾP HẠNG', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '30px',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '28px',
       fontStyle: 'bold',
-      color: '#202020',
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
     }).setOrigin(0.5);
     const medals = ['🥇', '🥈', '🥉', '4️⃣'];
     const rows = rankingPlayerIds.map((id, index) => {
@@ -364,7 +375,8 @@ export function startMiniGameOverlay(
       lineSpacing: 16,
       fixedWidth: 620,
     }).setOrigin(0.5);
-    stage.add([heading, body]);
+    stage.add([podiumPaper, podiumRibbon, heading, body]);
+    scene.tweens.add({ targets: [podiumPaper, podiumRibbon, heading, body], y: '-=8', alpha: { from: 0.25, to: 1 }, duration: 210, ease: 'Back.easeOut' });
     await wait(2100);
   };
 
