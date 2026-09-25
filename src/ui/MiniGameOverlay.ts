@@ -232,7 +232,9 @@ export function startMiniGameOverlay(
 
   const showResult = async (heading: string, body: string, ms = 1700) => {
     clearStage();
-    const resultPaper = scene.add.rectangle(0, 10, 720, 270, MINI_GAME_VISUAL_VF07.resultFill, 1)
+    const bodyLines = body.split('\n').filter((line) => line.trim().length > 0);
+    const denseResult = bodyLines.length >= 6 || body.length >= 220;
+    const resultPaper = scene.add.rectangle(0, 10, 720, denseResult ? 300 : 270, MINI_GAME_VISUAL_VF07.resultFill, 1)
       .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
     const resultBadge = scene.add.rectangle(0, -88, 330, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.5);
@@ -241,8 +243,9 @@ export function startMiniGameOverlay(
       color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 300,
     }).setOrigin(0.5);
     const text = scene.add.text(0, 38, body, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '16px',
-      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 650, lineSpacing: 7,
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: denseResult ? '14px' : '16px',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 650, lineSpacing: denseResult ? 5 : 7,
+      wordWrap: { width: 630, useAdvancedWrap: true },
     }).setOrigin(0.5);
     stage.add([resultPaper, resultBadge, head, text]);
     scene.tweens.add({ targets: [resultPaper, resultBadge, head, text], scaleX: { from: 0.96, to: 1 }, scaleY: { from: 0.96, to: 1 }, alpha: { from: 0.35, to: 1 }, duration: 190, ease: 'Back.easeOut' });
