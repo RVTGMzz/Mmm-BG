@@ -1,5 +1,18 @@
 # Mmm-BG — Latest Handoff
 
+## September 25 session transfer — READY FOR NEW CHAT
+
+Canonical transfer file:
+- `docs/SESSION_HANDOFF_2026-09-25_VF06.md`
+
+Validated runtime source remains:
+- `e9a1fb44c8b628e93c91b824f7c31ed0cbb11f6f`
+- CI #3244 / run `36096638993`: **SUCCESS**
+- public mirror `731a97eca5a89e40844d02623cd9936aad4c4862`
+- Pages #33 / run `36096743757`: **SUCCESS**
+
+New-chat priority: read Ron's newest runtime feedback first; VF-06 Job Hub still needs device/visual acceptance. Card/News containment must remain root-level and generic. CH-02G face-fit acceptance remains parallel/pending.
+
 ## September 25 VF-06 JOB HUB sample
 
 The canonical Job Hub now shares the MeMeMe toy-like visual family:

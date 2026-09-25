@@ -1,3 +1,21 @@
+# NEW CHAT START — September 25 transfer
+
+Read first:
+1. `docs/SESSION_HANDOFF_2026-09-25_VF06.md`
+2. `HANDOFF_CURRENT.md`
+3. `docs/LATEST_HANDOFF.md`
+4. Ron's newest runtime screenshots/feedback
+
+Runtime authority:
+- validated source `e9a1fb44c8b628e93c91b824f7c31ed0cbb11f6f`
+- CI #3244 SUCCESS
+- mirror `731a97eca5a89e40844d02623cd9936aad4c4862`
+- Pages #33 SUCCESS
+- VF-06 Job Hub is the latest visual milestone and still needs real runtime/device acceptance
+- Card/News detached-copy bug has a root-level containment regression and must not be weakened
+- CH-02G KHÓC NHÈ layered face proof remains pending real-photo/device acceptance
+- do not merge PR #1
+
 Current Visual Foundation checkpoint:
 **VF-06 canonical JOB HUB sample**
 
