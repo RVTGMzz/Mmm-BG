@@ -1,6 +1,6 @@
 # Visual Foundation Pass 0.1
 
-Status: **IN PROGRESS — VF-01/02/03 LIVE, VF-04.1 RING POLISH AND VF-05 FIRST NEWS SHEET IN SOURCE; DEVICE RETEST PENDING**
+Status: **IN PROGRESS — VF-01/02/03 LIVE, VF-04.1 HUD, VF-05/05.1 EVENT SURFACES AND VF-06 JOB HUB IN SOURCE; DEVICE RETEST PENDING**
 
 Canonical visual authority:
 - `docs/VISUAL_STYLE_BIBLE_V0.1.md`
@@ -531,6 +531,25 @@ reactions, repeated skip and phone landscape. This does not claim the previous
 floating-reaction issue is resolved in a real browser, nor does it migrate
 the entire Card catalogue. Next, only after visual feedback, adapt the
 shared News material into the other event families and VF-06 Job.
+
+### VF-06 first canonical Job Hub visual sample
+
+- `src/ui/visualFoundationJobVf06.ts` defines the warm cream/cocoa shell,
+  butter CTA/header family, three soft slot palettes and logical viewport bounds.
+- `src/ui/JobChoicePicker.ts` keeps the existing 950×516 blocking owner,
+  exact A/B/C D6 mapping and all pointer/keyboard/Steam Deck authority, while
+  replacing the flatter Job cards with larger icon wells, cleaner one-line
+  salary hierarchy and a large-icon detail sheet.
+- Risky/crime jobs use coral emphasis without changing their mechanics.
+- The detail title no longer repeats the Job emoji beside the name after the
+  large icon is already present.
+- `tests/visual-foundation-job-vf06.ts` gates geometry, palette variation,
+  large-icon hierarchy and preservation of the existing focus/roll owner.
+
+**Device acceptance pending:** inspect all three cards, risky Job, detail sheet,
+waiting/spectator state, keyboard focus and Steam Deck 1280×800. Do not spread
+the treatment to unrelated Mini Game/result modals until this sample is accepted.
+
 
 ## 13. Implementation order
 

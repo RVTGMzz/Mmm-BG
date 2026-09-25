@@ -4,6 +4,7 @@ import { jobSalary, type JobDefinition } from '../core/jobs';
 import { nextJobHubFocus070423, type JobHubFocus, type JobHubNavKey } from './jobHubFocus070423';
 import { PAD_EVENT_070424 } from './steamDeckController070424';
 import type { PadAction070424 } from './steamDeckPadPolicy070424';
+import { JOB_HUB_VF06, jobCardPaletteVf06 } from './visualFoundationJobVf06';
 
 export interface JobRollPickerOptions {
   canRoll?: boolean;
@@ -68,33 +69,48 @@ export function createJobRollPicker(
   const root = scene.add.container(640, 360).setDepth(980).setName('job-hub-modal');
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.7).setInteractive();
 
-  const shell = roundedPanel070421(scene, 0, 0, 950, 516, 0xfff8ec, 0x4b332b, 28);
+  const shell = roundedPanel070421(
+    scene,
+    0,
+    0,
+    950,
+    516,
+    JOB_HUB_VF06.shell,
+    JOB_HUB_VF06.cocoa,
+    JOB_HUB_VF06.radius,
+  );
   const headerBand = scene.add.graphics();
-  headerBand.fillStyle(0xffd76c, 1);
+  headerBand.fillStyle(JOB_HUB_VF06.butter, 1);
   headerBand.fillRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
-  headerBand.lineStyle(2, 0xe5a839, 1);
+  headerBand.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.72);
   headerBand.strokeRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
 
   const title = scene.add.text(-414, -211, '💼 JOB HUB', {
     fontFamily: JOB_FONT_070421,
     fontSize: '27px',
     fontStyle: 'bold',
-    color: '#3d2924',
+    color: '#4a302a',
   }).setOrigin(0, 0.5);
   const player = scene.add.text(414, -211, playerName, {
     fontFamily: JOB_FONT_070421,
     fontSize: '15px',
     fontStyle: 'bold',
-    color: '#6c5146',
+    color: '#765047',
   }).setOrigin(1, 0.5);
-  const subtitle = scene.add.text(0, -151, 'Đổ xúc xắc để chọn nghề', {
+  const subtitlePlate = scene.add.graphics();
+  subtitlePlate.fillStyle(JOB_HUB_VF06.creamHighlight, 0.98);
+  subtitlePlate.fillRoundedRect(-166, -169, 332, 38, 17);
+  subtitlePlate.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.3);
+  subtitlePlate.strokeRoundedRect(-166, -169, 332, 38, 17);
+
+  const subtitle = scene.add.text(0, -150, 'Đổ xúc xắc để chọn nghề', {
     fontFamily: JOB_FONT_070421,
     fontSize: '18px',
     fontStyle: 'bold',
     color: '#574239',
   }).setOrigin(0.5);
 
-  root.add([backdrop, shell, headerBand, title, player, subtitle]);
+  root.add([backdrop, shell, headerBand, title, player, subtitlePlate, subtitle]);
 
   const cardHits: Phaser.GameObjects.Rectangle[] = [];
   let detailRoot: Phaser.GameObjects.Container | undefined;
@@ -150,14 +166,15 @@ export function createJobRollPicker(
     detailRoot = detail;
     renderKeyboardFocus(); // The detail sheet owns the focus until it closes.
     const dim = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.78).setInteractive();
+    const detailPalette = jobCardPaletteVf06(index, risky);
     const detailShell = roundedPanel070421(
       scene,
       0,
       0,
       748,
       352,
-      risky ? 0xfff1ee : 0xfff8ec,
-      risky ? 0xb8423d : 0x6f5a91,
+      risky ? 0xfff1ee : JOB_HUB_VF06.shell,
+      risky ? detailPalette.strong : JOB_HUB_VF06.cocoa,
       26,
     );
     const detailKicker = scene.add.text(0, -132, risky ? '⚠ NGHỀ RỦI RO' : 'XEM NGHỀ', {
@@ -166,9 +183,18 @@ export function createJobRollPicker(
       fontStyle: 'bold',
       color: risky ? '#a63330' : '#716554',
     }).setOrigin(0.5);
-    const detailTitle = scene.add.text(0, -87, `${job.icon}  ${job.title}`, {
+    const detailIconWell = scene.add.graphics();
+    detailIconWell.fillStyle(detailPalette.soft, 1);
+    detailIconWell.fillCircle(0, -96, 38);
+    detailIconWell.lineStyle(3, detailPalette.accent, 0.9);
+    detailIconWell.strokeCircle(0, -96, 38);
+    const detailIcon = scene.add.text(0, -96, job.icon, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '46px',
+    }).setOrigin(0.5);
+    const detailTitle = scene.add.text(0, -43, job.title, {
       fontFamily: JOB_FONT_070421,
-      fontSize: '30px',
+      fontSize: '27px',
       fontStyle: 'bold',
       color: '#32241f',
       fixedWidth: 650,
@@ -176,8 +202,212 @@ export function createJobRollPicker(
     }).setOrigin(0.5);
     const salaries = scene.add.text(
       0,
-      -35,
-      `LƯƠNG / VÒNG   Lv1 ${jobSalary(job, 1)}   •   Lv2 ${jobSalary(job, 2)}   •   Lv3 ${jobSalary(job, 3)} B$`,
+      2,
+      `LƯƠNG / VÒNG   Lv1 ${jobSalary(job, 1)}   •   Lv2 ${jobSalary(job, 2)}   •   Lv3 ${jobSalary(job, 3)} Bimport Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
+import { jobSalary, type JobDefinition } from '../core/jobs';
+import { nextJobHubFocus070423, type JobHubFocus, type JobHubNavKey } from './jobHubFocus070423';
+import { PAD_EVENT_070424 } from './steamDeckController070424';
+import type { PadAction070424 } from './steamDeckPadPolicy070424';
+import { JOB_HUB_VF06, jobCardPaletteVf06 } from './visualFoundationJobVf06';
+
+export interface JobRollPickerOptions {
+  canRoll?: boolean;
+  waitingLabel?: string;
+}
+
+export interface JobRollPickerHandle {
+  root: Phaser.GameObjects.Container;
+  rolled: Promise<void>;
+  setWaiting(label?: string): void;
+  setReady(label?: string): void;
+  close(): void;
+}
+
+const JOB_CARD_X_070421 = [-286, 0, 286] as const;
+const JOB_CARD_LETTERS_070421 = ['A', 'B', 'C'] as const;
+const JOB_CARD_RANGES_070421 = ['1–2', '3–4', '5–6'] as const;
+const JOB_FONT_070421 = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+
+function roundedPanel070421(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: number,
+  stroke: number,
+  radius = 24,
+  shadow = true,
+): Phaser.GameObjects.Container {
+  const root = scene.add.container(x, y);
+  if (shadow) {
+    const shade = scene.add.graphics();
+    shade.fillStyle(0x3e2b25, 0.22);
+    shade.fillRoundedRect(-width / 2, -height / 2 + 8, width, height, radius);
+    root.add(shade);
+  }
+  const panel = scene.add.graphics();
+  panel.fillStyle(fill, 1);
+  panel.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+  panel.lineStyle(4, stroke, 1);
+  panel.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
+  root.add(panel);
+  return root;
+}
+
+/**
+ * Canonical Job Hub.
+ *
+ * The hub is intentionally glanceable: three compact cards, one salary line and
+ * one detail action. Selection still comes only from the authoritative Job D6.
+ */
+export function createJobRollPicker(
+  scene: Phaser.Scene,
+  playerName: string,
+  jobs: readonly JobDefinition[],
+  options: JobRollPickerOptions = {},
+): JobRollPickerHandle {
+  if (jobs.length !== 3) throw new Error('Job Roll picker requires exactly 3 offered Jobs.');
+
+  const canRoll = options.canRoll ?? true;
+  const root = scene.add.container(640, 360).setDepth(980).setName('job-hub-modal');
+  const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.7).setInteractive();
+
+  const shell = roundedPanel070421(
+    scene,
+    0,
+    0,
+    950,
+    516,
+    JOB_HUB_VF06.shell,
+    JOB_HUB_VF06.cocoa,
+    JOB_HUB_VF06.radius,
+  );
+  const headerBand = scene.add.graphics();
+  headerBand.fillStyle(JOB_HUB_VF06.butter, 1);
+  headerBand.fillRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
+  headerBand.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.72);
+  headerBand.strokeRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
+
+  const title = scene.add.text(-414, -211, '💼 JOB HUB', {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '27px',
+    fontStyle: 'bold',
+    color: '#4a302a',
+  }).setOrigin(0, 0.5);
+  const player = scene.add.text(414, -211, playerName, {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '15px',
+    fontStyle: 'bold',
+    color: '#765047',
+  }).setOrigin(1, 0.5);
+  const subtitlePlate = scene.add.graphics();
+  subtitlePlate.fillStyle(JOB_HUB_VF06.creamHighlight, 0.98);
+  subtitlePlate.fillRoundedRect(-166, -169, 332, 38, 17);
+  subtitlePlate.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.3);
+  subtitlePlate.strokeRoundedRect(-166, -169, 332, 38, 17);
+
+  const subtitle = scene.add.text(0, -150, 'Đổ xúc xắc để chọn nghề', {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '18px',
+    fontStyle: 'bold',
+    color: '#574239',
+  }).setOrigin(0.5);
+
+  root.add([backdrop, shell, headerBand, title, player, subtitlePlate, subtitle]);
+
+  const cardHits: Phaser.GameObjects.Rectangle[] = [];
+  let detailRoot: Phaser.GameObjects.Container | undefined;
+  let submitted = false;
+  // Keyboard focus is a real in-game selection, not the OS mouse pointer.
+  // An active player starts on ROLL and can finish the entire Job flow with Enter.
+  let focused: JobHubFocus = canRoll ? 'roll' : 0;
+  let renderKeyboardFocus = (): void => undefined;
+
+  const setCardInteractive = (enabled: boolean): void => {
+    for (const hit of cardHits) {
+      if (enabled) hit.setInteractive({ useHandCursor: true });
+      else hit.disableInteractive();
+    }
+  };
+
+  const restoreHubVisuals = (): void => {
+    if (!root.active) return;
+    root.setVisible(true).setAlpha(1);
+    const restore = (object: Phaser.GameObjects.GameObject): void => {
+      if (object instanceof Phaser.GameObjects.Text) object.setVisible(true).setAlpha(1);
+      if (object instanceof Phaser.GameObjects.Container) {
+        for (const child of object.list) restore(child);
+      }
+    };
+    restore(root);
+  };
+
+  const restoreRollInteraction = (): void => {
+    if (!canRoll || submitted || !root.active) return;
+    rollHit.setInteractive({ useHandCursor: true });
+  };
+
+  const closeDetail = (): void => {
+    if (detailRoot?.active) detailRoot.destroy(true);
+    detailRoot = undefined;
+    restoreHubVisuals();
+    setCardInteractive(true);
+    restoreRollInteraction();
+    renderKeyboardFocus();
+  };
+
+  const openDetail = (index: number): void => {
+    const job = jobs[index];
+    if (!job || !root.active) return;
+    closeDetail();
+    setCardInteractive(false);
+    rollHit.disableInteractive();
+    sfxController.play('ui_confirm');
+
+    const risky = job.risk === 'crime';
+    const detail = scene.add.container(640, 360).setDepth(995).setName('job-detail-modal');
+    detailRoot = detail;
+    renderKeyboardFocus(); // The detail sheet owns the focus until it closes.
+    const dim = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.78).setInteractive();
+    const detailPalette = jobCardPaletteVf06(index, risky);
+    const detailShell = roundedPanel070421(
+      scene,
+      0,
+      0,
+      748,
+      352,
+      risky ? 0xfff1ee : JOB_HUB_VF06.shell,
+      risky ? detailPalette.strong : JOB_HUB_VF06.cocoa,
+      26,
+    );
+    const detailKicker = scene.add.text(0, -132, risky ? '⚠ NGHỀ RỦI RO' : 'XEM NGHỀ', {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: risky ? '#a63330' : '#716554',
+    }).setOrigin(0.5);
+    const detailIconWell = scene.add.graphics();
+    detailIconWell.fillStyle(detailPalette.soft, 1);
+    detailIconWell.fillCircle(0, -96, 38);
+    detailIconWell.lineStyle(3, detailPalette.accent, 0.9);
+    detailIconWell.strokeCircle(0, -96, 38);
+    const detailIcon = scene.add.text(0, -96, job.icon, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '46px',
+    }).setOrigin(0.5);
+    const detailTitle = scene.add.text(0, -43, job.title, {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '27px',
+      fontStyle: 'bold',
+      color: '#32241f',
+      fixedWidth: 650,
+      align: 'center',
+    }).setOrigin(0.5);
+    const salaries = scene.add.text(
+      0,
+,
       {
         fontFamily: JOB_FONT_070421,
         fontSize: '17px',
@@ -187,8 +417,8 @@ export function createJobRollPicker(
         align: 'center',
       },
     ).setOrigin(0.5);
-    const divider = scene.add.rectangle(0, 0, 620, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
-    const special = scene.add.text(0, 42, job.special, {
+    const divider = scene.add.rectangle(0, 29, 620, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
+    const special = scene.add.text(0, 67, job.special, {
       fontFamily: JOB_FONT_070421,
       fontSize: '16px',
       color: '#43352e',
@@ -220,6 +450,8 @@ export function createJobRollPicker(
       dim,
       detailShell,
       detailKicker,
+      detailIconWell,
+      detailIcon,
       detailTitle,
       salaries,
       divider,
@@ -240,6 +472,7 @@ export function createJobRollPicker(
   jobs.forEach((job, index) => {
     const x = JOB_CARD_X_070421[index] ?? 0;
     const risky = job.risk === 'crime';
+    const cardPalette = jobCardPaletteVf06(index, risky);
 
     const card = roundedPanel070421(
       scene,
@@ -247,13 +480,17 @@ export function createJobRollPicker(
       0,
       250,
       230,
-      risky ? 0xffe2dc : 0xfff1bf,
-      risky ? 0xb8423d : 0x5f4a40,
+      cardPalette.fill,
+      JOB_HUB_VF06.cocoa,
       22,
     );
 
+    const topAccent = scene.add.graphics();
+    topAccent.fillStyle(cardPalette.accent, 1);
+    topAccent.fillRoundedRect(x - 113, -103, 226, 11, { tl: 8, tr: 8, bl: 4, br: 4 });
+
     const badge = scene.add.graphics();
-    badge.fillStyle(risky ? 0xb8423d : 0x6f5a91, 1);
+    badge.fillStyle(cardPalette.strong, 1);
     badge.fillRoundedRect(x - 105, -96, 42, 28, 12);
     const letter = scene.add.text(x - 84, -82, JOB_CARD_LETTERS_070421[index] ?? '?', {
       fontFamily: JOB_FONT_070421,
@@ -261,18 +498,32 @@ export function createJobRollPicker(
       fontStyle: 'bold',
       color: '#ffffff',
     }).setOrigin(0.5);
-    const range = scene.add.text(x + 82, -82, `🎲 ${JOB_CARD_RANGES_070421[index] ?? ''}`, {
+    const rangePill = scene.add.graphics();
+    rangePill.fillStyle(JOB_HUB_VF06.creamHighlight, 0.96);
+    rangePill.fillRoundedRect(x + 48, -96, 70, 28, 12);
+    rangePill.lineStyle(1.5, cardPalette.accent, 0.72);
+    rangePill.strokeRoundedRect(x + 48, -96, 70, 28, 12);
+    const range = scene.add.text(x + 83, -82, `🎲 ${JOB_CARD_RANGES_070421[index] ?? ''}`, {
       fontFamily: JOB_FONT_070421,
       fontSize: '15px',
       fontStyle: 'bold',
-      color: risky ? '#9e2f2c' : '#5c477c',
+      color: risky ? '#9e2f2c' : '#4f615e',
     }).setOrigin(0.5);
 
-    const icon = scene.add.text(x, -44, job.icon, {
+    const iconWellShadow = scene.add.graphics();
+    iconWellShadow.fillStyle(JOB_HUB_VF06.cocoa, 0.12);
+    iconWellShadow.fillCircle(x, -35, JOB_HUB_VF06.iconWellRadius + 3);
+    iconWellShadow.setPosition(0, 4);
+    const iconWell = scene.add.graphics();
+    iconWell.fillStyle(JOB_HUB_VF06.creamHighlight, 1);
+    iconWell.fillCircle(x, -39, JOB_HUB_VF06.iconWellRadius);
+    iconWell.lineStyle(3, cardPalette.accent, 0.82);
+    iconWell.strokeCircle(x, -39, JOB_HUB_VF06.iconWellRadius);
+    const icon = scene.add.text(x, -39, job.icon, {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '39px',
+      fontSize: '50px',
     }).setOrigin(0.5);
-    const name = scene.add.text(x, 0, job.title, {
+    const name = scene.add.text(x, 12, job.title, {
       fontFamily: JOB_FONT_070421,
       fontSize: '18px',
       fontStyle: 'bold',
@@ -282,38 +533,583 @@ export function createJobRollPicker(
     }).setOrigin(0.5);
     const salary = scene.add.text(
       x,
-      39,
-      `${jobSalary(job, 1)}  •  ${jobSalary(job, 2)}  •  ${jobSalary(job, 3)} B$`,
+      51,
+      `Lv1 ${jobSalary(job, 1)}  •  Lv2 ${jobSalary(job, 2)}  •  Lv3 ${jobSalary(job, 3)} Bimport Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
+import { jobSalary, type JobDefinition } from '../core/jobs';
+import { nextJobHubFocus070423, type JobHubFocus, type JobHubNavKey } from './jobHubFocus070423';
+import { PAD_EVENT_070424 } from './steamDeckController070424';
+import type { PadAction070424 } from './steamDeckPadPolicy070424';
+import { JOB_HUB_VF06, jobCardPaletteVf06 } from './visualFoundationJobVf06';
+
+export interface JobRollPickerOptions {
+  canRoll?: boolean;
+  waitingLabel?: string;
+}
+
+export interface JobRollPickerHandle {
+  root: Phaser.GameObjects.Container;
+  rolled: Promise<void>;
+  setWaiting(label?: string): void;
+  setReady(label?: string): void;
+  close(): void;
+}
+
+const JOB_CARD_X_070421 = [-286, 0, 286] as const;
+const JOB_CARD_LETTERS_070421 = ['A', 'B', 'C'] as const;
+const JOB_CARD_RANGES_070421 = ['1–2', '3–4', '5–6'] as const;
+const JOB_FONT_070421 = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+
+function roundedPanel070421(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: number,
+  stroke: number,
+  radius = 24,
+  shadow = true,
+): Phaser.GameObjects.Container {
+  const root = scene.add.container(x, y);
+  if (shadow) {
+    const shade = scene.add.graphics();
+    shade.fillStyle(0x3e2b25, 0.22);
+    shade.fillRoundedRect(-width / 2, -height / 2 + 8, width, height, radius);
+    root.add(shade);
+  }
+  const panel = scene.add.graphics();
+  panel.fillStyle(fill, 1);
+  panel.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+  panel.lineStyle(4, stroke, 1);
+  panel.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
+  root.add(panel);
+  return root;
+}
+
+/**
+ * Canonical Job Hub.
+ *
+ * The hub is intentionally glanceable: three compact cards, one salary line and
+ * one detail action. Selection still comes only from the authoritative Job D6.
+ */
+export function createJobRollPicker(
+  scene: Phaser.Scene,
+  playerName: string,
+  jobs: readonly JobDefinition[],
+  options: JobRollPickerOptions = {},
+): JobRollPickerHandle {
+  if (jobs.length !== 3) throw new Error('Job Roll picker requires exactly 3 offered Jobs.');
+
+  const canRoll = options.canRoll ?? true;
+  const root = scene.add.container(640, 360).setDepth(980).setName('job-hub-modal');
+  const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.7).setInteractive();
+
+  const shell = roundedPanel070421(
+    scene,
+    0,
+    0,
+    950,
+    516,
+    JOB_HUB_VF06.shell,
+    JOB_HUB_VF06.cocoa,
+    JOB_HUB_VF06.radius,
+  );
+  const headerBand = scene.add.graphics();
+  headerBand.fillStyle(JOB_HUB_VF06.butter, 1);
+  headerBand.fillRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
+  headerBand.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.72);
+  headerBand.strokeRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
+
+  const title = scene.add.text(-414, -211, '💼 JOB HUB', {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '27px',
+    fontStyle: 'bold',
+    color: '#4a302a',
+  }).setOrigin(0, 0.5);
+  const player = scene.add.text(414, -211, playerName, {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '15px',
+    fontStyle: 'bold',
+    color: '#765047',
+  }).setOrigin(1, 0.5);
+  const subtitlePlate = scene.add.graphics();
+  subtitlePlate.fillStyle(JOB_HUB_VF06.creamHighlight, 0.98);
+  subtitlePlate.fillRoundedRect(-166, -169, 332, 38, 17);
+  subtitlePlate.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.3);
+  subtitlePlate.strokeRoundedRect(-166, -169, 332, 38, 17);
+
+  const subtitle = scene.add.text(0, -150, 'Đổ xúc xắc để chọn nghề', {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '18px',
+    fontStyle: 'bold',
+    color: '#574239',
+  }).setOrigin(0.5);
+
+  root.add([backdrop, shell, headerBand, title, player, subtitlePlate, subtitle]);
+
+  const cardHits: Phaser.GameObjects.Rectangle[] = [];
+  let detailRoot: Phaser.GameObjects.Container | undefined;
+  let submitted = false;
+  // Keyboard focus is a real in-game selection, not the OS mouse pointer.
+  // An active player starts on ROLL and can finish the entire Job flow with Enter.
+  let focused: JobHubFocus = canRoll ? 'roll' : 0;
+  let renderKeyboardFocus = (): void => undefined;
+
+  const setCardInteractive = (enabled: boolean): void => {
+    for (const hit of cardHits) {
+      if (enabled) hit.setInteractive({ useHandCursor: true });
+      else hit.disableInteractive();
+    }
+  };
+
+  const restoreHubVisuals = (): void => {
+    if (!root.active) return;
+    root.setVisible(true).setAlpha(1);
+    const restore = (object: Phaser.GameObjects.GameObject): void => {
+      if (object instanceof Phaser.GameObjects.Text) object.setVisible(true).setAlpha(1);
+      if (object instanceof Phaser.GameObjects.Container) {
+        for (const child of object.list) restore(child);
+      }
+    };
+    restore(root);
+  };
+
+  const restoreRollInteraction = (): void => {
+    if (!canRoll || submitted || !root.active) return;
+    rollHit.setInteractive({ useHandCursor: true });
+  };
+
+  const closeDetail = (): void => {
+    if (detailRoot?.active) detailRoot.destroy(true);
+    detailRoot = undefined;
+    restoreHubVisuals();
+    setCardInteractive(true);
+    restoreRollInteraction();
+    renderKeyboardFocus();
+  };
+
+  const openDetail = (index: number): void => {
+    const job = jobs[index];
+    if (!job || !root.active) return;
+    closeDetail();
+    setCardInteractive(false);
+    rollHit.disableInteractive();
+    sfxController.play('ui_confirm');
+
+    const risky = job.risk === 'crime';
+    const detail = scene.add.container(640, 360).setDepth(995).setName('job-detail-modal');
+    detailRoot = detail;
+    renderKeyboardFocus(); // The detail sheet owns the focus until it closes.
+    const dim = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.78).setInteractive();
+    const detailPalette = jobCardPaletteVf06(index, risky);
+    const detailShell = roundedPanel070421(
+      scene,
+      0,
+      0,
+      748,
+      352,
+      risky ? 0xfff1ee : JOB_HUB_VF06.shell,
+      risky ? detailPalette.strong : JOB_HUB_VF06.cocoa,
+      26,
+    );
+    const detailKicker = scene.add.text(0, -132, risky ? '⚠ NGHỀ RỦI RO' : 'XEM NGHỀ', {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: risky ? '#a63330' : '#716554',
+    }).setOrigin(0.5);
+    const detailIconWell = scene.add.graphics();
+    detailIconWell.fillStyle(detailPalette.soft, 1);
+    detailIconWell.fillCircle(0, -96, 38);
+    detailIconWell.lineStyle(3, detailPalette.accent, 0.9);
+    detailIconWell.strokeCircle(0, -96, 38);
+    const detailIcon = scene.add.text(0, -96, job.icon, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '46px',
+    }).setOrigin(0.5);
+    const detailTitle = scene.add.text(0, -43, job.title, {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '27px',
+      fontStyle: 'bold',
+      color: '#32241f',
+      fixedWidth: 650,
+      align: 'center',
+    }).setOrigin(0.5);
+    const salaries = scene.add.text(
+      0,
+      2,
+      `LƯƠNG / VÒNG   Lv1 ${jobSalary(job, 1)}   •   Lv2 ${jobSalary(job, 2)}   •   Lv3 ${jobSalary(job, 3)} Bimport Phaser from 'phaser';
+import { sfxController } from '../audio/sfxController';
+import { jobSalary, type JobDefinition } from '../core/jobs';
+import { nextJobHubFocus070423, type JobHubFocus, type JobHubNavKey } from './jobHubFocus070423';
+import { PAD_EVENT_070424 } from './steamDeckController070424';
+import type { PadAction070424 } from './steamDeckPadPolicy070424';
+import { JOB_HUB_VF06, jobCardPaletteVf06 } from './visualFoundationJobVf06';
+
+export interface JobRollPickerOptions {
+  canRoll?: boolean;
+  waitingLabel?: string;
+}
+
+export interface JobRollPickerHandle {
+  root: Phaser.GameObjects.Container;
+  rolled: Promise<void>;
+  setWaiting(label?: string): void;
+  setReady(label?: string): void;
+  close(): void;
+}
+
+const JOB_CARD_X_070421 = [-286, 0, 286] as const;
+const JOB_CARD_LETTERS_070421 = ['A', 'B', 'C'] as const;
+const JOB_CARD_RANGES_070421 = ['1–2', '3–4', '5–6'] as const;
+const JOB_FONT_070421 = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
+
+function roundedPanel070421(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: number,
+  stroke: number,
+  radius = 24,
+  shadow = true,
+): Phaser.GameObjects.Container {
+  const root = scene.add.container(x, y);
+  if (shadow) {
+    const shade = scene.add.graphics();
+    shade.fillStyle(0x3e2b25, 0.22);
+    shade.fillRoundedRect(-width / 2, -height / 2 + 8, width, height, radius);
+    root.add(shade);
+  }
+  const panel = scene.add.graphics();
+  panel.fillStyle(fill, 1);
+  panel.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+  panel.lineStyle(4, stroke, 1);
+  panel.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
+  root.add(panel);
+  return root;
+}
+
+/**
+ * Canonical Job Hub.
+ *
+ * The hub is intentionally glanceable: three compact cards, one salary line and
+ * one detail action. Selection still comes only from the authoritative Job D6.
+ */
+export function createJobRollPicker(
+  scene: Phaser.Scene,
+  playerName: string,
+  jobs: readonly JobDefinition[],
+  options: JobRollPickerOptions = {},
+): JobRollPickerHandle {
+  if (jobs.length !== 3) throw new Error('Job Roll picker requires exactly 3 offered Jobs.');
+
+  const canRoll = options.canRoll ?? true;
+  const root = scene.add.container(640, 360).setDepth(980).setName('job-hub-modal');
+  const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.7).setInteractive();
+
+  const shell = roundedPanel070421(
+    scene,
+    0,
+    0,
+    950,
+    516,
+    JOB_HUB_VF06.shell,
+    JOB_HUB_VF06.cocoa,
+    JOB_HUB_VF06.radius,
+  );
+  const headerBand = scene.add.graphics();
+  headerBand.fillStyle(JOB_HUB_VF06.butter, 1);
+  headerBand.fillRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
+  headerBand.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.72);
+  headerBand.strokeRoundedRect(-451, -236, 902, 74, { tl: 21, tr: 21, bl: 12, br: 12 });
+
+  const title = scene.add.text(-414, -211, '💼 JOB HUB', {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '27px',
+    fontStyle: 'bold',
+    color: '#4a302a',
+  }).setOrigin(0, 0.5);
+  const player = scene.add.text(414, -211, playerName, {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '15px',
+    fontStyle: 'bold',
+    color: '#765047',
+  }).setOrigin(1, 0.5);
+  const subtitlePlate = scene.add.graphics();
+  subtitlePlate.fillStyle(JOB_HUB_VF06.creamHighlight, 0.98);
+  subtitlePlate.fillRoundedRect(-166, -169, 332, 38, 17);
+  subtitlePlate.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.3);
+  subtitlePlate.strokeRoundedRect(-166, -169, 332, 38, 17);
+
+  const subtitle = scene.add.text(0, -150, 'Đổ xúc xắc để chọn nghề', {
+    fontFamily: JOB_FONT_070421,
+    fontSize: '18px',
+    fontStyle: 'bold',
+    color: '#574239',
+  }).setOrigin(0.5);
+
+  root.add([backdrop, shell, headerBand, title, player, subtitlePlate, subtitle]);
+
+  const cardHits: Phaser.GameObjects.Rectangle[] = [];
+  let detailRoot: Phaser.GameObjects.Container | undefined;
+  let submitted = false;
+  // Keyboard focus is a real in-game selection, not the OS mouse pointer.
+  // An active player starts on ROLL and can finish the entire Job flow with Enter.
+  let focused: JobHubFocus = canRoll ? 'roll' : 0;
+  let renderKeyboardFocus = (): void => undefined;
+
+  const setCardInteractive = (enabled: boolean): void => {
+    for (const hit of cardHits) {
+      if (enabled) hit.setInteractive({ useHandCursor: true });
+      else hit.disableInteractive();
+    }
+  };
+
+  const restoreHubVisuals = (): void => {
+    if (!root.active) return;
+    root.setVisible(true).setAlpha(1);
+    const restore = (object: Phaser.GameObjects.GameObject): void => {
+      if (object instanceof Phaser.GameObjects.Text) object.setVisible(true).setAlpha(1);
+      if (object instanceof Phaser.GameObjects.Container) {
+        for (const child of object.list) restore(child);
+      }
+    };
+    restore(root);
+  };
+
+  const restoreRollInteraction = (): void => {
+    if (!canRoll || submitted || !root.active) return;
+    rollHit.setInteractive({ useHandCursor: true });
+  };
+
+  const closeDetail = (): void => {
+    if (detailRoot?.active) detailRoot.destroy(true);
+    detailRoot = undefined;
+    restoreHubVisuals();
+    setCardInteractive(true);
+    restoreRollInteraction();
+    renderKeyboardFocus();
+  };
+
+  const openDetail = (index: number): void => {
+    const job = jobs[index];
+    if (!job || !root.active) return;
+    closeDetail();
+    setCardInteractive(false);
+    rollHit.disableInteractive();
+    sfxController.play('ui_confirm');
+
+    const risky = job.risk === 'crime';
+    const detail = scene.add.container(640, 360).setDepth(995).setName('job-detail-modal');
+    detailRoot = detail;
+    renderKeyboardFocus(); // The detail sheet owns the focus until it closes.
+    const dim = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.78).setInteractive();
+    const detailPalette = jobCardPaletteVf06(index, risky);
+    const detailShell = roundedPanel070421(
+      scene,
+      0,
+      0,
+      748,
+      352,
+      risky ? 0xfff1ee : JOB_HUB_VF06.shell,
+      risky ? detailPalette.strong : JOB_HUB_VF06.cocoa,
+      26,
+    );
+    const detailKicker = scene.add.text(0, -132, risky ? '⚠ NGHỀ RỦI RO' : 'XEM NGHỀ', {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: risky ? '#a63330' : '#716554',
+    }).setOrigin(0.5);
+    const detailIconWell = scene.add.graphics();
+    detailIconWell.fillStyle(detailPalette.soft, 1);
+    detailIconWell.fillCircle(0, -96, 38);
+    detailIconWell.lineStyle(3, detailPalette.accent, 0.9);
+    detailIconWell.strokeCircle(0, -96, 38);
+    const detailIcon = scene.add.text(0, -96, job.icon, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '46px',
+    }).setOrigin(0.5);
+    const detailTitle = scene.add.text(0, -43, job.title, {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '27px',
+      fontStyle: 'bold',
+      color: '#32241f',
+      fixedWidth: 650,
+      align: 'center',
+    }).setOrigin(0.5);
+    const salaries = scene.add.text(
+      0,
+,
       {
         fontFamily: JOB_FONT_070421,
-        fontSize: '14px',
+        fontSize: '17px',
+        fontStyle: 'bold',
+        color: '#5c4439',
+        fixedWidth: 650,
+        align: 'center',
+      },
+    ).setOrigin(0.5);
+    const divider = scene.add.rectangle(0, 29, 620, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
+    const special = scene.add.text(0, 67, job.special, {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '16px',
+      color: '#43352e',
+      fixedWidth: 610,
+      align: 'center',
+      wordWrap: { width: 610, useAdvancedWrap: true },
+      maxLines: 3,
+      lineSpacing: 4,
+    }).setOrigin(0.5);
+
+    const closeShadow = scene.add.graphics();
+    closeShadow.fillStyle(0x3e2b25, 0.24);
+    closeShadow.fillRoundedRect(-112, 115, 224, 56, 18);
+    const closeFace = scene.add.graphics();
+    closeFace.fillStyle(0x4b332b, 1);
+    closeFace.fillRoundedRect(-112, 109, 224, 56, 18);
+    closeFace.lineStyle(3, 0x2f211d, 1);
+    closeFace.strokeRoundedRect(-112, 109, 224, 56, 18);
+    const closeText = scene.add.text(0, 137, '← ĐÓNG', {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '17px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+    }).setOrigin(0.5);
+    const closeHit = scene.add.rectangle(0, 137, 224, 56, 0xffffff, 0.001)
+      .setInteractive({ useHandCursor: true });
+
+    detail.add([
+      dim,
+      detailShell,
+      detailKicker,
+      detailIconWell,
+      detailIcon,
+      detailTitle,
+      salaries,
+      divider,
+      special,
+      closeShadow,
+      closeFace,
+      closeText,
+      closeHit,
+    ]);
+
+    closeHit.on('pointerdown', () => {
+      sfxController.play('ui_confirm');
+      closeDetail();
+    });
+    dim.on('pointerdown', closeDetail);
+  };
+
+  jobs.forEach((job, index) => {
+    const x = JOB_CARD_X_070421[index] ?? 0;
+    const risky = job.risk === 'crime';
+    const cardPalette = jobCardPaletteVf06(index, risky);
+
+    const card = roundedPanel070421(
+      scene,
+      x,
+      0,
+      250,
+      230,
+      cardPalette.fill,
+      JOB_HUB_VF06.cocoa,
+      22,
+    );
+
+    const topAccent = scene.add.graphics();
+    topAccent.fillStyle(cardPalette.accent, 1);
+    topAccent.fillRoundedRect(x - 113, -103, 226, 11, { tl: 8, tr: 8, bl: 4, br: 4 });
+
+    const badge = scene.add.graphics();
+    badge.fillStyle(cardPalette.strong, 1);
+    badge.fillRoundedRect(x - 105, -96, 42, 28, 12);
+    const letter = scene.add.text(x - 84, -82, JOB_CARD_LETTERS_070421[index] ?? '?', {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '16px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+    }).setOrigin(0.5);
+    const rangePill = scene.add.graphics();
+    rangePill.fillStyle(JOB_HUB_VF06.creamHighlight, 0.96);
+    rangePill.fillRoundedRect(x + 48, -96, 70, 28, 12);
+    rangePill.lineStyle(1.5, cardPalette.accent, 0.72);
+    rangePill.strokeRoundedRect(x + 48, -96, 70, 28, 12);
+    const range = scene.add.text(x + 83, -82, `🎲 ${JOB_CARD_RANGES_070421[index] ?? ''}`, {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '15px',
+      fontStyle: 'bold',
+      color: risky ? '#9e2f2c' : '#4f615e',
+    }).setOrigin(0.5);
+
+    const iconWellShadow = scene.add.graphics();
+    iconWellShadow.fillStyle(JOB_HUB_VF06.cocoa, 0.12);
+    iconWellShadow.fillCircle(x, -35, JOB_HUB_VF06.iconWellRadius + 3);
+    iconWellShadow.setPosition(0, 4);
+    const iconWell = scene.add.graphics();
+    iconWell.fillStyle(JOB_HUB_VF06.creamHighlight, 1);
+    iconWell.fillCircle(x, -39, JOB_HUB_VF06.iconWellRadius);
+    iconWell.lineStyle(3, cardPalette.accent, 0.82);
+    iconWell.strokeCircle(x, -39, JOB_HUB_VF06.iconWellRadius);
+    const icon = scene.add.text(x, -39, job.icon, {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '50px',
+    }).setOrigin(0.5);
+    const name = scene.add.text(x, 12, job.title, {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '18px',
+      fontStyle: 'bold',
+      color: '#32241f',
+      fixedWidth: 220,
+      align: 'center',
+    }).setOrigin(0.5);
+    const salary = scene.add.text(
+      x,
+,
+      {
+        fontFamily: JOB_FONT_070421,
+        fontSize: '12px',
         fontStyle: 'bold',
         color: '#5a463d',
         fixedWidth: 220,
         align: 'center',
       },
     ).setOrigin(0.5);
-    const salaryLabel = scene.add.text(x, 63, 'LƯƠNG Lv1 • Lv2 • Lv3', {
-      fontFamily: JOB_FONT_070421,
-      fontSize: '10px',
-      fontStyle: 'bold',
-      color: '#8b7569',
-    }).setOrigin(0.5);
-
     const detailPill = scene.add.graphics();
-    detailPill.fillStyle(risky ? 0xffbbb4 : 0xe5d8ff, 1);
-    detailPill.fillRoundedRect(x - 82, 79, 164, 32, 14);
+    detailPill.fillStyle(cardPalette.soft, 1);
+    detailPill.fillRoundedRect(x - 82, 78, 164, 34, 14);
+    detailPill.lineStyle(2, cardPalette.accent, 0.66);
+    detailPill.strokeRoundedRect(x - 82, 78, 164, 34, 14);
     const hint = scene.add.text(x, 95, 'XEM CHI TIẾT', {
       fontFamily: JOB_FONT_070421,
       fontSize: '11px',
       fontStyle: 'bold',
-      color: risky ? '#8c2f2a' : '#5c477c',
+      color: risky ? '#8c2f2a' : '#4a5d58',
     }).setOrigin(0.5);
     const hit = scene.add.rectangle(x, 0, 250, 230, 0xffffff, 0.001)
       .setInteractive({ useHandCursor: true });
     cardHits.push(hit);
 
-    root.add([card, badge, letter, range, icon, name, salary, salaryLabel, detailPill, hint, hit]);
+    root.add([
+      card,
+      topAccent,
+      badge,
+      letter,
+      rangePill,
+      range,
+      iconWellShadow,
+      iconWell,
+      icon,
+      name,
+      salary,
+      detailPill,
+      hint,
+      hit,
+    ]);
 
     hit.on('pointerover', () => {
       scene.tweens.killTweensOf(card);
@@ -337,9 +1133,9 @@ export function createJobRollPicker(
   rollShadow.fillStyle(0x7b4f1e, 0.35);
   rollShadow.fillRoundedRect(-178, 190, 356, 62, 20);
   const rollFace = scene.add.graphics();
-  rollFace.fillStyle(canRoll ? 0xffc94d : 0xc7baaa, 1);
+  rollFace.fillStyle(canRoll ? JOB_HUB_VF06.butter : 0xc7baaa, 1);
   rollFace.fillRoundedRect(-178, 184, 356, 62, 20);
-  rollFace.lineStyle(4, 0x4b332b, 1);
+  rollFace.lineStyle(4, JOB_HUB_VF06.cocoa, 1);
   rollFace.strokeRoundedRect(-178, 184, 356, 62, 20);
   const defaultLabel = canRoll ? '🎲 ĐỔ XÚC XẮC' : (options.waitingLabel ?? `⏳ CHỜ ${playerName}`);
   const rollText = scene.add.text(0, 215, defaultLabel, {
@@ -383,7 +1179,7 @@ export function createJobRollPicker(
     const y = focused === 'roll' ? 215 : 0;
     const width = focused === 'roll' ? 368 : 262;
     const height = focused === 'roll' ? 76 : 242;
-    focusRing.lineStyle(5, 0x4b94e8, 1);
+    focusRing.lineStyle(5, JOB_HUB_VF06.aqua, 1);
     focusRing.strokeRoundedRect(x - width / 2, y - height / 2, width, height, 23);
   };
   rollHit.on('pointerover', () => {
@@ -401,9 +1197,9 @@ export function createJobRollPicker(
     if (!root.active || !canRoll) return;
     submitted = false;
     rollFace.clear();
-    rollFace.fillStyle(0xffc94d, 1);
+    rollFace.fillStyle(JOB_HUB_VF06.butter, 1);
     rollFace.fillRoundedRect(-178, 184, 356, 62, 20);
-    rollFace.lineStyle(4, 0x4b332b, 1);
+    rollFace.lineStyle(4, JOB_HUB_VF06.cocoa, 1);
     rollFace.strokeRoundedRect(-178, 184, 356, 62, 20);
     rollHit.setInteractive({ useHandCursor: true });
     rollText.setText(label).setFontSize(19).setColor('#3d2924');

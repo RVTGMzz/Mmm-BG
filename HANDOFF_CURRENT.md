@@ -1,5 +1,28 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 25 VF-06 canonical JOB HUB visual proof
+
+The canonical Job Hub now gets the next Visual Foundation sample while keeping the existing authoritative D6/input flow intact.
+
+Visual direction:
+- warm cream/cocoa toy-box shell shared with the rest of the game;
+- butter header and concise instruction chip;
+- three slot cards keep the existing A/B/C and D6 ranges but use distinct soft personality colours;
+- large standalone Job icon wells replace the weaker small-icon feel;
+- Job name stays separate from the icon;
+- salary is compressed to one readable line: Lv1 / Lv2 / Lv3;
+- detail sheet uses one large icon above the Job name, so the old duplicate small icon beside the title is removed;
+- risky/crime Jobs use coral/red treatment without changing Job mechanics;
+- roll CTA remains the single dominant action;
+- keyboard / mouse / Steam Deck focus, detail ownership, spectator lock and authoritative roll path are unchanged.
+
+Canonical:
+- `src/ui/visualFoundationJobVf06.ts`
+- `src/ui/JobChoicePicker.ts`
+- `tests/visual-foundation-job-vf06.ts`
+
+Runtime/device acceptance remains required before calling VF-06 visually complete.
+
 ## September 25 VF-05.1 canonical LÁ BÀI visual proof
 
 After the Card/News containment root fix passed, the canonical **LÁ BÀI** surface now receives its own Visual Foundation skin without changing gameplay/presentation ownership.

@@ -1,5 +1,18 @@
 # Mmm-BG — Latest Handoff
 
+## September 25 VF-06 JOB HUB sample
+
+The canonical Job Hub now shares the MeMeMe toy-like visual family:
+- cream/cocoa shell;
+- butter header;
+- large Job icons;
+- distinct A/B/C card accents;
+- one concise salary row;
+- large icon separate from the Job name in detail view;
+- existing input/authority flow preserved.
+
+Runtime visual acceptance remains pending.
+
 ## September 25 VF-05.1 LÁ BÀI sample
 
 The first canonical Card sample now follows the same MeMeMe material family as VF-05 News while keeping a more kinetic sticker/cutout personality.
