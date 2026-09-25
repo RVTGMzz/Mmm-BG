@@ -20,6 +20,7 @@ expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-0
 expect(overlay.includes('podiumPaper') && overlay.includes('podiumRibbon'), 'VF-07 ranking must use the canonical result presentation');
 expect(overlay.includes('revealPaper') && overlay.includes('revealRows'), 'VF-07 majority/minority round must use one simultaneous owned reveal surface');
 expect(overlay.includes('VÒNG ${round} • CÙNG LẬT!'), 'VF-07 majority/minority reveal must clearly communicate the shared flip beat');
+expect(overlay.includes("chant.setText('LẬT KÈO!')") && overlay.includes('leftCard.setScale(0.92, 1)') && overlay.includes('targets: vs'), 'VF-07 RPS duel must keep the shared card-flip and VS impact reveal beat');
 expect(overlay.includes('duration: 190') && overlay.includes('duration: 210'), 'VF-07 motion must remain short and non-blocking');
 expect(!vf.includes('Math.random'), 'VF-07 visual helper must not introduce RNG');
 
