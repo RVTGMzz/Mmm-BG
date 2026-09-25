@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { MINI_GAME_DUEL_LAYOUT_070423 } from './miniGameLayout070423';
+import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
 import {
@@ -79,18 +80,23 @@ export function startMiniGameOverlay(
   // The fullscreen Mini Game owns the UI camera above the P1–P4 HUD (depth 1000).
   const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal');
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
-  const panel = scene.add.rectangle(0, 0, 900, 540, 0xfffbf3, 1).setStrokeStyle(6, 0x242424, 1);
+  const panel = scene.add.rectangle(0, 0, 900, 540, MINI_GAME_VISUAL_VF07.shellFill, 1)
+    .setStrokeStyle(MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1);
+  const headerBand = scene.add.rectangle(0, -210, 846, 92, MINI_GAME_VISUAL_VF07.headerFill, 1)
+    .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.18);
+  const headerSticker = scene.add.rectangle(-360, -210, 92, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+    .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55);
   const title = scene.add.text(0, -224, `${slot.icon} ${slot.title}`, {
-    fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#202020',
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
   const subtitle = scene.add.text(0, -184, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
-    fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#6d655b', align: 'center', fixedWidth: 790,
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '13px', color: '#6d5549', align: 'center', fixedWidth: 760,
   }).setOrigin(0.5);
   const stake = scene.add.text(0, -156, '', {
     fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#5d4773', align: 'center', fixedWidth: 780,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22);
-  root.add([backdrop, panel, title, subtitle, stake, stage]);
+  root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
