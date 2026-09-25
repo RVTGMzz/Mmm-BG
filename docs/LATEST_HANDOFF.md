@@ -12,6 +12,15 @@ The first canonical Card sample now follows the same MeMeMe material family as V
 - same canonical owner, safe reaction lanes and bounded text contract;
 - presentation-only change.
 
+Validation:
+- VF-05.1 source: `39c1e0baa03fbb918b40c69af4881ed7f9a0a45f`
+- MMM MVP CI #3240 / run `36095722761`: **SUCCESS**
+- VF-05 News + VF-05.1 Card gates: **SUCCESS**
+- Card/News containment and presentation-owner gates still pass in the same run
+- compiled public mirror: `042e9c05f042b61d2e6922e0c9b31ba5a5939d0b`
+- GitHub Pages #32 / run `36095790022`: **SUCCESS**
+- public playtest: `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+
 Runtime acceptance remains required before broad propagation.
 
 ## September 24 Card/News content containment root fix

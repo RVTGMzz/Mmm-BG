@@ -1,3 +1,15 @@
+Current Visual Foundation checkpoint:
+**VF-05.1 canonical LÁ BÀI sample**
+
+Validated source:
+`39c1e0baa03fbb918b40c69af4881ed7f9a0a45f`
+- CI #3240 / run `36095722761`: SUCCESS
+- mirror `042e9c05f042b61d2e6922e0c9b31ba5a5939d0b`
+- Pages #32 / run `36095790022`: SUCCESS
+- LÁ BÀI now uses cream/cocoa + lavender + sticker accents inside the same canonical owner
+- do not add a second Card container or loosen the content-containment fix
+- runtime visual review still required before broad card reskin
+
 Current presentation containment checkpoint:
 **Card/News container-owned content hotfix**
 

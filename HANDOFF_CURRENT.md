@@ -19,6 +19,15 @@ Canonical:
 - `src/ui/visualFoundationCardVf051.ts`
 - `tests/visual-foundation-card-vf051.ts`
 
+Validation:
+- VF-05.1 source: `39c1e0baa03fbb918b40c69af4881ed7f9a0a45f`
+- MMM MVP CI #3240 / run `36095722761`: **SUCCESS**
+- VF-05 News + VF-05.1 Card gates: **SUCCESS**
+- Card/News containment and presentation-owner gates still pass in the same run
+- compiled public mirror: `042e9c05f042b61d2e6922e0c9b31ba5a5939d0b`
+- GitHub Pages #32 / run `36095790022`: **SUCCESS**
+- public playtest: `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+
 Next acceptance is visual/runtime review on desktop + Steam Deck/mobile landscape. Do not reskin every unrelated modal yet.
 
 ## September 24 Card/News content containment hotfix — screenshot root fix
