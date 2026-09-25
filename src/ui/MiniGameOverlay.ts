@@ -93,7 +93,7 @@ export function startMiniGameOverlay(
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '13px', color: '#6d5549', align: 'center', fixedWidth: 760,
   }).setOrigin(0.5);
   const stake = scene.add.text(0, -156, '', {
-    fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#5d4773', align: 'center', fixedWidth: 780,
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 780,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22);
   root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
@@ -186,7 +186,7 @@ export function startMiniGameOverlay(
       boxes.push(box);
       const icon = scene.add.text(x, 8, choice.icon, { fontSize: '42px' }).setOrigin(0.5);
       const label = scene.add.text(x, 68, choice.label, {
-        fontFamily: 'Arial, sans-serif', fontSize: '14px', fontStyle: 'bold', color: '#202020',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '14px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
       }).setOrigin(0.5);
       box.on('pointerover', () => {
         selectedIndex = index;
@@ -195,6 +195,14 @@ export function startMiniGameOverlay(
       box.on('pointerdown', () => commit(index));
       stage.add([box, icon, label]);
     });
+
+    const privacyRail = scene.add.rectangle(0, 142, 610, 38, MINI_GAME_VISUAL_VF07.resultFill, 0.94)
+      .setStrokeStyle(2, MINI_GAME_VISUAL_VF07.shellStroke, 0.24);
+    const privacyHint = scene.add.text(0, 142, '🔒 LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '11px', fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 580,
+    }).setOrigin(0.5);
+    stage.add([privacyRail, privacyHint]);
 
     refreshFocus();
     scene.input.keyboard?.on('keydown', keyboardHandler);
