@@ -18,6 +18,8 @@ expect(overlay.includes("MINI_GAME_DUEL_LAYOUT_070423"), 'retained RPS safe layo
 expect(overlay.includes("D-PAD + A"), 'Steam Deck choice path must remain visible');
 expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-07 result surface must use owned paper + badge hierarchy');
 expect(overlay.includes('podiumPaper') && overlay.includes('podiumRibbon'), 'VF-07 ranking must use the canonical result presentation');
+expect(overlay.includes('revealPaper') && overlay.includes('revealRows'), 'VF-07 majority/minority round must use one simultaneous owned reveal surface');
+expect(overlay.includes('VÒNG ${round} • CÙNG LẬT!'), 'VF-07 majority/minority reveal must clearly communicate the shared flip beat');
 expect(overlay.includes('duration: 190') && overlay.includes('duration: 210'), 'VF-07 motion must remain short and non-blocking');
 expect(!vf.includes('Math.random'), 'VF-07 visual helper must not introduce RNG');
 
