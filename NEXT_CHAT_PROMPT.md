@@ -1,4 +1,17 @@
 Current Visual Foundation checkpoint:
+**VF-06 canonical JOB HUB sample**
+
+Validated source:
+`e9a1fb44c8b628e93c91b824f7c31ed0cbb11f6f`
+- CI #3244 / run `36096638993`: SUCCESS
+- mirror `731a97eca5a89e40844d02623cd9936aad4c4862`
+- Pages #33 / run `36096743757`: SUCCESS
+- Job Hub now uses cream/cocoa toy shell, large icon wells, distinct A/B/C accents and one concise salary row
+- Job Detail uses one large icon above the title, no duplicate small icon beside the Job name
+- authoritative D6, keyboard/mouse/controller focus and spectator lock remain unchanged
+- runtime visual review still required before broad propagation to Mini Game/result surfaces
+
+Current Visual Foundation checkpoint:
 **VF-05.1 canonical LÁ BÀI sample**
 
 Validated source:

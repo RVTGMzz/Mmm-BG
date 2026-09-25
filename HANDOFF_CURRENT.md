@@ -21,6 +21,15 @@ Canonical:
 - `src/ui/JobChoicePicker.ts`
 - `tests/visual-foundation-job-vf06.ts`
 
+Validation:
+- validated VF-06 HEAD: `e9a1fb44c8b628e93c91b824f7c31ed0cbb11f6f`
+- MMM MVP CI #3244 / run `36096638993`: **SUCCESS**
+- retained Job layout / authority / keyboard / Steam Deck gates: **SUCCESS**
+- VF-06 gate: **SUCCESS**
+- compiled public mirror: `731a97eca5a89e40844d02623cd9936aad4c4862`
+- GitHub Pages #33 / run `36096743757`: **SUCCESS**
+- public playtest: `https://ronvotri.github.io/MeMeMe-Web-Playtest/`
+
 Runtime/device acceptance remains required before calling VF-06 visually complete.
 
 ## September 25 VF-05.1 canonical LÁ BÀI visual proof
