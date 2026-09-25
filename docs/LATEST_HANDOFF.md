@@ -1,5 +1,19 @@
 # Mmm-BG — Latest Handoff
 
+## September 25 VF-05.1 LÁ BÀI sample
+
+The first canonical Card sample now follows the same MeMeMe material family as VF-05 News while keeping a more kinetic sticker/cutout personality.
+
+- cream/cocoa frame;
+- lavender header;
+- soft lavender body inset;
+- butter impact sticker well;
+- coral/aqua accent tabs;
+- same canonical owner, safe reaction lanes and bounded text contract;
+- presentation-only change.
+
+Runtime acceptance remains required before broad propagation.
+
 ## September 24 Card/News content containment root fix
 
 Runtime screenshots from Ron exposed the same long-standing class of failure on both **Kéo Hai Cửa** and **Hoàn Tiền Bất Ngờ**: description/result copy was being drawn outside the canonical modal while the modal body looked empty.

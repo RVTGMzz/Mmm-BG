@@ -12,6 +12,7 @@ import { reactionPlacement070422 } from '../ui/presentationLanes070422';
 import { isDetachedCinematicCopy070423 } from '../ui/presentationTextOwnership070423';
 import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
 import { NEWS_SHEET_VF05, paintVisualFoundationNewsVf05 } from '../ui/visualFoundationNewsVf05';
+import { paintVisualFoundationCardVf051 } from '../ui/visualFoundationCardVf051';
 import { canonicalHudPosition0561 } from '../ui/canonicalPresentation0561';
 import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import {
@@ -478,9 +479,6 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       child.destroy();
     }
 
-    const accent = isNews ? 0x9bcf74 : 0xd4a8ff;
-    const panelColor = isNews ? 0x173c31 : 0x2d203f;
-
     root.setScrollFactor(0);
 
     // Create modal children off the Scene Display List. They are rendered only
@@ -489,26 +487,18 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const shadow = new Phaser.GameObjects.Graphics(this);
     const panel = new Phaser.GameObjects.Graphics(this);
     if (isNews) {
-      // VF-05 first sample: restyle only INSIDE the .22 canonical modal owner.
-      // Keep the same exact 720x300 bounds and current reaction/CTA lifecycle.
+      // VF-05: editorial warm paper.
       paintVisualFoundationNewsVf05(shadow, panel);
     } else {
-      shadow.fillStyle(0x000000, 0.28);
-      shadow.fillRoundedRect(-366, -145, 732, 306, 24);
-      shadow.setPosition(0, 9);
-      panel.fillStyle(panelColor, 0.985);
-      panel.fillRoundedRect(-360, -150, 720, 300, 22);
-      panel.lineStyle(3, accent, 0.92);
-      panel.strokeRoundedRect(-360, -150, 720, 300, 22);
-      panel.fillStyle(accent, 1);
-      panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
+      // VF-05.1: playful collectible-card material, SAME canonical owner.
+      paintVisualFoundationCardVf051(shadow, panel);
     }
 
     const kicker = new Phaser.GameObjects.Text(this, -322, -118, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: isNews ? '14px' : '12px',
       fontStyle: 'bold',
-      color: isNews ? '#31543c' : '#f8f4ec',
+      color: isNews ? '#31543c' : '#5d4e88',
       fixedWidth: 500,
     });
 
@@ -516,7 +506,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '30px',
       fontStyle: 'bold',
-      color: isNews ? '#3f2b27' : '#ffffff',
+      color: '#3f2b27',
       fixedWidth: 540,
       wordWrap: { width: 540, useAdvancedWrap: true },
       maxLines: 2,
@@ -525,14 +515,14 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const impact = new Phaser.GameObjects.Text(this, 314, -108, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
       fontSize: isNews ? '26px' : '19px',
-      color: isNews ? '#3f2b27' : '#ffffff',
+      color: '#3f2b27',
     }).setOrigin(1, 0);
 
     const bodyCopy = this.canonicalCinematicBody070414(model);
     const body = new Phaser.GameObjects.Text(this, -322, -24, bodyCopy, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: isNews ? '18px' : '16px',
-      color: isNews ? '#59463d' : '#f4ede4',
+      color: '#59463d',
       fixedWidth: 628,
       wordWrap: { width: 628, useAdvancedWrap: true },
       lineSpacing: 5,
@@ -553,7 +543,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       {
         fontFamily: MOBILE_UI_FONT_07044,
         fontSize: '9px',
-        color: '#d8d0c6',
+        color: isNews ? '#806f66' : '#6d607c',
       },
     ).setOrigin(1, 0.5);
 

@@ -234,6 +234,8 @@ jobs:
         run: npm run test:visual-foundation-hud-vf04
       - name: Visual Foundation 0.1 VF-05 canonical News sample and reaction lanes
         run: npm run test:visual-foundation-news-vf05
+      - name: Visual Foundation 0.1 VF-05.1 canonical Card sample and reaction lanes
+        run: npm run test:visual-foundation-card-vf051
       - name: Roguelike Lap Shuffle 0.1 deterministic authority
         run: npm run test:roguelike-lap-shuffle-071
       - name: 0.1.70.3.1 mobile landscape and face style

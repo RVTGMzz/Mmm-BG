@@ -1,5 +1,26 @@
 # Mmm-BG — HANDOFF CURRENT
 
+## September 25 VF-05.1 canonical LÁ BÀI visual proof
+
+After the Card/News containment root fix passed, the canonical **LÁ BÀI** surface now receives its own Visual Foundation skin without changing gameplay/presentation ownership.
+
+Direction:
+- same exact 720×300 canonical owner and .22 reaction-lane geometry;
+- warm cream/cocoa foundation shared with TIN TỨC;
+- lavender collectible-card header;
+- soft lavender body paper for Vietnamese copy;
+- butter impact/rarity sticker well;
+- small coral/aqua sticker tabs for kinetic energy;
+- dark cocoa copy instead of the previous flat dark-purple debug-panel treatment;
+- title/body still use the existing adaptive fixed bounds and max-line containment;
+- no new container, camera, input owner, RNG, MatchState path or gameplay authority.
+
+Canonical:
+- `src/ui/visualFoundationCardVf051.ts`
+- `tests/visual-foundation-card-vf051.ts`
+
+Next acceptance is visual/runtime review on desktop + Steam Deck/mobile landscape. Do not reskin every unrelated modal yet.
+
 ## September 24 Card/News content containment hotfix — screenshot root fix
 
 Ron supplied two runtime screenshots that reproduce the long-standing Card/News failure:
