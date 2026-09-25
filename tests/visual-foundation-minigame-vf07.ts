@@ -16,6 +16,9 @@ expect(overlay.includes('root = scene.add.container(640, 360).setDepth(1500)'), 
 expect(overlay.includes("submitSystemIntent('resolve_minigame'"), 'authoritative Mini Game payout path must remain intact');
 expect(overlay.includes("MINI_GAME_DUEL_LAYOUT_070423"), 'retained RPS safe layout must remain wired');
 expect(overlay.includes("D-PAD + A"), 'Steam Deck choice path must remain visible');
+expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-07 result surface must use owned paper + badge hierarchy');
+expect(overlay.includes('podiumPaper') && overlay.includes('podiumRibbon'), 'VF-07 ranking must use the canonical result presentation');
+expect(overlay.includes('duration: 190') && overlay.includes('duration: 210'), 'VF-07 motion must remain short and non-blocking');
 expect(!vf.includes('Math.random'), 'VF-07 visual helper must not introduce RNG');
 
 console.log('VF-07 Mini Game foundation review gate: PASS');
