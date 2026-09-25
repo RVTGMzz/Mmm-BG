@@ -30,7 +30,8 @@ assert.match(active, /chạm để tiếp tục/);
 // Job Hub carries only one glanceable salary row per card and detail on demand.
 assert.match(picker, /JOB_CARD_X_070421 = \[-286, 0, 286\]/);
 assert.match(picker, /250,\n      230/);
-assert.match(picker, /LƯƠNG Lv1 • Lv2 • Lv3/);
+assert.match(picker, /Lv1 \\${jobSalary\\\(job, 1\\\)\\\}.*Lv2 \\${jobSalary\\\(job, 2\\\)\\\}.*Lv3 \\${jobSalary\\\(job, 3\\\)\\\} B\\\$/);
+assert.doesNotMatch(picker, /LƯƠNG Lv1 • Lv2 • Lv3/, 'VF-06 replaces the redundant second salary label with one compact salary row');
 assert.match(picker, /XEM CHI TIẾT/);
 assert.match(picker, /Đổ xúc xắc để chọn nghề/);
 assert.doesNotMatch(picker, /LƯƠNG KHỞI ĐIỂM/);
