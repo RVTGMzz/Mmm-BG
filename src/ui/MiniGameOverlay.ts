@@ -109,10 +109,10 @@ export function startMiniGameOverlay(
   ): Promise<T> => new Promise((resolve) => {
     clearStage();
     const prompt = scene.add.text(0, -95, `${player.name} • CHỌN KÍN`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '23px', fontStyle: 'bold', color: '#202020',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '23px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
     }).setOrigin(0.5);
     const hint = scene.add.text(0, -58, '← → / A D • ENTER / SPACE • D-PAD + A', {
-      fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#746a60',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '12px', color: MINI_GAME_VISUAL_VF07.mutedText,
     }).setOrigin(0.5);
     stage.add([prompt, hint]);
 
@@ -464,6 +464,29 @@ export function startMiniGameOverlay(
       }
 
       const result = resolveMajorityMinorityRound(activeIds, choices);
+      clearStage();
+      const revealPaper = scene.add.rectangle(0, 8, 720, 286, MINI_GAME_VISUAL_VF07.resultFill, 1)
+        .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
+      const revealTitle = scene.add.text(0, -112, `VÒNG ${round} • CÙNG LẬT!`, {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '22px', fontStyle: 'bold',
+        color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center',
+      }).setOrigin(0.5);
+      const revealRows = activeIds.map((id, index) => {
+        const player = playerById(id);
+        const up = choices[id] === 'up';
+        const x = activeIds.length <= 2 ? (index === 0 ? -190 : 190) : -270 + (index % 2) * 540;
+        const y = activeIds.length <= 2 ? 8 : -28 + Math.floor(index / 2) * 92;
+        const chip = scene.add.rectangle(x, y, 300, 72, up ? 0x9eddf0 : 0xffd983, 1)
+          .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.7);
+        const label = scene.add.text(x, y, `${player?.name ?? `P${id + 1}`}  ${up ? '🤲 NGỬA' : '🖐️ SẤP'}`, {
+          fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px', fontStyle: 'bold',
+          color: MINI_GAME_VISUAL_VF07.cocoaText, fixedWidth: 276, align: 'center',
+        }).setOrigin(0.5);
+        return [chip, label];
+      }).flat();
+      stage.add([revealPaper, revealTitle, ...revealRows]);
+      scene.tweens.add({ targets: revealRows, scaleX: { from: 0.88, to: 1 }, alpha: { from: 0.25, to: 1 }, duration: 180, ease: 'Back.easeOut' });
+      await wait(520);
       const reveal = activeIds
         .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: ${choices[id] === 'up' ? 'NGỬA 🤲' : 'SẤP 🖐️'}`)
         .join('\n');
