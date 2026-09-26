@@ -519,20 +519,24 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     }).setOrigin(1, 0);
 
     const bodyCopy = this.canonicalCinematicBody070414(model);
-    const body = new Phaser.GameObjects.Text(this, -322, -24, bodyCopy, {
+    // Runtime screenshots proved that the old 16/18px body was wasting most of
+    // the paper while still being hard to read. Keep one generous centered body
+    // well and only shrink for genuinely dense copy.
+    const bodyWidth070426 = 584;
+    const body = new Phaser.GameObjects.Text(this, -292, -18, bodyCopy, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: isNews ? '18px' : '16px',
+      fontSize: isNews ? '23px' : '21px',
       color: '#59463d',
-      fixedWidth: 628,
-      wordWrap: { width: 628, useAdvancedWrap: true },
-      lineSpacing: 5,
+      fixedWidth: bodyWidth070426,
+      wordWrap: { width: bodyWidth070426, useAdvancedWrap: true },
+      lineSpacing: 7,
       maxLines: 5,
     });
 
-    const bodyHeight070418 = model.targetId === undefined ? 138 : 116;
+    const bodyHeight070418 = model.targetId === undefined ? 142 : 118;
     this.fitWrappedText070418(title, 540, 54, 30, 24, 2);
-    if (isNews) this.fitWrappedText070418(body, NEWS_SHEET_VF05.bodyWidth, bodyHeight070418, 18, 14, 5);
-    else this.fitWrappedText070418(body, 628, bodyHeight070418, 16, 12, 5);
+    if (isNews) this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 23, 17, 5);
+    else this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 21, 16, 5);
     body.setMaxLines(5);
     title.setMaxLines(2);
 
