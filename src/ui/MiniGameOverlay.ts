@@ -251,9 +251,9 @@ export function startMiniGameOverlay(
       color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 300,
     }).setOrigin(0.5);
     const text = scene.add.text(0, 38, body, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: denseResult ? '14px' : '16px',
-      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 650, lineSpacing: denseResult ? 5 : 7,
-      wordWrap: { width: 630, useAdvancedWrap: true },
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: denseResult ? '17px' : '20px',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 620, lineSpacing: denseResult ? 7 : 9,
+      wordWrap: { width: 600, useAdvancedWrap: true },
     }).setOrigin(0.5);
     stage.add([resultPaper, resultBadge, head, text]);
     scene.tweens.add({ targets: [resultPaper, resultBadge, head, text], scaleX: { from: 0.96, to: 1 }, scaleY: { from: 0.96, to: 1 }, alpha: { from: 0.35, to: 1 }, duration: 190, ease: 'Back.easeOut' });
@@ -377,11 +377,11 @@ export function startMiniGameOverlay(
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
     const podiumPaper = scene.add.rectangle(0, 12, 700, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
       .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const podiumRibbon = scene.add.rectangle(0, -126, 390, 62, MINI_GAME_VISUAL_VF07.headerFill, 1)
+    const podiumRibbon = scene.add.rectangle(0, -112, 430, 66, MINI_GAME_VISUAL_VF07.headerFill, 1)
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45);
-    const heading = scene.add.text(0, -126, '🏆 BẢNG XẾP HẠNG', {
+    const heading = scene.add.text(0, -112, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '28px',
+      fontSize: '26px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
     }).setOrigin(0.5);
@@ -393,9 +393,9 @@ export function startMiniGameOverlay(
       return `${medals[index] ?? `${index + 1}.`} Hạng ${index + 1} • ${player?.name ?? `P${id + 1}`} • ${rewardCopy} B$`;
     }).join('\n');
     const rowLines = rows.split('\n');
-    const body = scene.add.text(0, 20, rows, {
+    const body = scene.add.text(0, 28, rows, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: rowLines.length >= 4 ? '19px' : '22px',
+      fontSize: rowLines.length >= 4 ? '21px' : '23px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'left',
