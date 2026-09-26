@@ -9,8 +9,9 @@ const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
 // Every Card/News title and body goes through the same adaptive fitter.
+// Runtime readability floor stays >=16px for Card copy; News uses an even larger 23/17 range.
 assert.match(active, /fitWrappedText070418\(title, 540, 54, 30, 24, 2\)/);
-assert.match(active, /fitWrappedText070418\(body, 628, bodyHeight070418, 16, 12, 5\)/);
+assert.match(active, /fitWrappedText070418\(body, bodyWidth070426, bodyHeight070418, 21, 16, 5\)/);
 assert.match(active, /while \(fontSize > minFontSize && text\.height > height\)/);
 assert.match(active, /text\.setFixedSize\(width, height\)/);
 
