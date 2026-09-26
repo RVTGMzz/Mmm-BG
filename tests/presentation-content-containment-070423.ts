@@ -58,9 +58,9 @@ const scene = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8'
 assert.match(scene, /isDetachedCinematicCopy070423\(object\.text, ownedValues\)/);
 assert.match(scene, /new Phaser\.GameObjects\.Text\(this, -292, -18, bodyCopy/);
 assert.match(scene, /const bodyWidth070426 = 584/);
-assert.match(scene, /isNews \? '23px' : '21px'/);
-assert.match(scene, /bodyWidth070426, bodyHeight070418, 23, 17/);
-assert.match(scene, /bodyWidth070426, bodyHeight070418, 21, 16/);
+assert.match(scene, /isNews \? '26px' : '24px'/);
+assert.match(scene, /bodyWidth070426, bodyHeight070418, 26, 18/);
+assert.match(scene, /bodyWidth070426, bodyHeight070418, 24, 17/);
 assert.match(scene, /new Phaser\.GameObjects\.Graphics\(this\)/);
 assert.match(scene, /root\.setScrollFactor\(0\)/);
 assert.match(scene, /body\.setMaxLines\(5\)/);
