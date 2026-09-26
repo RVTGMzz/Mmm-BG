@@ -65,6 +65,7 @@ assert.match(scene, /new Phaser\.GameObjects\.Graphics\(this\)/);
 assert.match(scene, /root\.setScrollFactor\(0\)/);
 assert.match(scene, /body\.setMaxLines\(5\)/);
 assert.match(scene, /title\.setMaxLines\(2\)/);
+assert.match(scene, /for \(const child of \[\.\.\.presentation\.active\.list\]\) this\.tweens\.killTweensOf\(child\)/, 'legacy Card/News reveal tween must be killed before canonical rebuild');
 
 // Card/News content must be owned by the canonical container, not created as a
 // loose scene Text and later reparented after camera routing.
