@@ -57,7 +57,7 @@ assert.match(board, /HUD_SAFE_MARGIN_07046 = 12/);
 assert.match(board, /Phaser\.Math\.Clamp/);
 assert.match(board, /ensurePlayerTokenBadges070417\(\)/);
 assert.match(board, /fitWrappedText070418\(title, 540, 54, 30, 24, 2\)/);
-assert.match(board, /fitWrappedText070418\(body, 628, bodyHeight070418, 16, 12, 5\)/);
+assert.match(board, /fitWrappedText070418\(body, bodyWidth070426, bodyHeight070418, 21, 16, 5\)/);
 assert.match(presentation, /reactionPlacement070422\(/);
 assert.match(presentation, /setName\('presentation-reaction-bubble-070422'\)/);
 assert.doesNotMatch(presentation, /const REACTION_TOP_Y_070418 = 190/);
