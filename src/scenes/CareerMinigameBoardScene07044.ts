@@ -525,7 +525,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const bodyWidth070426 = 584;
     const body = new Phaser.GameObjects.Text(this, -292, -18, bodyCopy, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: isNews ? '23px' : '21px',
+      fontSize: isNews ? '26px' : '24px',
       color: '#59463d',
       fixedWidth: bodyWidth070426,
       wordWrap: { width: bodyWidth070426, useAdvancedWrap: true },
@@ -535,8 +535,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const bodyHeight070418 = model.targetId === undefined ? 142 : 118;
     this.fitWrappedText070418(title, 540, 54, 30, 24, 2);
-    if (isNews) this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 23, 17, 5);
-    else this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 21, 16, 5);
+    if (isNews) this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 26, 18, 5);
+    else this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 24, 17, 5);
     body.setMaxLines(5);
     title.setMaxLines(2);
 
