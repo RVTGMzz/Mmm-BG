@@ -329,6 +329,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       originalShowCinematic(model);
 
       if (!isCard && !isNews) return;
+      // The legacy cinematic starts a typewriter tween on its body. Rebuilding
+      // the root immediately is not sufficient: a detached tween target can
+      // become visible again on a later frame. Kill every child tween before
+      // replacing the visual owner, then keep only the canonical root.
+      if (presentation.active?.active) {
+        for (const child of [...presentation.active.list]) this.tweens.killTweensOf(child);
+      }
       this.rebuildCanonicalCinematicText070414(presentation.active, model);
       this.syncCanonicalCinematicOwnership070417();
     };
