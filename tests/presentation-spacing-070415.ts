@@ -17,9 +17,9 @@ assert.doesNotMatch(replay, /description: `\$\{job\.icon\} \$\{job\.title\}/);
 // Job result uses one centered card with a dedicated result title and body.
 assert.match(active, /const isResult = model\.title\.includes\('NHẬN VIỆC'\)/);
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
-assert.match(active, /const title = this\.add\.text\(36, -12, displayTitle/);
-assert.match(active, /const body = this\.add\.text\(36, 52, bodyLines\.join/);
-assert.match(active, /fixedWidth: 540/);
+assert.match(active, /const title = this\.add\.text\(44, -18, displayTitle/);
+assert.match(active, /const body = this\.add\.text\(44, 50, bodyLines\.join/);
+assert.match(active, /fixedWidth: 560/);
 
 // Card/News removes every inherited child, including graphics/footer strips.
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
