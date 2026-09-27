@@ -1,3 +1,14 @@
+# 0.1.70.4.29 fixed type + scroll containment
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_SCROLLABLE_UI_070429.md`
+
+Validated source `d13beed6cbb880487c50cd239359d4a4d91311fc`, CI #3304 SUCCESS, public mirror `6c31a5af7d3c20ffb1b604590a8e9c6b244b5a96`, Pages #55 SUCCESS.
+
+Ron explicitly rejected font shrinking as the overflow solution. Long Card/News, Job and Mini Game copy now stays at a fixed readable scale inside a hard clipped viewport and can be dragged/scrolled vertically. Legacy Mini Game reflow wrappers no longer touch canonical VF-07 text.
+
+---
+
 # September 27 CH-04 Character reaction checkpoint
 
 Canonical transfer:

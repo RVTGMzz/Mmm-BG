@@ -1,6 +1,21 @@
 # MMM — 2026-09-27 CURRENT HANDOFF
 
 Canonical newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_SCROLLABLE_UI_070429.md`
+
+Latest validated UI source:
+- `d13beed6cbb880487c50cd239359d4a4d91311fc`
+- CI #3304: **SUCCESS**
+- public mirror `6c31a5af7d3c20ffb1b604590a8e9c6b244b5a96`
+- Pages #55: **SUCCESS**
+
+Current UI rule: **fixed readable typography + hard clipping + vertical drag/scroll for overflow**. Never shrink long body copy merely to force it inside a modal. Canonical Card/News, Job result, Mini Game result and Mini Game ranking now follow this rule. Real-device visual acceptance is pending.
+
+---
+
+# MMM — 2026-09-27 CURRENT HANDOFF
+
+Canonical newest transfer:
 - `docs/SESSION_HANDOFF_2026-09-27_CHARACTER_CH04.md`
 
 Latest validated gameplay build:
