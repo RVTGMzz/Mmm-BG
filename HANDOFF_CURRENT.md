@@ -1,3 +1,14 @@
+# MMM — 2026-09-28 ROOT CAUSE AUDIT
+
+Read first:
+- `docs/UI_ROOT_CAUSE_AUDIT_2026-09-28.md`
+
+**Do not continue cosmetic hotfixing.** The active board uses an approximately 35-class inheritance chain with multiple presentation writers still mutating the same UI every frame. The current Playwright modal fixture disables `update()` and does not call the normal full scene `super.create()`, so it cannot reproduce the live writer-vs-writer conflict.
+
+Ron reports the long-running UI issue is still unresolved. Real-device acceptance is FAIL. Next work must inventory and consolidate UI ownership before further typography/layout tuning.
+
+---
+
 # MMM — 2026-09-28 CURRENT HANDOFF
 
 Canonical newest transfer:
