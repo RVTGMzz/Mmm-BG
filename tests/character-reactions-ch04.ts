@@ -54,6 +54,14 @@ assert.equal(baby.expression, 'angry');
 assert.match(baby.text, /25B\$|Vũ trụ|quản lý/);
 
 gameSession.reset();
+const legacyBaseline = buildPresentationModel(
+  news(9, 0, 'Ron mất 25B$.', 'NEWS_NEGATIVE_DEMO'),
+  match.players,
+);
+assert(legacyBaseline);
+const legacyBaselineText = legacyBaseline.reactions[0]?.text ?? '';
+assert.ok(legacyBaselineText.length > 0);
+
 gameSession.setCharacter(0, 'starter-crybaby');
 gameSession.setCharacter(1, 'starter-grumpy');
 
@@ -93,7 +101,11 @@ const legacy = buildPresentationModel(
   match.players,
 );
 assert(legacy);
-assert.match(legacy.reactions[0]?.text ?? '', /Biết ngay mà!/);
+assert.equal(
+  legacy.reactions[0]?.text ?? '',
+  legacyBaselineText,
+  'clearing Character ID must restore the exact legacy reaction resolver for that seat',
+);
 
 const moduleSource = await import('node:fs').then(({ readFileSync }) =>
   readFileSync('src/core/characterReactionProfilesCh04.ts', 'utf8')
