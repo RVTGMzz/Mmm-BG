@@ -54,3 +54,21 @@ Random/Secret Character concealment is still respected because a profile is used
 
 - CH-04B can expand contextual reaction pools to Job, Jail/Hospital, Mini Game and lap shuffle presentation.
 - CH-05 remains the separate HOST-authoritative passive milestone and stays blocked on explicit balance rules.
+
+
+## CH-04B follow-up
+
+Character reactions now also attach to four high-value board moments:
+- Job presentation;
+- Mini Game entry;
+- salary received at Start/Ready;
+- global Lap Shuffle.
+
+Landing presentations now schedule their model-owned reactions through the exact same safe side-rail renderer used by Card/News. This does not create a second modal or toast.
+
+Still unchanged:
+- no passive activation;
+- no MatchState mutation;
+- no RNG;
+- no gameplay payout changes;
+- Character-less sessions remain quiet on these new Character-only moments.

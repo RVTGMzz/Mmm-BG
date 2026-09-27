@@ -11,6 +11,10 @@ export type CharacterReactionContextCh04 =
   | 'gain'
   | 'loss'
   | 'spectate'
+  | 'job'
+  | 'minigame'
+  | 'salary'
+  | 'shuffle'
   | 'chaos';
 
 export interface CharacterReactionVariablesCh04 {
@@ -58,6 +62,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'neutral', text: 'Thấy chưa, cái bàn này drama hơn phim nữa!' },
       { expression: 'neutral', text: 'Tui chưa bị gì mà tui đã muốn khóc giùm rồi.' },
     ],
+    job: [
+      { expression: 'happy', text: 'Có việc làm rồi hả? Cho tui cái nghề đỡ đau tim nha!' },
+      { expression: 'neutral', text: 'Đi làm thôi mà sao tui hồi hộp dữ vậy trời.' },
+    ],
+    minigame: [
+      { expression: 'angry', text: 'Khoan, thiệt sự phải thi hả? Tui run rồi đó!' },
+      { expression: 'happy', text: 'Nếu thắng nhớ dỗ tui trước nha!' },
+    ],
+    salary: [
+      { expression: 'happy', text: 'Lương về! Tự nhiên đời đẹp hẳn luôn!' },
+      { expression: 'happy', text: '{amount}B$ này chữa lành được chút xíu.' },
+    ],
+    shuffle: [
+      { expression: 'angry', text: 'Trời ơi! Bàn cờ cũng thay lòng đổi dạ nữa!' },
+      { expression: 'neutral', text: 'Mới nhớ đường xong mà nó đổi hết rồi!' },
+    ],
     chaos: [
       { expression: 'neutral', text: 'Khoan… cho tui hiểu chuyện gì vừa xảy ra đã!' },
       { expression: 'angry', text: 'Ủa rồi ai chịu trách nhiệm cho cảm xúc của tui?' },
@@ -83,6 +103,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     spectate: [
       { expression: 'neutral', text: 'Tự xử đi. Đừng kéo tui vô.' },
       { expression: 'neutral', text: 'Biết ngay kiểu gì cũng có chuyện.' },
+    ],
+    job: [
+      { expression: 'neutral', text: 'Có nghề thì làm. Đừng họp hành dài dòng.' },
+      { expression: 'angry', text: 'Lương ổn thì ký. Không ổn thì thôi.' },
+    ],
+    minigame: [
+      { expression: 'angry', text: 'Thi thì thi. Đừng có nhường tui.' },
+      { expression: 'neutral', text: 'Luật đâu? Nói một lần cho rõ.' },
+    ],
+    salary: [
+      { expression: 'happy', text: '{amount}B$. Ừ, công sức phải có giá chứ.' },
+      { expression: 'neutral', text: 'Lương về đúng hạn. Tạm được.' },
+    ],
+    shuffle: [
+      { expression: 'angry', text: 'Ai cho đổi bàn lúc tui vừa nhớ đường vậy?' },
+      { expression: 'neutral', text: 'Rồi. Lại phải học bản đồ từ đầu.' },
     ],
     chaos: [
       { expression: 'angry', text: 'Cái bàn này không ai chịu ngồi yên hết hả?' },
@@ -110,6 +146,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'neutral', text: 'Mọi người bình tĩnh, để tui tính xác suất đã.' },
       { expression: 'neutral', text: 'Tui ghi chú vụ này lại. Có gì còn phòng.' },
     ],
+    job: [
+      { expression: 'neutral', text: 'Khoan, để tui so lương với rủi ro trước.' },
+      { expression: 'happy', text: 'Có nghề là tốt… chắc vậy.' },
+    ],
+    minigame: [
+      { expression: 'angry', text: 'Mini Game bất ngờ hả? Tui chưa chuẩn bị tinh thần!' },
+      { expression: 'neutral', text: 'Để tui đọc luật lại một lần nữa.' },
+    ],
+    salary: [
+      { expression: 'happy', text: '{amount}B$ vào quỹ dự phòng. Tốt.' },
+      { expression: 'happy', text: 'Lương về rồi. Thở được chút.' },
+    ],
+    shuffle: [
+      { expression: 'angry', text: 'Bản đồ đổi rồi! Kế hoạch A coi như xong!' },
+      { expression: 'neutral', text: 'Được, chuyển sang kế hoạch B… nếu có.' },
+    ],
     chaos: [
       { expression: 'angry', text: 'Không có trong kế hoạch. Không có trong kế hoạch!' },
       { expression: 'neutral', text: 'Cho tui năm giây sắp xếp lại mọi thứ.' },
@@ -136,6 +188,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'happy', text: 'Ê hay đó! Làm lại phát nữa đi!' },
       { expression: 'happy', text: 'Căng lên, căng lên! Đừng đứng hình!' },
     ],
+    job: [
+      { expression: 'happy', text: 'Có Job mới! Chọn nhanh rồi chạy tiếp!' },
+      { expression: 'happy', text: 'Đi làm cũng được, miễn đừng bắt ngồi yên!' },
+    ],
+    minigame: [
+      { expression: 'happy', text: 'MINI GAME! Tới luôn!' },
+      { expression: 'happy', text: 'Cuối cùng cũng tới phần tui thích!' },
+    ],
+    salary: [
+      { expression: 'happy', text: '+{amount}B$! Nhận lương xong chạy tiếp!' },
+      { expression: 'happy', text: 'Tiền về rồi! Năng lượng cũng về!' },
+    ],
+    shuffle: [
+      { expression: 'happy', text: 'Đổi bàn hả? Hay! Chơi lại từ đầu!' },
+      { expression: 'happy', text: 'Càng loạn càng vui! Tới đi!' },
+    ],
     chaos: [
       { expression: 'happy', text: 'Không hiểu gì hết nhưng vui!' },
       { expression: 'happy', text: 'Bàn cờ càng loạn càng đã!' },
@@ -161,6 +229,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     spectate: [
       { expression: 'neutral', text: 'Các người lớn ồn quá.' },
       { expression: 'happy', text: 'Tiếp tục đi. Bé đang giải trí.' },
+    ],
+    job: [
+      { expression: 'neutral', text: 'Job nào lương cao nhất? Bé bận.' },
+      { expression: 'happy', text: 'Cho bé chức quản lý.' },
+    ],
+    minigame: [
+      { expression: 'happy', text: 'Thi đi. Bé cho các người cơ hội.' },
+      { expression: 'neutral', text: 'Mini Game hả? Xếp hàng.' },
+    ],
+    salary: [
+      { expression: 'happy', text: '{amount}B$? Chuyển vào quỹ sữa.' },
+      { expression: 'neutral', text: 'Lương tới rồi. Vũ trụ làm việc tốt.' },
+    ],
+    shuffle: [
+      { expression: 'happy', text: 'Bé vừa muốn đổi bàn. Chuẩn.' },
+      { expression: 'neutral', text: 'Bản đồ mới. Bé vẫn thắng.' },
     ],
     chaos: [
       { expression: 'neutral', text: 'Bình tĩnh. Để bé xử.' },

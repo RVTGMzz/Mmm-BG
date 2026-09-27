@@ -274,7 +274,23 @@ export class MatchPresentationLayer {
     this.scene.tweens.add({
       targets: container, alpha: 1, scaleX: 1, scaleY: 1, duration: 190, ease: 'Back.easeOut',
     });
-    this.armTiming(model, revealMs);
+
+    // CH-04B: landing surfaces can now carry Character-owned reaction moments
+    // (Job, Mini Game, salary) through the same safe side rails as cinematics.
+    let landingReactionEnd0704 = 0;
+    model.reactions.forEach((line, index) => {
+      const reactionReveal = Math.min(2200, Math.max(500, line.text.length * 24));
+      landingReactionEnd0704 = Math.max(
+        landingReactionEnd0704,
+        220 + line.delayMs + Math.max(line.durationMs, reactionReveal),
+      );
+      this.schedule(220 + line.delayMs, () => {
+        if (this.destroyed || this.currentModel !== model || !this.active?.active) return;
+        this.showReaction(model, line, index);
+      });
+    });
+
+    this.armTiming(model, Math.max(revealMs, landingReactionEnd0704));
   }
 
   private showCinematic(model: PresentationEventModel): void {

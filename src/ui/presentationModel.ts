@@ -233,6 +233,41 @@ function reactionLines(
     .filter((line) => line.text.trim().length > 0);
 }
 
+function characterMomentReactionCh04(
+  event: MatchEvent,
+  players: PlayerState[],
+  context: CharacterReactionContextCh04,
+  amount = 0,
+): PresentationReactionLine[] {
+  const speakerId = event.actorId;
+  if (speakerId === undefined) return [];
+  const characterId = gameSession.getCharacterId(speakerId);
+  const speakerName = playerName(players, speakerId);
+  const flavor = characterReactionLineCh04(
+    characterId,
+    context,
+    {
+      amount: Math.abs(Number(amount) || 0),
+      actor: speakerName,
+      target: speakerName,
+      speaker: speakerName,
+    },
+    event.seq + event.turnNumber + speakerId,
+  );
+  if (!flavor) return [];
+
+  return [{
+    sequence: 1,
+    delayMs: 140,
+    durationMs: npcChatDurationMs(1750, browserSession.isCpuSeat(speakerId)),
+    speakerId,
+    speakerName,
+    speakerRole: 'subject',
+    expression: flavor.expression,
+    text: friendlyVisibleCopy0701(flavor.text),
+  }];
+}
+
 function maybeNpcQuirkLine(event: MatchEvent, players: PlayerState[]): PresentationReactionLine | undefined {
   const actorId = event.actorId;
   if (actorId === undefined || !browserSession.isCpuSeat(actorId)) return undefined;
@@ -301,7 +336,11 @@ function functionTileModel(event: MatchEvent, players: PlayerState[]): Presentat
     impact: dataString(event, 'impact') || (isMiniGame ? '🎮' : '💼'),
     description: [description, summary].filter(Boolean).join('\n'),
     summary: '',
-    reactions: [],
+    reactions: characterMomentReactionCh04(
+      event,
+      players,
+      isMiniGame ? 'minigame' : 'job',
+    ),
     holdMs: event.type === 'job_offer' ? 1800 : 2600,
     tileType: isMiniGame ? 'minigame' : 'job',
   };
@@ -405,7 +444,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       impact: impact || '🔀',
       description: description || `${base.actorName} là người đầu tiên chạm lại vạch xuất phát.`,
       summary: summary || `${changedCount} ô đã đổi nội dung.`,
-      reactions: [],
+      reactions: characterMomentReactionCh04(event, players, 'shuffle'),
       holdMs: 1900,
     };
   }
@@ -426,7 +465,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
         ? `${jobIcon} ${jobTitle} Lv.${jobLevel} trả lương khi qua cổng.`
         : 'Chưa có Job đang hoạt động nên vòng này không nhận lương.',
       summary: '',
-      reactions: [],
+      reactions: characterMomentReactionCh04(event, players, 'salary', amount),
       holdMs: 1800,
       amount,
     };
