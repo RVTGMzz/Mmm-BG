@@ -39,7 +39,19 @@ CI uploads `runtime-ui-evidence` before publishing the compiled mirror. CI #3307
 
 That visual review found the enlarged Roll For Order helper overlapped its status. Follow-up sets an explicit top origin and separated Y positions, compacts the outer frame when the roll button is hidden, and adds a bounding-box gap assertion. The follow-up also compacts Mini Game result outer paper, restores shell geometry on stage transitions, tests camera scroll/zoom, and covers pointer release outside the canvas. Ranking evidence now includes a real Character winner voice.
 
-Initial mirror: ba3727b (compiled 0294a94). Follow-up CI/public acceptance is pending until recorded below.
+Initial mirror: ba3727b (compiled 0294a94).
+
+## Final automated/browser checkpoint
+- Runtime source: `f0f1814b736da53fac95e78b6161a899a452d998`.
+- MMM MVP CI #3308 / run `36335397011`: **SUCCESS**, including all retained workflow gates, live online smoke, package validation, and the new browser gate.
+- Public mirror: `bcfc11f6d1e08959ff6b035aada45dcebb217d9c`.
+- Publish playtest Pages #57 / run `36335598563`: **SUCCESS**.
+- Playtest: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+- Runtime screenshot artifact: `10937167012`, `runtime-ui-evidence`, attached to CI #3308.
+- WebGL and Canvas nested/moved/scaled/rotated/bottom/camera-scroll-zoom fixtures all passed actual-pixel clipping checks (outside = 0). Scaled pointer dragging, wheel scrolling and listener cleanup passed.
+- All six production-producer fixtures rendered at 1280×800 and 960×540. Images were downloaded and visually inspected. Job/Card/News bodies are visible, ranking starts with medal + Hạng, Character winner voice is visible, and Roll For Order status/helper no longer overlap. The new gap assertion also passed.
+- These are isolated real Phaser production-producer fixtures, not a complete human-played online match or an actual Steam Deck test. Do not mark device acceptance PASS until Ron confirms.
+- No additional gameplay feature work was started.
 
 ## Device acceptance still required
 On the updated public playtest, check the same nine screenshot situations. All body copy must be visible, ranking starts with medal/Hạng, long copy scrolls without leaking or dismissing on pointer-down, short panels are compact, and secondary text is legible. Verify on the actual Steam Deck; headless screenshots cannot substitute for that acceptance.

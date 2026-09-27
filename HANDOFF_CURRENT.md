@@ -1,3 +1,24 @@
+# MMM — 2026-09-28 CURRENT HANDOFF
+
+Canonical newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_LOCAL_SCROLL_VIEWPORT.md`
+
+**SOURCE + BROWSER FIXTURES + CI + PUBLIC PAGES: PASS / REAL-DEVICE ACCEPTANCE PENDING**
+
+- Runtime source: `f0f1814b736da53fac95e78b6161a899a452d998`.
+- CI #3308 / run `36335397011`: SUCCESS.
+- Public mirror: `bcfc11f6d1e08959ff6b035aada45dcebb217d9c`.
+- Pages #57 / run `36335598563`: SUCCESS.
+- https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+Shared scroll viewport now uses local texture cropping instead of world-coordinate GeometryMask. Fixed readable fonts + vertical scrolling remain. Job/Card/News/Mini Game papers compact around content; helper typography is larger; Roll For Order status/helper spacing is corrected. Both WebGL and Canvas pixel checks pass under nested transforms and camera zoom/scroll. Production-producer screenshots at 1280×800 and 960×540 have been visually reviewed.
+
+Next: Ron's actual Steam Deck/browser acceptance against the nine September 27 screenshots. CI/browser fixtures do not replace device acceptance. Preserve gameplay/Host RNG/Worker/reconnect and Character behavior. Keep PR #1 Draft/Open; do not start 0.1.71.
+
+The September 27 FAIL checkpoint below is historical and superseded by this implementation, but its device evidence remains the acceptance checklist.
+
+---
+
 # MMM — 2026-09-27 CURRENT HANDOFF
 
 Canonical newest transfer:
