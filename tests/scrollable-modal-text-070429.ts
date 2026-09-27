@@ -8,8 +8,8 @@ const legacy066 = readFileSync('src/scenes/CareerMinigameBoardScene066.ts', 'utf
 const legacy0701 = readFileSync('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
 const layer = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 
-assert.match(helper, /createGeometryMask\(\)/);
-assert.match(helper, /text\.setMask\(mask\)/);
+assert.doesNotMatch(helper, /worldX|worldY|createGeometryMask\(\)/);
+assert.match(helper, /text\.setCrop\(0, scroll, options.width, height\)/);
 assert.match(helper, /text\.setY\(-scroll\)/);
 assert.match(helper, /scene\.input\.on\('wheel'/);
 assert.match(helper, /event\.stopPropagation\(\)/);
@@ -33,7 +33,7 @@ assert.match(job, /5000/);
 
 assert.match(mini, /vf07-minigame-result-scroll/);
 assert.match(mini, /vf07-minigame-ranking-scroll/);
-assert.match(mini, /fontSize: 20/);
+assert.match(mini, /fontSize: 23/);
 assert.doesNotMatch(mini, /denseResult \?/);
 assert.match(legacy066, /text\.name\.startsWith\('vf07-minigame-'\)/);
 assert.match(legacy0701, /heading\.name\.startsWith\('vf07-minigame-'\)/);

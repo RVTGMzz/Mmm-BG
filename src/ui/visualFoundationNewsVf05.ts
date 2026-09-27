@@ -46,28 +46,31 @@ export function newsSheetFitsVf05(): boolean {
 export function paintVisualFoundationNewsVf05(
   shadow: Phaser.GameObjects.Graphics,
   panel: Phaser.GameObjects.Graphics,
+  bodyHeight = 120,
+  footerHeight = 30,
 ): void {
   const n = NEWS_SHEET_VF05;
   const left = -n.width / 2;
   const top = -n.height / 2;
+  const height = 132 + bodyHeight + footerHeight;
   shadow.clear();
   shadow.fillStyle(n.cocoa, 0.18);
-  shadow.fillRoundedRect(left - 4, top + 3, n.width + 8, n.height + 3, n.radius + 2);
+  shadow.fillRoundedRect(left - 4, top + 3, n.width + 8, height + 3, n.radius + 2);
   shadow.setPosition(0, 7);
   panel.clear();
   panel.fillStyle(n.cream, 0.995);
-  panel.fillRoundedRect(left, top, n.width, n.height, n.radius);
+  panel.fillRoundedRect(left, top, n.width, height, n.radius);
   // Icon-first pastel header and a quiet paper inset for long descriptions.
   panel.fillStyle(n.mint, 1);
   panel.fillRoundedRect(left + 3, top + 3, n.width - 6, 46,
     { tl: n.radius - 2, tr: n.radius - 2, bl: 9, br: 9 });
   panel.fillStyle(0xf3f5e9, 0.97);
-  panel.fillRoundedRect(left + 17, -33, n.width - 34, 150, 15);
+  panel.fillRoundedRect(left + 17, -33, n.width - 34, bodyHeight + 30, 15);
   // Keep the event's emoji in a distinct sticker well.
   panel.fillStyle(0xfff6dc, 1);
   panel.fillCircle(292, -98, 29);
   panel.lineStyle(2, n.cocoa, 0.6);
   panel.strokeCircle(292, -98, 29);
   panel.lineStyle(3, n.cocoa, 1);
-  panel.strokeRoundedRect(left + 2, top + 2, n.width - 4, n.height - 4, n.radius - 2);
+  panel.strokeRoundedRect(left + 2, top + 2, n.width - 4, height - 4, n.radius - 2);
 }

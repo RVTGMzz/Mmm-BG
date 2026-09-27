@@ -102,7 +102,7 @@ export function startMiniGameOverlay(
     lineSpacing: 2,
   }).setOrigin(0.5).setName('vf07-minigame-subtitle');
   const stake = scene.add.text(0, -156, '', {
-    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 780,
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 780,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22).setName('vf07-minigame-stage');
   root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
@@ -121,7 +121,7 @@ export function startMiniGameOverlay(
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '23px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
     }).setOrigin(0.5);
     const hint = scene.add.text(0, -58, '← → / A D • ENTER / SPACE • D-PAD + A', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '12px', color: MINI_GAME_VISUAL_VF07.mutedText,
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px', color: MINI_GAME_VISUAL_VF07.mutedText,
     }).setOrigin(0.5);
     stage.add([prompt, hint]);
 
@@ -208,7 +208,7 @@ export function startMiniGameOverlay(
     const privacyRail = scene.add.rectangle(0, 142, 610, 38, MINI_GAME_VISUAL_VF07.resultFill, 0.94)
       .setStrokeStyle(2, MINI_GAME_VISUAL_VF07.shellStroke, 0.24);
     const privacyHint = scene.add.text(0, 142, '🔒 LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '11px', fontStyle: 'bold',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '16px', fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 580,
     }).setOrigin(0.5);
     stage.add([privacyRail, privacyHint]);
@@ -266,23 +266,24 @@ export function startMiniGameOverlay(
     const bodyViewport = createScrollableTextViewport070429(scene, stage, {
       x: -310,
       y: -62,
-      worldX: 330,
-      worldY: 320,
       width: 620,
       height: 180,
+      minHeight: 40,
       text: body,
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: 20,
+      fontSize: 23,
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'center',
       lineSpacing: 8,
       name: 'vf07-minigame-result-scroll',
     });
     bodyViewport.text.setName('vf07-minigame-result-body');
+    const resultBottom = -62 + bodyViewport.height + (bodyViewport.isScrollable ? 54 : 24);
+    resultPaper.setSize(720, resultBottom + 150).setY((resultBottom - 150) / 2);
 
-    const scrollHint = scene.add.text(0, 139, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
+    const scrollHint = scene.add.text(0, resultBottom - 25, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '11px',
+      fontSize: '17px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.mutedText,
       align: 'center',
@@ -412,6 +413,8 @@ export function startMiniGameOverlay(
     title.setVisible(false);
     subtitle.setVisible(false);
     stake.setVisible(false);
+    headerBand.setVisible(false);
+    headerSticker.setVisible(false);
 
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
     const podiumPaper = scene.add.rectangle(0, 12, 720, 360, MINI_GAME_VISUAL_VF07.resultFill, 1)
@@ -437,13 +440,12 @@ export function startMiniGameOverlay(
     const rowsViewport = createScrollableTextViewport070429(scene, stage, {
       x: -310,
       y: -84,
-      worldX: 330,
-      worldY: 298,
       width: 620,
-      height: 150,
+      height: 170,
+      minHeight: 40,
       text: rows,
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: 20,
+      fontSize: 23,
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'left',
@@ -459,9 +461,10 @@ export function startMiniGameOverlay(
       ? characterWinnerVoiceCh04d(winner.id, winner.name, winnerReward, eventSeq)
       : '';
 
-    const winnerVoiceText = scene.add.text(0, 94, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
+    const rowsBottom = -84 + rowsViewport.height;
+    const winnerVoiceText = scene.add.text(0, rowsBottom + 38, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '13px',
+      fontSize: '19px',
       fontStyle: 'bold',
       color: '#5d4773',
       align: 'center',
@@ -472,13 +475,13 @@ export function startMiniGameOverlay(
 
     const rewardHint = scene.add.text(
       0,
-      154,
+      rowsBottom + (winnerVoice ? 88 : 32),
       rowsViewport.isScrollable
         ? '↕ KÉO / CUỘN BẢNG • KẾT QUẢ ĐÃ CHỐT'
         : 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG',
       {
         fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '11px',
+        fontSize: '17px',
         fontStyle: 'bold',
         color: MINI_GAME_VISUAL_VF07.mutedText,
         align: 'center',
@@ -486,6 +489,9 @@ export function startMiniGameOverlay(
       },
     ).setOrigin(0.5).setName('vf07-minigame-ranking-hint');
 
+    const rankingBottom = rewardHint.y + 30;
+    podiumPaper.setSize(720, rankingBottom + 168).setY((rankingBottom - 168) / 2);
+    panel.setSize(800, rankingBottom + 210).setY(22 + (rankingBottom - 190) / 2);
     stage.add([winnerVoiceText, rewardHint]);
     scene.tweens.add({
       targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, winnerVoiceText, rewardHint],

@@ -276,6 +276,23 @@ jobs:
         run: npm run test:character-minigame-result-ch04d
       - name: CH-04E Character winner voice on final podium
         run: npm run test:character-podium-ch04e
+      - name: Install runtime browser regression dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Transform-safe scroll viewport runtime gate
+        run: |
+          npm run dev -- --host 127.0.0.1 > /tmp/mmm-vite.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          node tests/runtime/scroll-viewport.mjs
+      - name: Upload runtime UI evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-ui-evidence
+          path: runtime-ui-evidence
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package

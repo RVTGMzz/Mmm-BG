@@ -55,19 +55,22 @@ export function cardSheetFitsVf051(): boolean {
 export function paintVisualFoundationCardVf051(
   shadow: Phaser.GameObjects.Graphics,
   panel: Phaser.GameObjects.Graphics,
+  bodyHeight = 120,
+  footerHeight = 30,
 ): void {
   const c = CARD_SHEET_VF051;
   const left = -c.width / 2;
   const top = -c.height / 2;
+  const height = 132 + bodyHeight + footerHeight;
 
   shadow.clear();
   shadow.fillStyle(c.cocoa, 0.2);
-  shadow.fillRoundedRect(left - 4, top + 3, c.width + 8, c.height + 3, c.radius + 2);
+  shadow.fillRoundedRect(left - 4, top + 3, c.width + 8, height + 3, c.radius + 2);
   shadow.setPosition(0, 7);
 
   panel.clear();
   panel.fillStyle(c.cream, 0.998);
-  panel.fillRoundedRect(left, top, c.width, c.height, c.radius);
+  panel.fillRoundedRect(left, top, c.width, height, c.radius);
 
   // Kinetic sticker header.
   panel.fillStyle(c.lavender, 1);
@@ -81,13 +84,13 @@ export function paintVisualFoundationCardVf051(
 
   // Quiet body paper so long Vietnamese copy remains readable.
   panel.fillStyle(c.lavenderSoft, 0.98);
-  panel.fillRoundedRect(left + 17, -33, c.width - 34, 150, 15);
+  panel.fillRoundedRect(left + 17, -33, c.width - 34, bodyHeight + 30, 15);
 
   // Small sticker tabs, visual only. Keep them inside the canonical frame.
   panel.fillStyle(c.coral, 0.96);
-  panel.fillRoundedRect(left + 13, -12, 14, 54, 7);
+  panel.fillRoundedRect(left + 13, -12, 14, Math.min(54, bodyHeight - 6), 7);
   panel.fillStyle(c.aqua, 0.96);
-  panel.fillRoundedRect(-left - 27, 26, 14, 48, 7);
+  panel.fillRoundedRect(-left - 27, -5, 14, Math.min(48, bodyHeight - 6), 7);
 
   // Impact/rarity area reads as a collectible sticker well.
   panel.fillStyle(c.butter, 1);
@@ -96,5 +99,5 @@ export function paintVisualFoundationCardVf051(
   panel.strokeCircle(292, -98, 29);
 
   panel.lineStyle(3, c.cocoa, 1);
-  panel.strokeRoundedRect(left + 2, top + 2, c.width - 4, c.height - 4, c.radius - 2);
+  panel.strokeRoundedRect(left + 2, top + 2, c.width - 4, height - 4, c.radius - 2);
 }

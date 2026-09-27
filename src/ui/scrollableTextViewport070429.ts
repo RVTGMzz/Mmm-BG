@@ -3,10 +3,9 @@ import Phaser from 'phaser';
 export interface ScrollableTextViewport070429Options {
   x: number;
   y: number;
-  worldX: number;
-  worldY: number;
   width: number;
   height: number;
+  minHeight?: number;
   text: string;
   fontFamily: string;
   fontSize: number;
@@ -23,6 +22,7 @@ export interface ScrollableTextViewport070429 {
   hit: Phaser.GameObjects.Rectangle;
   isScrollable: boolean;
   maxScroll: number;
+  height: number;
   setScroll(value: number): void;
   scrollBy(delta: number): void;
 }
@@ -36,6 +36,8 @@ export function createScrollableTextViewport070429(
     .setName(options.name ?? 'scrollable-text-viewport-070429');
 
   const text = new Phaser.GameObjects.Text(scene, 0, 0, options.text, {
+    // Crop coordinates are texture pixels; keep them identical to local units.
+    resolution: 1,
     fontFamily: options.fontFamily,
     fontSize: `${options.fontSize}px`,
     fontStyle: options.fontStyle ?? 'normal',
@@ -46,12 +48,14 @@ export function createScrollableTextViewport070429(
     lineSpacing: options.lineSpacing ?? 5,
   }).setOrigin(0, 0);
 
+  const height = Math.min(options.height, Math.max(options.minHeight ?? options.height, Math.ceil(text.height)));
+
   const hit = new Phaser.GameObjects.Rectangle(
     scene,
     options.width / 2,
-    options.height / 2,
+    height / 2,
     options.width,
-    options.height,
+    height,
     0xffffff,
     0.001,
   ).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -59,9 +63,9 @@ export function createScrollableTextViewport070429(
   const rail = new Phaser.GameObjects.Rectangle(
     scene,
     options.width + 10,
-    options.height / 2,
+    height / 2,
     3,
-    options.height,
+    height,
     0x6d607c,
     0.18,
   );
@@ -74,7 +78,7 @@ export function createScrollableTextViewport070429(
     0x6d607c,
     0.72,
   );
-  const cue = new Phaser.GameObjects.Text(scene, options.width + 19, options.height - 3, '↕', {
+  const cue = new Phaser.GameObjects.Text(scene, options.width + 19, height - 3, '↕', {
     fontFamily: options.fontFamily,
     fontSize: '12px',
     fontStyle: 'bold',
@@ -84,13 +88,10 @@ export function createScrollableTextViewport070429(
   root.add([text, hit, rail, thumb, cue]);
   owner.add(root);
 
-  const maskSource = new Phaser.GameObjects.Graphics(scene).setScrollFactor(0);
-  maskSource.fillStyle(0xffffff, 1);
-  maskSource.fillRect(options.worldX, options.worldY, options.width, options.height);
-  const mask = maskSource.createGeometryMask();
-  text.setMask(mask);
-
-  const maxScroll = Math.max(0, text.height - options.height);
+  // Local texture cropping is transformed by Phaser together with the text.
+  // A GeometryMask is rendered independently of its nested owner and can lose
+  // the camera/container transform; never ask callers for predicted world XY.
+  const maxScroll = Math.max(0, text.height - height);
   const isScrollable = maxScroll > 1;
   rail.setVisible(isScrollable);
   thumb.setVisible(isScrollable);
@@ -104,11 +105,12 @@ export function createScrollableTextViewport070429(
   const setScroll = (value: number): void => {
     scroll = Phaser.Math.Clamp(value, 0, maxScroll);
     text.setY(-scroll);
+    text.setCrop(0, scroll, options.width, height);
     if (!isScrollable) return;
 
-    const ratio = options.height / Math.max(options.height, text.height);
-    const thumbHeight = Math.max(26, options.height * ratio);
-    const travel = Math.max(0, options.height - thumbHeight);
+    const ratio = height / Math.max(height, text.height);
+    const thumbHeight = Math.min(height, Math.max(26, height * ratio));
+    const travel = Math.max(0, height - thumbHeight);
     const progress = maxScroll <= 0 ? 0 : scroll / maxScroll;
     thumb
       .setDisplaySize(5, thumbHeight)
@@ -117,9 +119,22 @@ export function createScrollableTextViewport070429(
 
   const scrollBy = (delta: number): void => setScroll(scroll + delta);
 
+  // Invert the full owner transform, including parent scale/rotation. Camera
+  // world points are computed by Phaser's input manager for the active camera.
+  const pointerLocalY = (pointer: Phaser.Input.Pointer): number => {
+    const camera = pointer.camera ?? scene.cameras.main;
+    const world = camera.getWorldPoint(pointer.x, pointer.y);
+    // Container rendering inherits the top-level owner's scroll factors.
+    let top = root;
+    while (top.parentContainer) top = top.parentContainer;
+    world.x += camera.scrollX * (top.scrollFactorX - 1);
+    world.y += camera.scrollY * (top.scrollFactorY - 1);
+    return root.getWorldTransformMatrix().applyInverse(world.x, world.y).y;
+  };
+
   const onPointerMove = (pointer: Phaser.Input.Pointer): void => {
     if (draggingPointerId !== pointer.id || !pointer.isDown || !isScrollable) return;
-    setScroll(dragStartScroll + dragStartY - pointer.y);
+    setScroll(dragStartScroll + dragStartY - pointerLocalY(pointer));
   };
   const onPointerUp = (pointer: Phaser.Input.Pointer): void => {
     if (draggingPointerId === pointer.id) draggingPointerId = undefined;
@@ -144,7 +159,7 @@ export function createScrollableTextViewport070429(
     ) => {
       event.stopPropagation();
       draggingPointerId = pointer.id;
-      dragStartY = pointer.y;
+      dragStartY = pointerLocalY(pointer);
       dragStartScroll = scroll;
     },
   );
@@ -157,13 +172,10 @@ export function createScrollableTextViewport070429(
     scene.input.off('pointermove', onPointerMove);
     scene.input.off('pointerup', onPointerUp);
     scene.input.off('wheel', onWheel);
-    text.clearMask(false);
-    mask.destroy();
-    maskSource.destroy();
   };
   root.once('destroy', cleanup);
 
   setScroll(0);
 
-  return { root, text, hit, isScrollable, maxScroll, setScroll, scrollBy };
+  return { root, text, hit, isScrollable, maxScroll, height, setScroll, scrollBy };
 }

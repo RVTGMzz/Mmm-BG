@@ -1,0 +1,47 @@
+import Phaser from 'phaser';
+import { CareerMinigameBoardScene07044 } from '../../src/scenes/CareerMinigameBoardScene07044';
+import { TurnOrderScene07044 } from '../../src/scenes/TurnOrderScene07044';
+import { startMiniGameOverlay } from '../../src/ui/MiniGameOverlay';
+import { gameSession } from '../../src/core/session';
+import { browserSession } from '../../src/core/browserSession';
+
+const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
+browserSession.configureSolo([0, 1, 2, 3]);
+gameSession.reset();
+const fixtures: Record<string, any> = {
+  card: {kind:'card_play', title:'Ví Ai Nấy Lo', description:'Mỗi người tự giữ tiền của mình. Chặn tác động chuyển tiền trong lượt này.', summary:'CPU 4 giữ lại 20 B$.', targetId:1, targetName:'CPU 2', actorName:'CPU 4', cardEffectType:'steal_money', amount:20, impact:'👛', eyebrow:'LÁ BÀI'},
+  news: {kind:'news', title:'Phí Thành Phố Đồng Loạt', description:'Thành phố thu phí bảo trì. Mỗi người đóng 20 B$ để sửa những con đường vừa đi qua.', summary:'Tất cả người chơi mất 20 B$.', impact:'📰', eyebrow:'TIN TỨC'},
+  job: {kind:'job', title:'ĐÃ NHẬN VIỆC', description:'Ca sĩ • Lương mỗi vòng: 70 B$', summary:'Đã nhận nghề Ca sĩ.', impact:'🎤', eyebrow:'CPU 4 • NHẬN VIỆC'},
+  long: {kind:'card_play', title:'Nội dung dài cần cuộn', description:Array.from({length:12},(_,i)=>`Dòng ${i+1}: Nội dung tiếng Việt có dấu cần được giữ đủ và không tràn khỏi khung.`).join('\n'), summary:'Đã hoàn thành.', impact:'🃏', eyebrow:'LÁ BÀI'},
+};
+class SurfaceScene extends CareerMinigameBoardScene07044 {
+  create() {
+    const self=this as any;
+    this.cameras.main.setBackgroundColor('#8cac97');
+    const model={eventSeq:100,holdMs:60000, ...fixtures[mode]};
+    if(mode==='ranking') {
+      this.time.timeScale=25;
+      const run=startMiniGameOverlay(this, gameSession.players as any, 100);
+      this.events.on('postupdate',()=>{
+        const stage=run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
+        if(stage?.getByName('vf07-minigame-ranking-rows') || (stage?.getByName('vf07-minigame-ranking-scroll'))) {
+          this.time.timeScale=0;
+          this.tweens.timeScale=10;
+          (window as any).surfaceReady=true;
+        }
+      });
+    } else if(mode==='job') {
+      self.showCanonicalJobLanding070411({currentModel:model,finishCurrent(){}},model);
+      (window as any).surfaceReady=true;
+    } else {
+      self.rebuildCanonicalCinematicText070414(this.add.container(640,330),model);
+      (window as any).surfaceReady=true;
+    }
+    (window as any).surfaceScene=this;
+  }
+  update() {} // Fixture invokes real producers without unrelated board authority.
+}
+class OrderScene extends TurnOrderScene07044 {
+  create(){super.create();(window as any).surfaceReady=true;(window as any).surfaceScene=this;}
+}
+new Phaser.Game({type:Phaser.WEBGL,width:1280,height:720,render:{preserveDrawingBuffer:true},scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},scene:mode==='order'?OrderScene:SurfaceScene});

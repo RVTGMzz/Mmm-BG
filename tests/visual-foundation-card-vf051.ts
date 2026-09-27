@@ -38,8 +38,8 @@ assert.match(painter, /c\.cocoa/);
 assert.match(painter, /c\.coral/);
 assert.match(painter, /c\.aqua/);
 
-assert.match(scene, /paintVisualFoundationCardVf051\(shadow, panel\)/);
-assert.match(scene, /paintVisualFoundationNewsVf05\(shadow, panel\)/);
+assert.match(scene, /paintVisualFoundationCardVf051\(shadow, panel, bodyViewport.height, footerHeight\)/);
+assert.match(scene, /paintVisualFoundationNewsVf05\(shadow, panel, bodyViewport.height, footerHeight\)/);
 assert.match(scene, /root\.setScrollFactor\(0\)/);
 assert.match(scene, /createScrollableTextViewport070429\(this, root/);
 assert.match(scene, /fontSize: 21/);

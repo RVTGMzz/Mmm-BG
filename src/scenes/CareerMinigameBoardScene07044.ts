@@ -534,12 +534,10 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const shadow = new Phaser.GameObjects.Graphics(this);
     const panel = new Phaser.GameObjects.Graphics(this);
-    if (isNews) paintVisualFoundationNewsVf05(shadow, panel);
-    else paintVisualFoundationCardVf051(shadow, panel);
 
     const kicker = new Phaser.GameObjects.Text(this, -322, -118, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '13px',
+      fontSize: '17px',
       fontStyle: 'bold',
       color: isNews ? '#31543c' : '#5d4e88',
       fixedWidth: 500,
@@ -565,7 +563,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       this,
       316,
       126,
-      isNews ? '' : `CARD ACTION • #${model.eventSeq}`,
+      '',
       {
         fontFamily: MOBILE_UI_FONT_07044,
         fontSize: '9px',
@@ -577,14 +575,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const bodyCopy = this.canonicalCinematicBody070414(model);
     const bodyWidth070429 = 584;
-    const bodyHeight070429 = model.targetId === undefined ? 142 : 112;
+    const bodyHeight070429 = model.targetId === undefined ? 120 : 92;
     const bodyViewport = createScrollableTextViewport070429(this, root, {
       x: -292,
       y: -18,
-      worldX: 348,
-      worldY: 312,
       width: bodyWidth070429,
       height: bodyHeight070429,
+      minHeight: 38,
       text: bodyCopy,
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: 21,
@@ -592,6 +589,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       lineSpacing: 7,
       name: isNews ? 'news-scroll-body-070429' : 'card-scroll-body-070429',
     });
+    const footerHeight = model.targetId === undefined ? 30 : 58;
+    if (isNews) paintVisualFoundationNewsVf05(shadow, panel, bodyViewport.height, footerHeight);
+    else paintVisualFoundationCardVf051(shadow, panel, bodyViewport.height, footerHeight);
     const body = bodyViewport.text;
     body.setName(isNews ? 'news-scroll-text-070429' : 'card-scroll-text-070429');
 
@@ -614,9 +614,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       || model.cardEffectType === 'tactical_choice';
     if (model.kind === 'card_play' && model.targetName && directMoneyTransfer && amount > 0) {
       const action = `${model.targetName} • ${amount} B$ • ${model.actorName}`;
-      const actionText = new Phaser.GameObjects.Text(this, 0, 112, action, {
+      const actionText = new Phaser.GameObjects.Text(this, 0, bodyViewport.root.y + bodyViewport.height + 29, action, {
         fontFamily: MOBILE_UI_FONT_07044,
-        fontSize: '11px',
+        fontSize: '17px',
         fontStyle: 'bold',
         color: '#ffffff',
         backgroundColor: '#4a433c',
@@ -805,7 +805,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const eyebrow = this.add.text(-332, -78, model.eyebrow, {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '12px',
+      fontSize: '17px',
       fontStyle: 'bold',
       color: '#694d41',
       fixedWidth: 520,
@@ -814,7 +814,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const dieMatch = model.title.match(/🎲\s*(\d)/u);
     const dieChip = this.add.text(325, -78, dieMatch ? `🎲 ${dieMatch[1]}` : '💼', {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '13px',
+      fontSize: '18px',
       fontStyle: 'bold',
       color: '#49342c',
       backgroundColor: '#fff5d4',
@@ -843,9 +843,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const hint = this.add.text(326, 99, 'chạm để tiếp tục', {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '10px',
+      fontSize: '17px',
       fontStyle: 'bold',
-      color: '#9a8174',
+      color: '#71594d',
     }).setOrigin(1, 0.5);
 
     const hit = this.add.rectangle(0, -2, 764, 244, 0xffffff, 0.001)
@@ -855,13 +855,12 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const jobBodyViewport070429 = createScrollableTextViewport070429(this, root, {
       x: -236,
       y: 6,
-      worldX: 404,
-      worldY: 356,
       width: 560,
-      height: 86,
+      height: 100,
+      minHeight: 32,
       text: bodyLines.join('\n'),
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: isResult ? 19 : 18,
+      fontSize: 21,
       fontStyle: isResult ? 'bold' : 'normal',
       color: '#59463d',
       align: 'center',
@@ -869,6 +868,15 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       name: 'job-scroll-body-070429',
     });
     jobBodyViewport070429.text.setName('job-scroll-text-070429');
+    const jobBottom = 6 + jobBodyViewport070429.height + 50;
+    const jobHeight = jobBottom + 124;
+    shadow.clear().fillStyle(0x3e2b25, 0.22).fillRoundedRect(-382, -116, 764, jobHeight, 26);
+    panel.clear().fillStyle(0xfff8ec, 0.995).fillRoundedRect(-382, -124, 764, jobHeight, 26);
+    panel.lineStyle(4, 0x4b332b, 1).strokeRoundedRect(-382, -124, 764, jobHeight, 26);
+    hint.setY(jobBottom - 23);
+    hit.setSize(764, jobHeight).setY((jobBottom - 124) / 2);
+    // Rectangle.setSize does not resize an existing input hit area.
+    hit.setInteractive(new Phaser.Geom.Rectangle(0, 0, 764, jobHeight), Phaser.Geom.Rectangle.Contains);
     if (jobBodyViewport070429.isScrollable) {
       hint.setText('↕ kéo / cuộn nội dung • chạm ngoài để tiếp tục');
     }

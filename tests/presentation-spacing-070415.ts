@@ -20,7 +20,7 @@ assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3
 assert.match(active, /const title = this\.add\.text\(44, -18, displayTitle/);
 assert.match(active, /const jobBodyViewport070429 = createScrollableTextViewport070429\(this, root/);
 assert.match(active, /width: 560/);
-assert.match(active, /fontSize: isResult \? 19 : 18/);
+assert.match(active, /fontSize: 21/);
 
 // Card/News removes every inherited child, including graphics/footer strips.
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);

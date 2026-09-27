@@ -27,7 +27,7 @@ assert.match(painter,/paintVisualFoundationNewsVf05/);
 assert.match(painter,/n\.mint/);
 assert.match(painter,/n\.cream/);
 assert.match(painter,/n\.cocoa/);
-assert.match(scene,/if \(isNews\) paintVisualFoundationNewsVf05\(shadow, panel\)/);
+assert.match(scene,/if \(isNews\) paintVisualFoundationNewsVf05\(shadow, panel, bodyViewport.height, footerHeight\)/);
 assert.match(scene,/createScrollableTextViewport070429\(this, root/);
 assert.match(scene,/fontSize: 21/);
 assert.match(scene,/name: isNews \? 'news-scroll-body-070429' : 'card-scroll-body-070429'/);

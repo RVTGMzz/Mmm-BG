@@ -28,7 +28,7 @@ export class TurnOrderScene07044 extends TurnOrderScene0701 {
     super.create();
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabel07044();
-    if (this.compactLandscape07044) this.applyMobileReadability07044();
+    this.applyMobileReadability07044();
   }
 
   update(): void {
@@ -43,13 +43,13 @@ export class TurnOrderScene07044 extends TurnOrderScene0701 {
       text.setFontFamily(MOBILE_UI_FONT_07044).setFontSize(23).setFixedSize(205, 30);
     }
     for (const text of runtime.ownerTexts.values()) {
-      text.setFontFamily(MOBILE_UI_FONT_07044).setFontSize(15);
+      text.setFontFamily(MOBILE_UI_FONT_07044).setFontSize(18);
     }
     for (const text of runtime.valueTexts.values()) {
       text.setFontFamily(MOBILE_UI_FONT_07044).setFontSize(54);
     }
     for (const text of runtime.rankTexts.values()) {
-      text.setFontFamily(MOBILE_UI_FONT_07044).setFontSize(17);
+      text.setFontFamily(MOBILE_UI_FONT_07044).setFontSize(20);
     }
 
     runtime.promptText
@@ -57,8 +57,9 @@ export class TurnOrderScene07044 extends TurnOrderScene0701 {
       .setFontSize(30);
     runtime.detailText
       ?.setFontFamily(MOBILE_UI_FONT_07044)
-      .setFontSize(18)
-      .setFixedSize(980, 54);
+      .setFontSize(21)
+      .setWordWrapWidth(980, true)
+      .setFixedSize(980, 64);
     runtime.rollButtonText
       ?.setFontFamily(MOBILE_UI_FONT_07044)
       .setFontSize(24);
@@ -73,7 +74,7 @@ export class TurnOrderScene07044 extends TurnOrderScene0701 {
       } else if (copy.startsWith('Mỗi người tự đổ D6')) {
         object.setFontSize(18);
       } else if (/^P[1-4]$/.test(copy)) {
-        object.setFontSize(17);
+        object.setFontSize(20);
       } else if (copy.startsWith('MVP 0.1.')) {
         object.setVisible(false);
       }
@@ -85,7 +86,7 @@ export class TurnOrderScene07044 extends TurnOrderScene0701 {
       if (!(object instanceof Phaser.GameObjects.Text)) continue;
       if (!object.text.startsWith('MVP 0.1.')) continue;
       object.setText(`MVP ${MOBILE_UI_BUILD_07044} • ROLL FOR ORDER`);
-      if (this.compactLandscape07044) object.setVisible(false);
+      object.setVisible(false);
     }
   }
 }
