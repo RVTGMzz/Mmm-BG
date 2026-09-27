@@ -1,3 +1,18 @@
+# September 27 CH-04 Character reaction checkpoint
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_CHARACTER_CH04.md`
+
+Validated gameplay source:
+- `0ec100f50c12e5e60f13ffa7ff74756fa71bc88b`
+- CI #3292 SUCCESS
+- mirror `19a7e87d79e5343fc45137704e1bee65d13b17a6`
+- Pages #51 SUCCESS
+
+CH-04A/B make the resolved Character own contextual presentation reactions across Card/News plus Job, Mini Game entry, salary and Lap Shuffle. No passive gameplay is active. Next safe build is CH-04C Jail/Hospital and result-moment reactions; keep CH-05 blocked on explicit balance approval.
+
+---
+
 # MMM — 2026-09-27 CURRENT HANDOFF
 
 Canonical new-chat transfer:

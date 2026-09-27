@@ -1,5 +1,20 @@
 # MMM — 2026-09-27 CURRENT HANDOFF
 
+Canonical newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_CHARACTER_CH04.md`
+
+Latest validated gameplay build:
+- source `0ec100f50c12e5e60f13ffa7ff74756fa71bc88b`
+- CI #3292: **SUCCESS**
+- public mirror `19a7e87d79e5343fc45137704e1bee65d13b17a6`
+- Pages #51: **SUCCESS**
+
+Current build direction: **CH-04 Character reaction identity**. CH-04A Card/News profiles and CH-04B Job/Mini Game/salary/Lap Shuffle moments are implemented and CI green. Character passives remain `live:false`. Steam Deck/Card-News/art runtime acceptance is intentionally pending while Ron continues feature development.
+
+---
+
+# MMM — 2026-09-27 CURRENT HANDOFF
+
 Canonical new-chat transfer:
 - `docs/SESSION_HANDOFF_2026-09-27_UI_STEAMDECK.md`
 
