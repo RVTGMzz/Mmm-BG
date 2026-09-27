@@ -41,10 +41,10 @@ assert.match(painter, /c\.aqua/);
 assert.match(scene, /paintVisualFoundationCardVf051\(shadow, panel\)/);
 assert.match(scene, /paintVisualFoundationNewsVf05\(shadow, panel\)/);
 assert.match(scene, /root\.setScrollFactor\(0\)/);
-assert.match(scene, /new Phaser\.GameObjects\.Text\(this, -292, -18, bodyCopy/);
-assert.match(scene, /body\.setMaxLines\(5\)/);
-assert.match(scene, /title\.setMaxLines\(2\)/);
-assert.match(scene, /else this\.fitWrappedText070418\(body, bodyWidth070426, bodyHeight070418, 24, 17, 5\)/);
+assert.match(scene, /createScrollableTextViewport070429\(this, root/);
+assert.match(scene, /fontSize: 21/);
+assert.match(scene, /maxLines: 2/);
+assert.match(scene, /name: isNews \? 'news-scroll-body-070429' : 'card-scroll-body-070429'/);
 assert.doesNotMatch(painter, /Math\.random|submitIntent\s*\(|MatchState|browserSession/);
 
-console.log('[visual-foundation-card-vf051] PASS warm kinetic Card skin + canonical owner + safe reaction lanes + bounded copy');
+console.log('[visual-foundation-card-vf051] PASS warm kinetic Card skin + canonical owner + safe reaction lanes + clipped scroll copy');
