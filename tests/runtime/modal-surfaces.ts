@@ -8,6 +8,7 @@ import { browserSession } from '../../src/core/browserSession';
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
 browserSession.configureSolo([0, 1, 2, 3]);
 gameSession.reset();
+gameSession.players.forEach(p => gameSession.setCharacter(p.id, 'starter-crybaby'));
 const fixtures: Record<string, any> = {
   card: {kind:'card_play', title:'Ví Ai Nấy Lo', description:'Mỗi người tự giữ tiền của mình. Chặn tác động chuyển tiền trong lượt này.', summary:'CPU 4 giữ lại 20 B$.', targetId:1, targetName:'CPU 2', actorName:'CPU 4', cardEffectType:'steal_money', amount:20, impact:'👛', eyebrow:'LÁ BÀI'},
   news: {kind:'news', title:'Phí Thành Phố Đồng Loạt', description:'Thành phố thu phí bảo trì. Mỗi người đóng 20 B$ để sửa những con đường vừa đi qua.', summary:'Tất cả người chơi mất 20 B$.', impact:'📰', eyebrow:'TIN TỨC'},

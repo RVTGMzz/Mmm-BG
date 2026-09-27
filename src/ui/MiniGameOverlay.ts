@@ -109,7 +109,14 @@ export function startMiniGameOverlay(
 
   const playerById = (id: number) => players.find((player) => player.id === id);
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
-  const clearStage = () => stage.removeAll(true);
+  const clearStage = () => {
+    stage.removeAll(true);
+    panel.setSize(900, 540).setY(0);
+    headerBand.setVisible(true);
+    headerSticker.setVisible(true);
+    title.setVisible(true);
+    subtitle.setVisible(true);
+  };
   const wait = (ms: number) => new Promise<void>((resolve) => scene.time.delayedCall(ms, resolve));
 
   const choiceButtons = <T extends string>(
@@ -280,6 +287,8 @@ export function startMiniGameOverlay(
     bodyViewport.text.setName('vf07-minigame-result-body');
     const resultBottom = -62 + bodyViewport.height + (bodyViewport.isScrollable ? 54 : 24);
     resultPaper.setSize(720, resultBottom + 150).setY((resultBottom - 150) / 2);
+    const shellBottom = stage.y + resultBottom + 24;
+    panel.setSize(900, shellBottom + 270).setY((shellBottom - 270) / 2);
 
     const scrollHint = scene.add.text(0, resultBottom - 25, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',

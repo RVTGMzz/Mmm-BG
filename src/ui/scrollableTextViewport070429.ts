@@ -166,11 +166,13 @@ export function createScrollableTextViewport070429(
 
   scene.input.on('pointermove', onPointerMove);
   scene.input.on('pointerup', onPointerUp);
+  scene.input.on('pointerupoutside', onPointerUp);
   scene.input.on('wheel', onWheel);
 
   const cleanup = (): void => {
     scene.input.off('pointermove', onPointerMove);
     scene.input.off('pointerup', onPointerUp);
+    scene.input.off('pointerupoutside', onPointerUp);
     scene.input.off('wheel', onWheel);
   };
   root.once('destroy', cleanup);

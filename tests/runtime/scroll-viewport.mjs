@@ -28,13 +28,17 @@ try {
     await check('moved-scaled-rotated');
     await page.evaluate(()=>window.scrollFixture.viewport.setScroll(10000));
     await check('bottom');
+    await page.evaluate(()=>window.scrollFixture.scene.cameras.main.setScroll(73, 41).setZoom(0.8));
+    await check('camera-scroll-zoom');
+    await page.evaluate(()=>window.scrollFixture.scene.cameras.main.setScroll(0, 0).setZoom(1));
     await page.evaluate(()=>{const f=window.scrollFixture;f.viewport.setScroll(0); f.outer.setRotation(0);});
     await frame();
     const point = await page.evaluate(()=>window.scrollFixture.viewport.root.getWorldTransformMatrix().transformPoint(100,70));
     await page.mouse.move(point.x,point.y); await page.mouse.down(); await page.mouse.move(point.x,point.y-40,{steps:4}); await page.mouse.up();
     const dragScroll=await page.evaluate(()=>-window.scrollFixture.viewport.text.y);
     assert.ok(Math.abs(dragScroll - 40 / (1.15 * 0.8)) < 2, `scaled drag: ${dragScroll}`);
-    await page.mouse.move(point.x,point.y); await page.mouse.wheel(0,100); await frame();
+    await page.mouse.move(point.x,point.y); await page.mouse.wheel(0,100);
+    await page.waitForFunction(v => -window.scrollFixture.viewport.text.y > v, dragScroll); await frame();
     assert.ok(await page.evaluate(()=>-window.scrollFixture.viewport.text.y) > dragScroll);
     const cleanup=await page.evaluate(()=>{const f=window.scrollFixture; const before=f.scene.input.listenerCount('pointermove'); f.viewport.root.destroy(); return before-f.scene.input.listenerCount('pointermove');});
     assert.equal(cleanup,1);
@@ -49,6 +53,13 @@ try {
     await page.waitForTimeout(500);
     await page.screenshot({path:`runtime-ui-evidence/surface-${surface}-1280x800.png`});
     assert.deepEqual(errors, [], surface);
+    if(surface==='order') {
+      const gap=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        return s.detailText.getBounds().top-s.promptText.getBounds().bottom;
+      });
+      assert.ok(gap>=8, `Roll For Order helper overlap: ${gap}`);
+    }
     await page.setViewportSize({width:960,height:540});
     await page.waitForTimeout(200);
     await page.screenshot({path:`runtime-ui-evidence/surface-${surface}-960x540.png`});

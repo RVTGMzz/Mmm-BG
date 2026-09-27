@@ -32,7 +32,7 @@ export class TurnOrderScene0701 extends TurnOrderScene048 {
     );
     if (outer) {
       outer.setVisible(false);
-      const frame = this.add.graphics().setDepth(-2);
+      const frame = this.add.graphics().setDepth(-2).setName('roll-order-frame');
       frame.fillStyle(0xfffbf3, 1);
       frame.fillRoundedRect(75, 42, 1130, 630, 30);
       frame.lineStyle(5, 0x202020, 1);
