@@ -72,3 +72,16 @@ Still unchanged:
 - no RNG;
 - no gameplay payout changes;
 - Character-less sessions remain quiet on these new Character-only moments.
+
+
+## CH-04C follow-up
+
+Special-location release beats now use Character reaction identity too:
+- Hospital success;
+- Hospital failure;
+- Jail/Police success;
+- Jail/Police failure.
+
+The authoritative release roll and success flag are unchanged. CH-04C only attaches one model-owned reaction line to the existing `special_release` landing presentation.
+
+Character-less sessions remain exactly as before with no new reaction line.

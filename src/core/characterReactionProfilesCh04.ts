@@ -15,6 +15,10 @@ export type CharacterReactionContextCh04 =
   | 'minigame'
   | 'salary'
   | 'shuffle'
+  | 'hospital_success'
+  | 'hospital_fail'
+  | 'jail_success'
+  | 'jail_fail'
   | 'chaos';
 
 export interface CharacterReactionVariablesCh04 {
@@ -78,6 +82,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'angry', text: 'Trời ơi! Bàn cờ cũng thay lòng đổi dạ nữa!' },
       { expression: 'neutral', text: 'Mới nhớ đường xong mà nó đổi hết rồi!' },
     ],
+    hospital_success: [
+      { expression: 'happy', text: 'Ra viện rồi! Trời ơi, tui sống lại rồi!' },
+      { expression: 'happy', text: 'Cho tui về! Tui nhớ cái ví của tui quá!' },
+    ],
+    hospital_fail: [
+      { expression: 'angry', text: 'Chưa cho về nữa hả? Tui sắp khóc thiệt đó!' },
+      { expression: 'angry', text: 'Bệnh viện gì mà giữ người ta hoài vậy trời!' },
+    ],
+    jail_success: [
+      { expression: 'happy', text: 'Được thả rồi! Tui thề từ nay sống hiền… chắc vậy.' },
+      { expression: 'happy', text: 'Mở cửa đi, tui nhớ tự do quá rồi!' },
+    ],
+    jail_fail: [
+      { expression: 'angry', text: 'Trời ơi, còn giữ tui nữa hả?' },
+      { expression: 'angry', text: 'Tui có chịu nổi thêm một tập bi kịch nữa đâu!' },
+    ],
     chaos: [
       { expression: 'neutral', text: 'Khoan… cho tui hiểu chuyện gì vừa xảy ra đã!' },
       { expression: 'angry', text: 'Ủa rồi ai chịu trách nhiệm cho cảm xúc của tui?' },
@@ -119,6 +139,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     shuffle: [
       { expression: 'angry', text: 'Ai cho đổi bàn lúc tui vừa nhớ đường vậy?' },
       { expression: 'neutral', text: 'Rồi. Lại phải học bản đồ từ đầu.' },
+    ],
+    hospital_success: [
+      { expression: 'neutral', text: 'Khỏe rồi thì cho tui đi. Nằm đủ rồi.' },
+      { expression: 'happy', text: 'Cuối cùng cũng được ra. Tốt.' },
+    ],
+    hospital_fail: [
+      { expression: 'angry', text: 'Chưa được ra? Ai ký giấy giữ tui vậy?' },
+      { expression: 'angry', text: 'Tui thấy khỏe. Hệ thống không thấy hả?' },
+    ],
+    jail_success: [
+      { expression: 'happy', text: 'Mở cửa. Tui tự đi được.' },
+      { expression: 'neutral', text: 'Được thả rồi. Đừng để tui quay lại.' },
+    ],
+    jail_fail: [
+      { expression: 'angry', text: 'Còn giữ nữa? Được, nhớ vụ này đó.' },
+      { expression: 'angry', text: 'Tui muốn gặp người phụ trách.' },
     ],
     chaos: [
       { expression: 'angry', text: 'Cái bàn này không ai chịu ngồi yên hết hả?' },
@@ -162,6 +198,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'angry', text: 'Bản đồ đổi rồi! Kế hoạch A coi như xong!' },
       { expression: 'neutral', text: 'Được, chuyển sang kế hoạch B… nếu có.' },
     ],
+    hospital_success: [
+      { expression: 'happy', text: 'Được ra rồi… tốt. Kế hoạch hồi phục có hiệu quả.' },
+      { expression: 'neutral', text: 'Ổn. Xuất viện. Giờ kiểm tra lại lịch trình.' },
+    ],
+    hospital_fail: [
+      { expression: 'angry', text: 'Chưa được ra? Tui biết mà, còn thiếu bước nào đó!' },
+      { expression: 'angry', text: 'Khoan, hồ sơ của tui có vấn đề gì không?' },
+    ],
+    jail_success: [
+      { expression: 'happy', text: 'Thoát rồi. Từ giờ né mọi thứ khả nghi.' },
+      { expression: 'neutral', text: 'Tự do rồi. Ghi chú: không quay lại đây.' },
+    ],
+    jail_fail: [
+      { expression: 'angry', text: 'Chưa được thả? Tui đã tính sai ở đâu?' },
+      { expression: 'angry', text: 'Không ổn. Kế hoạch thoát thất bại rồi!' },
+    ],
     chaos: [
       { expression: 'angry', text: 'Không có trong kế hoạch. Không có trong kế hoạch!' },
       { expression: 'neutral', text: 'Cho tui năm giây sắp xếp lại mọi thứ.' },
@@ -204,6 +256,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'happy', text: 'Đổi bàn hả? Hay! Chơi lại từ đầu!' },
       { expression: 'happy', text: 'Càng loạn càng vui! Tới đi!' },
     ],
+    hospital_success: [
+      { expression: 'happy', text: 'Ra viện! Chạy tiếp thôi!' },
+      { expression: 'happy', text: 'Khỏe rồi! Có ai đua không?' },
+    ],
+    hospital_fail: [
+      { expression: 'angry', text: 'Chưa ra được hả? Nằm yên khó chịu quá!' },
+      { expression: 'happy', text: 'Thêm lượt nữa thôi! Rồi tui bật dậy!' },
+    ],
+    jail_success: [
+      { expression: 'happy', text: 'Tự do! Chạy!' },
+      { expression: 'happy', text: 'Mở cửa là tui biến liền nha!' },
+    ],
+    jail_fail: [
+      { expression: 'angry', text: 'Còn nhốt hả? Cho tui vận động tí coi!' },
+      { expression: 'happy', text: 'Thêm lượt à? Được, tui vẫn còn pin!' },
+    ],
     chaos: [
       { expression: 'happy', text: 'Không hiểu gì hết nhưng vui!' },
       { expression: 'happy', text: 'Bàn cờ càng loạn càng đã!' },
@@ -245,6 +313,22 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     shuffle: [
       { expression: 'happy', text: 'Bé vừa muốn đổi bàn. Chuẩn.' },
       { expression: 'neutral', text: 'Bản đồ mới. Bé vẫn thắng.' },
+    ],
+    hospital_success: [
+      { expression: 'happy', text: 'Xuất viện. Bé có lịch bận.' },
+      { expression: 'neutral', text: 'Khỏe rồi. Gọi xe cho bé.' },
+    ],
+    hospital_fail: [
+      { expression: 'angry', text: 'Chưa cho bé về? Gọi trưởng khoa.' },
+      { expression: 'neutral', text: 'Bé chờ thêm một lượt. Ghi nợ đó.' },
+    ],
+    jail_success: [
+      { expression: 'happy', text: 'Mở cửa. Bé ân xá cho mọi người.' },
+      { expression: 'neutral', text: 'Tự do rồi. Vụ này khép lại.' },
+    ],
+    jail_fail: [
+      { expression: 'angry', text: 'Ai dám giữ bé thêm lượt nữa?' },
+      { expression: 'neutral', text: 'Được. Bé sẽ nhớ tên cái đồn này.' },
     ],
     chaos: [
       { expression: 'neutral', text: 'Bình tĩnh. Để bé xử.' },

@@ -268,6 +268,8 @@ jobs:
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
         run: npm run test:character-reaction-moments-ch04b
+      - name: CH-04C Character reactions for Hospital and Jail release
+        run: npm run test:character-special-release-ch04c
       - name: Validate external playtest package
         run: npm run test:package
       - name: Add retained playtest guide to package

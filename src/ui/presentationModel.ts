@@ -380,6 +380,10 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     const roll = dataNumber(event, 'result') ?? 1;
     const location = dataString(event, 'location');
     const place = location === 'hospital' ? 'BỆNH VIỆN' : 'ĐỒN CẢNH SÁT';
+    const specialContextCh04c: CharacterReactionContextCh04 =
+      location === 'hospital'
+        ? (success ? 'hospital_success' : 'hospital_fail')
+        : (success ? 'jail_success' : 'jail_fail');
     return {
       ...base,
       kind: 'tile_land',
@@ -391,7 +395,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
         ? `Xúc xắc ${roll} vừa rồi CHỈ dùng để thoát. Ra khỏi ${place === 'BỆNH VIỆN' ? 'Bệnh viện' : 'Đồn'} xong sẽ đổ một D6 MỚI để di chuyển.`
         : (description || 'Chưa đạt điều kiện. Ở lại và kết thúc lượt.'),
       summary: '',
-      reactions: [],
+      reactions: characterMomentReactionCh04(event, players, specialContextCh04c),
       holdMs: success ? 1500 : 1700,
       tileType: 'special_release',
       roll,
