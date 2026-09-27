@@ -29,8 +29,9 @@ assert.match(active, /if \(model\.tileType !== 'job'\)/);
 assert.match(active, /showCanonicalJobLanding070411/);
 assert.match(active, /setName\('job-presentation-card'\)/);
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
-assert.match(active, /fixedWidth: 540/);
-assert.match(active, /fixedHeight: 82/);
+assert.match(active, /fixedWidth: 560/);
+assert.match(active, /fixedHeight: 86/);
+assert.match(active, /fontSize: isResult \? '19px' : '18px'/);
 assert.match(active, /maxLines: 3/);
 assert.match(active, /presentation\.finishCurrent\(false\)/);
 
