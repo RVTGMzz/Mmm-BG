@@ -19,6 +19,7 @@ export type CharacterReactionContextCh04 =
   | 'hospital_fail'
   | 'jail_success'
   | 'jail_fail'
+  | 'minigame_win'
   | 'chaos';
 
 export interface CharacterReactionVariablesCh04 {
@@ -98,6 +99,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'angry', text: 'Trời ơi, còn giữ tui nữa hả?' },
       { expression: 'angry', text: 'Tui có chịu nổi thêm một tập bi kịch nữa đâu!' },
     ],
+    minigame_win: [
+      { expression: 'happy', text: 'Tui thắng thiệt hả? Trời ơi, vui quá muốn khóc!' },
+      { expression: 'happy', text: 'Có thêm {amount}B$ nữa hả? Ai giữ tui lại coi!' },
+    ],
     chaos: [
       { expression: 'neutral', text: 'Khoan… cho tui hiểu chuyện gì vừa xảy ra đã!' },
       { expression: 'angry', text: 'Ủa rồi ai chịu trách nhiệm cho cảm xúc của tui?' },
@@ -155,6 +160,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     jail_fail: [
       { expression: 'angry', text: 'Còn giữ nữa? Được, nhớ vụ này đó.' },
       { expression: 'angry', text: 'Tui muốn gặp người phụ trách.' },
+    ],
+    minigame_win: [
+      { expression: 'happy', text: 'Thắng. Vậy thôi. {amount}B$ đâu?' },
+      { expression: 'neutral', text: 'Ừ, đúng kết quả phải có.' },
     ],
     chaos: [
       { expression: 'angry', text: 'Cái bàn này không ai chịu ngồi yên hết hả?' },
@@ -214,6 +223,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'angry', text: 'Chưa được thả? Tui đã tính sai ở đâu?' },
       { expression: 'angry', text: 'Không ổn. Kế hoạch thoát thất bại rồi!' },
     ],
+    minigame_win: [
+      { expression: 'happy', text: 'Thắng rồi… khoan, tui ghi lại chiến thuật này!' },
+      { expression: 'happy', text: '{amount}B$ thưởng. Vậy là phương án A có hiệu quả.' },
+    ],
     chaos: [
       { expression: 'angry', text: 'Không có trong kế hoạch. Không có trong kế hoạch!' },
       { expression: 'neutral', text: 'Cho tui năm giây sắp xếp lại mọi thứ.' },
@@ -272,6 +285,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'angry', text: 'Còn nhốt hả? Cho tui vận động tí coi!' },
       { expression: 'happy', text: 'Thêm lượt à? Được, tui vẫn còn pin!' },
     ],
+    minigame_win: [
+      { expression: 'happy', text: 'THẮNG! Cho ván nữa đi!' },
+      { expression: 'happy', text: '+{amount}B$! Ai chơi tiếp với tui?' },
+    ],
     chaos: [
       { expression: 'happy', text: 'Không hiểu gì hết nhưng vui!' },
       { expression: 'happy', text: 'Bàn cờ càng loạn càng đã!' },
@@ -329,6 +346,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     jail_fail: [
       { expression: 'angry', text: 'Ai dám giữ bé thêm lượt nữa?' },
       { expression: 'neutral', text: 'Được. Bé sẽ nhớ tên cái đồn này.' },
+    ],
+    minigame_win: [
+      { expression: 'happy', text: 'Bé thắng. Đúng quy trình.' },
+      { expression: 'neutral', text: '{amount}B$ chuyển vào quỹ sữa.' },
     ],
     chaos: [
       { expression: 'neutral', text: 'Bình tĩnh. Để bé xử.' },

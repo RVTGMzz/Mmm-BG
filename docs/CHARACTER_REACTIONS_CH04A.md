@@ -85,3 +85,17 @@ Special-location release beats now use Character reaction identity too:
 The authoritative release roll and success flag are unchanged. CH-04C only attaches one model-owned reaction line to the existing `special_release` landing presentation.
 
 Character-less sessions remain exactly as before with no new reaction line.
+
+
+## CH-04D follow-up
+
+The canonical Mini Game ranking surface now has one optional **winner voice** line.
+
+Rules:
+- winner quote is inside the existing ranking modal, not a second reaction bubble;
+- it resolves from the winner's Character `reactionProfileId`;
+- it may reference the already-computed rank-1 reward;
+- Character-less sessions render the ranking exactly as before, with no quote;
+- payout remains HOST-owned and is submitted only after the tournament result is resolved.
+
+No passive or gameplay rule is activated.

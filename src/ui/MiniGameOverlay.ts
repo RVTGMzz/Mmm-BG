@@ -3,6 +3,8 @@ import { MINI_GAME_DUEL_LAYOUT_070423 } from './miniGameLayout070423';
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
+import { gameSession } from '../core/session';
+import { characterReactionLineCh04 } from '../core/characterReactionProfilesCh04';
 import {
   miniGameRewardForRank,
   miniGameRewardType059,
@@ -68,6 +70,27 @@ function rpsLabel(choice: RpsChoice): string {
 
 function rewardTitle(gameType: MiniGameBaseRewardType): string {
   return gameType === 'rps' ? 'OẲN TÙ XÌ' : 'NHIỀU RA ÍT BỊ';
+}
+
+export function characterWinnerVoiceCh04d(
+  playerId: number,
+  playerName: string,
+  reward: number,
+  eventSeq: number,
+): string {
+  const characterId = gameSession.getCharacterId(playerId);
+  const flavor = characterReactionLineCh04(
+    characterId,
+    'minigame_win',
+    {
+      amount: Math.max(0, Math.floor(reward)),
+      actor: playerName,
+      target: playerName,
+      speaker: playerName,
+    },
+    eventSeq + playerId + Math.max(0, Math.floor(reward)),
+  );
+  return flavor?.text ?? '';
 }
 
 export function startMiniGameOverlay(
@@ -393,7 +416,14 @@ export function startMiniGameOverlay(
       return `${medals[index] ?? `${index + 1}.`} Hạng ${index + 1} • ${player?.name ?? `P${id + 1}`} • ${rewardCopy} B$`;
     }).join('\n');
     const rowLines = rows.split('\n');
-    const body = scene.add.text(0, 28, rows, {
+    const winnerId = rankingPlayerIds[0];
+    const winner = winnerId === undefined ? undefined : playerById(winnerId);
+    const winnerReward = winnerId === undefined ? 0 : miniGameRewardForRank(payoutType, 1);
+    const winnerVoice = winner
+      ? characterWinnerVoiceCh04d(winner.id, winner.name, winnerReward, eventSeq)
+      : '';
+
+    const body = scene.add.text(0, 18, rows, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: rowLines.length >= 4 ? '21px' : '23px',
       fontStyle: 'bold',
@@ -402,7 +432,17 @@ export function startMiniGameOverlay(
       lineSpacing: rowLines.length >= 4 ? 11 : 16,
       fixedWidth: 620,
     }).setOrigin(0.5);
-    const rewardHint = scene.add.text(0, 142, 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG', {
+    const winnerVoiceText = scene.add.text(0, 116, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#5d4773',
+      align: 'center',
+      fixedWidth: 620,
+      wordWrap: { width: 610, useAdvancedWrap: true },
+      maxLines: 2,
+    }).setOrigin(0.5).setVisible(Boolean(winnerVoice));
+    const rewardHint = scene.add.text(0, 158, 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '11px',
       fontStyle: 'bold',
@@ -410,8 +450,9 @@ export function startMiniGameOverlay(
       align: 'center',
       fixedWidth: 620,
     }).setOrigin(0.5);
-    stage.add([podiumPaper, podiumRibbon, heading, body, rewardHint]);
-    scene.tweens.add({ targets: [podiumPaper, podiumRibbon, heading, body, rewardHint], y: '-=8', alpha: { from: 0.25, to: 1 }, duration: 210, ease: 'Back.easeOut' });
+    podiumPaper.setDisplaySize(700, winnerVoice ? 360 : 330);
+    stage.add([podiumPaper, podiumRibbon, heading, body, winnerVoiceText, rewardHint]);
+    scene.tweens.add({ targets: [podiumPaper, podiumRibbon, heading, body, winnerVoiceText, rewardHint], y: '-=8', alpha: { from: 0.25, to: 1 }, duration: 210, ease: 'Back.easeOut' });
     await wait(2100);
   };
 
