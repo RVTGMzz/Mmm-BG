@@ -158,6 +158,8 @@ jobs:
         run: npm run test:ui-ghost-gamepad-web-0651
       - name: 0.1.70.4.24 Steam Deck controller navigation and modal ownership
         run: npm run test:steam-deck-070424
+      - name: 0.1.70.4.28 Steam Deck CSS-only 16:10 presentation bleed
+        run: npm run test:steam-deck-css-070428
       - name: 0.1.66 unified flow match length and Mini Game readability
         run: npm run test:unified-flow-match-length-066
       - name: 0.1.68 vertical slice inherited authority flow
