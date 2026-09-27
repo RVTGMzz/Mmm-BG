@@ -12,6 +12,7 @@ import type { RankedPodiumEntry } from '../ui/podiumRanking';
 import { podiumWinnerVoiceCh04e } from '../ui/characterPodiumVoiceCh04e';
 import { reactionPlacement070422 } from '../ui/presentationLanes070422';
 import { isDetachedCinematicCopy070423 } from '../ui/presentationTextOwnership070423';
+import { createScrollableTextViewport070429 } from '../ui/scrollableTextViewport070429';
 import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
 import { NEWS_SHEET_VF05, paintVisualFoundationNewsVf05 } from '../ui/visualFoundationNewsVf05';
 import { paintVisualFoundationCardVf051 } from '../ui/visualFoundationCardVf051';
@@ -47,6 +48,7 @@ type Presentation07044 = {
       container: Phaser.GameObjects.Container;
       revealTarget?: Phaser.GameObjects.Text;
       revealText?: string;
+      minAutoCloseMs?: number;
     } | undefined,
   ): void;
   finishCurrent(animate?: boolean): void;
@@ -372,7 +374,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       const root = this.add.container(640, 330)
         .setDepth(900)
         .setAlpha(0)
-        .setScale(0.94);
+        .setScale(1);
       const built = this.rebuildCanonicalCinematicText070414(root, model);
       if (!built) {
         root.destroy(true);
@@ -381,8 +383,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
       return {
         container: root,
-        revealTarget: built.body,
-        revealText: built.bodyCopy,
+        minAutoCloseMs: built.scrollable ? 6000 : undefined,
       };
     });
   }
@@ -518,15 +519,12 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   private rebuildCanonicalCinematicText070414(
     root: Phaser.GameObjects.Container | undefined,
     model: PresentationEventModel,
-  ): { body: Phaser.GameObjects.Text; bodyCopy: string } | undefined {
+  ): { body: Phaser.GameObjects.Text; bodyCopy: string; scrollable: boolean } | undefined {
     if (!root?.active) return undefined;
 
     const isNews = model.kind === 'news';
     root.setName(isNews ? 'news-presentation-card' : 'card-presentation-card');
 
-    // Final layout lock: destroy every inherited child, including legacy footer
-    // graphics and rarity/action strips. Keeping only hidden text was not enough
-    // because old Graphics objects still looked like a second frame.
     for (const child of [...root.list]) {
       this.tweens.killTweensOf(child);
       child.destroy();
@@ -534,22 +532,14 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     root.setScrollFactor(0);
 
-    // Create modal children off the Scene Display List. They are rendered only
-    // through the canonical owner root, so the world camera can never pick up a
-    // loose description/result line and fling it outside the card.
     const shadow = new Phaser.GameObjects.Graphics(this);
     const panel = new Phaser.GameObjects.Graphics(this);
-    if (isNews) {
-      // VF-05: editorial warm paper.
-      paintVisualFoundationNewsVf05(shadow, panel);
-    } else {
-      // VF-05.1: playful collectible-card material, SAME canonical owner.
-      paintVisualFoundationCardVf051(shadow, panel);
-    }
+    if (isNews) paintVisualFoundationNewsVf05(shadow, panel);
+    else paintVisualFoundationCardVf051(shadow, panel);
 
     const kicker = new Phaser.GameObjects.Text(this, -322, -118, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: isNews ? '14px' : '12px',
+      fontSize: '13px',
       fontStyle: 'bold',
       color: isNews ? '#31543c' : '#5d4e88',
       fixedWidth: 500,
@@ -557,7 +547,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const title = new Phaser.GameObjects.Text(this, -322, -88, model.title, {
       fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: '30px',
+      fontSize: '28px',
       fontStyle: 'bold',
       color: '#3f2b27',
       fixedWidth: 540,
@@ -567,35 +557,14 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const impact = new Phaser.GameObjects.Text(this, 314, -108, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: isNews ? '26px' : '19px',
+      fontSize: '22px',
       color: '#3f2b27',
     }).setOrigin(1, 0);
 
-    const bodyCopy = this.canonicalCinematicBody070414(model);
-    // Runtime screenshots proved that the old 16/18px body was wasting most of
-    // the paper while still being hard to read. Keep one generous centered body
-    // well and only shrink for genuinely dense copy.
-    const bodyWidth070426 = 584;
-    const body = new Phaser.GameObjects.Text(this, -292, -18, bodyCopy, {
-      fontFamily: MOBILE_UI_FONT_07044,
-      fontSize: isNews ? '26px' : '24px',
-      color: '#59463d',
-      fixedWidth: bodyWidth070426,
-      wordWrap: { width: bodyWidth070426, useAdvancedWrap: true },
-      lineSpacing: 7,
-      maxLines: 5,
-    });
-
-    const bodyHeight070418 = model.targetId === undefined ? 142 : 118;
-    this.fitWrappedText070418(title, 540, 54, 30, 24, 2);
-    if (isNews) this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 26, 18, 5);
-    else this.fitWrappedText070418(body, bodyWidth070426, bodyHeight070418, 24, 17, 5);
-    body.setMaxLines(5);
-    title.setMaxLines(2);
-
     const source = new Phaser.GameObjects.Text(
       this,
-      316, 126,
+      316,
+      126,
       isNews ? '' : `CARD ACTION • #${model.eventSeq}`,
       {
         fontFamily: MOBILE_UI_FONT_07044,
@@ -604,7 +573,27 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       },
     ).setOrigin(1, 0.5);
 
-    root.add([shadow, panel, kicker, title, impact, body, source]);
+    root.add([shadow, panel, kicker, title, impact, source]);
+
+    const bodyCopy = this.canonicalCinematicBody070414(model);
+    const bodyWidth070429 = 584;
+    const bodyHeight070429 = model.targetId === undefined ? 142 : 112;
+    const bodyViewport = createScrollableTextViewport070429(this, root, {
+      x: -292,
+      y: -18,
+      worldX: 348,
+      worldY: 312,
+      width: bodyWidth070429,
+      height: bodyHeight070429,
+      text: bodyCopy,
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: 21,
+      color: '#59463d',
+      lineSpacing: 7,
+      name: isNews ? 'news-scroll-body-070429' : 'card-scroll-body-070429',
+    });
+    const body = bodyViewport.text;
+    body.setName(isNews ? 'news-scroll-text-070429' : 'card-scroll-text-070429');
 
     if (model.rarity) {
       const rarityText = new Phaser.GameObjects.Text(this, 275, -118, model.rarity, {
@@ -638,14 +627,9 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       root.add(actionText);
     }
 
-    return { body, bodyCopy };
+    return { body, bodyCopy, scrollable: bodyViewport.isScrollable };
   }
 
-  /**
-   * 0.1.70.4.18: fit arbitrary future Card/News copy into the canonical panel.
-   * We reduce type only as much as needed, then lock the final box so no title
-   * or description can escape into the footer or outside the modal.
-   */
   private fitWrappedText070418(
     text: Phaser.GameObjects.Text,
     width: number,
@@ -800,7 +784,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       .setDepth(900)
       .setName('job-presentation-card')
       .setAlpha(0)
-      .setScale(0.965);
+      .setScale(1)
+      .setScrollFactor(0);
     presentation.active = root;
 
     const isResult = model.title.includes('NHẬN VIỆC');
@@ -855,18 +840,6 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       this.canonicalJobBody070414(model),
       ...(model.summary && model.summary !== model.description ? [model.summary] : []),
     ].filter(Boolean);
-    const body = this.add.text(44, 50, bodyLines.join('\n'), {
-      fontFamily: JOB_UI_FONT_070421,
-      fontSize: isResult ? '19px' : '18px',
-      fontStyle: isResult ? 'bold' : 'normal',
-      color: '#59463d',
-      fixedWidth: 560,
-      fixedHeight: 86,
-      align: 'center',
-      wordWrap: { width: 560, useAdvancedWrap: true },
-      lineSpacing: 6,
-      maxLines: 3,
-    }).setOrigin(0.5);
 
     const hint = this.add.text(326, 99, 'chạm để tiếp tục', {
       fontFamily: JOB_UI_FONT_070421,
@@ -878,12 +851,32 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const hit = this.add.rectangle(0, -2, 764, 244, 0xffffff, 0.001)
       .setInteractive({ useHandCursor: true });
 
-    root.add([shadow, panel, header, eyebrow, dieChip, icon, title, body, hint, hit]);
+    root.add([shadow, panel, header, eyebrow, dieChip, icon, title, hint, hit]);
+    const jobBodyViewport070429 = createScrollableTextViewport070429(this, root, {
+      x: -236,
+      y: 6,
+      worldX: 404,
+      worldY: 356,
+      width: 560,
+      height: 86,
+      text: bodyLines.join('\n'),
+      fontFamily: JOB_UI_FONT_070421,
+      fontSize: isResult ? 19 : 18,
+      fontStyle: isResult ? 'bold' : 'normal',
+      color: '#59463d',
+      align: 'center',
+      lineSpacing: 6,
+      name: 'job-scroll-body-070429',
+    });
+    jobBodyViewport070429.text.setName('job-scroll-text-070429');
+    if (jobBodyViewport070429.isScrollable) {
+      hint.setText('↕ kéo / cuộn nội dung • chạm ngoài để tiếp tục');
+    }
     root.bringToTop(eyebrow);
     root.bringToTop(dieChip);
     root.bringToTop(icon);
     root.bringToTop(title);
-    root.bringToTop(body);
+    root.bringToTop(jobBodyViewport070429.root);
     root.bringToTop(hint);
 
     sfxController.play('ui_confirm');
@@ -904,7 +897,10 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     };
 
     hit.on('pointerdown', close);
-    this.time.delayedCall(Math.max(model.holdMs, 1750), close);
+    this.time.delayedCall(
+      jobBodyViewport070429.isScrollable ? Math.max(model.holdMs, 5000) : Math.max(model.holdMs, 1750),
+      close,
+    );
   }
 
   /**

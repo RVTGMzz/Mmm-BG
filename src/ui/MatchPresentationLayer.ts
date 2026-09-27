@@ -54,6 +54,7 @@ export interface PresentationCinematicRender070427 {
   container: Phaser.GameObjects.Container;
   revealTarget?: Phaser.GameObjects.Text;
   revealText?: string;
+  minAutoCloseMs?: number;
 }
 
 export type PresentationCinematicRenderer070427 = (
@@ -298,6 +299,7 @@ export class MatchPresentationLayer {
     const owned = this.cinematicRenderer070427?.(model);
     let container: Phaser.GameObjects.Container;
     let revealMs: number;
+    let minAutoCloseMs = 0;
 
     if (owned) {
       // Card/News can supply their final canonical visual directly. No legacy
@@ -309,6 +311,7 @@ export class MatchPresentationLayer {
       revealMs = owned.revealTarget
         ? this.revealText(owned.revealTarget, fullRevealText)
         : 450;
+      minAutoCloseMs = Math.max(0, owned.minAutoCloseMs ?? 0);
     } else {
       container = this.scene.add.container(640, 330).setDepth(900).setAlpha(0).setScale(0.94);
       this.active = container;
@@ -376,7 +379,7 @@ export class MatchPresentationLayer {
       });
     });
 
-    this.armTiming(model, Math.max(revealMs, reactionEnd));
+    this.armTiming(model, Math.max(revealMs, reactionEnd), minAutoCloseMs);
   }
 
 
@@ -403,11 +406,11 @@ export class MatchPresentationLayer {
     return duration;
   }
 
-  private armTiming(model: PresentationEventModel, revealMs: number): void {
+  private armTiming(model: PresentationEventModel, revealMs: number, minAutoCloseMs = 0): void {
     const policy = this.options.timingForModel?.(model, revealMs) ?? {
       mode: 'auto' as const,
       skipAfterMs: Math.max(700, revealMs),
-      autoCloseMs: Math.max(model.holdMs, revealMs + 600),
+      autoCloseMs: Math.max(model.holdMs, revealMs + 600, minAutoCloseMs),
     };
 
     if (Number.isFinite(policy.skipAfterMs)) {

@@ -67,6 +67,7 @@ export class CareerMinigameBoardScene066 extends CareerMinigameBoardScene0651 {
 
   private polishPresentation066(): void {
     this.visitTextTree066(this.children.list, (text) => {
+      if (text.name.startsWith('vf07-minigame-')) return;
       if (text.text.startsWith('CITY • MVP 0.1.65.1')) {
         text.setText('CITY • MVP 0.1.66 • UNIFIED FLOW + MATCH LENGTH');
       }

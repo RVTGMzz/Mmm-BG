@@ -137,6 +137,7 @@ export class CareerMinigameBoardScene0701 extends CareerMinigameBoardScene069 {
       if (object.text.trim().startsWith('🏆 BẢNG XẾP HẠNG')) heading = object;
     });
     if (!heading?.active) return;
+    if (heading.name.startsWith('vf07-minigame-')) return;
 
     const stage = heading.parentContainer;
     const root = stage?.parentContainer;

@@ -3,6 +3,7 @@ import { MINI_GAME_DUEL_LAYOUT_070423 } from './miniGameLayout070423';
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
+import { createScrollableTextViewport070429 } from './scrollableTextViewport070429';
 import { gameSession } from '../core/session';
 import { characterReactionLineCh04 } from '../core/characterReactionProfilesCh04';
 import {
@@ -101,7 +102,7 @@ export function startMiniGameOverlay(
 ): MiniGameOverlayRun {
   const slot = miniGameSlot059(contentId);
   // The fullscreen Mini Game owns the UI camera above the P1–P4 HUD (depth 1000).
-  const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal');
+  const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal').setScrollFactor(0);
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
   const panel = scene.add.rectangle(0, 0, 900, 540, MINI_GAME_VISUAL_VF07.shellFill, 1)
     .setStrokeStyle(MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1);
@@ -113,12 +114,19 @@ export function startMiniGameOverlay(
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
   const subtitle = scene.add.text(0, -184, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
-    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '13px', color: '#6d5549', align: 'center', fixedWidth: 760,
-  }).setOrigin(0.5);
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+    fontSize: '15px',
+    color: '#6d5549',
+    align: 'center',
+    fixedWidth: 760,
+    wordWrap: { width: 750, useAdvancedWrap: true },
+    maxLines: 2,
+    lineSpacing: 2,
+  }).setOrigin(0.5).setName('vf07-minigame-subtitle');
   const stake = scene.add.text(0, -156, '', {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 780,
   }).setOrigin(0.5).setVisible(false);
-  const stage = scene.add.container(0, 22);
+  const stage = scene.add.container(0, 22).setName('vf07-minigame-stage');
   root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
@@ -263,24 +271,54 @@ export function startMiniGameOverlay(
 
   const showResult = async (heading: string, body: string, ms = 1700) => {
     clearStage();
-    const bodyLines = body.split('\n').filter((line) => line.trim().length > 0);
-    const denseResult = bodyLines.length >= 6 || body.length >= 220;
-    const resultPaper = scene.add.rectangle(0, 10, 720, denseResult ? 300 : 270, MINI_GAME_VISUAL_VF07.resultFill, 1)
+    const resultPaper = scene.add.rectangle(0, 10, 720, 320, MINI_GAME_VISUAL_VF07.resultFill, 1)
       .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const resultBadge = scene.add.rectangle(0, -88, 330, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+    const resultBadge = scene.add.rectangle(0, -112, 360, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.5);
-    const head = scene.add.text(0, -88, heading, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '28px', fontStyle: 'bold',
-      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 300,
-    }).setOrigin(0.5);
-    const text = scene.add.text(0, 38, body, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: denseResult ? '17px' : '20px',
-      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 620, lineSpacing: denseResult ? 7 : 9,
-      wordWrap: { width: 600, useAdvancedWrap: true },
-    }).setOrigin(0.5);
-    stage.add([resultPaper, resultBadge, head, text]);
-    scene.tweens.add({ targets: [resultPaper, resultBadge, head, text], scaleX: { from: 0.96, to: 1 }, scaleY: { from: 0.96, to: 1 }, alpha: { from: 0.35, to: 1 }, duration: 190, ease: 'Back.easeOut' });
-    await wait(ms);
+    const head = scene.add.text(0, -112, heading, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '27px',
+      fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
+      align: 'center',
+      fixedWidth: 330,
+    }).setOrigin(0.5).setName('vf07-minigame-result-heading');
+    stage.add([resultPaper, resultBadge, head]);
+
+    const bodyViewport = createScrollableTextViewport070429(scene, stage, {
+      x: -310,
+      y: -62,
+      worldX: 330,
+      worldY: 320,
+      width: 620,
+      height: 180,
+      text: body,
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: 20,
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
+      align: 'center',
+      lineSpacing: 8,
+      name: 'vf07-minigame-result-scroll',
+    });
+    bodyViewport.text.setName('vf07-minigame-result-body');
+
+    const scrollHint = scene.add.text(0, 139, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center',
+      fixedWidth: 620,
+    }).setOrigin(0.5).setName('vf07-minigame-scroll-hint');
+    stage.add(scrollHint);
+
+    scene.tweens.add({
+      targets: [resultPaper, resultBadge, head, bodyViewport.root, scrollHint],
+      alpha: { from: 0.35, to: 1 },
+      duration: 190,
+      ease: 'Sine.easeOut',
+    });
+    await wait(bodyViewport.isScrollable ? Math.max(ms, 5200) : ms);
   };
 
   const showRpsDuel = async (
@@ -398,16 +436,17 @@ export function startMiniGameOverlay(
     stake.setVisible(false);
 
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
-    const podiumPaper = scene.add.rectangle(0, 12, 700, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
+    const podiumPaper = scene.add.rectangle(0, 12, 720, 360, MINI_GAME_VISUAL_VF07.resultFill, 1)
       .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const podiumRibbon = scene.add.rectangle(0, -112, 430, 66, MINI_GAME_VISUAL_VF07.headerFill, 1)
+    const podiumRibbon = scene.add.rectangle(0, -128, 430, 62, MINI_GAME_VISUAL_VF07.headerFill, 1)
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45);
-    const heading = scene.add.text(0, -112, '🏆 BẢNG XẾP HẠNG', {
+    const heading = scene.add.text(0, -128, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '26px',
+      fontSize: '27px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setName('vf07-minigame-ranking-heading');
+
     const medals = ['🥇', '🥈', '🥉', '4️⃣'];
     const rows = rankingPlayerIds.map((id, index) => {
       const player = playerById(id);
@@ -415,7 +454,26 @@ export function startMiniGameOverlay(
       const rewardCopy = reward > 0 ? `+${reward}` : '0';
       return `${medals[index] ?? `${index + 1}.`} Hạng ${index + 1} • ${player?.name ?? `P${id + 1}`} • ${rewardCopy} B$`;
     }).join('\n');
-    const rowLines = rows.split('\n');
+
+    stage.add([podiumPaper, podiumRibbon, heading]);
+    const rowsViewport = createScrollableTextViewport070429(scene, stage, {
+      x: -310,
+      y: -84,
+      worldX: 330,
+      worldY: 298,
+      width: 620,
+      height: 150,
+      text: rows,
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: 20,
+      fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
+      align: 'left',
+      lineSpacing: 11,
+      name: 'vf07-minigame-ranking-scroll',
+    });
+    rowsViewport.text.setName('vf07-minigame-ranking-rows');
+
     const winnerId = rankingPlayerIds[0];
     const winner = winnerId === undefined ? undefined : playerById(winnerId);
     const winnerReward = winnerId === undefined ? 0 : miniGameRewardForRank(payoutType, 1);
@@ -423,16 +481,7 @@ export function startMiniGameOverlay(
       ? characterWinnerVoiceCh04d(winner.id, winner.name, winnerReward, eventSeq)
       : '';
 
-    const body = scene.add.text(0, 18, rows, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: rowLines.length >= 4 ? '21px' : '23px',
-      fontStyle: 'bold',
-      color: MINI_GAME_VISUAL_VF07.cocoaText,
-      align: 'left',
-      lineSpacing: rowLines.length >= 4 ? 11 : 16,
-      fixedWidth: 620,
-    }).setOrigin(0.5);
-    const winnerVoiceText = scene.add.text(0, 116, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
+    const winnerVoiceText = scene.add.text(0, 94, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '13px',
       fontStyle: 'bold',
@@ -441,19 +490,32 @@ export function startMiniGameOverlay(
       fixedWidth: 620,
       wordWrap: { width: 610, useAdvancedWrap: true },
       maxLines: 2,
-    }).setOrigin(0.5).setVisible(Boolean(winnerVoice));
-    const rewardHint = scene.add.text(0, 158, 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '11px',
-      fontStyle: 'bold',
-      color: MINI_GAME_VISUAL_VF07.mutedText,
-      align: 'center',
-      fixedWidth: 620,
-    }).setOrigin(0.5);
-    podiumPaper.setDisplaySize(700, winnerVoice ? 360 : 330);
-    stage.add([podiumPaper, podiumRibbon, heading, body, winnerVoiceText, rewardHint]);
-    scene.tweens.add({ targets: [podiumPaper, podiumRibbon, heading, body, winnerVoiceText, rewardHint], y: '-=8', alpha: { from: 0.25, to: 1 }, duration: 210, ease: 'Back.easeOut' });
-    await wait(2100);
+    }).setOrigin(0.5).setVisible(Boolean(winnerVoice)).setName('vf07-minigame-winner-voice');
+
+    const rewardHint = scene.add.text(
+      0,
+      154,
+      rowsViewport.isScrollable
+        ? '↕ KÉO / CUỘN BẢNG • KẾT QUẢ ĐÃ CHỐT'
+        : 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG',
+      {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '11px',
+        fontStyle: 'bold',
+        color: MINI_GAME_VISUAL_VF07.mutedText,
+        align: 'center',
+        fixedWidth: 620,
+      },
+    ).setOrigin(0.5).setName('vf07-minigame-ranking-hint');
+
+    stage.add([winnerVoiceText, rewardHint]);
+    scene.tweens.add({
+      targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, winnerVoiceText, rewardHint],
+      alpha: { from: 0.25, to: 1 },
+      duration: 210,
+      ease: 'Sine.easeOut',
+    });
+    await wait(rowsViewport.isScrollable ? 5000 : 2600);
   };
 
   const runRpsFinal = async (
