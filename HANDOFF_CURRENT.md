@@ -1,3 +1,18 @@
+# MMM — 2026-09-27 CURRENT HANDOFF
+
+Canonical new-chat transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_UI_STEAMDECK.md`
+
+Latest validated gameplay/UI build before this documentation-only handoff:
+- source `d3f3c4f0ca04df03dc92ab5b222690e3568a96a8`
+- CI #3278: **SUCCESS**
+- public mirror `0fb399d83e52230fc9eadb960c62b0ac9c737987`
+- Pages #45: **SUCCESS**
+
+Next implementation priority: **Steam Deck fullscreen/viewport pass** from Ron's 2026-09-27 runtime photo. Card/News, Mini Game/ranking and Job changes are documented in the canonical transfer. Runtime visual acceptance remains pending.
+
+---
+
 # Mmm-BG — HANDOFF CURRENT
 
 ## September 25 session transfer — READY FOR NEW CHAT
