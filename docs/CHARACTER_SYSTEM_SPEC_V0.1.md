@@ -322,6 +322,13 @@ CH-02B extension:
 - contextual reaction pools;
 - retain legacy fallback while migrating.
 
+#### CH-04A runtime reaction follow-up
+- Card/News reaction speakers resolve their selected Character's `reactionProfileId`;
+- deterministic contextual pools cover attack / targeted / gain / loss / spectate / chaos;
+- Character-less seats retain legacy reaction JSON;
+- CPU legacy quirks are fallback-only after Character assignment;
+- still presentation-only: no passive or MatchState mutation.
+
 ### CH-05 — HOST-authoritative passives
 - implement a small balanced passive set;
 - checksum/replay/reconnect coverage;

@@ -9,7 +9,11 @@ import {
   type ReactionEventDefinition,
   type ReactionSpeakerRole,
 } from '../core/reactions';
-import type { FaceExpression } from '../core/session';
+import { gameSession, type FaceExpression } from '../core/session';
+import {
+  characterReactionLineCh04,
+  type CharacterReactionContextCh04,
+} from '../core/characterReactionProfilesCh04';
 import { cpuQuirkForTurn, cpuQuirkLine } from '../core/testBot';
 import type { PlayerState } from '../core/types';
 import { npcChatDurationMs } from './npcChatPolicy';
@@ -136,6 +140,31 @@ function cardReactionEventId(event: MatchEvent): string | undefined {
   }
 }
 
+function reactionContextCh04(
+  event: MatchEvent,
+  role: ReactionSpeakerRole,
+): CharacterReactionContextCh04 {
+  if (role === 'spectator') return 'spectate';
+
+  if (event.type === 'card_play') {
+    return role === 'target' ? 'targeted' : 'attack';
+  }
+
+  if (event.type === 'news') {
+    const signal = [
+      dataString(event, 'reactionEventId'),
+      dataString(event, 'summary'),
+      dataString(event, 'description'),
+      dataString(event, 'title'),
+    ].join(' ').toLocaleLowerCase('vi');
+
+    if (/negative|loss|mất|trừ|phạt|thu phí|bay màu/.test(signal)) return 'loss';
+    if (/positive|gain|bonus|nhận|thưởng|\+/.test(signal)) return 'gain';
+  }
+
+  return 'chaos';
+}
+
 function reactionLines(
   event: MatchEvent,
   players: PlayerState[],
@@ -172,6 +201,19 @@ function reactionLines(
         : Math.abs(speakerId) % step.variants.length;
       const variant = step.variants[variantIndex] ?? step.variants[0];
       const isNpc = speakerId !== undefined && browserSession.isCpuSeat(speakerId);
+      const characterFlavor = speakerId === undefined
+        ? undefined
+        : characterReactionLineCh04(
+            gameSession.getCharacterId(speakerId),
+            reactionContextCh04(event, step.speakerRole),
+            {
+              amount,
+              actor: actorName,
+              target: targetName,
+              speaker: speakerName,
+            },
+            event.seq + step.sequence + speakerId,
+          );
 
       return {
         sequence: step.sequence,
@@ -180,8 +222,12 @@ function reactionLines(
         speakerId,
         speakerName,
         speakerRole: step.speakerRole,
-        expression: step.expression,
-        text: variant ? friendlyVisibleCopy0701(formatReactionText(variant.text, variables)) : '',
+        expression: characterFlavor?.expression ?? step.expression,
+        text: characterFlavor?.text
+          ? friendlyVisibleCopy0701(characterFlavor.text)
+          : variant
+            ? friendlyVisibleCopy0701(formatReactionText(variant.text, variables))
+            : '',
       };
     })
     .filter((line) => line.text.trim().length > 0);
@@ -190,6 +236,9 @@ function reactionLines(
 function maybeNpcQuirkLine(event: MatchEvent, players: PlayerState[]): PresentationReactionLine | undefined {
   const actorId = event.actorId;
   if (actorId === undefined || !browserSession.isCpuSeat(actorId)) return undefined;
+  // Once a CPU has a Character, CH-04 owns its personality. Keep the legacy
+  // bot quirk only as a compatibility fallback for pre-Character sessions.
+  if (gameSession.getCharacterId(actorId)) return undefined;
   const cardId = dataString(event, 'cardId');
   if (!cardId || !cpuQuirkForTurn(event.turnNumber, actorId, cardId)) return undefined;
   return {
