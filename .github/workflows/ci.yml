@@ -232,6 +232,8 @@ jobs:
         run: npm run test:presentation-content-070423
       - name: 0.1.70.4.27 Card/News direct canonical visual producer
         run: npm run test:presentation-direct-canonical-070427
+      - name: 0.1.70.4.29 fixed-type scrollable modal containment
+        run: npm run test:scrollable-modal-text-070429
       - name: Visual Foundation 0.1 VF-01/02/03 tokens buttons and first owned modal
         run: npm run test:visual-foundation-vf03
       - name: Visual Foundation 0.1 VF-04 four-corner player HUD

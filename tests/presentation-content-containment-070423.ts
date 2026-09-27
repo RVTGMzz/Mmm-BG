@@ -56,15 +56,17 @@ assert.equal(
 
 const scene = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 assert.match(scene, /isDetachedCinematicCopy070423\(object\.text, ownedValues\)/);
-assert.match(scene, /new Phaser\.GameObjects\.Text\(this, -292, -18, bodyCopy/);
-assert.match(scene, /const bodyWidth070426 = 584/);
-assert.match(scene, /isNews \? '26px' : '24px'/);
-assert.match(scene, /bodyWidth070426, bodyHeight070418, 26, 18/);
-assert.match(scene, /bodyWidth070426, bodyHeight070418, 24, 17/);
-assert.match(scene, /new Phaser\.GameObjects\.Graphics\(this\)/);
+assert.match(scene, /name: isNews \? 'news-scroll-body-070429' : 'card-scroll-body-070429'/);
+assert.match(scene, /const bodyWidth070429 = 584/);
+assert.match(scene, /createScrollableTextViewport070429\(this, root/);
+assert.match(scene, /fontSize: 21/);
 assert.match(scene, /root\.setScrollFactor\(0\)/);
-assert.match(scene, /body\.setMaxLines\(5\)/);
-assert.match(scene, /title\.setMaxLines\(2\)/);
+assert.match(scene, /maxLines: 2/);
+assert.match(scene, /bodyViewport\.text/);
+assert.doesNotMatch(
+  scene.slice(scene.indexOf('private rebuildCanonicalCinematicText070414'), scene.indexOf('private fitWrappedText070418')),
+  /fitWrappedText070418\(/,
+);
 
 assert.match(scene, /presentation\.setCinematicRenderer070427/);
 assert.match(scene, /const root = this\.add\.container\(640, 330\)/);

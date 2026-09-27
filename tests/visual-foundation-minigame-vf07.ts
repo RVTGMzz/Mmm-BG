@@ -21,8 +21,10 @@ expect(overlay.includes('podiumPaper') && overlay.includes('podiumRibbon'), 'VF-
 expect(overlay.includes('revealPaper') && overlay.includes('revealRows'), 'VF-07 majority/minority round must use one simultaneous owned reveal surface');
 expect(overlay.includes('VÒNG ${round} • CÙNG LẬT!'), 'VF-07 majority/minority reveal must clearly communicate the shared flip beat');
 expect(overlay.includes("chant.setText('LẬT KÈO!')") && overlay.includes('leftCard.setScale(0.92, 1)') && overlay.includes('targets: vs'), 'VF-07 RPS duel must keep the shared card-flip and VS impact reveal beat');
-expect(overlay.includes("const denseResult = bodyLines.length >= 6 || body.length >= 220") && overlay.includes("fontSize: denseResult ? '17px' : '20px'"), 'VF-07 result surface must keep readable typography for dense four-player reveal summaries');
-expect(overlay.includes("wordWrap: { width: 600, useAdvancedWrap: true }"), 'VF-07 result copy must stay bounded inside the canonical result paper');
+expect(overlay.includes('createScrollableTextViewport070429'), 'VF-07 long result copy must use the shared clipped scroll viewport');
+expect(overlay.includes('fontSize: 20'), 'VF-07 result/ranking body must keep a fixed readable 20px scale');
+expect(!overlay.includes('denseResult ?'), 'VF-07 must not shrink result typography based on content length');
+expect(overlay.includes("'vf07-minigame-result-body'") && overlay.includes("'vf07-minigame-ranking-rows'"), 'VF-07 canonical Mini Game text must be named so legacy reflow cannot rewrite it');
 expect(overlay.includes('privacyRail') && overlay.includes('LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT'), 'VF-07 choice screen must visibly preserve concealed-choice ownership before reveal');
 expect(overlay.includes("color: MINI_GAME_VISUAL_VF07.cocoaText") && overlay.includes("color: MINI_GAME_VISUAL_VF07.mutedText"), 'VF-07 choice and helper copy must stay on the shared cocoa/muted token palette');
 expect(overlay.includes('duration: 190') && overlay.includes('duration: 210'), 'VF-07 motion must remain short and non-blocking');

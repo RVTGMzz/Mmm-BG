@@ -8,12 +8,16 @@ const presentation = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
 
 assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
-// Every Card/News title and body goes through the same adaptive fitter.
-// Runtime readability floor stays >=16px for Card copy; News uses an even larger 26/18 range.
-assert.match(active, /fitWrappedText070418\(title, 540, 54, 30, 24, 2\)/);
-assert.match(active, /fitWrappedText070418\(body, bodyWidth070426, bodyHeight070418, 24, 17, 5\)/);
-assert.match(active, /while \(fontSize > minFontSize && text\.height > height\)/);
-assert.match(active, /text\.setFixedSize\(width, height\)/);
+// 0.1.70.4.29: Card/News keeps one readable font scale and scrolls long copy
+// behind a hard viewport instead of shrinking typography.
+const rebuildStart = active.indexOf('private rebuildCanonicalCinematicText070414');
+const fitStart = active.indexOf('private fitWrappedText070418', rebuildStart);
+const rebuild = active.slice(rebuildStart, fitStart);
+assert.match(rebuild, /createScrollableTextViewport070429/);
+assert.match(rebuild, /fontSize: 21/);
+assert.match(rebuild, /fontSize: '28px'/);
+assert.doesNotMatch(rebuild, /fitWrappedText070418\(/);
+assert.match(active, /minAutoCloseMs: built\.scrollable \? 6000 : undefined/);
 
 // The old 328px reaction at x188 entered the canonical modal by 94px.
 // Check full rectangular geometry horizontally AND vertically for every seat.
