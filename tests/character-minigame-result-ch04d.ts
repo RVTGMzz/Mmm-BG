@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { gameSession } from '../src/core/session';
-import { characterWinnerVoiceCh04d } from '../src/ui/MiniGameOverlay';
+import { characterWinnerVoiceCh04d } from '../src/ui/characterMiniGameWinnerVoiceCh04d';
 
 gameSession.reset();
 
@@ -27,7 +27,8 @@ const profile = readFileSync('src/core/characterReactionProfilesCh04.ts', 'utf8'
 assert.match(overlay, /const winnerVoice = winner/);
 assert.match(overlay, /characterWinnerVoiceCh04d\(winner\.id, winner\.name, winnerReward, eventSeq\)/);
 assert.match(overlay, /winnerVoiceText/);
-assert.match(overlay, /podiumPaper\.setDisplaySize\(700, winnerVoice \? 360 : 330\)/);
+assert.match(overlay, /const podiumPaper = scene\.add\.rectangle\(0, 12, 720, 360/);
+assert.match(overlay, /vf07-minigame-ranking-scroll/);
 assert.match(overlay, /submitSystemIntent\('resolve_minigame'/);
 assert.doesNotMatch(profile, /Math\.random\s*\(/);
 assert.doesNotMatch(overlay, /submitClientIntent\s*\(/);
