@@ -990,3 +990,46 @@ canvas {
   .group-media-label { font-size:10px; }
   .group-media-controls button { min-height:34px; font-size:11px; padding-inline:12px; }
 }
+
+
+/* 0.1.70.4.28 Steam Deck 16:10 CSS-only presentation bleed */
+/*
+ * Steam Deck is 1280x800 (16:10) while MMM's authored Phaser surface remains
+ * 1280x720 (16:9). This is deliberately background-only:
+ * - no canvas transform;
+ * - no Phaser scale-mode override;
+ * - no viewport JS;
+ * - no pointer/input layer.
+ *
+ * The spare top/bottom viewport becomes a quiet extension of the board palette
+ * instead of looking like blank browser chrome. Phones stay on their existing
+ * landscape path because this rule requires a desktop/handheld-sized viewport.
+ */
+@media
+  (min-width: 900px)
+  and (min-height: 600px)
+  and (min-aspect-ratio: 3/2)
+  and (max-aspect-ratio: 7/4) {
+  html,
+  body,
+  #app {
+    background:
+      radial-gradient(circle at 8% -8%, rgba(255, 211, 77, .34), transparent 30%),
+      radial-gradient(circle at 92% 108%, rgba(91, 141, 239, .22), transparent 30%),
+      linear-gradient(
+        180deg,
+        #79b793 0%,
+        #9bc8aa 7%,
+        #f4ead7 18%,
+        #f4ead7 82%,
+        #9bc8aa 93%,
+        #79b793 100%
+      );
+  }
+
+  canvas {
+    box-shadow:
+      0 -10px 24px rgba(63, 43, 39, .10),
+      0 10px 24px rgba(63, 43, 39, .10);
+  }
+}
