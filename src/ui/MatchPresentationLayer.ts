@@ -50,6 +50,16 @@ export interface MatchPresentationLayerOptions {
   onPresentationEnd?: (model: PresentationEventModel) => void;
 }
 
+export interface PresentationCinematicRender070427 {
+  container: Phaser.GameObjects.Container;
+  revealTarget?: Phaser.GameObjects.Text;
+  revealText?: string;
+}
+
+export type PresentationCinematicRenderer070427 = (
+  model: PresentationEventModel,
+) => PresentationCinematicRender070427 | undefined;
+
 export class MatchPresentationLayer {
   private readonly queue: PresentationEventModel[] = [];
   private active?: Phaser.GameObjects.Container;
@@ -60,6 +70,7 @@ export class MatchPresentationLayer {
   private destroyed = false;
   private blocking = false;
   private canAcknowledge = false;
+  private cinematicRenderer070427?: PresentationCinematicRenderer070427;
 
   private readonly acknowledgeKey = () => this.requestAdvance();
   private readonly acknowledgePointer = () => this.requestAdvance();
@@ -76,6 +87,10 @@ export class MatchPresentationLayer {
 
   isBlocking(): boolean {
     return this.blocking;
+  }
+
+  setCinematicRenderer070427(renderer: PresentationCinematicRenderer070427 | undefined): void {
+    this.cinematicRenderer070427 = renderer;
   }
 
   enqueue(events: MatchEvent[]): void {
@@ -264,46 +279,62 @@ export class MatchPresentationLayer {
 
   private showCinematic(model: PresentationEventModel): void {
     const palette = KIND_PALETTE[model.kind];
-    const container = this.scene.add.container(640, 330).setDepth(900).setAlpha(0).setScale(0.94);
-    this.active = container;
+    const owned = this.cinematicRenderer070427?.(model);
+    let container: Phaser.GameObjects.Container;
+    let revealMs: number;
 
-    const shadow = this.scene.add.graphics();
-    shadow.fillStyle(0x000000, 0.28);
-    shadow.fillRoundedRect(-366, -145, 732, 306, 24);
-    shadow.setPosition(0, 9);
-    const panel = this.scene.add.graphics();
-    panel.fillStyle(palette.panel, 0.985);
-    panel.fillRoundedRect(-360, -150, 720, 300, 22);
-    panel.lineStyle(3, palette.accent, 0.92);
-    panel.strokeRoundedRect(-360, -150, 720, 300, 22);
-    panel.fillStyle(palette.accent, 1);
-    panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
+    if (owned) {
+      // Card/News can supply their final canonical visual directly. No legacy
+      // body object or typewriter tween is ever created, so there is nothing
+      // detached that can wake up later and leak outside the modal.
+      container = owned.container;
+      this.active = container;
+      const fullRevealText = owned.revealText ?? owned.revealTarget?.text ?? '';
+      revealMs = owned.revealTarget
+        ? this.revealText(owned.revealTarget, fullRevealText)
+        : 450;
+    } else {
+      container = this.scene.add.container(640, 330).setDepth(900).setAlpha(0).setScale(0.94);
+      this.active = container;
 
-    const kicker = this.scene.add.text(-322, -118, model.eyebrow, {
-      fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#f8f4ec', letterSpacing: 1.1,
-    });
-    const title = this.scene.add.text(-322, -88, model.title, {
-      fontFamily: 'Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#ffffff', wordWrap: { width: 540 },
-    });
-    const impact = this.scene.add.text(314, -108, model.impact || '•', {
-      fontFamily: 'Arial, sans-serif', fontSize: '19px', color: '#ffffff',
-    }).setOrigin(1, 0);
-    const bodyText = [model.description, model.summary && model.summary !== model.description ? `→ ${model.summary}` : '']
-      .filter(Boolean)
-      .join('\n\n');
-    const body = this.scene.add.text(-322, -28, '', {
-      fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f4ede4', wordWrap: { width: 628 }, lineSpacing: 5,
-      fixedWidth: 628, fixedHeight: 128,
-    });
-    const source = this.scene.add.text(316, 126, `${palette.label} • #${model.eventSeq}`, {
-      fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#d8d0c6',
-    }).setOrigin(1, 0.5);
+      const shadow = this.scene.add.graphics();
+      shadow.fillStyle(0x000000, 0.28);
+      shadow.fillRoundedRect(-366, -145, 732, 306, 24);
+      shadow.setPosition(0, 9);
+      const panel = this.scene.add.graphics();
+      panel.fillStyle(palette.panel, 0.985);
+      panel.fillRoundedRect(-360, -150, 720, 300, 22);
+      panel.lineStyle(3, palette.accent, 0.92);
+      panel.strokeRoundedRect(-360, -150, 720, 300, 22);
+      panel.fillStyle(palette.accent, 1);
+      panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
 
-    container.add([shadow, panel, kicker, title, impact, body, source]);
-    this.addNaturalActionLine(container, model);
-    if (model.rarity) this.addRarityBadge(container, 238, -118, model.rarity);
+      const kicker = this.scene.add.text(-322, -118, model.eyebrow, {
+        fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#f8f4ec', letterSpacing: 1.1,
+      });
+      const title = this.scene.add.text(-322, -88, model.title, {
+        fontFamily: 'Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#ffffff', wordWrap: { width: 540 },
+      });
+      const impact = this.scene.add.text(314, -108, model.impact || '•', {
+        fontFamily: 'Arial, sans-serif', fontSize: '19px', color: '#ffffff',
+      }).setOrigin(1, 0);
+      const bodyText = [model.description, model.summary && model.summary !== model.description ? `→ ${model.summary}` : '']
+        .filter(Boolean)
+        .join('\n\n');
+      const body = this.scene.add.text(-322, -28, '', {
+        fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f4ede4', wordWrap: { width: 628 }, lineSpacing: 5,
+        fixedWidth: 628, fixedHeight: 128,
+      });
+      const source = this.scene.add.text(316, 126, `${palette.label} • #${model.eventSeq}`, {
+        fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#d8d0c6',
+      }).setOrigin(1, 0.5);
 
-    const revealMs = this.revealText(body, bodyText);
+      container.add([shadow, panel, kicker, title, impact, body, source]);
+      this.addNaturalActionLine(container, model);
+      if (model.rarity) this.addRarityBadge(container, 238, -118, model.rarity);
+      revealMs = this.revealText(body, bodyText);
+    }
+
     this.playModelSfx(model);
     this.spawnBurst(palette.accent, model.rarity === 'SSR' ? 18 : 10, 640, 330);
     if (model.kind === 'card_draw' || model.kind === 'card_play') this.spawnCardFlip(palette.accent);
@@ -331,6 +362,7 @@ export class MatchPresentationLayer {
 
     this.armTiming(model, Math.max(revealMs, reactionEnd));
   }
+
 
   private revealText(target: Phaser.GameObjects.Text, fullText: string): number {
     if (!fullText) {

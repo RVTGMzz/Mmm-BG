@@ -65,7 +65,17 @@ assert.match(scene, /new Phaser\.GameObjects\.Graphics\(this\)/);
 assert.match(scene, /root\.setScrollFactor\(0\)/);
 assert.match(scene, /body\.setMaxLines\(5\)/);
 assert.match(scene, /title\.setMaxLines\(2\)/);
-assert.match(scene, /for \(const child of \[\.\.\.presentation\.active\.list\]\) this\.tweens\.killTweensOf\(child\)/, 'legacy Card/News reveal tween must be killed before canonical rebuild');
+
+assert.match(scene, /presentation\.setCinematicRenderer070427/);
+assert.match(scene, /const root = this\.add\.container\(640, 330\)/);
+assert.doesNotMatch(
+  scene.slice(
+    scene.indexOf('private installFinalCardLayout070412'),
+    scene.indexOf('Apply the new board layout', scene.indexOf('private installFinalCardLayout070412')),
+  ),
+  /originalShowCinematic\(model\)/,
+  'Card/News final producer must bypass the inherited cinematic visual producer entirely',
+);
 
 // Card/News content must be owned by the canonical container, not created as a
 // loose scene Text and later reparented after camera routing.

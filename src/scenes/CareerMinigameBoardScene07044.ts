@@ -40,6 +40,13 @@ type Presentation07044 = {
   isBlocking(): boolean;
   showLanding(model: PresentationEventModel): void;
   showCinematic(model: PresentationEventModel): void;
+  setCinematicRenderer070427(
+    renderer: (model: PresentationEventModel) => {
+      container: Phaser.GameObjects.Container;
+      revealTarget?: Phaser.GameObjects.Text;
+      revealText?: string;
+    } | undefined,
+  ): void;
   finishCurrent(animate?: boolean): void;
 };
 
@@ -309,36 +316,36 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const presentation = this.runtime07044().presentation;
     if (!presentation) return;
 
-    const originalShowCinematic = (presentation as Presentation07044 & {
-      showCinematic?: (model: PresentationEventModel) => void;
-    }).showCinematic?.bind(presentation);
-    if (!originalShowCinematic) return;
-
-    (presentation as Presentation07044 & {
-      showCinematic: (model: PresentationEventModel) => void;
-    }).showCinematic = (model: PresentationEventModel) => {
+    // 0.1.70.4.27: Card/News now bypass the inherited cinematic visual producer
+    // completely. MatchPresentationLayer still owns SFX, reactions, timing,
+    // continue/skip and finish lifecycle, but no legacy body Text is created.
+    presentation.setCinematicRenderer070427((model: PresentationEventModel) => {
       const isCard =
         model.kind === 'card_draw'
         || model.kind === 'card_play'
         || model.kind === 'card_blocked';
       const isNews = model.kind === 'news';
+      if (!isCard && !isNews) return undefined;
 
       if (isCard) this.destroyNamedTopLevelContainers070413('legacy-card-overlay');
       if (isNews) this.destroyNamedTopLevelContainers070413('legacy-news-overlay');
 
-      originalShowCinematic(model);
-
-      if (!isCard && !isNews) return;
-      // The legacy cinematic starts a typewriter tween on its body. Rebuilding
-      // the root immediately is not sufficient: a detached tween target can
-      // become visible again on a later frame. Kill every child tween before
-      // replacing the visual owner, then keep only the canonical root.
-      if (presentation.active?.active) {
-        for (const child of [...presentation.active.list]) this.tweens.killTweensOf(child);
+      const root = this.add.container(640, 330)
+        .setDepth(900)
+        .setAlpha(0)
+        .setScale(0.94);
+      const built = this.rebuildCanonicalCinematicText070414(root, model);
+      if (!built) {
+        root.destroy(true);
+        return undefined;
       }
-      this.rebuildCanonicalCinematicText070414(presentation.active, model);
-      this.syncCanonicalCinematicOwnership070417();
-    };
+
+      return {
+        container: root,
+        revealTarget: built.body,
+        revealText: built.bodyCopy,
+      };
+    });
   }
 
   /**
@@ -472,8 +479,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   private rebuildCanonicalCinematicText070414(
     root: Phaser.GameObjects.Container | undefined,
     model: PresentationEventModel,
-  ): void {
-    if (!root?.active) return;
+  ): { body: Phaser.GameObjects.Text; bodyCopy: string } | undefined {
+    if (!root?.active) return undefined;
 
     const isNews = model.kind === 'news';
     root.setName(isNews ? 'news-presentation-card' : 'card-presentation-card');
@@ -591,6 +598,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       }).setOrigin(0.5);
       root.add(actionText);
     }
+
+    return { body, bodyCopy };
   }
 
   /**
