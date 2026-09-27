@@ -29,7 +29,7 @@ assert.doesNotMatch(install, /originalShowCinematic/);
 const rebuildStart = scene.indexOf('private rebuildCanonicalCinematicText070414');
 const rebuildEnd = scene.indexOf('private fitWrappedText070418', rebuildStart);
 const rebuild = scene.slice(rebuildStart, rebuildEnd);
-assert.match(rebuild, /return \{ body, bodyCopy \};/);
+assert.match(rebuild, /return \{ body, bodyCopy, scrollable: bodyViewport\.isScrollable \};/);
 assert.match(rebuild, /createScrollableTextViewport070429\(this, root/);
 assert.doesNotMatch(rebuild, /this\.add\.text\(-292, -18/);
 
