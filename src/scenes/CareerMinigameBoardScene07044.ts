@@ -788,18 +788,18 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       padding: { x: 10, y: 5 },
     }).setOrigin(1, 0.5);
 
-    const icon = this.add.text(-304, 18, model.impact || '💼', {
+    const icon = this.add.text(-292, 24, model.impact || '💼', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '50px',
+      fontSize: '54px',
     }).setOrigin(0.5);
 
     const displayTitle = isResult ? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ';
-    const title = this.add.text(36, -12, displayTitle, {
+    const title = this.add.text(44, -18, displayTitle, {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '27px',
+      fontSize: '29px',
       fontStyle: 'bold',
       color: '#34251f',
-      fixedWidth: 530,
+      fixedWidth: 560,
       align: 'center',
     }).setOrigin(0.5);
 
@@ -807,16 +807,16 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       this.canonicalJobBody070414(model),
       ...(model.summary && model.summary !== model.description ? [model.summary] : []),
     ].filter(Boolean);
-    const body = this.add.text(36, 52, bodyLines.join('\n'), {
+    const body = this.add.text(44, 50, bodyLines.join('\n'), {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '16px',
+      fontSize: isResult ? '19px' : '18px',
       fontStyle: isResult ? 'bold' : 'normal',
       color: '#59463d',
-      fixedWidth: 540,
-      fixedHeight: 82,
+      fixedWidth: 560,
+      fixedHeight: 86,
       align: 'center',
-      wordWrap: { width: 540, useAdvancedWrap: true },
-      lineSpacing: 5,
+      wordWrap: { width: 560, useAdvancedWrap: true },
+      lineSpacing: 6,
       maxLines: 3,
     }).setOrigin(0.5);
 
