@@ -1,3 +1,14 @@
+# September 27 runtime UI regression checkpoint
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_RUNTIME_UI_REGRESSION.md`
+
+Ron supplied 9 real-device screenshots after Pages #55. Runtime visual acceptance is **FAIL** despite CI #3304 green. Job/Card bodies can disappear, News body can be almost completely clipped, Mini Game ranking loses the left edge, and several screens still use tiny secondary text with excessive empty space.
+
+Next session must repair the shared scroll viewport coordinate-space/mask design generically before any more cosmetic tuning. Keep fixed readable fonts and vertical scrolling for long copy; use compact/adaptive height for short copy.
+
+---
+
 # 0.1.70.4.29 fixed type + scroll containment
 
 Canonical transfer:

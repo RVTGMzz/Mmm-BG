@@ -1,6 +1,32 @@
 # MMM — 2026-09-27 CURRENT HANDOFF
 
 Canonical newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-27_RUNTIME_UI_REGRESSION.md`
+
+**RUNTIME UI STATUS: FAIL / NOT ACCEPTED**
+
+Latest user screenshots show:
+- Job result body missing with huge empty paper;
+- Card body blank;
+- News body mostly clipped;
+- Mini Game ranking clipped at left edge;
+- overall helper/body typography still too small while modal surfaces waste space.
+
+Primary next action: repair the shared scroll viewport coordinate-space/mask architecture. Do not tweak content-specific positions. Preserve the fixed-font + scroll rule, then compact short-content modals and enlarge secondary text.
+
+Latest validated implementation before screenshot rejection:
+- source `d13beed6cbb880487c50cd239359d4a4d91311fc`
+- CI #3304 SUCCESS
+- mirror `6c31a5af7d3c20ffb1b604590a8e9c6b244b5a96`
+- Pages #55 SUCCESS
+
+CI green is not visual acceptance.
+
+---
+
+# MMM — 2026-09-27 CURRENT HANDOFF
+
+Canonical newest transfer:
 - `docs/SESSION_HANDOFF_2026-09-27_SCROLLABLE_UI_070429.md`
 
 Latest validated UI source:
