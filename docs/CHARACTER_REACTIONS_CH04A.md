@@ -99,3 +99,14 @@ Rules:
 - payout remains HOST-owned and is submitted only after the tournament result is resolved.
 
 No passive or gameplay rule is activated.
+
+
+## CH-04E follow-up
+
+Final-match podium winners now receive one short Character-owned line inside their own podium slot.
+
+- only displayed rank 1 speaks;
+- tied rank-1 players each receive their own line;
+- non-winners and Character-less players add no extra copy;
+- the existing podium face reaction, winner crown, low-to-high reveal and result-input gate remain inherited;
+- this is presentation-only and does not alter the authoritative ranking or wallet totals.

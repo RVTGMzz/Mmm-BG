@@ -8,6 +8,8 @@ import {
   mutableBoardNodeIds071,
 } from '../core/lapShuffle071';
 import type { PresentationEventModel } from '../ui/presentationModel';
+import type { RankedPodiumEntry } from '../ui/podiumRanking';
+import { podiumWinnerVoiceCh04e } from '../ui/characterPodiumVoiceCh04e';
 import { reactionPlacement070422 } from '../ui/presentationLanes070422';
 import { isDetachedCinematicCopy070423 } from '../ui/presentationTextOwnership070423';
 import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
@@ -140,6 +142,43 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     return this as unknown as Runtime07044;
   }
 
+
+  /**
+   * CH-04E — Character winner voice stays inside each winner's podium slot.
+   * Tied rank-1 players each keep their own deterministic line.
+   */
+  protected decoratePodiumSlot(
+    slot: Phaser.GameObjects.Container,
+    entry: RankedPodiumEntry,
+    x: number,
+    faceY: number,
+  ): void {
+    super.decoratePodiumSlot(slot, entry, x, faceY);
+
+    const player = this.runtime07044().match.players.find((candidate) => candidate.id === entry.playerId);
+    const voice = podiumWinnerVoiceCh04e(
+      entry.playerId,
+      player?.name ?? `P${entry.playerId + 1}`,
+      entry.rank,
+      entry.money,
+    );
+    if (!voice) return;
+
+    const quote = this.add.text(0, 440, voice, {
+      fontFamily: JOB_UI_FONT_070421,
+      fontSize: '9px',
+      fontStyle: 'bold',
+      color: '#5d4773',
+      backgroundColor: '#fffaf0',
+      align: 'center',
+      fixedWidth: 158,
+      wordWrap: { width: 150, useAdvancedWrap: true },
+      maxLines: 2,
+      padding: { x: 4, y: 4 },
+    }).setOrigin(0.5).setName('character-podium-voice-ch04e');
+
+    slot.add(quote);
+  }
 
   /**
    * Roguelike Lap Shuffle visual mirror.

@@ -20,6 +20,7 @@ export type CharacterReactionContextCh04 =
   | 'jail_success'
   | 'jail_fail'
   | 'minigame_win'
+  | 'match_win'
   | 'chaos';
 
 export interface CharacterReactionVariablesCh04 {
@@ -103,6 +104,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'happy', text: 'Tui thắng thiệt hả? Trời ơi, vui quá muốn khóc!' },
       { expression: 'happy', text: 'Có thêm {amount}B$ nữa hả? Ai giữ tui lại coi!' },
     ],
+    match_win: [
+      { expression: 'happy', text: 'Tui thắng rồi hả? Đừng ai làm tui khóc nữa nha!' },
+      { expression: 'happy', text: 'Hạng nhất thiệt luôn! Cho tui vui một bữa đi!' },
+    ],
     chaos: [
       { expression: 'neutral', text: 'Khoan… cho tui hiểu chuyện gì vừa xảy ra đã!' },
       { expression: 'angry', text: 'Ủa rồi ai chịu trách nhiệm cho cảm xúc của tui?' },
@@ -164,6 +169,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     minigame_win: [
       { expression: 'happy', text: 'Thắng. Vậy thôi. {amount}B$ đâu?' },
       { expression: 'neutral', text: 'Ừ, đúng kết quả phải có.' },
+    ],
+    match_win: [
+      { expression: 'happy', text: 'Ừ. Hạng nhất. Có gì bất ngờ?' },
+      { expression: 'neutral', text: 'Xong. Ai đứng sau thì tự xem lại nha.' },
     ],
     chaos: [
       { expression: 'angry', text: 'Cái bàn này không ai chịu ngồi yên hết hả?' },
@@ -227,6 +236,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'happy', text: 'Thắng rồi… khoan, tui ghi lại chiến thuật này!' },
       { expression: 'happy', text: '{amount}B$ thưởng. Vậy là phương án A có hiệu quả.' },
     ],
+    match_win: [
+      { expression: 'happy', text: 'Tui kiểm lại ba lần rồi… hình như thắng thật.' },
+      { expression: 'happy', text: 'Kế hoạch sống sót thành kế hoạch vô địch luôn rồi.' },
+    ],
     chaos: [
       { expression: 'angry', text: 'Không có trong kế hoạch. Không có trong kế hoạch!' },
       { expression: 'neutral', text: 'Cho tui năm giây sắp xếp lại mọi thứ.' },
@@ -289,6 +302,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
       { expression: 'happy', text: 'THẮNG! Cho ván nữa đi!' },
       { expression: 'happy', text: '+{amount}B$! Ai chơi tiếp với tui?' },
     ],
+    match_win: [
+      { expression: 'happy', text: 'HẠNG NHẤT! Chơi ván nữa!' },
+      { expression: 'happy', text: 'Thắng rồi! Ai bấm rematch đi!' },
+    ],
     chaos: [
       { expression: 'happy', text: 'Không hiểu gì hết nhưng vui!' },
       { expression: 'happy', text: 'Bàn cờ càng loạn càng đã!' },
@@ -350,6 +367,10 @@ const PROFILES_CH04: Record<string, CharacterReactionProfileCh04> = {
     minigame_win: [
       { expression: 'happy', text: 'Bé thắng. Đúng quy trình.' },
       { expression: 'neutral', text: '{amount}B$ chuyển vào quỹ sữa.' },
+    ],
+    match_win: [
+      { expression: 'happy', text: 'Bé thắng. Cuộc họp kết thúc.' },
+      { expression: 'neutral', text: 'Hạng nhất. Đúng kế hoạch của bé.' },
     ],
     chaos: [
       { expression: 'neutral', text: 'Bình tĩnh. Để bé xử.' },
