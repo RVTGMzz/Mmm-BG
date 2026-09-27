@@ -12,7 +12,6 @@ import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
 import { installSteamDeckController070424 } from './ui/steamDeckController070424';
-import { syncSteamDeckFullscreenShell0705 } from './ui/steamDeckFullscreen0705';
 import {
   installMobileLandscapeGuard07031,
   requireMobileLandscapeBeforeGame07035,
@@ -84,8 +83,6 @@ async function bootMeMeMe07035(): Promise<void> {
   await requireMobileLandscapeBeforeGame07035();
 
   installSettingsPanel();
-  // Preserve the 1280x720 game safely, but make 16:10 handheld excess viewport feel intentional.
-  syncSteamDeckFullscreenShell0705();
   const game = new Phaser.Game(config);
   // Single native Gamepad owner for Steam Deck; modal owners keep authority.
   const disposeSteamDeckController = installSteamDeckController070424(game);
@@ -96,7 +93,6 @@ async function bootMeMeMe07035(): Promise<void> {
     if (viewportRefreshFrame) cancelAnimationFrame(viewportRefreshFrame);
     viewportRefreshFrame = requestAnimationFrame(() => {
       viewportRefreshFrame = 0;
-      syncSteamDeckFullscreenShell0705();
       game.scale.refresh();
     });
   };
