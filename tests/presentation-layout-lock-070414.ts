@@ -20,9 +20,10 @@ assert.match(active, /rebuildCanonicalCinematicText070414/);
 assert.match(active, /const isNews = model\.kind === 'news'/);
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
 assert.match(active, /child\.destroy\(\)/);
-assert.match(active, /const body = new Phaser\.GameObjects\.Text\(this, -292, -18, bodyCopy/);
+assert.match(active, /createScrollableTextViewport070429\(this, root/);
 assert.match(active, /root\.setScrollFactor\(0\)/);
-assert.match(active, /const bodyWidth070426 = 584/);
+assert.match(active, /const bodyWidth070429 = 584/);
+assert.match(active, /fontSize: 21/);
 assert.match(active, /retireLegacyPresentationOverlays070414/);
 
 // Reaction bubbles now use a measured 212px side rail. The old 328px

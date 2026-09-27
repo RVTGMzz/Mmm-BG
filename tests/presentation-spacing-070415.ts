@@ -18,13 +18,15 @@ assert.doesNotMatch(replay, /description: `\$\{job\.icon\} \$\{job\.title\}/);
 assert.match(active, /const isResult = model\.title\.includes\('NHẬN VIỆC'\)/);
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
 assert.match(active, /const title = this\.add\.text\(44, -18, displayTitle/);
-assert.match(active, /const body = this\.add\.text\(44, 50, bodyLines\.join/);
-assert.match(active, /fixedWidth: 560/);
+assert.match(active, /const jobBodyViewport070429 = createScrollableTextViewport070429\(this, root/);
+assert.match(active, /width: 560/);
+assert.match(active, /fontSize: isResult \? 19 : 18/);
 
 // Card/News removes every inherited child, including graphics/footer strips.
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);
 assert.match(active, /child\.destroy\(\)/);
-assert.match(active, /root\.add\(\[shadow, panel, kicker, title, impact, body, source\]\)/);
+assert.match(active, /root\.add\(\[shadow, panel, kicker, title, impact, source\]\)/);
+assert.match(active, /name: isNews \? 'news-scroll-body-070429' : 'card-scroll-body-070429'/);
 assert.match(active, /const directMoneyTransfer/);
 assert.match(active, /model\.cardEffectType === 'steal_money'/);
 
