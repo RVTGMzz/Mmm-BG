@@ -45,7 +45,7 @@ try {
     assert.deepEqual(errors,[]);
     await page.close();
   }
-  for (const surface of ['card', 'news', 'job', 'long', 'ranking', 'order']) {
+  for (const surface of ['card', 'news', 'job', 'long', 'choice', 'ranking', 'order']) {
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
     await page.goto(`http://127.0.0.1:5173/tests/runtime/modal-surfaces.html?surface=${surface}`);
@@ -53,6 +53,29 @@ try {
     await page.waitForTimeout(500);
     await page.screenshot({path:`runtime-ui-evidence/surface-${surface}-1280x800.png`});
     assert.deepEqual(errors, [], surface);
+    if(surface==='choice') {
+      const gaps=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const root=s.children.getByName('minigame-modal');
+        const stage=root.getByName('vf07-minigame-stage');
+        const prompt=stage.getByName('vf07-minigame-choice-prompt');
+        const hint=stage.getByName('vf07-minigame-choice-hint');
+        const privacy=stage.getByName('vf07-minigame-choice-privacy-rail');
+        const boxes=stage.list.filter(o=>o.name?.startsWith('vf07-minigame-choice-box-'));
+        const promptBounds=prompt.getBounds();
+        const hintBounds=hint.getBounds();
+        const privacyBounds=privacy.getBounds();
+        const cardBounds=boxes.map(o=>o.getBounds());
+        return {
+          promptToHint: hintBounds.top-promptBounds.bottom,
+          hintToCards: Math.min(...cardBounds.map(b=>b.top))-hintBounds.bottom,
+          cardsToPrivacy: privacyBounds.top-Math.max(...cardBounds.map(b=>b.bottom)),
+        };
+      });
+      assert.ok(gaps.promptToHint>=10, `Mini Game prompt/helper cramped: ${JSON.stringify(gaps)}`);
+      assert.ok(gaps.hintToCards>=20, `Mini Game helper/cards cramped: ${JSON.stringify(gaps)}`);
+      assert.ok(gaps.cardsToPrivacy>=20, `Mini Game cards/privacy cramped: ${JSON.stringify(gaps)}`);
+    }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{
         const s=window.surfaceScene;

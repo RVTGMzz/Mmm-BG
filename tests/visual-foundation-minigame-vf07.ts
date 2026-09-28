@@ -16,6 +16,9 @@ expect(overlay.includes('root = scene.add.container(640, 360).setDepth(1500)'), 
 expect(overlay.includes("submitSystemIntent('resolve_minigame'"), 'authoritative Mini Game payout path must remain intact');
 expect(overlay.includes("MINI_GAME_DUEL_LAYOUT_070423"), 'retained RPS safe layout must remain wired');
 expect(overlay.includes("D-PAD + A"), 'Steam Deck choice path must remain visible');
+expect(overlay.includes('MINI_GAME_CHOICE_LAYOUT_070431'), 'concealed-choice screen must use one canonical spacing contract');
+expect(overlay.includes("'vf07-minigame-choice-prompt'") && overlay.includes("'vf07-minigame-choice-hint'"), 'choice prompt/helper must expose stable runtime ownership names');
+expect(overlay.includes("'vf07-minigame-choice-privacy-rail'"), 'choice privacy rail must expose a stable runtime ownership name');
 expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-07 result surface must use owned paper + badge hierarchy');
 expect(overlay.includes('podiumPaper') && overlay.includes('podiumRibbon'), 'VF-07 ranking must use the canonical result presentation');
 expect(overlay.includes('revealPaper') && overlay.includes('revealRows'), 'VF-07 majority/minority round must use one simultaneous owned reveal surface');

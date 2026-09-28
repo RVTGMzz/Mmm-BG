@@ -1,5 +1,8 @@
 import Phaser from 'phaser';
-import { MINI_GAME_DUEL_LAYOUT_070423 } from './miniGameLayout070423';
+import {
+  MINI_GAME_CHOICE_LAYOUT_070431,
+  MINI_GAME_DUEL_LAYOUT_070423,
+} from './miniGameLayout070423';
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
@@ -124,15 +127,21 @@ export function startMiniGameOverlay(
     choices: Array<{ value: T; icon: string; label: string; fill: number }>,
   ): Promise<T> => new Promise((resolve) => {
     clearStage();
-    const prompt = scene.add.text(0, -95, `${player.name} • CHỌN KÍN`, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '23px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
-    }).setOrigin(0.5);
-    const hint = scene.add.text(0, -58, '← → / A D • ENTER / SPACE • D-PAD + A', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px', color: MINI_GAME_VISUAL_VF07.mutedText,
-    }).setOrigin(0.5);
+    const l = MINI_GAME_CHOICE_LAYOUT_070431;
+    const prompt = scene.add.text(0, l.promptY, `${player.name} • CHỌN KÍN`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '23px',
+      fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
+    }).setOrigin(0.5).setName('vf07-minigame-choice-prompt');
+    const hint = scene.add.text(0, l.hintY, '← → / A D • ENTER / SPACE • D-PAD + A', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px',
+      color: MINI_GAME_VISUAL_VF07.mutedText,
+    }).setOrigin(0.5).setName('vf07-minigame-choice-hint');
     stage.add([prompt, hint]);
 
-    const spacing = choices.length === 2 ? 210 : 185;
+    const spacing = choices.length === 2 ? l.twoChoiceSpacing : l.multiChoiceSpacing;
     const boxes: Phaser.GameObjects.Rectangle[] = [];
     let selectedIndex = 0;
     let settled = false;
@@ -196,13 +205,19 @@ export function startMiniGameOverlay(
 
     choices.forEach((choice, index) => {
       const x = (index - (choices.length - 1) / 2) * spacing;
-      const box = scene.add.rectangle(x, 35, 160, 155, choice.fill, 1)
+      const box = scene.add.rectangle(x, l.cardCenterY, l.cardWidth, l.cardHeight, choice.fill, 1)
         .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 1)
-        .setInteractive({ useHandCursor: true });
+        .setInteractive({ useHandCursor: true })
+        .setName(`vf07-minigame-choice-box-${index}`);
       boxes.push(box);
-      const icon = scene.add.text(x, 8, choice.icon, { fontSize: '42px' }).setOrigin(0.5);
-      const label = scene.add.text(x, 68, choice.label, {
-        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '14px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
+      const icon = scene.add.text(x, l.cardCenterY + l.iconOffsetY, choice.icon, {
+        fontSize: '42px',
+      }).setOrigin(0.5);
+      const label = scene.add.text(x, l.cardCenterY + l.labelOffsetY, choice.label, {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '16px',
+        fontStyle: 'bold',
+        color: MINI_GAME_VISUAL_VF07.cocoaText,
       }).setOrigin(0.5);
       box.on('pointerover', () => {
         selectedIndex = index;
@@ -212,12 +227,29 @@ export function startMiniGameOverlay(
       stage.add([box, icon, label]);
     });
 
-    const privacyRail = scene.add.rectangle(0, 142, 610, 38, MINI_GAME_VISUAL_VF07.resultFill, 0.94)
-      .setStrokeStyle(2, MINI_GAME_VISUAL_VF07.shellStroke, 0.24);
-    const privacyHint = scene.add.text(0, 142, '🔒 LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '16px', fontStyle: 'bold',
-      color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 580,
-    }).setOrigin(0.5);
+    const privacyRail = scene.add.rectangle(
+      0,
+      l.privacyY,
+      l.privacyWidth,
+      l.privacyHeight,
+      MINI_GAME_VISUAL_VF07.resultFill,
+      0.94,
+    )
+      .setStrokeStyle(2, MINI_GAME_VISUAL_VF07.shellStroke, 0.24)
+      .setName('vf07-minigame-choice-privacy-rail');
+    const privacyHint = scene.add.text(
+      0,
+      l.privacyY,
+      '🔒 LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT',
+      {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '16px',
+        fontStyle: 'bold',
+        color: MINI_GAME_VISUAL_VF07.mutedText,
+        align: 'center',
+        fixedWidth: 620,
+      },
+    ).setOrigin(0.5).setName('vf07-minigame-choice-privacy-hint');
     stage.add([privacyRail, privacyHint]);
 
     refreshFocus();

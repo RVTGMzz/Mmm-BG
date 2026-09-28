@@ -6,7 +6,7 @@ import { gameSession } from '../../src/core/session';
 import { browserSession } from '../../src/core/browserSession';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
-browserSession.configureSolo([0, 1, 2, 3]);
+browserSession.configureSolo(mode === 'choice' ? [1, 2, 3] : [0, 1, 2, 3]);
 gameSession.reset();
 gameSession.players.forEach(p => gameSession.setCharacter(p.id, 'starter-crybaby'));
 const fixtures: Record<string, any> = {
@@ -20,7 +20,16 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
     const self=this as any;
     this.cameras.main.setBackgroundColor('#8cac97');
     const model={eventSeq:100,holdMs:60000, ...fixtures[mode]};
-    if(mode==='ranking') {
+    if(mode==='choice') {
+      startMiniGameOverlay(this, gameSession.players as any, 100);
+      this.events.on('postupdate',()=>{
+        const root=this.children.getByName('minigame-modal') as Phaser.GameObjects.Container;
+        const stage=root?.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
+        if(stage?.getByName('vf07-minigame-choice-prompt')) {
+          (window as any).surfaceReady=true;
+        }
+      });
+    } else if(mode==='ranking') {
       this.time.timeScale=25;
       const run=startMiniGameOverlay(this, gameSession.players as any, 100);
       this.events.on('postupdate',()=>{
