@@ -33,6 +33,14 @@ export interface SoloBuoyRoundResult {
   tied: boolean;
 }
 
+export interface CutTopDiceRoundResult {
+  lockedPlayerIds: number[];
+  rerollPlayerIds: number[];
+  eliminatedPlayerIds: number[];
+  slotsOpen: number;
+  complete: boolean;
+}
+
 export function minigameModeForActivePlayers(
   activePlayerIds: readonly number[],
   mode3Plus: MiniGameThreePlusMode059 = 'majority_minority',
@@ -148,6 +156,66 @@ export function resolveSoloBuoyRound(
     eliminatedPlayerIds: active.filter((id) => !survivorSet.has(id)),
     counts,
     tied: false,
+  };
+}
+
+/**
+ * CẮT TOP XÚC XẮC:
+ * - every active player has a D6 result;
+ * - highest scores lock the available Top slots;
+ * - when a score group crosses the cutoff, only that tied group rerolls;
+ * - players below the cutoff are eliminated immediately.
+ */
+export function resolveCutTopDiceRound(
+  activePlayerIds: readonly number[],
+  rolls: Readonly<Record<number, number>>,
+  targetCount: number,
+): CutTopDiceRoundResult {
+  const active = [...new Set(activePlayerIds)];
+  if (!Number.isInteger(targetCount) || targetCount < 1 || targetCount > active.length) {
+    throw new RangeError(`Cut Top targetCount must be 1..${active.length}, got ${String(targetCount)}.`);
+  }
+
+  for (const id of active) {
+    const roll = rolls[id];
+    if (!Number.isInteger(roll) || roll < 1 || roll > 6) {
+      throw new RangeError(`Cut Top roll for P${id} must be D6 1..6, got ${String(roll)}.`);
+    }
+  }
+
+  const scoreGroups = [...new Set(active.map((id) => rolls[id]!))]
+    .sort((a, b) => b - a)
+    .map((score) => ({
+      score,
+      playerIds: active.filter((id) => rolls[id] === score).sort((a, b) => a - b),
+    }));
+
+  const locked: number[] = [];
+  let reroll: number[] = [];
+  let slotsOpen = targetCount;
+
+  for (const group of scoreGroups) {
+    if (slotsOpen <= 0) break;
+    if (group.playerIds.length <= slotsOpen) {
+      locked.push(...group.playerIds);
+      slotsOpen -= group.playerIds.length;
+      continue;
+    }
+    reroll = [...group.playerIds];
+    break;
+  }
+
+  const protectedIds = new Set([...locked, ...reroll]);
+  const eliminated = active
+    .filter((id) => !protectedIds.has(id))
+    .sort((a, b) => (rolls[a]! - rolls[b]!) || (a - b));
+
+  return {
+    lockedPlayerIds: locked,
+    rerollPlayerIds: reroll,
+    eliminatedPlayerIds: eliminated,
+    slotsOpen,
+    complete: reroll.length === 0 && slotsOpen === 0,
   };
 }
 

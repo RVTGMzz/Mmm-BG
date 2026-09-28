@@ -24,6 +24,7 @@ import {
   resolveRpsRound,
   resolveThreeDoorsRound,
   resolveSoloBuoyRound,
+  resolveCutTopDiceRound,
   type PalmChoice,
   type RpsChoice,
   type ThreeDoorChoice,
@@ -75,6 +76,10 @@ function threeDoorRoll(eventSeq: number, round: number): number {
   return deterministicBit(eventSeq, 97, round) % 6 + 1;
 }
 
+function cutTopDiceRoll(eventSeq: number, playerId: number, round: number): number {
+  return deterministicBit(eventSeq, playerId + 211, round + 71) % 6 + 1;
+}
+
 function threeDoorLabel(choice: ThreeDoorChoice): string {
   return choice === 'a' ? 'A' : choice === 'b' ? 'B' : 'C';
 }
@@ -95,6 +100,7 @@ function rewardTitle(gameType: MiniGameBaseRewardType): string {
   if (gameType === 'rps') return 'OẲN TÙ XÌ';
   if (gameType === 'three_doors') return 'BA CỬA';
   if (gameType === 'solo_buoy') return 'PHAO ĐƠN';
+  if (gameType === 'cut_top_dice') return 'CẮT TOP XÚC XẮC';
   return 'NHIỀU RA ÍT BỊ';
 }
 
@@ -724,6 +730,70 @@ export function startMiniGameOverlay(
           '🛟 PHAO ĐƠN NỔI!',
           `${reveal}\n\n${countCopy}\n✅ Nổi: ${survivors}\n❌ Chìm: ${losers}`,
         );
+      }
+    } else if (baseType === 'cut_top_dice') {
+      subtitle.setText(`${slot.title} • CẮT TOP XÚC XẮC • 2 điểm cao nhất đi tiếp`);
+      const finalists: number[] = [];
+      let contenders = [...activeIds];
+      let slotsOpen = 2;
+
+      while (contenders.length > slotsOpen && safety < 16) {
+        safety += 1;
+        round += 1;
+        const rolls: Record<number, number> = {};
+        for (const id of contenders) rolls[id] = cutTopDiceRoll(eventSeq, id, round);
+
+        const result = resolveCutTopDiceRound(contenders, rolls, slotsOpen);
+        finalists.push(...result.lockedPlayerIds);
+        eliminationOrder.push(...result.eliminatedPlayerIds);
+
+        const rollCopy = contenders
+          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: 🎲 ${rolls[id]}`)
+          .join('\n');
+        const lockedCopy = result.lockedPlayerIds.length > 0
+          ? `✅ Giữ ghế Top: ${result.lockedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}`
+          : '';
+        const eliminatedCopy = result.eliminatedPlayerIds.length > 0
+          ? `❌ Rời Top: ${result.eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}`
+          : '';
+
+        if (result.complete) {
+          await showResult(
+            `🎲 CẮT TOP • VÒNG ${round}`,
+            [rollCopy, lockedCopy, eliminatedCopy].filter(Boolean).join('\n\n'),
+          );
+          contenders = [];
+          slotsOpen = 0;
+          break;
+        }
+
+        const tieCopy = result.rerollPlayerIds
+          .map((id) => playerById(id)?.name ?? `P${id + 1}`)
+          .join(', ');
+        await showResult(
+          `🎲 HÒA Ở RANH TOP ${2 - slotsOpen + result.slotsOpen}`,
+          [
+            rollCopy,
+            lockedCopy,
+            eliminatedCopy,
+            `🔁 ${tieCopy} đổ lại để tranh ${result.slotsOpen} ghế còn lại.`,
+          ].filter(Boolean).join('\n\n'),
+        );
+
+        contenders = result.rerollPlayerIds;
+        slotsOpen = result.slotsOpen;
+      }
+
+      if (contenders.length === slotsOpen && slotsOpen > 0) {
+        finalists.push(...contenders);
+      }
+
+      activeIds = finalists.slice(0, 2);
+      if (activeIds.length < 2) {
+        const fallbackPool = players
+          .map((player) => player.id)
+          .filter((id) => !activeIds.includes(id) && !eliminationOrder.includes(id));
+        activeIds.push(...fallbackPool.slice(0, 2 - activeIds.length));
       }
     } else {
       subtitle.setText(`${slot.title} • NHIỀU RA ÍT BỊ • phe thiểu số bị loại`);

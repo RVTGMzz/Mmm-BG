@@ -130,6 +130,8 @@ jobs:
         run: npm run test:minigame-three-doors-0711
       - name: 0.1.71.2 M26 PHAO ĐƠN Mini Game variety
         run: npm run test:minigame-solo-buoy-0712
+      - name: 0.1.71.3 M35 CẮT TOP XÚC XẮC Mini Game
+        run: npm run test:minigame-cut-top-dice-0713
       - name: 0.1.60 pacing economy finish-lock
         run: npm run test:pacing-economy-060
       - name: 0.1.61 deterministic local playtest report

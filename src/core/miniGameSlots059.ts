@@ -1,4 +1,4 @@
-export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'solo_buoy';
+export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'solo_buoy' | 'cut_top_dice';
 export type MiniGameThreePlusMode059 = Exclude<MiniGameBaseMode059, 'rps'>;
 export type MiniGameRewardTable059 = readonly [number, number, number, number];
 
@@ -66,8 +66,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     title: 'TOP 2 HOẶC VỀ KHÔNG',
     icon: '⚔️',
     identity: 'CẮT TOP',
-    description: 'Chỉ hai vị trí dẫn đầu có thưởng.',
-    mode3Plus: 'majority_minority',
+    description: 'Tất cả cùng đổ D6; hai điểm cao nhất sống sót.',
+    mode3Plus: 'cut_top_dice',
     majorityRewards: [30, 20, 0, 0],
     rpsRewards: [20, 10, 0, 0],
   },

@@ -44,7 +44,7 @@ assert.deepEqual(
     ['MINIGAME_SLOT_01', 'majority_minority'],
     ['MINIGAME_SLOT_02', 'three_doors'],
     ['MINIGAME_SLOT_03', 'solo_buoy'],
-    ['MINIGAME_SLOT_04', 'majority_minority'],
+    ['MINIGAME_SLOT_04', 'cut_top_dice'],
     ['MINIGAME_SLOT_05', 'majority_minority'],
   ],
 );
