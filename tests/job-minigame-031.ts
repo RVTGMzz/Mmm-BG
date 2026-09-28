@@ -262,12 +262,12 @@ const miniRewardReceipt = submitClientIntent(miniAuthority, {
   observedCommandSeq: 1,
   data: {
     sourceEventSeq: miniEvent.seq,
-    gameType: 'majority_minority',
+    gameType: 'majority_minority@MINIGAME_SLOT_01',
     rankingPlayerIds: '0,1,2,3',
   },
 });
 assert.equal(miniRewardReceipt.status, 'accepted');
-assert.deepEqual(miniAuthority.state.players.map((entry) => entry.money), [230, 220, 210, 200]);
+assert.deepEqual(miniAuthority.state.players.map((entry) => entry.money), [225, 215, 210, 200]);
 assert.notEqual(computeMatchChecksum(miniAuthority.state), beforeRewardChecksum, 'Mini Game payout must affect gameplay checksum through B$');
 assert.equal(
   miniAuthority.state.eventLog.filter((event) => event.type === 'minigame_reward').length,
@@ -282,7 +282,7 @@ assert.equal(shouldEndDemoMatch(afterRewardFinish, activeShell), true, 'score ma
 
 const replayedMini = replayMatchCommands(miniAuthority.source, miniBoard, [], []);
 assert.deepEqual(replayedMini.errors, []);
-assert.deepEqual(replayedMini.state.players.map((entry) => entry.money), [230, 220, 210, 200]);
+assert.deepEqual(replayedMini.state.players.map((entry) => entry.money), [225, 215, 210, 200]);
 assert.equal(computeMatchChecksum(replayedMini.state), computeMatchChecksum(miniAuthority.state));
 
 const duplicateReward = submitClientIntent(miniAuthority, {
@@ -293,7 +293,7 @@ const duplicateReward = submitClientIntent(miniAuthority, {
   observedCommandSeq: 2,
   data: {
     sourceEventSeq: miniEvent.seq,
-    gameType: 'majority_minority',
+    gameType: 'majority_minority@MINIGAME_SLOT_01',
     rankingPlayerIds: '0,1,2,3',
   },
 });
