@@ -145,7 +145,8 @@
     "test:full-match-audit-0715": "tsx tests/full-match-audit-0715.ts",
     "test:character-passives-ch05": "tsx tests/character-passives-ch05.ts",
     "test:character-balance-ch06": "tsx tests/character-balance-ch06.ts",
-    "test:economy-pacing-ch07": "tsx tests/economy-pacing-ch07.ts"
+    "test:economy-pacing-ch07": "tsx tests/economy-pacing-ch07.ts",
+    "test:online-reconnect-stress-070421": "tsx tests/online-reconnect-stress-070421.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

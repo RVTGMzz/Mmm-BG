@@ -233,6 +233,8 @@ jobs:
         run: npm run test:runtime-release-guard-070419
       - name: 0.1.70.4.19 live two-device reconnect + media relay smoke
         run: npm run test:online-live-runtime-070419
+      - name: 0.1.70.4.21 live half-open socket replacement stress
+        run: npm run test:online-reconnect-stress-070421
       - name: 0.1.70.4.20 stale room recycle + WebSocket keepalive
         run: npm run test:online-stale-room-recycle-070420
       - name: 0.1.70.4.21 final modal ownership + career layout
