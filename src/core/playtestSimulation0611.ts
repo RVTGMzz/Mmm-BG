@@ -5,7 +5,7 @@ import {
   type ClientIntent,
   type HostAuthorityRuntime,
 } from './authority';
-import { miniGameRewardType059 } from './minigameRewards';
+import { expectedMiniGameRewardType059 } from './minigameRewards';
 import { isPlayerFinished060 } from './pacingEconomy060';
 import {
   buildPlaytestMatchReport061,
@@ -94,8 +94,8 @@ function submitMiniGameResolution0611(
   if (participantIds.length === 0) return false;
 
   const contentId = String(sourceEvent.data.contentId ?? 'MINIGAME_SLOT_01');
-  const baseType = participantIds.length === 2 ? 'rps' : 'majority_minority';
-  const gameType = miniGameRewardType059(baseType, contentId);
+  const gameType = expectedMiniGameRewardType059(contentId, participantIds.length);
+  if (!gameType) throw new Error(`Simulation seed ${seed}: unknown Mini Game contentId ${contentId}.`);
   const rankingPlayerIds = rotateRanking(participantIds, seed, sourceEvent.seq);
   const actor = authority.state.players[authority.state.turn.currentPlayerIndex];
   if (!actor) throw new Error(`Simulation seed ${seed}: missing current actor for Mini Game #${sourceEvent.seq}.`);
@@ -127,6 +127,7 @@ export function runFullMatchSimulation0611(
   seed: number,
   playerNames: readonly string[] = ['CPU 1', 'CPU 2', 'CPU 3', 'CPU 4'],
   safetyLimit = 1600,
+  targetLaps = 1,
 ): FullMatchSimulation0611 {
   const authority = createEmptyHostAuthority(
     {
@@ -134,6 +135,7 @@ export function runFullMatchSimulation0611(
       startNodeId: runtime.board.startNodeId,
       playerNames: [...playerNames],
       seed,
+      targetLaps,
     },
     runtime,
   );

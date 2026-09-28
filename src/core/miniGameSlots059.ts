@@ -92,6 +92,14 @@ export function miniGameSlot059(contentId: string | undefined): MiniGameSlot059 
   return MINI_GAME_SLOTS_059.find((slot) => slot.contentId === contentId) ?? FALLBACK_SLOT_059;
 }
 
+export function miniGameModeForParticipantCount059(
+  contentId: string | undefined,
+  participantCount: number,
+): MiniGameBaseMode059 {
+  const slot = miniGameSlot059(contentId);
+  return participantCount <= 2 ? 'rps' : slot.mode3Plus;
+}
+
 export function miniGameRewardTable059(
   contentId: string | undefined,
   gameType: MiniGameBaseMode059,

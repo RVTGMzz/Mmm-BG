@@ -21,6 +21,16 @@ export interface MiniGameRewardIdentity059 {
   contentId?: string;
 }
 
+export function expectedMiniGameRewardType059(
+  contentId: string | undefined,
+  participantCount: number,
+): MiniGameRewardType | undefined {
+  const slot = MINI_GAME_SLOTS_059.find((entry) => entry.contentId === contentId);
+  if (!slot) return undefined;
+  const baseType: MiniGameBaseRewardType = participantCount <= 2 ? 'rps' : slot.mode3Plus;
+  return `${baseType}@${slot.contentId}`;
+}
+
 export function miniGameRewardType059(
   baseType: MiniGameBaseRewardType,
   contentId: string | undefined,

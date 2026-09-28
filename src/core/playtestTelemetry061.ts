@@ -37,6 +37,11 @@ export interface PlaytestMatchReport061 {
   hospitalReleaseAttempts: number;
   lotteryCount: number;
   lotteryRewardTotal: number;
+  readyPasses: number;
+  boardShuffles: number;
+  boardShuffleLaps: number[];
+  miniGameContentIds: string[];
+  miniGameRewardTypes: string[];
   finalMoneyTotal: number;
   finalMoneyAverage: number;
   finalMoneySpread: number;
@@ -94,6 +99,9 @@ export function buildPlaytestMatchReport061(match: MatchState): PlaytestMatchRep
   });
 
   const releaseEvents = events.filter((event) => event.type === 'special_release');
+  const boardShuffleEvents = events.filter((event) => event.type === 'board_shuffle');
+  const miniGameEvents = events.filter((event) => event.type === 'minigame_tile');
+  const miniRewardEvents = events.filter((event) => event.type === 'minigame_reward');
   return {
     version: '0.1.61',
     boardId: match.boardId,
@@ -124,6 +132,11 @@ export function buildPlaytestMatchReport061(match: MatchState): PlaytestMatchRep
     lotteryRewardTotal: events
       .filter((event) => event.type === 'lottery')
       .reduce((sum, event) => sum + Math.max(0, eventAmount(event)), 0),
+    readyPasses: countEvents(events, 'ready_pass'),
+    boardShuffles: boardShuffleEvents.length,
+    boardShuffleLaps: boardShuffleEvents.map((event) => Number(event.data.lap ?? 0)).filter((lap) => Number.isInteger(lap) && lap > 0),
+    miniGameContentIds: [...new Set(miniGameEvents.map((event) => String(event.data.contentId ?? '')).filter(Boolean))],
+    miniGameRewardTypes: [...new Set(miniRewardEvents.map((event) => String(event.data.gameType ?? '')).filter(Boolean))],
     finalMoneyTotal,
     finalMoneyAverage: match.players.length > 0 ? Math.floor(finalMoneyTotal / match.players.length) : 0,
     finalMoneySpread: maxMoney - minMoney,
@@ -151,7 +164,7 @@ export function formatPlaytestMatchReport061(report: PlaytestMatchReport061): st
     `players=${report.playerCount} start=${report.startingMoney}B$ turns=${report.turnsObserved} commands=${report.commandCount} events=${report.eventCount} rngCalls=${report.rngCalls}`,
     `rolls: move=${report.movementRolls} release=${report.releaseRolls} lottery=${report.lotteryRolls}`,
     `content: cards=${report.cardsPlayed} news=${report.newsTriggered} mini=${report.miniGamesTriggered} skippedMini=${report.miniGamesSkipped} jobs=${report.jobsSelected}/${report.jobOffers} progress=${report.jobProgressChecks}`,
-    `special: jailRelease=${report.jailReleaseAttempts} hospitalRelease=${report.hospitalReleaseAttempts} lottery=${report.lotteryCount} (+${report.lotteryRewardTotal}B$)` ,
+    `special: jailRelease=${report.jailReleaseAttempts} hospitalRelease=${report.hospitalReleaseAttempts} lottery=${report.lotteryCount} (+${report.lotteryRewardTotal}B$) readyPass=${report.readyPasses} shuffle=${report.boardShuffles} [${report.boardShuffleLaps.join(',')}]` ,
     `payout: mini=+${report.miniGameRewardTotal}B$ finalTotal=${report.finalMoneyTotal}B$ avg=${report.finalMoneyAverage}B$ spread=${report.finalMoneySpread}B$`,
     `finish: ${finish}`,
     ...playerLines,

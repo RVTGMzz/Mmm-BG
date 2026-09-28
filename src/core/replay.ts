@@ -37,6 +37,7 @@ import {
   type MatchState,
 } from './matchState';
 import {
+  expectedMiniGameRewardType059,
   isMiniGameRewardType,
   miniGameRewardForRank,
   parseRankingPlayerIds,
@@ -44,6 +45,7 @@ import {
 } from './minigameRewards';
 import { applyNewsEffect, drawWeightedNews, type NewsDefinition } from './news';
 import { isPlayerFinished060 } from './pacingEconomy060';
+import { miniGameSlot059 } from './miniGameSlots059';
 import {
   effectiveBoardNode071,
   shouldTriggerBoardShuffle071,
@@ -314,21 +316,22 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
       return 'done';
     }
 
+    const miniSlot = miniGameSlot059(node.contentId);
     appendMatchEvent(
       ctx.state,
       'minigame_tile',
       {
         nodeId: node.id,
         featureType: 'minigame',
-        contentId: node.contentId ?? 'MINIGAME_SLOT_01',
-        title: eligible.length === 1 ? 'MINI GAME • THẮNG MẶC ĐỊNH' : 'MINI GAME',
-        impact: '🎮',
+        contentId: miniSlot.contentId,
+        title: eligible.length === 1 ? 'MINI GAME • THẮNG MẶC ĐỊNH' : `MINI GAME • ${miniSlot.title}`,
+        impact: miniSlot.icon,
         description: eligible.length === 1
           ? `${eligible[0]?.name ?? 'Người chơi'} là người duy nhất đủ điều kiện và tự động hạng #1.`
-          : '3+ người: Nhiều ra ít bị. Phe sấp/ngửa thiểu số bị loại.',
+          : miniSlot.description,
         summary: eligible.length === 1
           ? 'Người ở Đồn/Bệnh viện hoặc đã về đích không tham gia. Hệ thống tự xếp người còn lại hạng #1.'
-          : 'Người ở Đồn/Bệnh viện hoặc đã về đích không tham gia. Khi còn đúng 1v1, hệ thống tự chuyển sang Oẳn Tù Xì.',
+          : `${miniSlot.boardLabel} • ${miniSlot.identity}. Người ở Đồn/Bệnh viện hoặc đã về đích không tham gia. Khi còn đúng 1v1, hệ thống tự chuyển sang Oẳn Tù Xì.`,
         status: eligible.length === 1 ? 'auto_rank_1' : 'rules_locked',
         eligibleCount: eligible.length,
         affectedPlayerIds: eligible.map((entry) => entry.id).join(','),
@@ -787,6 +790,11 @@ function replayMiniGameResult(ctx: ReplayContext, command: MatchCommand): void {
   const rankingError = validateMiniGameRanking(rankingPlayerIds, participantPlayerIds);
   if (rankingError) failCommand(ctx, command, rankingError);
 
+  const contentId = String(sourceEvent.data.contentId ?? '');
+  const expectedGameType = expectedMiniGameRewardType059(contentId, participantPlayerIds.length);
+  if (!expectedGameType) failCommand(ctx, command, `unknown Mini Game contentId ${contentId || '(empty)'}.`);
+  if (gameType !== expectedGameType) failCommand(ctx, command, `Mini Game ${contentId} expects ${expectedGameType}, got ${gameType}.`);
+
   rankingPlayerIds.forEach((playerId, index) => {
     const player = ctx.state.players.find((entry) => entry.id === playerId);
     if (!player) failCommand(ctx, command, `cannot find ranked player P${playerId}.`);
@@ -871,6 +879,7 @@ export function replayMatchCommands(
   cards: CardDefinition[],
   news: NewsDefinition[],
 ): ReplayResult {
+  const sourceTargetLaps = source.players.reduce((max, player) => Math.max(max, Math.floor(player.targetLaps ?? 1)), 1);
   const state = createInitialMatchState({
     boardId: source.boardId,
     startNodeId: board.startNodeId,
@@ -878,6 +887,7 @@ export function replayMatchCommands(
     seed: source.seed,
     startingMoney: source.startingMoney,
     playOrder: source.playOrder,
+    targetLaps: sourceTargetLaps,
   });
   const phase = new TurnPhaseMachine(state.turn);
   const ctx: ReplayContext = {

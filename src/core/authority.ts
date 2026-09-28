@@ -15,6 +15,7 @@ import {
   type MatchState,
 } from './matchState';
 import {
+  expectedMiniGameRewardType059,
   isMiniGameRewardType,
   parseRankingPlayerIds,
   validateMiniGameRanking,
@@ -261,6 +262,11 @@ function buildMiniGameResultData(authority: HostAuthority, intent: ClientIntent)
   const rankingError = validateMiniGameRanking(rankingPlayerIds, participantPlayerIds);
   if (rankingError) return { reason: rankingError };
 
+  const contentId = String(sourceEvent.data.contentId ?? '');
+  const expectedGameType = expectedMiniGameRewardType059(contentId, participantPlayerIds.length);
+  if (!expectedGameType) return { reason: `unknown Mini Game contentId ${contentId || '(empty)'}.` };
+  if (gameType !== expectedGameType) return { reason: `Mini Game ${contentId} expects ${expectedGameType}, got ${gameType}.` };
+
   return {
     data: {
       sourceEventSeq,
@@ -279,7 +285,7 @@ export function createHostAuthority(source: MatchState, runtime: HostAuthorityRu
   return { source: cloned, state: replay.state, runtime, receipts: new Map() };
 }
 
-export function createEmptyHostAuthority(options: { boardId: string; startNodeId: number; playerNames: string[]; seed: number; startingMoney?: number; playOrder?: number[] }, runtime: HostAuthorityRuntime): HostAuthority {
+export function createEmptyHostAuthority(options: { boardId: string; startNodeId: number; playerNames: string[]; seed: number; startingMoney?: number; playOrder?: number[]; targetLaps?: number }, runtime: HostAuthorityRuntime): HostAuthority {
   return createHostAuthority(createInitialMatchState(options), runtime);
 }
 
