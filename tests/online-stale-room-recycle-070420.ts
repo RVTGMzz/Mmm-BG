@@ -40,9 +40,9 @@ const closeBlock = worker.slice(
 assert.doesNotMatch(closeBlock, /storage\.put\("lastSocketActivityAt"/);
 
 // Production identity exposes the new worker contract.
-assert.match(worker, /milestone: "0\.1\.70\.4\.20"/);
+assert.match(worker, /milestone: "0.1.70.4.21"/);
 assert.match(worker, /socketStaleMs: SOCKET_STALE_MS_070420/);
 assert.match(worker, /transportKeepalive: true/);
-assert.match(workerPackage, /"version": "0\.1\.70\.4\.20"/);
+assert.match(workerPackage, /"version": "0.1.70.4.21"/);
 
 console.log('[online-stale-room-recycle-070420] PASS keepalive + ghost socket expiry + custom room recycle guard');

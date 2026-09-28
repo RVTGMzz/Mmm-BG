@@ -137,7 +137,7 @@ export default {
       return json({
         ok: true,
         service: "mememe-online",
-        milestone: "0.1.70.4.20",
+        milestone: "0.1.70.4.21",
         transport: "websocket-durable-object",
         lobbyAuthority: true,
         socketStaleMs: SOCKET_STALE_MS_070420,
@@ -682,10 +682,12 @@ export class MeMeMeRoom extends DurableObject<Env> {
     }
 
     const sockets = this.ctx.getWebSockets();
+    let newestReplacedJoinedAt070421 = 0;
     for (const socket of sockets) {
       const attachment = socket.deserializeAttachment() as SocketAttachment | null;
       if (!attachment || attachment.channel !== channel) continue;
       if (attachment.clientId === clientId) {
+        newestReplacedJoinedAt070421 = Math.max(newestReplacedJoinedAt070421, attachment.joinedAt || 0);
         try { socket.close(4001, "Replaced by reconnect."); } catch {}
         continue;
       }
@@ -694,7 +696,7 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    const connectedAt = Date.now();
+    const connectedAt = Math.max(Date.now(), newestReplacedJoinedAt070421 + 1);
     const attachment: SocketAttachment = {
       clientId, seatId, role, roomCode, channel,
       joinedAt: connectedAt,
@@ -708,9 +710,38 @@ export class MeMeMeRoom extends DurableObject<Env> {
     return new Response(null, { status: 101, webSocket: client });
   }
 
+  private logicalSockets070421(channel: string): Array<{ socket: WebSocket; attachment: SocketAttachment }> {
+    const latest = new Map<string, { socket: WebSocket; attachment: SocketAttachment }>();
+    for (const socket of this.ctx.getWebSockets()) {
+      const attachment = socket.deserializeAttachment() as SocketAttachment | null;
+      if (!attachment || attachment.channel !== channel) continue;
+      const key = `${attachment.role}:${attachment.clientId}:${attachment.seatId}`;
+      const current = latest.get(key);
+      if (!current || attachment.joinedAt >= current.attachment.joinedAt) {
+        latest.set(key, { socket, attachment });
+      }
+    }
+    return [...latest.values()];
+  }
+
   async webSocketMessage(socket: WebSocket, message: string | ArrayBuffer): Promise<void> {
     const sender = socket.deserializeAttachment() as SocketAttachment | null;
     if (!sender) return;
+
+    // 0.1.70.4.21: a hibernated/closing physical socket may briefly coexist with
+    // its reconnect replacement. Only the newest logical endpoint can extend
+    // liveness or relay gameplay/media traffic.
+    const currentSender070421 = this.logicalSockets070421(sender.channel).find(
+      (entry) =>
+        entry.attachment.role === sender.role
+        && entry.attachment.clientId === sender.clientId
+        && entry.attachment.seatId === sender.seatId
+    );
+    if (currentSender070421 && currentSender070421.socket !== socket) {
+      try { socket.close(4001, "Replaced by reconnect."); } catch {}
+      return;
+    }
+
     const activityAt = Date.now();
     sender.lastSeenAt = activityAt;
     socket.serializeAttachment(sender);
@@ -734,10 +765,8 @@ export class MeMeMeRoom extends DurableObject<Env> {
 
     const outbound = JSON.stringify({ from: sender.clientId, to: envelope.to, payload: envelope.payload });
     let delivered = 0;
-    for (const recipient of this.ctx.getWebSockets()) {
+    for (const { socket: recipient, attachment: target } of this.logicalSockets070421(sender.channel)) {
       if (recipient === socket) continue;
-      const target = recipient.deserializeAttachment() as SocketAttachment | null;
-      if (!target || target.channel !== sender.channel) continue;
       if (sender.role === "client") {
         if (target.role !== "host") continue;
       } else if (envelope.to) {
@@ -765,16 +794,11 @@ export class MeMeMeRoom extends DurableObject<Env> {
   }
 
   private broadcastPresence(channel: string): void {
-    const sockets = this.ctx.getWebSockets().filter((socket) => {
-      const attachment = socket.deserializeAttachment() as SocketAttachment | null;
-      return attachment?.channel === channel;
-    });
-    const seats = sockets
-      .map((socket) => socket.deserializeAttachment() as SocketAttachment | null)
-      .filter((value): value is SocketAttachment => Boolean(value))
-      .map(({ clientId, seatId, role }) => ({ clientId, seatId, role }))
+    const logical = this.logicalSockets070421(channel);
+    const seats = logical
+      .map(({ attachment: { clientId, seatId, role } }) => ({ clientId, seatId, role }))
       .sort((a, b) => a.seatId - b.seatId);
     const payload = JSON.stringify({ kind: "presence", channel, seats });
-    for (const socket of sockets) { try { socket.send(payload); } catch {} }
+    for (const { socket } of logical) { try { socket.send(payload); } catch {} }
   }
 }

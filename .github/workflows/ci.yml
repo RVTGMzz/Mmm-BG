@@ -237,6 +237,8 @@ jobs:
         run: npm run test:online-reconnect-stress-070421
       - name: 0.1.70.4.20 stale room recycle + WebSocket keepalive
         run: npm run test:online-stale-room-recycle-070420
+      - name: 0.1.70.4.21 logical socket dedupe source contract
+        run: npm run test:online-logical-socket-070421
       - name: 0.1.70.4.21 final modal ownership + career layout
         run: npm run test:final-modal-career-070421
       - name: 0.1.70.4.22 presentation single owner + safe reactions

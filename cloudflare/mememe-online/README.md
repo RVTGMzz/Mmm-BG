@@ -1,8 +1,8 @@
-# MMM Online Worker — 0.1.70.4.20
+# MMM Online Worker — 0.1.70.4.21
 
 Cloudflare Worker + SQLite-backed Durable Object runtime for cross-device MMM rooms.
 
-0.1.70.4.20 adds application-level WebSocket keepalive and stale hibernated-socket pruning so abandoned started rooms can release custom room codes without sacrificing reconnect.
+0.1.70.4.21 keeps the 0.1.70.4.20 keepalive/stale-socket pruning and additionally collapses reconnect overlap to one logical socket per client/seat/channel, preventing ghost presence and duplicate relay during half-open network handoff.
 
 ## Dashboard build settings
 
@@ -31,7 +31,7 @@ The WebSocket server uses Cloudflare's hibernation API through `ctx.acceptWebSoc
 Git integration connected on 2026-09-18 to the existing `mememe-online` Worker.
 This checkpoint intentionally touches the Worker root so Cloudflare can run the first production build from `mmm-mvp-0.1-core`.
 
-Deployment checkpoint: 0.1.70.4.20
+Deployment checkpoint: 0.1.70.4.21
 
 
 Git integration refresh: RVTGMzz/Mmm-BG / mmm-mvp-0.1-core / corrected Worker build config 2026-09-22.
