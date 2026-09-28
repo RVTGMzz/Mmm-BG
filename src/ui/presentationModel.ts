@@ -204,7 +204,7 @@ function reactionLines(
       const characterFlavor = speakerId === undefined
         ? undefined
         : characterReactionLineCh04(
-            gameSession.getCharacterId(speakerId),
+            playerById(players, speakerId)?.characterId ?? gameSession.getCharacterId(speakerId),
             reactionContextCh04(event, step.speakerRole),
             {
               amount,
@@ -241,7 +241,7 @@ function characterMomentReactionCh04(
 ): PresentationReactionLine[] {
   const speakerId = event.actorId;
   if (speakerId === undefined) return [];
-  const characterId = gameSession.getCharacterId(speakerId);
+  const characterId = playerById(players, speakerId)?.characterId ?? gameSession.getCharacterId(speakerId);
   const speakerName = playerName(players, speakerId);
   const flavor = characterReactionLineCh04(
     characterId,
@@ -273,7 +273,7 @@ function maybeNpcQuirkLine(event: MatchEvent, players: PlayerState[]): Presentat
   if (actorId === undefined || !browserSession.isCpuSeat(actorId)) return undefined;
   // Once a CPU has a Character, CH-04 owns its personality. Keep the legacy
   // bot quirk only as a compatibility fallback for pre-Character sessions.
-  if (gameSession.getCharacterId(actorId)) return undefined;
+  if (playerById(players, actorId)?.characterId ?? gameSession.getCharacterId(actorId)) return undefined;
   const cardId = dataString(event, 'cardId');
   if (!cardId || !cpuQuirkForTurn(event.turnNumber, actorId, cardId)) return undefined;
   return {
