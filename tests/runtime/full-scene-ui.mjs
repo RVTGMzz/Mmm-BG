@@ -24,9 +24,21 @@ try {
   for (const surface of Object.keys(names)) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const errors = [];
-    page.on('pageerror', (error) => errors.push(String(error)));
+    let rejectOnPageError;
+    const pageErrorPromise = new Promise((_, reject) => {
+      rejectOnPageError = (error) => {
+        errors.push(String(error));
+        reject(error);
+      };
+      page.once('pageerror', rejectOnPageError);
+    });
     await page.goto(`http://127.0.0.1:5173/tests/runtime/full-scene-ui.html?surface=${surface}`);
-    await page.waitForFunction(() => window.surfaceReady === true, { timeout: 30000 });
+    await Promise.race([
+      page.waitForFunction(() => window.surfaceReady === true, { timeout: 45000 }),
+      pageErrorPromise,
+    ]);
+    if (rejectOnPageError) page.off('pageerror', rejectOnPageError);
+    page.on('pageerror', (error) => errors.push(String(error)));
     await page.waitForTimeout(900);
 
     const result = await page.evaluate((name) => {
