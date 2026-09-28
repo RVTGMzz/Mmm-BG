@@ -1,4 +1,4 @@
-export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'solo_buoy' | 'cut_top_dice';
+export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'solo_buoy' | 'cut_top_dice' | 'final_sprint';
 export type MiniGameThreePlusMode059 = Exclude<MiniGameBaseMode059, 'rps'>;
 export type MiniGameRewardTable059 = readonly [number, number, number, number];
 
@@ -78,8 +78,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     title: 'NƯỚC RÚT CUỐI VÒNG',
     icon: '🏁',
     identity: 'CHUNG KẾT',
-    description: 'Ô cuối vòng chia thưởng cho mọi hạng nhưng vẫn ưu tiên top 1.',
-    mode3Plus: 'majority_minority',
+    description: 'Chạy đủ 3 chặng D6; cộng tổng rồi cắt Top 2 vào chung kết.',
+    mode3Plus: 'final_sprint',
     majorityRewards: [25, 15, 5, 5],
     rpsRewards: [17, 13, 0, 0],
   },

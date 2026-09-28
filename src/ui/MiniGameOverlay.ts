@@ -25,6 +25,7 @@ import {
   resolveThreeDoorsRound,
   resolveSoloBuoyRound,
   resolveCutTopDiceRound,
+  resolveFinalSprint,
   type PalmChoice,
   type RpsChoice,
   type ThreeDoorChoice,
@@ -80,6 +81,10 @@ function cutTopDiceRoll(eventSeq: number, playerId: number, round: number): numb
   return deterministicBit(eventSeq, playerId + 211, round + 71) % 6 + 1;
 }
 
+function finalSprintRoll(eventSeq: number, playerId: number, leg: number): number {
+  return deterministicBit(eventSeq, playerId + 307, leg + 113) % 6 + 1;
+}
+
 function threeDoorLabel(choice: ThreeDoorChoice): string {
   return choice === 'a' ? 'A' : choice === 'b' ? 'B' : 'C';
 }
@@ -101,6 +106,7 @@ function rewardTitle(gameType: MiniGameBaseRewardType): string {
   if (gameType === 'three_doors') return 'BA CỬA';
   if (gameType === 'solo_buoy') return 'PHAO ĐƠN';
   if (gameType === 'cut_top_dice') return 'CẮT TOP XÚC XẮC';
+  if (gameType === 'final_sprint') return 'ĐUA 3 CHẶNG';
   return 'NHIỀU RA ÍT BỊ';
 }
 
@@ -730,6 +736,41 @@ export function startMiniGameOverlay(
           '🛟 PHAO ĐƠN NỔI!',
           `${reveal}\n\n${countCopy}\n✅ Nổi: ${survivors}\n❌ Chìm: ${losers}`,
         );
+      }
+    } else if (baseType === 'final_sprint') {
+      subtitle.setText(`${slot.title} • ĐUA 3 CHẶNG • cộng tổng D6 rồi lấy Top 2`);
+      const legRolls: Record<number, number[]> = {};
+      for (const id of activeIds) legRolls[id] = [];
+      for (let leg = 1; leg <= 3; leg += 1) {
+        round = leg;
+        for (const id of activeIds) legRolls[id]!.push(finalSprintRoll(eventSeq, id, leg));
+        const standings = activeIds.map((id) => ({ id, total: legRolls[id]!.reduce((sum, roll) => sum + roll, 0) })).sort((a, b) => b.total - a.total);
+        const rows = standings.map(({ id, total }) => `${playerById(id)?.name ?? `P${id + 1}`} • ${legRolls[id]!.map((roll) => `🎲${roll}`).join(' ')} • Tổng ${total}`).join('\n');
+        await showResult(`🏁 CHẶNG ${leg}/3`, rows, leg === 3 ? 1900 : 1350);
+      }
+      const sprint = resolveFinalSprint(activeIds, legRolls, 2);
+      const finalists = [...sprint.lockedPlayerIds];
+      eliminationOrder.push(...sprint.lowerPlayerIds);
+      let overtime = [...sprint.overtimePlayerIds];
+      let slotsOpen = sprint.slotsOpen;
+      if (sprint.complete) {
+        activeIds = finalists.slice(0, 2);
+        await showResult('🏁 CẮT TOP SAU 3 CHẶNG', `✅ Vào chung kết: ${activeIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}`);
+      } else {
+        let overtimeRound = 0;
+        while (overtime.length > slotsOpen && safety < 16) {
+          safety += 1; overtimeRound += 1;
+          const rolls: Record<number, number> = {};
+          for (const id of overtime) rolls[id] = finalSprintRoll(eventSeq, id, 20 + overtimeRound);
+          const cut = resolveCutTopDiceRound(overtime, rolls, slotsOpen);
+          finalists.push(...cut.lockedPlayerIds); eliminationOrder.push(...cut.eliminatedPlayerIds);
+          const rollCopy = overtime.map((id) => `${playerById(id)?.name ?? `P${id + 1}`} 🎲 ${rolls[id]}`).join(' • ');
+          if (cut.complete) { await showResult('⚡ HIỆP PHỤ CHỐT TOP', rollCopy); overtime = []; slotsOpen = 0; break; }
+          await showResult('⚡ HÒA RANH TOP • CHẠY TIẾP', `${rollCopy}\n🔁 ${cut.rerollPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')} tranh ${cut.slotsOpen} ghế.`);
+          overtime = cut.rerollPlayerIds; slotsOpen = cut.slotsOpen;
+        }
+        if (overtime.length === slotsOpen && slotsOpen > 0) finalists.push(...overtime);
+        activeIds = finalists.slice(0, 2);
       }
     } else if (baseType === 'cut_top_dice') {
       subtitle.setText(`${slot.title} • CẮT TOP XÚC XẮC • 2 điểm cao nhất đi tiếp`);

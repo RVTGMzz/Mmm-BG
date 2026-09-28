@@ -33,6 +33,15 @@ export interface SoloBuoyRoundResult {
   tied: boolean;
 }
 
+export interface FinalSprintResult {
+  totals: Readonly<Record<number, number>>;
+  lockedPlayerIds: number[];
+  overtimePlayerIds: number[];
+  lowerPlayerIds: number[];
+  slotsOpen: number;
+  complete: boolean;
+}
+
 export interface CutTopDiceRoundResult {
   lockedPlayerIds: number[];
   rerollPlayerIds: number[];
@@ -217,6 +226,24 @@ export function resolveCutTopDiceRound(
     slotsOpen,
     complete: reroll.length === 0 && slotsOpen === 0,
   };
+}
+
+/** ĐUA 3 CHẶNG: three D6 legs, totals cut Top 2; cutoff ties alone enter overtime. */
+export function resolveFinalSprint(activePlayerIds: readonly number[], legRolls: Readonly<Record<number, readonly number[]>>, targetCount = 2): FinalSprintResult {
+  const active = [...new Set(activePlayerIds)];
+  if (!Number.isInteger(targetCount) || targetCount < 1 || targetCount > active.length) throw new RangeError('Final Sprint targetCount invalid.');
+  const totals: Record<number, number> = {};
+  for (const id of active) {
+    const rolls = legRolls[id];
+    if (!rolls || rolls.length !== 3 || rolls.some((roll) => !Number.isInteger(roll) || roll < 1 || roll > 6)) throw new RangeError('Final Sprint requires exactly three D6 rolls.');
+    totals[id] = rolls[0]! + rolls[1]! + rolls[2]!;
+  }
+  const groups = [...new Set(active.map((id) => totals[id]!))].sort((a,b)=>b-a).map((score)=>({score,playerIds:active.filter((id)=>totals[id]===score)}));
+  const locked: number[] = []; let overtime: number[] = []; let slotsOpen = targetCount;
+  for (const group of groups) { if (slotsOpen <= 0) break; if (group.playerIds.length <= slotsOpen) { locked.push(...group.playerIds); slotsOpen -= group.playerIds.length; } else { overtime = [...group.playerIds]; break; } }
+  const protectedIds = new Set([...locked,...overtime]);
+  const lower = active.filter((id)=>!protectedIds.has(id)).sort((a,b)=>totals[a]!-totals[b]!);
+  return { totals, lockedPlayerIds: locked, overtimePlayerIds: overtime, lowerPlayerIds: lower, slotsOpen, complete: overtime.length===0 && slotsOpen===0 };
 }
 
 function beats(left: RpsChoice, right: RpsChoice): boolean {
