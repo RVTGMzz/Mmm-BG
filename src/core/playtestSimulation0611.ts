@@ -128,6 +128,7 @@ export function runFullMatchSimulation0611(
   playerNames: readonly string[] = ['CPU 1', 'CPU 2', 'CPU 3', 'CPU 4'],
   safetyLimit = 1600,
   targetLaps = 1,
+  characterIds?: readonly (string | undefined)[],
 ): FullMatchSimulation0611 {
   const authority = createEmptyHostAuthority(
     {
@@ -136,6 +137,7 @@ export function runFullMatchSimulation0611(
       playerNames: [...playerNames],
       seed,
       targetLaps,
+      ...(characterIds ? { characterIds: [...characterIds] } : {}),
     },
     runtime,
   );
