@@ -8,18 +8,18 @@ const picker = readFileSync('src/ui/JobChoicePicker.ts', 'utf8');
 // This is a retained .21 Job-layout regression, not a freeze on future UI patch IDs.
 assert.match(MEMEME_BUILD.version, /^0\.1\.70\.4\.\d+$/);
 
-// Final active scene, not an old inherited wrapper, owns the last visible frame.
-assert.match(active, /hiddenFinalModalText070421/);
-assert.match(active, /this\.syncFinalModalOwnership070421\(\);/);
-assert.match(
-  active,
-  /if \(this\.compactLandscape07044\) this\.syncMobileLandscapeUi07044\(\);[\s\S]*this\.syncFinalModalOwnership070421\(\);/,
-);
-assert.match(active, /findNamedTopLevelContainer070421\('job-detail-modal'\)/);
-assert.match(active, /findNamedTopLevelContainer070421\('job-hub-modal'\)/);
-assert.match(active, /canonical\.has\(object\) \|\| protectedObjects\.has\(object\)/);
-assert.match(active, /root\.name !== 'presentation-reaction-bubble-070422'/);
-assert.match(active, /restoreFinalModalText070421/);
+// 0.1.71 ownership reset: the final active scene is the canonical owner,
+// but it no longer scavenges/hides/restores arbitrary Text every frame.
+assert.match(active, /readonly canonicalUiOwner071 = true/);
+const updateStart = active.indexOf('  update(): void {');
+const runtimeStart = active.indexOf('  private runtime07044()', updateStart);
+const activeUpdate = active.slice(updateStart, runtimeStart);
+assert.doesNotMatch(activeUpdate, /syncFinalModalOwnership070421/);
+assert.doesNotMatch(activeUpdate, /syncCanonicalCinematicOwnership070417/);
+assert.doesNotMatch(activeUpdate, /retireLegacyPresentationOverlays070414/);
+assert.doesNotMatch(active, /POST_UPDATE, postUpdateOwner/);
+assert.match(active, /setCinematicRenderer070427/);
+assert.match(active, /showCanonicalJobLanding070411/);
 
 // Job result is a compact centered career card instead of split left/right copy.
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
@@ -42,4 +42,4 @@ assert.doesNotMatch(picker, /Arial Rounded MT Bold/);
 assert.doesNotMatch(picker, /Math\.random\s*\(/);
 assert.doesNotMatch(picker, /rollD6\s*\(/);
 
-console.log('[final-modal-career-layout-070421] PASS no loose modal bleed + compact Job Hub/result layout');
+console.log('[final-modal-career-layout-070421] PASS canonical single-owner modal path + compact Job Hub/result layout');
