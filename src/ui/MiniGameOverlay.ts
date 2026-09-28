@@ -85,27 +85,30 @@ export function startMiniGameOverlay(
   // The fullscreen Mini Game owns the UI camera above the P1–P4 HUD (depth 1000).
   const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal').setScrollFactor(0);
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
-  const panel = scene.add.rectangle(0, 0, 900, 540, MINI_GAME_VISUAL_VF07.shellFill, 1)
+  const panel = scene.add.rectangle(
+    0, 0, MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height,
+    MINI_GAME_VISUAL_VF07.shellFill, 1,
+  )
     .setStrokeStyle(MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1);
-  const headerBand = scene.add.rectangle(0, -210, 846, 92, MINI_GAME_VISUAL_VF07.headerFill, 1)
+  const headerBand = scene.add.rectangle(0, -222, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 96, MINI_GAME_VISUAL_VF07.headerFill, 1)
     .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.18);
-  const headerSticker = scene.add.rectangle(-360, -210, 92, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+  const headerSticker = scene.add.rectangle(-390, -222, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1)
     .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55);
-  const title = scene.add.text(0, -224, `${slot.icon} ${slot.title}`, {
-    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '29px', fontStyle: 'bold', color: '#30251f',
+  const title = scene.add.text(0, -238, `${slot.icon} ${slot.title}`, {
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -184, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
+  const subtitle = scene.add.text(0, -196, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-    fontSize: '15px',
+    fontSize: '17px',
     color: '#6d5549',
     align: 'center',
-    fixedWidth: 760,
-    wordWrap: { width: 750, useAdvancedWrap: true },
+    fixedWidth: 820,
+    wordWrap: { width: 810, useAdvancedWrap: true },
     maxLines: 2,
     lineSpacing: 2,
   }).setOrigin(0.5).setName('vf07-minigame-subtitle');
-  const stake = scene.add.text(0, -156, '', {
-    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 780,
+  const stake = scene.add.text(0, -163, '', {
+    fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 840,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22).setName('vf07-minigame-stage');
   root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
@@ -114,7 +117,7 @@ export function startMiniGameOverlay(
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
   const clearStage = () => {
     stage.removeAll(true);
-    panel.setSize(900, 540).setY(0);
+    panel.setSize(MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height).setY(0);
     headerBand.setVisible(true);
     headerSticker.setVisible(true);
     title.setVisible(true);
@@ -130,13 +133,13 @@ export function startMiniGameOverlay(
     const l = MINI_GAME_CHOICE_LAYOUT_070431;
     const prompt = scene.add.text(0, l.promptY, `${player.name} • CHỌN KÍN`, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '23px',
+      fontSize: '25px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
     }).setOrigin(0.5).setName('vf07-minigame-choice-prompt');
     const hint = scene.add.text(0, l.hintY, '← → / A D • ENTER / SPACE • D-PAD + A', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '17px',
+      fontSize: '18px',
       color: MINI_GAME_VISUAL_VF07.mutedText,
     }).setOrigin(0.5).setName('vf07-minigame-choice-hint');
     stage.add([prompt, hint]);
@@ -211,14 +214,14 @@ export function startMiniGameOverlay(
         .setName(`vf07-minigame-choice-box-${index}`);
       boxes.push(box);
       const icon = scene.add.text(x, l.cardCenterY + l.iconOffsetY, choice.icon, {
-        fontSize: '42px',
+        fontSize: '46px',
       }).setOrigin(0.5);
       const label = scene.add.text(x, l.cardCenterY + l.labelOffsetY, choice.label, {
         fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '16px',
+        fontSize: '18px',
         fontStyle: 'bold',
         color: MINI_GAME_VISUAL_VF07.cocoaText,
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setName(`vf07-minigame-choice-label-${index}`);
       box.on('pointerover', () => {
         selectedIndex = index;
         refreshFocus();
@@ -243,7 +246,7 @@ export function startMiniGameOverlay(
       '🔒 LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT',
       {
         fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '16px',
+        fontSize: '18px',
         fontStyle: 'bold',
         color: MINI_GAME_VISUAL_VF07.mutedText,
         align: 'center',
@@ -288,47 +291,47 @@ export function startMiniGameOverlay(
 
   const showResult = async (heading: string, body: string, ms = 1700) => {
     clearStage();
-    const resultPaper = scene.add.rectangle(0, 10, 720, 320, MINI_GAME_VISUAL_VF07.resultFill, 1)
+    const resultPaper = scene.add.rectangle(0, 10, 780, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
       .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const resultBadge = scene.add.rectangle(0, -112, 360, 58, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+    const resultBadge = scene.add.rectangle(0, -116, 400, 62, MINI_GAME_VISUAL_VF07.stickerFill, 1)
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.5);
-    const head = scene.add.text(0, -112, heading, {
+    const head = scene.add.text(0, -116, heading, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '27px',
+      fontSize: '29px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'center',
-      fixedWidth: 330,
+      fixedWidth: 360,
     }).setOrigin(0.5).setName('vf07-minigame-result-heading');
     stage.add([resultPaper, resultBadge, head]);
 
     const bodyViewport = createScrollableTextViewport070429(scene, stage, {
-      x: -310,
+      x: -340,
       y: -62,
-      width: 620,
-      height: 180,
-      minHeight: 40,
+      width: 680,
+      height: 188,
+      minHeight: 44,
       text: body,
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: 23,
+      fontSize: 24,
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'center',
-      lineSpacing: 8,
+      lineSpacing: 9,
       name: 'vf07-minigame-result-scroll',
     });
     bodyViewport.text.setName('vf07-minigame-result-body');
     const resultBottom = -62 + bodyViewport.height + (bodyViewport.isScrollable ? 54 : 24);
-    resultPaper.setSize(720, resultBottom + 150).setY((resultBottom - 150) / 2);
+    resultPaper.setSize(780, resultBottom + 150).setY((resultBottom - 150) / 2);
     const shellBottom = stage.y + resultBottom + 24;
-    panel.setSize(900, shellBottom + 270).setY((shellBottom - 270) / 2);
+    panel.setSize(960, shellBottom + 282).setY((shellBottom - 270) / 2);
 
     const scrollHint = scene.add.text(0, resultBottom - 25, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '17px',
+      fontSize: '18px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.mutedText,
       align: 'center',
-      fixedWidth: 620,
+      fixedWidth: 680,
     }).setOrigin(0.5).setName('vf07-minigame-scroll-hint');
     stage.add(scrollHint);
 
@@ -357,39 +360,39 @@ export function startMiniGameOverlay(
     // status stay in a single bottom rail, never on the card's upper edges.
     const leftName = scene.add.text(-l.cardCenterX, l.nameY, a.name, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '20px', fontStyle: 'bold', color: '#30251f',
+      fontSize: '22px', fontStyle: 'bold', color: '#30251f',
       fixedWidth: l.cardWidth + 12, align: 'center',
     }).setOrigin(0.5);
     const rightName = scene.add.text(l.cardCenterX, l.nameY, b.name, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '20px', fontStyle: 'bold', color: '#30251f',
+      fontSize: '22px', fontStyle: 'bold', color: '#30251f',
       fixedWidth: l.cardWidth + 12, align: 'center',
     }).setOrigin(0.5);
     const leftCard = scene.add.rectangle(-l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xffe09a, 1)
       .setStrokeStyle(4, 0x4b332b, 1);
     const rightCard = scene.add.rectangle(l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xd1b0f0, 1)
       .setStrokeStyle(4, 0x4b332b, 1);
-    const leftIcon = scene.add.text(-l.cardCenterX, -14, '✊', { fontSize: '70px' }).setOrigin(0.5);
-    const rightIcon = scene.add.text(l.cardCenterX, -14, '✊', { fontSize: '70px' }).setOrigin(0.5);
+    const leftIcon = scene.add.text(-l.cardCenterX, -14, '✊', { fontSize: '74px' }).setOrigin(0.5);
+    const rightIcon = scene.add.text(l.cardCenterX, -14, '✊', { fontSize: '74px' }).setOrigin(0.5);
     const leftChoice = scene.add.text(-l.cardCenterX, 55, '?', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '19px',
       fontStyle: 'bold', color: '#30251f',
     }).setOrigin(0.5);
     const rightChoice = scene.add.text(l.cardCenterX, 55, '?', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '19px',
       fontStyle: 'bold', color: '#30251f',
     }).setOrigin(0.5);
     const vs = scene.add.text(0, l.cardCenterY, 'VS', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '32px', fontStyle: 'bold', color: '#ef4545',
+      fontSize: '34px', fontStyle: 'bold', color: '#ef4545',
     }).setOrigin(0.5);
     const chant = scene.add.text(0, l.chantY, 'CHUẨN BỊ...', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '22px',
-      fontStyle: 'bold', color: '#5d4773', fixedWidth: 600, align: 'center',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '24px',
+      fontStyle: 'bold', color: '#5d4773', fixedWidth: 640, align: 'center',
     }).setOrigin(0.5);
     const verdict = scene.add.text(0, l.verdictY, '', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '19px',
-      fontStyle: 'bold', color: '#30251f', align: 'center', fixedWidth: 650,
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '21px',
+      fontStyle: 'bold', color: '#30251f', align: 'center', fixedWidth: 700,
     }).setOrigin(0.5);
     stage.add([leftCard, rightCard, leftName, rightName, leftIcon, rightIcon, leftChoice, rightChoice, vs, chant, verdict]);
 
@@ -458,11 +461,11 @@ export function startMiniGameOverlay(
     headerSticker.setVisible(false);
 
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
-    const podiumPaper = scene.add.rectangle(0, 12, 720, 360, MINI_GAME_VISUAL_VF07.resultFill, 1)
+    const podiumPaper = scene.add.rectangle(0, 12, 780, 380, MINI_GAME_VISUAL_VF07.resultFill, 1)
       .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const podiumRibbon = scene.add.rectangle(0, -128, 430, 62, MINI_GAME_VISUAL_VF07.headerFill, 1)
+    const podiumRibbon = scene.add.rectangle(0, -136, 470, 66, MINI_GAME_VISUAL_VF07.headerFill, 1)
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45);
-    const heading = scene.add.text(0, -128, '🏆 BẢNG XẾP HẠNG', {
+    const heading = scene.add.text(0, -136, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '27px',
       fontStyle: 'bold',
@@ -479,11 +482,11 @@ export function startMiniGameOverlay(
 
     stage.add([podiumPaper, podiumRibbon, heading]);
     const rowsViewport = createScrollableTextViewport070429(scene, stage, {
-      x: -310,
-      y: -84,
-      width: 620,
-      height: 170,
-      minHeight: 40,
+      x: -340,
+      y: -90,
+      width: 680,
+      height: 180,
+      minHeight: 44,
       text: rows,
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: 23,
@@ -502,15 +505,15 @@ export function startMiniGameOverlay(
       ? characterWinnerVoiceCh04d(winner.id, winner.name, winnerReward, eventSeq)
       : '';
 
-    const rowsBottom = -84 + rowsViewport.height;
+    const rowsBottom = -90 + rowsViewport.height;
     const winnerVoiceText = scene.add.text(0, rowsBottom + 38, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '19px',
+      fontSize: '20px',
       fontStyle: 'bold',
       color: '#5d4773',
       align: 'center',
-      fixedWidth: 620,
-      wordWrap: { width: 610, useAdvancedWrap: true },
+      fixedWidth: 680,
+      wordWrap: { width: 670, useAdvancedWrap: true },
       maxLines: 2,
     }).setOrigin(0.5).setVisible(Boolean(winnerVoice)).setName('vf07-minigame-winner-voice');
 
@@ -531,8 +534,8 @@ export function startMiniGameOverlay(
     ).setOrigin(0.5).setName('vf07-minigame-ranking-hint');
 
     const rankingBottom = rewardHint.y + 30;
-    podiumPaper.setSize(720, rankingBottom + 168).setY((rankingBottom - 168) / 2);
-    panel.setSize(800, rankingBottom + 210).setY(22 + (rankingBottom - 190) / 2);
+    podiumPaper.setSize(780, rankingBottom + 168).setY((rankingBottom - 168) / 2);
+    panel.setSize(900, rankingBottom + 210).setY(22 + (rankingBottom - 190) / 2);
     stage.add([winnerVoiceText, rewardHint]);
     scene.tweens.add({
       targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, winnerVoiceText, rewardHint],
@@ -619,10 +622,10 @@ export function startMiniGameOverlay(
 
       const result = resolveMajorityMinorityRound(activeIds, choices);
       clearStage();
-      const revealPaper = scene.add.rectangle(0, 8, 720, 286, MINI_GAME_VISUAL_VF07.resultFill, 1)
+      const revealPaper = scene.add.rectangle(0, 8, 780, 300, MINI_GAME_VISUAL_VF07.resultFill, 1)
         .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
       const revealTitle = scene.add.text(0, -112, `VÒNG ${round} • CÙNG LẬT!`, {
-        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '22px', fontStyle: 'bold',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '24px', fontStyle: 'bold',
         color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center',
       }).setOrigin(0.5);
       const revealRows = activeIds.map((id, index) => {
@@ -630,11 +633,11 @@ export function startMiniGameOverlay(
         const up = choices[id] === 'up';
         const x = activeIds.length <= 2 ? (index === 0 ? -190 : 190) : -270 + (index % 2) * 540;
         const y = activeIds.length <= 2 ? 8 : -28 + Math.floor(index / 2) * 92;
-        const chip = scene.add.rectangle(x, y, 300, 72, up ? 0x9eddf0 : 0xffd983, 1)
+        const chip = scene.add.rectangle(x, y, 310, 76, up ? 0x9eddf0 : 0xffd983, 1)
           .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.7);
         const label = scene.add.text(x, y, `${player?.name ?? `P${id + 1}`}  ${up ? '🤲 NGỬA' : '🖐️ SẤP'}`, {
-          fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '17px', fontStyle: 'bold',
-          color: MINI_GAME_VISUAL_VF07.cocoaText, fixedWidth: 276, align: 'center',
+          fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold',
+          color: MINI_GAME_VISUAL_VF07.cocoaText, fixedWidth: 288, align: 'center',
         }).setOrigin(0.5);
         return [chip, label];
       }).flat();

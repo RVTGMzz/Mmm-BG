@@ -9,5 +9,5 @@ export const MINI_GAME_VISUAL_VF07 = Object.freeze({
   resultFill: 0xfffdf6,
   cocoaText: '#30251f',
   mutedText: '#6d5549',
-  bounds: Object.freeze({ width: 900, height: 540, safeWidth: 846 }),
+  bounds: Object.freeze({ width: 960, height: 570, safeWidth: 900 }),
 } as const);

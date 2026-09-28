@@ -3,16 +3,16 @@
  * This is presentation only: results and stakes remain HOST-authoritative.
  */
 export const MINI_GAME_DUEL_LAYOUT_070423 = Object.freeze({
-  modalHalfWidth: 450,
-  modalHalfHeight: 270,
+  modalHalfWidth: 480,
+  modalHalfHeight: 285,
   stageOffsetY: 22,
-  cardCenterX: 210,
-  cardCenterY: 2,
-  cardWidth: 226,
-  cardHeight: 190,
-  nameY: -127,
-  chantY: 128,
-  verdictY: 178,
+  cardCenterX: 220,
+  cardCenterY: 4,
+  cardWidth: 240,
+  cardHeight: 198,
+  nameY: -140,
+  chantY: 138,
+  verdictY: 190,
 });
 
 /** Guard whole component rectangles, not just their centers. */
@@ -43,16 +43,16 @@ export const MINI_GAME_CHOICE_LAYOUT_070431 = Object.freeze({
   stageOffsetY: 22,
   promptY: -118,
   hintY: -72,
-  cardCenterY: 74,
-  cardWidth: 170,
-  cardHeight: 160,
-  twoChoiceSpacing: 230,
-  multiChoiceSpacing: 200,
-  iconOffsetY: -31,
-  labelOffsetY: 36,
-  privacyY: 206,
-  privacyWidth: 650,
-  privacyHeight: 42,
+  cardCenterY: 76,
+  cardWidth: 178,
+  cardHeight: 166,
+  twoChoiceSpacing: 242,
+  multiChoiceSpacing: 212,
+  iconOffsetY: -33,
+  labelOffsetY: 39,
+  privacyY: 208,
+  privacyWidth: 690,
+  privacyHeight: 44,
 } as const);
 
 export function miniGameChoiceFits070431(
@@ -70,6 +70,6 @@ export function miniGameChoiceFits070431(
   return hintTop - promptBottom >= 12
     && cardTop - hintBottom >= 44
     && privacyTop - cardBottom >= 24
-    && l.stageOffsetY + privacyBottom <= 252
+    && l.stageOffsetY + privacyBottom <= 258
     && threeChoiceRight <= 426;
 }

@@ -788,92 +788,92 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const isResult = model.title.includes('NHẬN VIỆC');
     const shadow = this.add.graphics();
     shadow.fillStyle(0x3e2b25, 0.22);
-    shadow.fillRoundedRect(-382, -116, 764, 244, 26);
+    shadow.fillRoundedRect(-420, -124, 840, 256, 26);
 
     const panel = this.add.graphics();
     panel.fillStyle(0xfff8ec, 0.995);
-    panel.fillRoundedRect(-382, -124, 764, 244, 26);
+    panel.fillRoundedRect(-420, -132, 840, 256, 26);
     panel.lineStyle(4, 0x4b332b, 1);
-    panel.strokeRoundedRect(-382, -124, 764, 244, 26);
+    panel.strokeRoundedRect(-420, -132, 840, 256, 26);
 
     const header = this.add.graphics();
     header.fillStyle(isResult ? 0xffc94d : 0xffd76c, 1);
-    header.fillRoundedRect(-360, -104, 720, 52, { tl: 17, tr: 17, bl: 10, br: 10 });
+    header.fillRoundedRect(-396, -112, 792, 56, { tl: 17, tr: 17, bl: 10, br: 10 });
 
-    const eyebrow = this.add.text(-332, -78, model.eyebrow, {
+    const eyebrow = this.add.text(-366, -84, model.eyebrow, {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '17px',
+      fontSize: '18px',
       fontStyle: 'bold',
       color: '#694d41',
-      fixedWidth: 520,
+      fixedWidth: 590,
     }).setOrigin(0, 0.5);
 
     const dieMatch = model.title.match(/🎲\s*(\d)/u);
-    const dieChip = this.add.text(325, -78, dieMatch ? `🎲 ${dieMatch[1]}` : '💼', {
+    const dieChip = this.add.text(366, -84, dieMatch ? `🎲 ${dieMatch[1]}` : '💼', {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '18px',
+      fontSize: '19px',
       fontStyle: 'bold',
       color: '#49342c',
       backgroundColor: '#fff5d4',
       padding: { x: 10, y: 5 },
     }).setOrigin(1, 0.5);
 
-    const icon = this.add.text(-292, 24, model.impact || '💼', {
+    const icon = this.add.text(-320, 28, model.impact || '💼', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '54px',
+      fontSize: '62px',
     }).setOrigin(0.5);
 
     const displayTitle = isResult ? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ';
-    const title = this.add.text(44, -18, displayTitle, {
+    const title = this.add.text(55, -16, displayTitle, {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '29px',
+      fontSize: '32px',
       fontStyle: 'bold',
       color: '#34251f',
-      fixedWidth: 560,
+      fixedWidth: 620,
       align: 'center',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setName('job-result-title-070432');
 
     const bodyLines = [
       this.canonicalJobBody070414(model),
       ...(model.summary && model.summary !== model.description ? [model.summary] : []),
     ].filter(Boolean);
 
-    const hint = this.add.text(326, 99, 'chạm để tiếp tục', {
+    const hint = this.add.text(366, 103, 'chạm để tiếp tục', {
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: '17px',
+      fontSize: '18px',
       fontStyle: 'bold',
       color: '#71594d',
-    }).setOrigin(1, 0.5);
+    }).setOrigin(1, 0.5).setName('job-result-hint-070432');
 
-    const hit = this.add.rectangle(0, -2, 764, 244, 0xffffff, 0.001)
+    const hit = this.add.rectangle(0, -2, 840, 244, 0xffffff, 0.001)
       .setInteractive({ useHandCursor: true });
 
     root.add([shadow, panel, header, eyebrow, dieChip, icon, title, hint, hit]);
     const jobBodyViewport070429 = createScrollableTextViewport070429(this, root, {
-      x: -236,
-      y: 6,
-      width: 560,
-      height: 100,
-      minHeight: 32,
+      x: -255,
+      y: 8,
+      width: 620,
+      height: 112,
+      minHeight: 38,
       text: bodyLines.join('\n'),
       fontFamily: JOB_UI_FONT_070421,
-      fontSize: 21,
+      fontSize: 23,
       fontStyle: isResult ? 'bold' : 'normal',
       color: '#59463d',
       align: 'center',
-      lineSpacing: 6,
+      lineSpacing: 7,
       name: 'job-scroll-body-070429',
     });
     jobBodyViewport070429.text.setName('job-scroll-text-070429');
-    const jobBottom = 6 + jobBodyViewport070429.height + 50;
-    const jobHeight = jobBottom + 124;
-    shadow.clear().fillStyle(0x3e2b25, 0.22).fillRoundedRect(-382, -116, 764, jobHeight, 26);
-    panel.clear().fillStyle(0xfff8ec, 0.995).fillRoundedRect(-382, -124, 764, jobHeight, 26);
-    panel.lineStyle(4, 0x4b332b, 1).strokeRoundedRect(-382, -124, 764, jobHeight, 26);
-    hint.setY(jobBottom - 23);
-    hit.setSize(764, jobHeight).setY((jobBottom - 124) / 2);
+    const jobBottom = 8 + jobBodyViewport070429.height + 56;
+    const jobHeight = jobBottom + 132;
+    shadow.clear().fillStyle(0x3e2b25, 0.22).fillRoundedRect(-420, -132, 840, jobHeight, 26);
+    panel.clear().fillStyle(0xfff8ec, 0.995).fillRoundedRect(-420, -124, 840, jobHeight, 26);
+    panel.lineStyle(4, 0x4b332b, 1).strokeRoundedRect(-420, -132, 840, jobHeight, 26);
+    hint.setY(jobBottom - 24);
+    hit.setSize(840, jobHeight).setY((jobBottom - 132) / 2);
     // Rectangle.setSize does not resize an existing input hit area.
-    hit.setInteractive(new Phaser.Geom.Rectangle(0, 0, 764, jobHeight), Phaser.Geom.Rectangle.Contains);
+    hit.setInteractive(new Phaser.Geom.Rectangle(0, 0, 840, jobHeight), Phaser.Geom.Rectangle.Contains);
     if (jobBodyViewport070429.isScrollable) {
       hint.setText('↕ kéo / cuộn nội dung • chạm ngoài để tiếp tục');
     }

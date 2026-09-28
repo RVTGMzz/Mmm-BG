@@ -1,6 +1,6 @@
 export const JOB_HUB_VF06 = Object.freeze({
-  width: 950,
-  height: 516,
+  width: 1000,
+  height: 552,
   radius: 28,
   shell: 0xfff8ea,
   shellWarm: 0xf8ebd2,
@@ -12,9 +12,9 @@ export const JOB_HUB_VF06 = Object.freeze({
   aqua: 0x77d9e7,
   lavender: 0xb9a6e8,
   creamHighlight: 0xfffff7,
-  cardWidth: 250,
-  cardHeight: 230,
-  iconWellRadius: 34,
+  cardWidth: 264,
+  cardHeight: 242,
+  iconWellRadius: 37,
   safeInset: 32,
 });
 
