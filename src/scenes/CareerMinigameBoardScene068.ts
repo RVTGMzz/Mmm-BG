@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { MEMEME_BUILD } from '../buildInfo';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene067 } from './CareerMinigameBoardScene067';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 type PresentationRuntime068 = {
   active?: Phaser.GameObjects.Container;
@@ -39,6 +40,10 @@ export class CareerMinigameBoardScene068 extends CareerMinigameBoardScene067 {
   }
 
   private guardCanonicalModal068(): void {
+    if (isCanonicalUiOwner071(this)) {
+      this.restoreCanonicalModalTexts068();
+      return;
+    }
     const presentation = this.presentation068();
     const root = presentation?.active;
     const model = presentation?.currentModel;

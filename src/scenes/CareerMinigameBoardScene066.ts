@@ -4,6 +4,7 @@ import { pendingCpuFreshRollAfterRelease066 } from '../core/cpuReleaseResume066'
 import type { ClientIntentType } from '../core/authority';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import { CareerMinigameBoardScene0651 } from './CareerMinigameBoardScene0651';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 type CpuReleaseResumeInternals066 = {
   match: MatchState;
@@ -66,6 +67,7 @@ export class CareerMinigameBoardScene066 extends CareerMinigameBoardScene0651 {
   }
 
   private polishPresentation066(): void {
+    if (isCanonicalUiOwner071(this)) return;
     this.visitTextTree066(this.children.list, (text) => {
       if (text.name.startsWith('vf07-minigame-')) return;
       if (text.text.startsWith('CITY • MVP 0.1.65.1')) {

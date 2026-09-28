@@ -7,6 +7,7 @@ import type { PlayerState } from '../core/types';
 import { resolveCameraActor0632 } from '../ui/cameraTarget0632';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene0682 } from './CareerMinigameBoardScene0682';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 const JOBS_069 = jobsJson as JobDefinition[];
 const IDLE_SCALE_069 = 0.9;
@@ -45,15 +46,18 @@ export class CareerMinigameBoardScene069 extends CareerMinigameBoardScene0682 {
 
   create(): void {
     super.create();
-    this.installOwnedHudLabels069();
-    this.syncHud069();
-    this.syncCardHandVisibility069();
+    if (!isCanonicalUiOwner071(this)) {
+      this.installOwnedHudLabels069();
+      this.syncHud069();
+      this.syncCardHandVisibility069();
+    }
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restore069());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restore069());
   }
 
   update(): void {
     super.update();
+    if (isCanonicalUiOwner071(this)) return;
     this.syncHud069();
     this.syncCardHandVisibility069();
     this.polishJobHub069();

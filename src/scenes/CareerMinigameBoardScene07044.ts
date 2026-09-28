@@ -84,6 +84,12 @@ const IDLE_HUD_SCALE_07046 = 0.96;
 const JOB_UI_FONT_070421 = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif';
 
 export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 {
+  /**
+   * 0.1.71 UI ownership reset.
+   * Historical wrappers may retain authority/flow fixes, but their presentation
+   * writers must no-op when they see this live canonical owner.
+   */
+  readonly canonicalUiOwner071 = true;
   private compactLandscape07044 = false;
   private readonly hiddenDetachedCinematicText070417 = new Map<Phaser.GameObjects.Text, boolean>();
   private readonly hiddenFinalModalText070421 = new Map<Phaser.GameObjects.Text, boolean>();
@@ -113,14 +119,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreDetachedCinematicText070417());
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.restoreFinalModalText070421());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.restoreFinalModalText070421());
-    // Old fixes ran only inside Scene.update(), but late tweens/timers could
-    // introduce a detached label before the render pass. Enforce final modal
-    // ownership again at POST_UPDATE, after all inherited scene updates.
-    const postUpdateOwner = (): void => this.syncFinalModalOwnership070421();
-    this.events.on(Phaser.Scenes.Events.POST_UPDATE, postUpdateOwner);
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.events.off(Phaser.Scenes.Events.POST_UPDATE, postUpdateOwner);
-    });
+    // 0.1.71: no POST_UPDATE text scavenger. Canonical surfaces own their own
+    // children, while inherited presentation writers are disabled by ownership.
     this.compactLandscape07044 = isCompactLandscape07044();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
@@ -129,15 +129,12 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
   update(): void {
     super.update();
-    this.retireLegacyPresentationOverlays070414();
-    this.syncCanonicalCinematicOwnership070417();
+    // 0.1.71 canonical-owner frame loop: no global Text scans, hide/restore races
+    // or legacy Mini Game/Job reflow. Only stable board chrome stays live.
     this.ensurePlayerTokenBadges070417();
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.syncMobileLandscapeUi07044();
     this.syncFoundationHudSafeAreaVf04();
-    // Must be the final presentation pass. Later wrappers in the inheritance chain
-    // may recreate loose narration after 0682's older modal-ownership guard.
-    this.syncFinalModalOwnership070421();
   }
 
   private runtime07044(): Runtime07044 {

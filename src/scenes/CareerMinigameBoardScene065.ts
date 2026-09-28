@@ -11,6 +11,7 @@ import {
   HUD_SKIN_VF04,
 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardScene064 } from './CareerMinigameBoardScene064';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 const JOBS = jobsJson as JobDefinition[];
 const PLAYER_COLORS_065 = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
@@ -170,6 +171,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   }
 
   private polishUiTree065(): void {
+    if (isCanonicalUiOwner071(this)) return;
     this.visitDisplayTree065(this.children.list, (object) => {
       if (object instanceof Phaser.GameObjects.Text) {
         const text = object.text.trim();
@@ -265,6 +267,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   }
 
   private syncRoundedRectVisuals065(): void {
+    if (isCanonicalUiOwner071(this)) return;
     for (const [rectangle, handle] of [...this.roundedRects065]) {
       if (!rectangle.active) {
         if (handle.graphic.active) handle.graphic.destroy();
@@ -289,6 +292,7 @@ export class CareerMinigameBoardScene065 extends CareerMinigameBoardScene064 {
   }
 
   private syncRoundedTextVisuals065(): void {
+    if (isCanonicalUiOwner071(this)) return;
     for (const [text, handle] of [...this.roundedTexts065]) {
       if (!text.active) {
         if (handle.graphic.active) handle.graphic.destroy();

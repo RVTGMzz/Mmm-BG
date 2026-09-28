@@ -5,6 +5,7 @@ import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene068 } from './CareerMinigameBoardScene068';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 const JOBS_0681 = jobsJson as JobDefinition[];
 
@@ -64,6 +65,7 @@ export class CareerMinigameBoardScene0681 extends CareerMinigameBoardScene068 {
   }
 
   private syncReadableHud0681(): void {
+    if (isCanonicalUiOwner071(this)) return;
     const runtime = this.runtime0681();
     const currentId = runtime.currentPlayer()?.id;
 
@@ -110,6 +112,11 @@ export class CareerMinigameBoardScene0681 extends CareerMinigameBoardScene068 {
   }
 
   private syncModalDeclutter0681(): void {
+    if (isCanonicalUiOwner071(this)) {
+      this.restoreTopHud0681();
+      this.restoreLegacyCopy0681();
+      return;
+    }
     const presentation = this.presentation0681();
     const presentationActive = Boolean(presentation?.active?.active);
     const canonicalJobPresentation = presentation?.active?.name === 'job-presentation-card';

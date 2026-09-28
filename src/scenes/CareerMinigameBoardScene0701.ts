@@ -5,6 +5,7 @@ import type { PlayerState } from '../core/types';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { onlineGroupMedia07043 } from '../ui/OnlineGroupMedia07043';
 import { CareerMinigameBoardScene069 } from './CareerMinigameBoardScene069';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 type Presentation0701 = {
   currentModel?: PresentationEventModel;
@@ -131,6 +132,7 @@ export class CareerMinigameBoardScene0701 extends CareerMinigameBoardScene069 {
   }
 
   private polishMiniGameRanking0701(): void {
+    if (isCanonicalUiOwner071(this)) return;
     let heading: Phaser.GameObjects.Text | undefined;
     this.visitDisplayTree0701(this.children.list, (object) => {
       if (!(object instanceof Phaser.GameObjects.Text)) return;
