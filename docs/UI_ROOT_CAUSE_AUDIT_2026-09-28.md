@@ -193,3 +193,18 @@ Current source before audit:
 - runtime implementation: `f0f1814b736da53fac95e78b6161a899a452d998`
 
 Ron reports the UI problem remains unresolved. Treat real-device acceptance as FAIL until a full-scene architecture reset is validated.
+
+
+## Implemented reset result
+
+The audit's recommended first cut-over is now implemented.
+
+- runtime: `1b19b9a7ecfc59b86070db6587e29823fd0c0f74`
+- CI #3314: SUCCESS
+- full-scene test with normal `super.create()` and inherited `update()`: PASS
+- mirror: `22cdc87e5a8f051c702fc512423f2816518042b4`
+- Pages #58: SUCCESS
+
+Historical presentation writers in 065/066/067/068/0681/0682/069/0701 now recognize the active canonical UI owner and stop rewriting the final presentation. 07044 no longer performs the old per-frame / POST_UPDATE global Text scavenger passes.
+
+This resolves the architectural condition identified by this audit at the automated-browser level. Ron's real-device screenshots remain the final acceptance gate.

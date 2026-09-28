@@ -1,3 +1,28 @@
+# MMM — 2026-09-28 CANONICAL UI SINGLE-OWNER RESET
+
+Canonical newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_UI_SINGLE_OWNER_RESET.md`
+
+**ARCHITECTURE + FULL-SCENE BROWSER + CI + PUBLIC PAGES: PASS / RON DEVICE ACCEPTANCE PENDING**
+
+- Runtime source: `1b19b9a7ecfc59b86070db6587e29823fd0c0f74`
+- CI #3314 / run `36362271301`: **SUCCESS**, all 137 steps
+- New full-scene browser gate: **PASS**
+- Runtime evidence artifact: `10946560222`
+- Public mirror: `22cdc87e5a8f051c702fc512423f2816518042b4`
+- Pages #58 / run `36362462484`: **SUCCESS**
+- https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+The persistent UI root cause was competing inherited presentation writers. The live scene now declares one canonical UI owner; historical presentation polish/guard/reflow writers no-op while their authority/flow fixes remain inherited. The 07044 per-frame and POST_UPDATE text scavengers are no longer in the live frame loop.
+
+The new Playwright regression calls normal `super.create()` and keeps the inherited `update()` chain running. Card/News/Job/Mini Game ranking canonical bodies survived the real full-scene update chain.
+
+**Do not add another presentation hotfix wrapper.** If Ron still finds a device-only visual issue, change the canonical producer and extend the full-scene test.
+
+Real-device acceptance against the September screenshots is the next gate.
+
+---
+
 # MMM — 2026-09-28 ROOT CAUSE AUDIT
 
 Read first:

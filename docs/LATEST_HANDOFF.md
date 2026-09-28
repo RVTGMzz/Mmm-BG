@@ -1,3 +1,14 @@
+# September 28 canonical UI single-owner reset
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_UI_SINGLE_OWNER_RESET.md`
+
+Runtime `1b19b9a7ecfc59b86070db6587e29823fd0c0f74`, CI #3314 SUCCESS (137/137), mirror `22cdc87e5a8f051c702fc512423f2816518042b4`, Pages #58 SUCCESS.
+
+The active scene now disables historical presentation reflow/guard/scavenger writers through a canonical ownership cut-over. A new full-scene Playwright gate uses normal `super.create()` and inherited `update()`; Card/News/Job/Mini Game ranking bodies survive that full chain. Real-device acceptance is still pending.
+
+---
+
 # September 27 runtime UI regression checkpoint
 
 Canonical transfer:
