@@ -339,7 +339,7 @@ export function createJobRollPicker(
         fontSize: '14px',
         fontStyle: 'bold',
         color: '#5a463d',
-        fixedWidth: 236,
+        fixedWidth: 248,
         align: 'center',
       },
     ).setOrigin(0.5);

@@ -467,7 +467,7 @@ export function startMiniGameOverlay(
       .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45);
     const heading = scene.add.text(0, -136, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '27px',
+      fontSize: '29px',
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
     }).setOrigin(0.5).setName('vf07-minigame-ranking-heading');
@@ -489,11 +489,11 @@ export function startMiniGameOverlay(
       minHeight: 44,
       text: rows,
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: 23,
+      fontSize: 24,
       fontStyle: 'bold',
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'left',
-      lineSpacing: 11,
+      lineSpacing: 12,
       name: 'vf07-minigame-ranking-scroll',
     });
     rowsViewport.text.setName('vf07-minigame-ranking-rows');
@@ -525,11 +525,11 @@ export function startMiniGameOverlay(
         : 'KẾT QUẢ ĐÃ CHỐT • TIỀN THƯỞNG TỰ ĐỘNG ÁP DỤNG',
       {
         fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '17px',
+        fontSize: '18px',
         fontStyle: 'bold',
         color: MINI_GAME_VISUAL_VF07.mutedText,
         align: 'center',
-        fixedWidth: 620,
+        fixedWidth: 680,
       },
     ).setOrigin(0.5).setName('vf07-minigame-ranking-hint');
 
