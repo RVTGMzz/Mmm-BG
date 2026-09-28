@@ -43,6 +43,14 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
           (window as any).surfaceReady=true;
         }
       });
+    } else if(mode==='jobdetail') {
+      createJobRollPicker(this,'Player 1',(jobsJson as JobDefinition[]).slice(0,3),{canRoll:true});
+      this.time.delayedCall(80,()=>{
+        this.input.keyboard?.emit('keydown', new KeyboardEvent('keydown',{key:'1',code:'Digit1'}));
+      });
+      this.events.on('postupdate',()=>{
+        if(this.children.getByName('job-detail-modal')) (window as any).surfaceReady=true;
+      });
     } else if(mode==='jobhub') {
       createJobRollPicker(this,'Player 1',(jobsJson as JobDefinition[]).slice(0,3),{canRoll:true});
       (window as any).surfaceReady=true;

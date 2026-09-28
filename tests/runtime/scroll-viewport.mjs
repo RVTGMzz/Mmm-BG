@@ -45,7 +45,7 @@ try {
     assert.deepEqual(errors,[]);
     await page.close();
   }
-  for (const surface of ['card', 'news', 'job', 'jobhub', 'long', 'choice', 'ranking', 'order']) {
+  for (const surface of ['card', 'news', 'job', 'jobhub', 'jobdetail', 'long', 'choice', 'ranking', 'order']) {
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
     await page.goto(`http://127.0.0.1:5173/tests/runtime/modal-surfaces.html?surface=${surface}`);
@@ -91,6 +91,26 @@ try {
       });
       assert.ok(sizes.title>=29 && sizes.subtitle>=19 && sizes.salaryMin>=14 && sizes.detailMin>=13 && sizes.roll>=21,
         `Job Hub text too small: ${JSON.stringify(sizes)}`);
+    }
+    if(surface==='jobdetail') {
+      const sizes=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const root=s.children.getByName('job-detail-modal');
+        const texts=[];
+        const visit=o=>{
+          if(o?.type==='Text') texts.push(o);
+          if(o?.list) o.list.forEach(visit);
+        };
+        visit(root);
+        const font=o=>Number.parseFloat(String(o?.style?.fontSize ?? 0));
+        return {
+          salary:font(texts.find(x=>String(x.text).startsWith('LƯƠNG / VÒNG'))),
+          close:font(texts.find(x=>x.text==='← ĐÓNG')),
+          max:Math.max(...texts.map(font)),
+        };
+      });
+      assert.ok(sizes.salary>=19 && sizes.close>=18 && sizes.max>=30,
+        `Job detail text too small: ${JSON.stringify(sizes)}`);
     }
     if(surface==='choice') {
       const gaps=await page.evaluate(()=>{
