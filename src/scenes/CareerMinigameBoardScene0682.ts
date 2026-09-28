@@ -5,6 +5,7 @@ import type { MatchState } from '../core/matchState';
 import type { PlayerState } from '../core/types';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene0681 } from './CareerMinigameBoardScene0681';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 const JOBS_0682 = jobsJson as JobDefinition[];
 const IDLE_HUD_SCALE_0682 = 0.9;
@@ -64,6 +65,7 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
   }
 
   private syncActivePlayerHud0682(immediate: boolean): void {
+    if (isCanonicalUiOwner071(this)) return;
     const runtime = this.runtime0682();
     const currentId = runtime.currentPlayer()?.id;
     const turnChanged = currentId !== this.previousActivePlayerId0682;
@@ -128,6 +130,10 @@ export class CareerMinigameBoardScene0682 extends CareerMinigameBoardScene0681 {
   }
 
   private syncStrictModalOwnership0682(): void {
+    if (isCanonicalUiOwner071(this)) {
+      this.restoreLooseText0682();
+      return;
+    }
     const presentationRoot = this.presentation0682()?.active;
     const jobDetailRoot = this.findNamedTopLevelContainer0682('job-detail-modal');
     const jobHubRoot = this.findNamedTopLevelContainer0682('job-hub-modal');
