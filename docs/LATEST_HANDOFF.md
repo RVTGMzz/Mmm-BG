@@ -1,3 +1,20 @@
+# September 28 M26 PHAO ĐƠN gameplay upgrade
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_MINIGAME_SOLO_BUOY_0712.md`
+
+**GAMEPLAY + CI + BROWSER VISUAL + PUBLIC PAGES: PASS**
+
+M26 CÒN THỞ CÒN TIỀN now uses **PHAO ĐƠN** for 3+ players: choose Phao 1/2/3 secretly, only buoys with exactly one occupant survive; crowded buoys eliminate their occupants; no survivor/no elimination means replay; final two use OẲN TÙ XÌ. Payout stays 20/15/10/5 and wallet mutation remains HOST-owned.
+
+- source `a185d89760601b93a2ae7e75378cf1b58d282584`
+- validated runtime `f3d9bbefca5d42072170b13b4675e49cb3f3c3f3`
+- CI #3329 SUCCESS
+- mirror `8a9cef685e515d9d8e83042de8afd0ab7a5f2a01`
+- Pages #64 SUCCESS
+
+---
+
 # September 28 M17 BA CỬA gameplay upgrade
 
 Canonical transfer:
