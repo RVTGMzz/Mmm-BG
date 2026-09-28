@@ -127,3 +127,18 @@ Priority device checklist:
 8. No loose legacy text reappears after waiting several frames.
 
 If a device-only visual issue remains, fix the canonical producer itself. **Do not reactivate or add another inherited polish/guard/scavenger layer.**
+
+
+## Manual artifact review
+
+After CI #3314 completed, the `runtime-ui-evidence` artifact was downloaded and the rendered screenshots were visually inspected.
+
+Observed in the real full-scene captures:
+- Card: title, description and resolved summary are visible inside the paper; no loose copy.
+- News: full body and summary are visible; the prior trailing-fragment failure is absent.
+- Job: result body is visible and the paper is compact around actual content.
+- Mini Game ranking: left edge is intact; medal + `Hạng 1` are visible; winner voice/footer remain inside the paper.
+- Roll For Order: primary/helper copy is materially larger and separated; no status/helper overlap.
+- Long Card fixture: fixed-size body stays clipped to the paper and scroll indication appears for overflow.
+
+This is stronger evidence than the former producer-only fixture, but Ron's physical-device/public-build check remains the final acceptance gate.
