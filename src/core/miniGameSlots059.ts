@@ -1,4 +1,4 @@
-export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors';
+export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'solo_buoy';
 export type MiniGameThreePlusMode059 = Exclude<MiniGameBaseMode059, 'rps'>;
 export type MiniGameRewardTable059 = readonly [number, number, number, number];
 
@@ -54,8 +54,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     title: 'CÒN THỞ CÒN TIỀN',
     icon: '🛟',
     identity: 'CỨU VỚT',
-    description: 'Cả bốn hạng đều có phần, giảm cảm giác trắng tay.',
-    mode3Plus: 'majority_minority',
+    description: 'Chọn kín một phao; chỉ phao có đúng một người mới nổi.',
+    mode3Plus: 'solo_buoy',
     majorityRewards: [20, 15, 10, 5],
     rpsRewards: [16, 14, 0, 0],
   },

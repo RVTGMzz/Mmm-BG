@@ -10,6 +10,7 @@ export type MiniGameRewardType = MiniGameBaseRewardType | `${MiniGameBaseRewardT
 export const MINI_GAME_REWARDS: Record<MiniGameBaseRewardType, readonly [number, number, number, number]> = {
   majority_minority: [30, 20, 10, 0],
   three_doors: [30, 20, 10, 0],
+  solo_buoy: [30, 20, 10, 0],
   rps: [25, 15, 5, 0],
 };
 
@@ -27,14 +28,14 @@ export function miniGameRewardType059(
 }
 
 export function parseMiniGameRewardType059(value: unknown): MiniGameRewardIdentity059 | undefined {
-  if (value === 'majority_minority' || value === 'three_doors' || value === 'rps') return { baseType: value };
+  if (value === 'majority_minority' || value === 'three_doors' || value === 'solo_buoy' || value === 'rps') return { baseType: value };
   if (typeof value !== 'string') return undefined;
 
   const separator = value.indexOf('@');
   if (separator <= 0) return undefined;
   const baseType = value.slice(0, separator);
   const contentId = value.slice(separator + 1);
-  if (baseType !== 'majority_minority' && baseType !== 'three_doors' && baseType !== 'rps') return undefined;
+  if (baseType !== 'majority_minority' && baseType !== 'three_doors' && baseType !== 'solo_buoy' && baseType !== 'rps') return undefined;
   if (!MINI_GAME_SLOTS_059.some((entry) => entry.contentId === contentId)) return undefined;
   return { baseType, contentId };
 }

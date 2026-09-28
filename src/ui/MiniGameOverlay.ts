@@ -23,9 +23,11 @@ import {
   resolveMajorityMinorityRound,
   resolveRpsRound,
   resolveThreeDoorsRound,
+  resolveSoloBuoyRound,
   type PalmChoice,
   type RpsChoice,
   type ThreeDoorChoice,
+  type SoloBuoyChoice,
 } from '../core/minigames';
 import type { MatchEventValue } from '../core/matchState';
 import type { PlayerState } from '../core/types';
@@ -65,6 +67,10 @@ function cpuThreeDoor(eventSeq: number, playerId: number, round: number): ThreeD
   return (['a', 'b', 'c'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? 'a';
 }
 
+function cpuSoloBuoy(eventSeq: number, playerId: number, round: number): SoloBuoyChoice {
+  return (['1', '2', '3'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? '1';
+}
+
 function threeDoorRoll(eventSeq: number, round: number): number {
   return deterministicBit(eventSeq, 97, round) % 6 + 1;
 }
@@ -88,6 +94,7 @@ function rpsLabel(choice: RpsChoice): string {
 function rewardTitle(gameType: MiniGameBaseRewardType): string {
   if (gameType === 'rps') return 'OẲN TÙ XÌ';
   if (gameType === 'three_doors') return 'BA CỬA';
+  if (gameType === 'solo_buoy') return 'PHAO ĐƠN';
   return 'NHIỀU RA ÍT BỊ';
 }
 
@@ -667,6 +674,55 @@ export function startMiniGameOverlay(
         await showResult(
           `🎲 ${roll} • CỬA ${door} TRÚNG!`,
           `${reveal}\n\n✅ Đi tiếp: ${survivors}\n❌ Bị loại: ${losers}`,
+        );
+      }
+    } else if (baseType === 'solo_buoy') {
+      subtitle.setText(`${slot.title} • PHAO ĐƠN • chỉ phao có đúng 1 người mới nổi`);
+      while (activeIds.length > 2 && safety < 16) {
+        safety += 1;
+        round += 1;
+        const choices: Record<number, SoloBuoyChoice> = {};
+        for (const id of activeIds) {
+          const player = playerById(id);
+          if (!player) continue;
+          choices[id] = isInteractiveHuman(id)
+            ? await choiceButtons(player, [
+                { value: '1', icon: '🛟', label: 'PHAO 1', fill: 0xffd983 },
+                { value: '2', icon: '🛟', label: 'PHAO 2', fill: 0x9eddf0 },
+                { value: '3', icon: '🛟', label: 'PHAO 3', fill: 0xd1b0f0 },
+              ])
+            : cpuSoloBuoy(eventSeq, id, round);
+        }
+
+        const result = resolveSoloBuoyRound(activeIds, choices);
+        const reveal = activeIds
+          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: PHAO ${choices[id] ?? '1'}`)
+          .join('\n');
+        const countCopy = `Phao 1: ${result.counts['1']} • Phao 2: ${result.counts['2']} • Phao 3: ${result.counts['3']}`;
+
+        if (result.tied) {
+          const everyoneUnique = activeIds.every((id) => {
+            const choice = choices[id];
+            return choice ? result.counts[choice] === 1 : false;
+          });
+          const reason = everyoneUnique
+            ? 'Ai cũng đứng một mình, chưa ai chìm.'
+            : 'Không có phao đơn nào nổi, chọn lại!';
+          await showResult('🛟 CHƯA AI RỚT!', `${reveal}\n\n${countCopy}\n🤝 ${reason}`);
+          continue;
+        }
+
+        eliminationOrder.push(...result.eliminatedPlayerIds);
+        activeIds = result.survivorPlayerIds;
+        const survivors = activeIds
+          .map((id) => playerById(id)?.name ?? `P${id + 1}`)
+          .join(', ');
+        const losers = result.eliminatedPlayerIds
+          .map((id) => playerById(id)?.name ?? `P${id + 1}`)
+          .join(', ');
+        await showResult(
+          '🛟 PHAO ĐƠN NỔI!',
+          `${reveal}\n\n${countCopy}\n✅ Nổi: ${survivors}\n❌ Chìm: ${losers}`,
         );
       }
     } else {

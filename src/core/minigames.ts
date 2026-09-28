@@ -3,6 +3,7 @@ import type { MiniGameBaseMode059, MiniGameThreePlusMode059 } from './miniGameSl
 export type PalmChoice = 'up' | 'down';
 export type RpsChoice = 'rock' | 'paper' | 'scissors';
 export type ThreeDoorChoice = 'a' | 'b' | 'c';
+export type SoloBuoyChoice = '1' | '2' | '3';
 export type MiniGameMode = MiniGameBaseMode059;
 
 export interface MajorityMinorityRoundResult {
@@ -22,6 +23,13 @@ export interface ThreeDoorsRoundResult {
   winningDoor: ThreeDoorChoice;
   eliminatedPlayerIds: number[];
   survivingPlayerIds: number[];
+  tied: boolean;
+}
+
+export interface SoloBuoyRoundResult {
+  survivorPlayerIds: number[];
+  eliminatedPlayerIds: number[];
+  counts: Readonly<Record<SoloBuoyChoice, number>>;
   tied: boolean;
 }
 
@@ -98,6 +106,47 @@ export function resolveMajorityMinorityRound(
   return {
     eliminatedPlayerIds: eliminated,
     survivingPlayerIds: active.filter((id) => !eliminatedSet.has(id)),
+    tied: false,
+  };
+}
+
+/**
+ * PHAO ĐƠN:
+ * - every active player secretly picks buoy 1/2/3;
+ * - a buoy floats only when exactly one player picked it;
+ * - players on crowded buoys are eliminated;
+ * - if nobody is eliminated OR nobody survives, replay.
+ */
+export function resolveSoloBuoyRound(
+  activePlayerIds: readonly number[],
+  choices: Readonly<Record<number, SoloBuoyChoice>>,
+): SoloBuoyRoundResult {
+  const active = [...new Set(activePlayerIds)];
+  const counts: Record<SoloBuoyChoice, number> = { '1': 0, '2': 0, '3': 0 };
+  for (const id of active) {
+    const choice = choices[id];
+    if (choice === '1' || choice === '2' || choice === '3') counts[choice] += 1;
+  }
+
+  const survivors = active.filter((id) => {
+    const choice = choices[id];
+    return (choice === '1' || choice === '2' || choice === '3') && counts[choice] === 1;
+  });
+
+  if (survivors.length === 0 || survivors.length === active.length) {
+    return {
+      survivorPlayerIds: active,
+      eliminatedPlayerIds: [],
+      counts,
+      tied: true,
+    };
+  }
+
+  const survivorSet = new Set(survivors);
+  return {
+    survivorPlayerIds: survivors,
+    eliminatedPlayerIds: active.filter((id) => !survivorSet.has(id)),
+    counts,
     tied: false,
   };
 }
