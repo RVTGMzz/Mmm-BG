@@ -1,4 +1,5 @@
-export type MiniGameBaseMode059 = 'majority_minority' | 'rps';
+export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors';
+export type MiniGameThreePlusMode059 = Exclude<MiniGameBaseMode059, 'rps'>;
 export type MiniGameRewardTable059 = readonly [number, number, number, number];
 
 export interface MiniGameSlot059 {
@@ -9,6 +10,7 @@ export interface MiniGameSlot059 {
   icon: string;
   identity: string;
   description: string;
+  mode3Plus: MiniGameThreePlusMode059;
   majorityRewards: MiniGameRewardTable059;
   rpsRewards: MiniGameRewardTable059;
 }
@@ -29,6 +31,7 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '⚖️',
     identity: 'CÂN BẰNG',
     description: 'Kèo nhập môn: tiền thưởng trải đều theo thứ hạng.',
+    mode3Plus: 'majority_minority',
     majorityRewards: [25, 15, 10, 0],
     rpsRewards: [18, 12, 0, 0],
   },
@@ -39,7 +42,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     title: 'KÈO ALL-IN',
     icon: '🔥',
     identity: 'HẠNG 1 ĂN DÀY',
-    description: 'Top 1 bứt mạnh, hạng dưới nhận ít hơn.',
+    description: 'Chọn kín một trong ba cửa; D6 quyết định cửa sống sót.',
+    mode3Plus: 'three_doors',
     majorityRewards: [35, 10, 5, 0],
     rpsRewards: [22, 8, 0, 0],
   },
@@ -51,6 +55,7 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '🛟',
     identity: 'CỨU VỚT',
     description: 'Cả bốn hạng đều có phần, giảm cảm giác trắng tay.',
+    mode3Plus: 'majority_minority',
     majorityRewards: [20, 15, 10, 5],
     rpsRewards: [16, 14, 0, 0],
   },
@@ -62,6 +67,7 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '⚔️',
     identity: 'CẮT TOP',
     description: 'Chỉ hai vị trí dẫn đầu có thưởng.',
+    mode3Plus: 'majority_minority',
     majorityRewards: [30, 20, 0, 0],
     rpsRewards: [20, 10, 0, 0],
   },
@@ -73,6 +79,7 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     icon: '🏁',
     identity: 'CHUNG KẾT',
     description: 'Ô cuối vòng chia thưởng cho mọi hạng nhưng vẫn ưu tiên top 1.',
+    mode3Plus: 'majority_minority',
     majorityRewards: [25, 15, 5, 5],
     rpsRewards: [17, 13, 0, 0],
   },

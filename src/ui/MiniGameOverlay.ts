@@ -22,8 +22,10 @@ import {
   minigameModeForActivePlayers,
   resolveMajorityMinorityRound,
   resolveRpsRound,
+  resolveThreeDoorsRound,
   type PalmChoice,
   type RpsChoice,
+  type ThreeDoorChoice,
 } from '../core/minigames';
 import type { MatchEventValue } from '../core/matchState';
 import type { PlayerState } from '../core/types';
@@ -59,6 +61,18 @@ function cpuRps(eventSeq: number, playerId: number, round: number): RpsChoice {
   return (['rock', 'paper', 'scissors'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? 'rock';
 }
 
+function cpuThreeDoor(eventSeq: number, playerId: number, round: number): ThreeDoorChoice {
+  return (['a', 'b', 'c'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? 'a';
+}
+
+function threeDoorRoll(eventSeq: number, round: number): number {
+  return deterministicBit(eventSeq, 97, round) % 6 + 1;
+}
+
+function threeDoorLabel(choice: ThreeDoorChoice): string {
+  return choice === 'a' ? 'A' : choice === 'b' ? 'B' : 'C';
+}
+
 function rpsIcon(choice: RpsChoice): string {
   if (choice === 'rock') return '✊';
   if (choice === 'paper') return '🖐️';
@@ -72,7 +86,9 @@ function rpsLabel(choice: RpsChoice): string {
 }
 
 function rewardTitle(gameType: MiniGameBaseRewardType): string {
-  return gameType === 'rps' ? 'OẲN TÙ XÌ' : 'NHIỀU RA ÍT BỊ';
+  if (gameType === 'rps') return 'OẲN TÙ XÌ';
+  if (gameType === 'three_doors') return 'BA CỬA';
+  return 'NHIỀU RA ÍT BỊ';
 }
 
 export function startMiniGameOverlay(
@@ -583,10 +599,11 @@ export function startMiniGameOverlay(
   const runTournament = async (): Promise<MiniGameOutcome> => {
     let activeIds = players.map((player) => player.id);
     const eliminationOrder: number[] = [];
-    const baseType: MiniGameBaseRewardType = minigameModeForActivePlayers(activeIds) === 'rps'
-      ? 'rps'
-      : 'majority_minority';
+    const baseType: MiniGameBaseRewardType = minigameModeForActivePlayers(activeIds, slot.mode3Plus);
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
+    stake
+      .setText(`${rewardTitle(baseType)} • ${miniGameRewardCopy059(slot.contentId, baseType)}`)
+      .setVisible(true);
 
     if (activeIds.length <= 1) {
       const rankingPlayerIds = [...activeIds];
@@ -602,10 +619,59 @@ export function startMiniGameOverlay(
       return { gameType: payoutType, rankingPlayerIds };
     }
 
-    subtitle.setText(`${slot.title} • NHIỀU RA ÍT BỊ • phe thiểu số bị loại`);
     let round = 0;
     let safety = 0;
-    while (activeIds.length > 2 && safety < 16) {
+
+    if (baseType === 'three_doors') {
+      subtitle.setText(`${slot.title} • BA CỬA • D6: 1–2=A • 3–4=B • 5–6=C`);
+      while (activeIds.length > 2 && safety < 16) {
+        safety += 1;
+        round += 1;
+        const choices: Record<number, ThreeDoorChoice> = {};
+        for (const id of activeIds) {
+          const player = playerById(id);
+          if (!player) continue;
+          choices[id] = isInteractiveHuman(id)
+            ? await choiceButtons(player, [
+                { value: 'a', icon: '🚪', label: 'CỬA A', fill: 0xffd983 },
+                { value: 'b', icon: '🚪', label: 'CỬA B', fill: 0x9eddf0 },
+                { value: 'c', icon: '🚪', label: 'CỬA C', fill: 0xd1b0f0 },
+              ])
+            : cpuThreeDoor(eventSeq, id, round);
+        }
+
+        const roll = threeDoorRoll(eventSeq, round);
+        const result = resolveThreeDoorsRound(activeIds, choices, roll);
+        const reveal = activeIds
+          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: CỬA ${threeDoorLabel(choices[id] ?? 'a')}`)
+          .join('\n');
+        const door = threeDoorLabel(result.winningDoor);
+
+        if (result.tied) {
+          const reason = result.survivingPlayerIds.length === activeIds.length
+            && activeIds.every((id) => choices[id] === result.winningDoor)
+            ? 'Tất cả cùng trúng cửa, chưa ai bị loại.'
+            : 'Không ai chọn đúng cửa, ra lại!';
+          await showResult(`🎲 ${roll} • CỬA ${door}`, `${reveal}\n\n🤝 ${reason}`);
+          continue;
+        }
+
+        eliminationOrder.push(...result.eliminatedPlayerIds);
+        const losers = result.eliminatedPlayerIds
+          .map((id) => playerById(id)?.name ?? `P${id + 1}`)
+          .join(', ');
+        activeIds = result.survivingPlayerIds;
+        const survivors = activeIds
+          .map((id) => playerById(id)?.name ?? `P${id + 1}`)
+          .join(', ');
+        await showResult(
+          `🎲 ${roll} • CỬA ${door} TRÚNG!`,
+          `${reveal}\n\n✅ Đi tiếp: ${survivors}\n❌ Bị loại: ${losers}`,
+        );
+      }
+    } else {
+      subtitle.setText(`${slot.title} • NHIỀU RA ÍT BỊ • phe thiểu số bị loại`);
+      while (activeIds.length > 2 && safety < 16) {
       safety += 1;
       round += 1;
       const choices: Record<number, PalmChoice> = {};
@@ -657,6 +723,7 @@ export function startMiniGameOverlay(
       activeIds = result.survivingPlayerIds;
       const survivors = activeIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
       await showResult('😵 ÍT BỊ!', `${reveal}\n\n❌ Bị loại: ${losers}\n✅ Còn lại: ${survivors}`);
+      }
     }
 
     let rankingPlayerIds: number[];
