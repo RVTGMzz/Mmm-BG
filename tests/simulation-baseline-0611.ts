@@ -39,6 +39,9 @@ for (const run of runs) {
   assert(run.report.commandCount > 0);
   assert(run.report.finalMoneyTotal >= 0);
   assert(run.report.finalMoneySpread >= 0);
+  assert.equal(run.report.boardShuffles, 1, `seed ${run.seed} must shuffle exactly once in a one-lap match`);
+  assert.deepEqual(run.report.boardShuffleLaps, [1]);
+  assert(run.report.miniGameRewardTypes.every((type) => type.includes('@MINIGAME_SLOT_')), `seed ${run.seed} used an unscoped Mini Game payout`);
   assert(run.submittedCommands < 1600, `seed ${run.seed} reached command safety ceiling`);
 }
 

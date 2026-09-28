@@ -143,6 +143,8 @@ jobs:
         env:
           SIMULATION_BASELINE_OUTPUT: dist/SIMULATION_BASELINE_0.1.61.1.txt
         run: npm run test:simulation-baseline-0611
+      - name: 0.1.71.5 full-match authority + two-lap integration audit
+        run: npm run test:full-match-audit-0715
       - name: 0.1.64 release-corridor sentinel replay
         env:
           OUTLIER_REPLAY_OUTPUT: dist/OUTLIER_REPLAY_0.1.64.txt

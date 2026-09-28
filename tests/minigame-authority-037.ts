@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createEmptyHostAuthority } from '../src/core/authority';
+import { expectedMiniGameRewardType059 } from '../src/core/minigameRewards';
 import { InMemoryTransportHub } from '../src/core/localTransport';
 import { TwoTabHostSession, type TwoTabMessage } from '../src/core/twoTabSession';
 import type { BoardDefinition } from '../src/core/types';
@@ -35,9 +36,11 @@ assert.equal(roll.status, 'accepted');
 const sourceEvent = authority.state.eventLog.find((event) => event.type === 'minigame_tile');
 assert(sourceEvent, 'rolling onto the Mini Game tile must create a source event');
 
+const payoutType = expectedMiniGameRewardType059('MINIGAME_SLOT_01', 4);
+assert.equal(payoutType, 'majority_minority@MINIGAME_SLOT_01');
 const payoutData = {
   sourceEventSeq: sourceEvent.seq,
-  gameType: 'majority_minority',
+  gameType: payoutType!,
   rankingPlayerIds: '0,1,2,3',
 };
 
@@ -51,12 +54,19 @@ assert.deepEqual(
   'seat/player intent must never pay Mini Game rewards',
 );
 
+const wrongMode = host.submitSystemIntent('resolve_minigame', {
+  ...payoutData,
+  gameType: 'majority_minority',
+});
+assert.equal(wrongMode.status, 'rejected');
+assert.match(wrongMode.reason ?? '', /expects majority_minority@MINIGAME_SLOT_01/i);
+
 const systemPayout = host.submitSystemIntent('resolve_minigame', payoutData);
 assert.equal(systemPayout.status, 'accepted');
 assert.deepEqual(
   authority.state.players.map((player) => player.money),
-  [230, 220, 210, 200],
-  'host-system path must apply 30/20/10/0 exactly once',
+  [225, 215, 210, 200],
+  'host-system path must apply 25/15/10/0 exactly once',
 );
 
 const duplicateSystemPayout = host.submitSystemIntent('resolve_minigame', payoutData);
@@ -64,7 +74,7 @@ assert.equal(duplicateSystemPayout.status, 'rejected');
 assert.match(duplicateSystemPayout.reason ?? '', /already resolved/i);
 assert.deepEqual(
   authority.state.players.map((player) => player.money),
-  [230, 220, 210, 200],
+  [225, 215, 210, 200],
   'duplicate host-system payout must not change B$ again',
 );
 
