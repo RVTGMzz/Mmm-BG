@@ -232,18 +232,23 @@ try {
         const root=s.children.getByName('minigame-modal');
         const stage=root?.getByName('vf07-minigame-stage');
         const heading=stage?.getByName('vf07-minigame-result-heading');
-        const body=stage?.getByName('vf07-minigame-result-scroll')?.getByName('vf07-minigame-result-body');
+        const scrollRoot=stage?.getByName('vf07-minigame-result-scroll');
+        const body=scrollRoot?.getByName('vf07-minigame-result-body');
+        const hint=stage?.getByName('vf07-minigame-scroll-hint');
         const bodyText=String(body?.text ?? '');
         return {
           heading:String(heading?.text ?? ''),
           body:bodyText,
           rollCount:(bodyText.match(/🎲 [1-6]/g) ?? []).length,
+          scrollHint:String(hint?.text ?? ''),
         };
       });
       assert.ok(/CẮT TOP|HÒA Ở RANH TOP/.test(dice.heading),
         `M35 result heading missing: ${JSON.stringify(dice)}`);
       assert.ok(dice.rollCount>=3,
         `M35 must visibly reveal contestant D6 rolls: ${JSON.stringify(dice)}`);
+      assert.equal(dice.scrollHint,'',
+        `M35 normal four-player result should fit without mandatory scrolling: ${JSON.stringify(dice)}`);
     }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{

@@ -748,8 +748,8 @@ export function startMiniGameOverlay(
         eliminationOrder.push(...result.eliminatedPlayerIds);
 
         const rollCopy = contenders
-          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: 🎲 ${rolls[id]}`)
-          .join('\n');
+          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`} 🎲 ${rolls[id]}`)
+          .join('  •  ');
         const lockedCopy = result.lockedPlayerIds.length > 0
           ? `✅ Giữ ghế Top: ${result.lockedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}`
           : '';
@@ -760,7 +760,7 @@ export function startMiniGameOverlay(
         if (result.complete) {
           await showResult(
             `🎲 CẮT TOP • VÒNG ${round}`,
-            [rollCopy, lockedCopy, eliminatedCopy].filter(Boolean).join('\n\n'),
+            [rollCopy, lockedCopy, eliminatedCopy].filter(Boolean).join('\n'),
           );
           contenders = [];
           slotsOpen = 0;
@@ -771,13 +771,13 @@ export function startMiniGameOverlay(
           .map((id) => playerById(id)?.name ?? `P${id + 1}`)
           .join(', ');
         await showResult(
-          `🎲 HÒA Ở RANH TOP ${2 - slotsOpen + result.slotsOpen}`,
+          '🎲 HÒA Ở RANH TOP • ĐỔ LẠI',
           [
             rollCopy,
             lockedCopy,
             eliminatedCopy,
             `🔁 ${tieCopy} đổ lại để tranh ${result.slotsOpen} ghế còn lại.`,
-          ].filter(Boolean).join('\n\n'),
+          ].filter(Boolean).join('\n'),
         );
 
         contenders = result.rerollPlayerIds;

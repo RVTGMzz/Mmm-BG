@@ -53,8 +53,6 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
         const stage=run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
         const heading=stage?.getByName('vf07-minigame-result-heading') as Phaser.GameObjects.Text;
         if(heading && (heading.text.includes('CẮT TOP') || heading.text.includes('HÒA Ở RANH TOP'))) {
-          this.time.timeScale=0;
-          this.tweens.timeScale=0;
           (window as any).surfaceReady=true;
         }
       });
