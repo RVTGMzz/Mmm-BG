@@ -34,7 +34,10 @@ assert.match(scene,/name: isNews \? 'news-scroll-body-070429' : 'card-scroll-bod
 assert.match(scene,/presentation\.setCinematicRenderer070427/);
 assert.match(scene,/const root = this\.add\.container\(640, 330\)/);
 assert.match(scene,/minAutoCloseMs: built\.scrollable \? 6000 : undefined/);
-assert.match(scene,/this\.syncCanonicalCinematicOwnership070417\(\)/);
+assert.match(scene,/readonly canonicalUiOwner071 = true/);
+const updateStart = scene.indexOf('  update(): void {');
+const runtimeStart = scene.indexOf('  private runtime07044()', updateStart);
+assert.doesNotMatch(scene.slice(updateStart, runtimeStart), /syncCanonicalCinematicOwnership070417/);
 assert.match(scene,/root\.add\(\[shadow, panel, kicker, title, impact, source\]\)/);
 assert.doesNotMatch(painter,/Math\.random|submitIntent\s*\(|MatchState|browserSession/);
-console.log('[visual-foundation-news-vf05] PASS warm news-only sample + original owner + .22 reaction lanes + fixed scrollable type');
+console.log('[visual-foundation-news-vf05] PASS warm news-only sample + direct canonical owner + .22 reaction lanes + fixed scrollable type');
