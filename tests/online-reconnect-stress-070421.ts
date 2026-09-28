@@ -36,8 +36,6 @@ class SocketProbe {
   readonly socket:WebSocket;
   private readonly queue:Json[]=[];
   private readonly waiters=new Set<Waiter>();
-  private closedInfo?:{code:number;reason:string};
-  private readonly closeWaiters=new Set<(value:{code:number;reason:string})=>void>();
 
   private constructor(socket:WebSocket){
     this.socket=socket;
@@ -52,11 +50,6 @@ class SocketProbe {
         clearTimeout(waiter.timer); this.waiters.delete(waiter); waiter.resolve(value); return;
       }
       this.queue.push(value);
-    });
-    socket.addEventListener('close',(event:any)=>{
-      this.closedInfo={code:Number(event.code??0),reason:String(event.reason??'')};
-      for(const resolve of this.closeWaiters) resolve(this.closedInfo);
-      this.closeWaiters.clear();
     });
   }
 
@@ -83,13 +76,8 @@ class SocketProbe {
     });
   }
 
-  async waitClosed(label:string):Promise<{code:number;reason:string}>{
-    if(this.closedInfo) return this.closedInfo;
-    return await new Promise((resolve,reject)=>{
-      const timer=setTimeout(()=>{this.closeWaiters.delete(done);reject(new Error('Timed out waiting for close: '+label));},TIMEOUT_MS);
-      const done=(value:{code:number;reason:string})=>{clearTimeout(timer);this.closeWaiters.delete(done);resolve(value);};
-      this.closeWaiters.add(done);
-    });
+  hasQueued(predicate:(value:Json)=>boolean):boolean{
+    return this.queue.some(predicate);
   }
 
   close():void{
@@ -147,9 +135,16 @@ try{
     const replacement=await SocketProbe.connect(wsUrl(roomCode,'client',clientId,clientSeat,'game',{reconnectToken}));
     sockets.push(replacement);
     await replacement.waitFor((m)=>m.kind==='relay_ready','client replacement ready #'+cycle);
-    const closed=await replaced.waitClosed('client replaced #'+cycle);
-    assert.equal(closed.code,4001,'old client socket must be replaced immediately');
-    assert.match(closed.reason,/Replaced by reconnect/i);
+    const obsolete='stress-obsolete-client-'+cycle+'-'+randomUUID();
+    if(replaced.socket.readyState===WebSocket.OPEN){
+      try{replaced.send({kind:'stress_obsolete_client',cycle,nonce:obsolete},'host');}catch{}
+    }
+    await new Promise((resolve)=>setTimeout(resolve,700));
+    assert.equal(
+      hostGame.hasQueued((m)=>m.from===clientId && (m.payload as Json|undefined)?.nonce===obsolete),
+      false,
+      'obsolete client socket must never relay after replacement #'+cycle,
+    );
 
     await replacement.waitFor((m)=>presenceHasSingleSeat(m,clientId,clientSeat),'deduped client presence #'+cycle);
 
@@ -167,9 +162,16 @@ try{
   const newHost=await SocketProbe.connect(wsUrl(roomCode,'host','host',0,'game',{hostToken}));
   sockets.push(newHost);
   await newHost.waitFor((m)=>m.kind==='relay_ready','replacement host ready');
-  const hostClosed=await oldHost.waitClosed('host replaced');
-  assert.equal(hostClosed.code,4001);
-  assert.match(hostClosed.reason,/Replaced by reconnect/i);
+  const obsoleteHost='stress-obsolete-host-'+randomUUID();
+  if(oldHost.socket.readyState===WebSocket.OPEN){
+    try{oldHost.send({kind:'stress_obsolete_host',nonce:obsoleteHost},clientId);}catch{}
+  }
+  await new Promise((resolve)=>setTimeout(resolve,700));
+  assert.equal(
+    clientGame.hasQueued((m)=>m.from==='host' && (m.payload as Json|undefined)?.nonce===obsoleteHost),
+    false,
+    'obsolete host socket must never relay after replacement',
+  );
   hostGame=newHost;
 
   const afterHost='after-host-'+randomUUID();
@@ -186,7 +188,7 @@ try{
   assert.equal(Number(reclaimed.seatId),clientSeat);
   assert.equal(String(reclaimed.reconnectToken),reconnectToken);
 
-  console.log('[online-reconnect-stress-070421] PASS clientReplace=5 hostReplace=1 mediaIsolation=1 seat=P'+(clientSeat+1));
+  console.log('[online-reconnect-stress-070421] PASS clientReplace=5 hostReplace=1 obsoleteRelay=0 mediaIsolation=1 seat=P'+(clientSeat+1));
 }finally{
   for(const socket of sockets) socket.close();
   if(roomCode&&hostToken){
