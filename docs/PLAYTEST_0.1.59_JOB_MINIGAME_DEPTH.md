@@ -26,17 +26,20 @@ The criminal Job no longer has a placeholder "future Jail" outcome. If caught:
 
 ### Five canonical Mini Game arenas
 
-The underlying game engine remains the proven hidden-choice tournament:
-- 3+ eligible players: **NHIỀU RA ÍT BỊ**;
-- 2 eligible players: **OẲN TÙ XÌ**;
+The five spaces share one tournament/ranking/payout framework, but arena mechanics may now differ:
+- M17 with 3+ eligible players: **BA CỬA**;
+- the other current 3+ arenas: **NHIỀU RA ÍT BỊ**;
+- any arena with exactly 2 eligible players: **OẲN TÙ XÌ**;
 - Jail/Hospital eligibility rules remain from 0.1.57.
+
+0.1.71.1 adds the first arena-specific mechanic without changing the M17 payout table.
 
 Each canonical Mini Game space now has its own stake identity:
 
 | Space | Arena | Identity | 3+/4-player payout |
 | --- | --- | --- | --- |
 | M09 | PHỐ ĐÔNG NGƯỜI | CÂN BẰNG | 30 / 20 / 10 / 0 |
-| M17 | KÈO ALL-IN | HẠNG 1 ĂN DÀY | 40 / 15 / 5 / 0 |
+| M17 | KÈO ALL-IN · BA CỬA | HẠNG 1 ĂN DÀY | 40 / 15 / 5 / 0 |
 | M26 | CÒN THỞ CÒN TIỀN | CỨU VỚT | 25 / 20 / 10 / 5 |
 | M35 | TOP 2 HOẶC VỀ KHÔNG | CẮT TOP | 35 / 25 / 0 / 0 |
 | M44 | NƯỚC RÚT CUỐI VÒNG | CHUNG KẾT | 30 / 15 / 10 / 5 |

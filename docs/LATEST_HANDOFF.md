@@ -1,3 +1,20 @@
+# September 28 M17 BA CỬA gameplay upgrade
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_MINIGAME_THREE_DOORS_0711.md`
+
+**GAMEPLAY + CI + BROWSER VISUAL + PUBLIC PAGES: PASS**
+
+M17 KÈO ALL-IN now uses BA CỬA for 3+ players: choose A/B/C secretly, D6 maps 1–2=A / 3–4=B / 5–6=C, correct door survives, nobody/all hit means replay, final two use OẲN TÙ XÌ. Payout stays 35/10/5/0 and wallet mutation remains HOST-owned.
+
+- source `74507ed8a067a52cf451285bc7add0a9be9741a7`
+- visual gate `bad77d6b00fba46019ddfc66e35e80d4eee661b1`
+- CI #3327 SUCCESS
+- mirror `c283a1ddcf283953eef173c0467190cba516a2b5`
+- Pages #63 SUCCESS
+
+---
+
 # September 28 Mini Game + Job readability pass
 
 **AUTOMATED + BROWSER VISUAL REVIEW: PASS / REAL DEVICE ACCEPTANCE PENDING**

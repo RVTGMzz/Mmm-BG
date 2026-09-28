@@ -145,6 +145,7 @@ Do not revive old Tiên Tri / Phép Thuật labels.
 
 - Job Hub identity and career consequences;
 - deepen the **5-space Mini Game system** with more game types/variety;
+- 0.1.71.1 follow-up: M17 KÈO ALL-IN now uses **BA CỬA** for 3+ players while preserving its existing reward profile;
 - Mini Game pacing and payouts;
 - district/branch identity tied to Job, economy, events and party mechanics;
 - keep Mini Game payout host-system owned and one-shot;
