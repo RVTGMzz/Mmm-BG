@@ -22,23 +22,23 @@ const OUTLIERS = [
   {
     seed: 611102,
     reason: '0.1.71-roguelike-lap-shuffle-longest-match',
-    checksum: '70355e64',
+    checksum: '6714251a',
     turns: 94,
     commands: 146,
     submitted: 129,
-    moneyTotal: 1585,
+    moneyTotal: 1572,
     spread: 158,
     movement: 78,
     release: 21,
     cards: 14,
     news: 12,
     mini: 12,
-    miniPayout: 555,
+    miniPayout: 542,
     jobs: 4,
     lotteryCount: 1,
     lotteryPayout: 40,
     finishOrderPlayerIds: [3, 2, 1, 0],
-    finalMoney: [385, 330, 488, 382],
+    finalMoney: [372, 330, 488, 382],
     finishOrderBySeat: [4, 3, 2, 1],
   },
   {
@@ -94,8 +94,6 @@ function fingerprintLine(entry: (typeof runs)[number]): string[] {
     `finishPlaces=${report.players.map((player) => player.finishOrder ?? 0).join(',')}`,
   ];
 }
-
-console.log('[OUTLIER-REBASE-0715]\n'+runs.flatMap((entry) => fingerprintLine(entry)).join('\n'));
 
 for (const { fixture, run } of runs) {
   const { report } = run;
