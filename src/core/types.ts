@@ -46,8 +46,6 @@ export interface PlayerState {
   targetLaps?: number;
   /** CH-05 authoritative Character identity. */
   characterId?: string;
-  /** Completed-lap index where the signature passive was last consumed. */
-  characterPassiveLastLap?: number;
   /** Career fields are optional so old schema-v3 playtest snapshots still deserialize cleanly. */
   jobId?: string;
   jobLevel?: number;

@@ -344,7 +344,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
       },
       player.id,
     );
-    applyMiniGameStartPassivesCh05(ctx.state, eligible.map((entry) => entry.id));
+    applyMiniGameStartPassivesCh05(ctx.state, eligible.map((entry) => entry.id), ctx.random);
     return 'done';
   }
 
@@ -376,7 +376,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
       player.money += amount;
       appendMatchEvent(ctx.state, 'money_tile', { nodeId: node.id, amount, resultMoney: player.money }, player.id);
       if (player.money < beforeMoney) {
-        applyMoneyLossPassivesCh05(ctx.state, [{ player, loss: beforeMoney - player.money }], 'money_tile');
+        applyMoneyLossPassivesCh05(ctx.state, [{ player, loss: beforeMoney - player.money }], 'money_tile', ctx.random);
       }
       return 'done';
     }
@@ -425,6 +425,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
           .map((entry) => ({ player: entry, loss: Math.max(0, (moneyBefore.get(entry.id) ?? entry.money) - entry.money) }))
           .filter((entry) => entry.loss > 0),
         'news',
+        ctx.random,
       );
       return 'done';
     }
@@ -897,9 +898,10 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
       .map((entry) => ({ player: entry, loss: Math.max(0, (moneyBefore.get(entry.id) ?? entry.money) - entry.money) }))
       .filter((entry) => entry.loss > 0),
     'card',
+    ctx.random,
   );
   if (primaryTarget && primaryTarget.id !== caster.id && card.targetMode !== 'all_others') {
-    applyDirectCardTargetPassiveCh05(ctx.state, caster, primaryTarget, card.title);
+    applyDirectCardTargetPassiveCh05(ctx.state, caster, primaryTarget, card.title, ctx.random);
   }
   transition(ctx, 'PRE_ROLL_ACTION');
 }

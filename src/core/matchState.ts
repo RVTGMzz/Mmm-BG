@@ -132,7 +132,6 @@ function normalizePlayers(players: PlayerState[]): PlayerState[] {
       lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
       ...(targetLaps && targetLaps > 1 ? { targetLaps } : {}),
       ...(typeof player.characterId === 'string' && player.characterId.trim() ? { characterId: player.characterId.trim() } : {}),
-      ...(Number.isInteger(player.characterPassiveLastLap) && (player.characterPassiveLastLap ?? -1) >= 0 ? { characterPassiveLastLap: Math.floor(player.characterPassiveLastLap!) } : {}),
     };
   });
 }
