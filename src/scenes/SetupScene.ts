@@ -116,7 +116,7 @@ export class SetupScene extends Phaser.Scene {
                     <img class="character-layered-face-ch02g" alt="" />
                   </span>
                   <img class="character-layered-foreground-ch02g" src="./assets/characters/starter-crybaby/neutral/foreground.webp" alt="" />
-                  <span class="character-layered-label-ch02g">NEUTRAL PROOF</span>
+                  
                 </span>` : ''}
               <span class="character-face-proof-ch02d" aria-hidden="true">
                 <img class="character-face-source-ch02d" alt="" />
