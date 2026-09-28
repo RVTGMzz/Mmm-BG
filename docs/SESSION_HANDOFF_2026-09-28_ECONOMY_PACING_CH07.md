@@ -1,31 +1,31 @@
-# MMM — 2026-09-28 ECONOMY & PACING AUDIT CH-07
+# MMM — 2026-09-28 CHARACTER-ENABLED ECONOMY & PACING CH-07
 
-**CHARACTER-ENABLED 1/2/3-LAP ECONOMY + PACING: PASS**
+**1 / 2 / 3 LAP ECONOMY + PACING AUDIT: PASS**
 
-CH-07 ran 60 deterministic full matches with the live starter Character roster:
-- 20 × 1 lap;
-- 20 × 2 laps;
-- 20 × 3 laps.
+CH-07 ran 60 deterministic Character-enabled matches using the starter roster:
+- 20 matches at 1 lap;
+- 20 matches at 2 laps;
+- 20 matches at 3 laps.
 
-Normalized results:
-- 1 lap: turns 60.3/lap, commands 96.2/lap, final total 1256.1B$, inflation 456.1B$/lap, spread 159.9B$/lap, passive amount 28.0B$/lap, cards 11.5/lap, Mini Games 4.8/lap, Lottery 1.3/lap.
-- 2 laps: turns 59.1/lap, commands 93.1/lap, final total 1832.0B$, inflation 516.0B$/lap, spread 109.45B$/lap, passive amount 32.38B$/lap, cards 10.5/lap, Mini Games 5.15/lap, Lottery 1.25/lap.
-- 3 laps: turns 56.43/lap, commands 88.37/lap, final total 2127.1B$, inflation 442.37B$/lap, spread 98.57B$/lap, passive amount 27.0B$/lap, cards 10.2/lap, Mini Games 4.63/lap, Lottery 1.2/lap.
+Observed normalized metrics:
+- 1 lap: turns/lap 60.30; commands/lap 96.20; inflation/lap 456.10B$; spread/lap 159.90B$; passive direct amount/lap 28.00B$.
+- 2 laps: turns/lap 59.10; commands/lap 93.10; inflation/lap 516.00B$; spread/lap 109.45B$; passive direct amount/lap 32.38B$.
+- 3 laps: turns/lap 56.43; commands/lap 88.37; inflation/lap 442.37B$; spread/lap 98.57B$; passive direct amount/lap 27.00B$.
 
 Decision:
-- no economy nerf/buff in CH-07;
-- inflation is positive but approximately linear rather than runaway;
-- spread per lap decreases in longer matches instead of exploding;
-- pacing per lap stays stable/slightly tighter across 1→2→3 laps;
-- keep current 200B$ start, Job salary, Lottery, Mini Game payouts, Card/News values, and Character percentages for live human playtest.
+- keep current economy values unchanged;
+- no evidence of nonlinear inflation, runaway command growth, or widening per-lap money spread as target laps increase;
+- 1/2/3-lap match length remains deterministic and bounded;
+- Character passives do not create a pacing/economy runaway in this bot audit.
 
 Validated checkpoint:
-- CH-07 source/audit: `55ae7d817883349f2c242ad9ecb7d95b7a4b2605`
+- CH-07 source: `55ae7d817883349f2c242ad9ecb7d95b7a4b2605`
 - CI #3355 / run `36422869034`: SUCCESS
 - runtime evidence artifact: `10970348631`
-- compiled output was unchanged by this test-only pass, so the public mirror remained the already-green Pages #74 build `72f99c965aa13ea7232e036dc7fa9b07fa925734`.
+- compiled build artifact: `10970079665`
+- compiled public mirror content did not require a new commit because CH-07 changes tests/telemetry only; previous Pages #74 remains the current gameplay build.
 
-Next roadmap block: Online Stress/Reconnect Pass.
+Next roadmap block: Online Stress / Reconnect audit. Preserve current Character percentages and economy while exercising reconnect ownership, repeated reloads, stale sockets, seat reclaim and relay continuity.
 
 ---
 
