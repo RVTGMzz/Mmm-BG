@@ -95,6 +95,8 @@ function fingerprintLine(entry: (typeof runs)[number]): string[] {
   ];
 }
 
+console.log('[OUTLIER-REBASE-0715]\n'+runs.flatMap((entry) => fingerprintLine(entry)).join('\n'));
+
 for (const { fixture, run } of runs) {
   const { report } = run;
   assert.equal(report.checksum, fixture.checksum, `seed ${fixture.seed} checksum drifted`);
