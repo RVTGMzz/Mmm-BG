@@ -1,3 +1,45 @@
+# MMM — NEW CHAT TRANSFER AFTER M44
+
+Canonical source branch: `mmm-mvp-0.1-core`
+
+## M44 ĐUA 3 CHẶNG / NƯỚC RÚT CUỐI VÒNG
+
+**GAMEPLAY + CI + BROWSER REGRESSION + PUBLIC PAGES: PASS**
+
+M44 now uses `final_sprint` for 3+ players:
+- every contestant completes exactly 3 deterministic D6 legs;
+- cumulative score decides the Top 2 Final seats;
+- only a tie crossing the Top-2 cutoff enters deterministic D6 overtime;
+- no Player-ID tiebreak at the cutoff;
+- final two retain common OẲN TÙ XÌ;
+- payout remains 25/15/5/5 and HOST payout ownership is unchanged.
+
+Self-review fixes made before handoff:
+- decoupled the M17 regression from M44's mode so each Mini Game test owns its own rule;
+- added M44 test `test:minigame-final-sprint-0714` to the CI workflow;
+- corrected lower-rank ordering to descending cumulative score (3rd before 4th).
+
+Validated checkpoint:
+- gameplay source: `9009a881dce3f51f622a6073b52d92eecc1445e1`
+- regression decoupling: `f6f141be56dc3c15680db81e43281943105a9fdf`
+- CI gate + ranking correction: `8f7d436aab2d796e39cd81129ffe76e174cabf61`
+- final validated HEAD: `492bc7e9bf6c68aa737b2abe3d3f1a6c5663d4ce`
+- CI #3336: SUCCESS
+- public mirror: `18496ed27500bf693bd749940c1829dc98eeeca2`
+- Pages #68: SUCCESS
+- public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+Mini Game set now has five distinct 3+ player mechanics:
+1. M08 NHIỀU RA ÍT BỊ
+2. M17 BA CỬA
+3. M26 PHAO ĐƠN
+4. M35 CẮT TOP XÚC XẮC
+5. M44 ĐUA 3 CHẶNG
+
+M17/M26/M35/M44 are complete. Do not redo them unless a runtime/device regression is reported. Preserve canonical single-owner UI architecture and deterministic/replay-safe gameplay.
+
+---
+
 # MMM — NEW CHAT TRANSFER AFTER M35
 
 Canonical next-chat file:
