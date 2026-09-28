@@ -1,3 +1,18 @@
+# September 28 new-chat transfer after M35
+
+Canonical next-chat file:
+- `docs/NEXT_CHAT_PROMPT_2026-09-28_AFTER_M35.md`
+
+Current repo/gameplay checkpoint:
+- repo HEAD before transfer: `850691ee69c57abd551e314486fda03b7eae4dce`
+- M35 final validated: `e62d0de4928f3f117518cc4b350cd585c4b60a69`
+- CI #3332 SUCCESS
+- Pages #66 SUCCESS
+
+Next gameplay target: **M44 NƯỚC RÚT CUỐI VÒNG**. M17/M26/M35 are complete and must not be redone. Preserve M44 payout 25/15/5/5, HOST payout ownership, deterministic/replay-safe logic, common 2-player RPS final, and current canonical UI ownership.
+
+---
+
 # September 28 M35 CẮT TOP XÚC XẮC gameplay upgrade
 
 Canonical transfer:
