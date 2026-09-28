@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { CareerMinigameBoardScene066 } from './CareerMinigameBoardScene066';
+import { isCanonicalUiOwner071 } from '../ui/canonicalUiOwner071';
 
 type PresentationRuntime067 = {
   active?: Phaser.GameObjects.Container;
@@ -40,6 +41,11 @@ export class CareerMinigameBoardScene067 extends CareerMinigameBoardScene066 {
   }
 
   private polishJobPresentation067(): void {
+    if (isCanonicalUiOwner071(this)) {
+      this.restoreLegacyJobText067();
+      this.polishedJobRoot067 = undefined;
+      return;
+    }
     const presentation = this.presentation067();
     const root = presentation?.active;
     const model = presentation?.currentModel;
