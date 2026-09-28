@@ -888,6 +888,7 @@ export function replayMatchCommands(
     startingMoney: source.startingMoney,
     playOrder: source.playOrder,
     targetLaps: sourceTargetLaps,
+    characterIds: source.players.map((player) => player.characterId),
   });
   const phase = new TurnPhaseMachine(state.turn);
   const ctx: ReplayContext = {

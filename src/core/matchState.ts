@@ -82,6 +82,7 @@ export interface CreateMatchOptions {
   startingMoney?: number;
   playOrder?: number[];
   targetLaps?: number;
+  characterIds?: Array<string | undefined>;
 }
 
 let configuredInitialPlayOrder: number[] | undefined;
@@ -130,6 +131,8 @@ function normalizePlayers(players: PlayerState[]): PlayerState[] {
       handCardIds: [...player.handCardIds],
       lapsCompleted: Math.max(0, Math.floor(player.lapsCompleted ?? 0)),
       ...(targetLaps && targetLaps > 1 ? { targetLaps } : {}),
+      ...(typeof player.characterId === 'string' && player.characterId.trim() ? { characterId: player.characterId.trim() } : {}),
+      ...(Number.isInteger(player.characterPassiveLastLap) && (player.characterPassiveLastLap ?? -1) >= 0 ? { characterPassiveLastLap: Math.floor(player.characterPassiveLastLap!) } : {}),
     };
   });
 }
@@ -158,6 +161,7 @@ export function createInitialMatchState(options: CreateMatchOptions): MatchState
     cardsPlayedThisTurn: 0,
     lapsCompleted: 0,
     ...(targetLaps > 1 ? { targetLaps } : {}),
+    ...(typeof options.characterIds?.[index] === 'string' && options.characterIds[index]!.trim() ? { characterId: options.characterIds[index]!.trim() } : {}),
   }));
   const playOrder = normalizePlayOrder(options.playOrder ?? configuredInitialPlayOrder, players.length);
 

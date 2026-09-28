@@ -122,6 +122,7 @@ export class DemoBoardScene extends Phaser.Scene {
       boardId: BOARD.id,
       startNodeId: BOARD.startNodeId,
       playerNames: gameSession.players.map((profile, index) => profile.name || `Player ${index + 1}`),
+      characterIds: gameSession.players.map((profile) => profile.characterId),
       seed: this.resolveSeed(),
     });
     this.players = this.match.players;
@@ -203,6 +204,7 @@ export class DemoBoardScene extends Phaser.Scene {
         boardId: BOARD.id,
         startNodeId: BOARD.startNodeId,
         playerNames: gameSession.players.map((profile, index) => profile.name || `Player ${index + 1}`),
+        characterIds: gameSession.players.map((profile) => profile.characterId),
         seed: this.match.seed,
       },
       runtime,
@@ -449,6 +451,7 @@ export class DemoBoardScene extends Phaser.Scene {
         boardId: BOARD.id,
         startNodeId: BOARD.startNodeId,
         playerNames: names,
+        characterIds: this.players.map((player) => player.characterId),
         seed: Date.now(),
         startingMoney: this.match.startingMoney,
       },

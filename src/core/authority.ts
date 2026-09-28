@@ -285,7 +285,7 @@ export function createHostAuthority(source: MatchState, runtime: HostAuthorityRu
   return { source: cloned, state: replay.state, runtime, receipts: new Map() };
 }
 
-export function createEmptyHostAuthority(options: { boardId: string; startNodeId: number; playerNames: string[]; seed: number; startingMoney?: number; playOrder?: number[]; targetLaps?: number }, runtime: HostAuthorityRuntime): HostAuthority {
+export function createEmptyHostAuthority(options: { boardId: string; startNodeId: number; playerNames: string[]; seed: number; startingMoney?: number; playOrder?: number[]; targetLaps?: number; characterIds?: Array<string | undefined> }, runtime: HostAuthorityRuntime): HostAuthority {
   return createHostAuthority(createInitialMatchState(options), runtime);
 }
 
