@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import { CareerMinigameBoardScene07044 } from '../../src/scenes/CareerMinigameBoardScene07044';
 import { TurnOrderScene07044 } from '../../src/scenes/TurnOrderScene07044';
 import { startMiniGameOverlay } from '../../src/ui/MiniGameOverlay';
+import { createJobRollPicker } from '../../src/ui/JobChoicePicker';
+import jobsJson from '../../src/content/core/jobs_mvp.json';
+import type { JobDefinition } from '../../src/core/jobs';
 import { gameSession } from '../../src/core/session';
 import { browserSession } from '../../src/core/browserSession';
 
@@ -40,6 +43,9 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
           (window as any).surfaceReady=true;
         }
       });
+    } else if(mode==='jobhub') {
+      createJobRollPicker(this,'Player 1',(jobsJson as JobDefinition[]).slice(0,3),{canRoll:true});
+      (window as any).surfaceReady=true;
     } else if(mode==='job') {
       self.showCanonicalJobLanding070411({currentModel:model,finishCurrent(){}},model);
       (window as any).surfaceReady=true;

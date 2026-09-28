@@ -45,7 +45,7 @@ try {
     assert.deepEqual(errors,[]);
     await page.close();
   }
-  for (const surface of ['card', 'news', 'job', 'long', 'choice', 'ranking', 'order']) {
+  for (const surface of ['card', 'news', 'job', 'jobhub', 'long', 'choice', 'ranking', 'order']) {
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
     await page.goto(`http://127.0.0.1:5173/tests/runtime/modal-surfaces.html?surface=${surface}`);
@@ -53,6 +53,45 @@ try {
     await page.waitForTimeout(500);
     await page.screenshot({path:`runtime-ui-evidence/surface-${surface}-1280x800.png`});
     assert.deepEqual(errors, [], surface);
+    if(surface==='job') {
+      const sizes=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const root=s.children.getByName('job-presentation-card');
+        const bodyRoot=root?.getByName('job-scroll-body-070429');
+        const font=o=>Number.parseFloat(String(o?.style?.fontSize ?? 0));
+        return {
+          title:font(root?.getByName('job-result-title-070432')),
+          body:font(bodyRoot?.getByName('job-scroll-text-070429')),
+          hint:font(root?.getByName('job-result-hint-070432')),
+        };
+      });
+      assert.ok(sizes.title>=32 && sizes.body>=23 && sizes.hint>=18,
+        `Job result text too small: ${JSON.stringify(sizes)}`);
+    }
+    if(surface==='jobhub') {
+      const sizes=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const root=s.children.getByName('job-hub-modal');
+        const texts=[];
+        const visit=o=>{
+          if(o?.type==='Text') texts.push(o);
+          if(o?.list) o.list.forEach(visit);
+        };
+        visit(root);
+        const font=o=>Number.parseFloat(String(o?.style?.fontSize ?? 0));
+        const salaries=texts.filter(x=>String(x.text).startsWith('Lv1 '));
+        const details=texts.filter(x=>x.text==='XEM CHI TIẾT');
+        return {
+          title:font(texts.find(x=>x.text==='💼 JOB HUB')),
+          subtitle:font(texts.find(x=>x.text==='Đổ xúc xắc để chọn nghề')),
+          salaryMin:Math.min(...salaries.map(font)),
+          detailMin:Math.min(...details.map(font)),
+          roll:font(texts.find(x=>String(x.text).includes('ĐỔ XÚC XẮC'))),
+        };
+      });
+      assert.ok(sizes.title>=29 && sizes.subtitle>=19 && sizes.salaryMin>=14 && sizes.detailMin>=13 && sizes.roll>=21,
+        `Job Hub text too small: ${JSON.stringify(sizes)}`);
+    }
     if(surface==='choice') {
       const gaps=await page.evaluate(()=>{
         const s=window.surfaceScene;
@@ -101,6 +140,19 @@ try {
       assert.ok(gaps.promptHint>=12, `Mini Game prompt/helper cramped: ${JSON.stringify(gaps)}`);
       assert.ok(gaps.hintCards>=36, `Mini Game helper/cards cramped: ${JSON.stringify(gaps)}`);
       assert.ok(gaps.cardsPrivacy>=20, `Mini Game cards/privacy cramped: ${JSON.stringify(gaps)}`);
+      const sizes=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const stage=s.children.getByName('minigame-modal')?.getByName('vf07-minigame-stage');
+        const font=o=>Number.parseFloat(String(o?.style?.fontSize ?? 0));
+        return {
+          prompt:font(stage?.getByName('vf07-minigame-choice-prompt')),
+          hint:font(stage?.getByName('vf07-minigame-choice-hint')),
+          privacy:font(stage?.getByName('vf07-minigame-choice-privacy-hint')),
+          labels:[0,1].map(i=>font(stage?.getByName(`vf07-minigame-choice-label-${i}`))),
+        };
+      });
+      assert.ok(sizes.prompt>=25 && sizes.hint>=18 && sizes.privacy>=17 && sizes.labels.every(v=>v>=18),
+        `Mini Game choice text too small: ${JSON.stringify(sizes)}`);
     }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{

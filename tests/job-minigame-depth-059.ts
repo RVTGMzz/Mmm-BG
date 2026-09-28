@@ -108,7 +108,7 @@ const scene069 = await readFile('src/scenes/CareerMinigameBoardScene069.ts', 'ut
 const scene0701 = await readFile('src/scenes/CareerMinigameBoardScene0701.ts', 'utf8');
 const miniOverlay = await readFile('src/ui/MiniGameOverlay.ts', 'utf8');
 assert.ok(miniGameDuelFits070423(), 'both duel cards, names and result rail must stay inside the modal');
-assert.equal(MINI_GAME_DUEL_LAYOUT_070423.cardWidth, 226);
+assert.equal(MINI_GAME_DUEL_LAYOUT_070423.cardWidth, 240);
 assert.match(miniOverlay, /setDepth\(1500\)\.setName\('minigame-modal'\)/);
 assert.match(miniOverlay, /l\.nameY/);
 assert.match(miniOverlay, /l\.verdictY/);

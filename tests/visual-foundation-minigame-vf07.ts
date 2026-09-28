@@ -14,7 +14,7 @@ function expect(value: boolean, message: string): void {
 }
 
 expect(vf.includes("id: 'VF-07-mini-game-foundation-review'"), 'VF-07 identity missing');
-expect(vf.includes('width: 900') && vf.includes('height: 540'), 'VF-07 must retain canonical Mini Game owner geometry');
+expect(vf.includes('width: 960') && vf.includes('height: 570'), 'VF-07 must retain canonical Mini Game owner geometry');
 expect(overlay.includes("MINI_GAME_VISUAL_VF07"), 'Mini Game overlay must consume VF-07 visual tokens');
 expect(overlay.includes('root = scene.add.container(640, 360).setDepth(1500)'), 'Mini Game modal depth/owner changed');
 expect(overlay.includes("submitSystemIntent('resolve_minigame'"), 'authoritative Mini Game payout path must remain intact');
@@ -22,8 +22,8 @@ expect(overlay.includes("MINI_GAME_DUEL_LAYOUT_070423"), 'retained RPS safe layo
 expect(overlay.includes("D-PAD + A"), 'Steam Deck choice path must remain visible');
 expect(overlay.includes('MINI_GAME_CHOICE_LAYOUT_070431'), 'concealed-choice screen must use one canonical spacing contract');
 expect(miniGameChoiceFits070431(), 'concealed-choice layout must keep prompt/helper/cards/privacy inside the canonical shell');
-expect(MINI_GAME_CHOICE_LAYOUT_070431.cardCenterY >= 70, 'choice cards must sit low enough to leave a readable helper gap');
-expect(MINI_GAME_CHOICE_LAYOUT_070431.privacyY >= 200, 'privacy rail must use the available lower space instead of crowding the choice cards');
+expect(MINI_GAME_CHOICE_LAYOUT_070431.cardCenterY >= 74, 'choice cards must sit low enough to leave a readable helper gap');
+expect(MINI_GAME_CHOICE_LAYOUT_070431.privacyY >= 206, 'privacy rail must use the available lower space instead of crowding the choice cards');
 expect(overlay.includes("'vf07-minigame-choice-prompt'") && overlay.includes("'vf07-minigame-choice-hint'"), 'choice prompt/helper must expose stable runtime ownership names');
 expect(overlay.includes("'vf07-minigame-choice-privacy-rail'"), 'choice privacy rail must expose a stable runtime ownership name');
 expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-07 result surface must use owned paper + badge hierarchy');
@@ -32,7 +32,7 @@ expect(overlay.includes('revealPaper') && overlay.includes('revealRows'), 'VF-07
 expect(overlay.includes('VÒNG ${round} • CÙNG LẬT!'), 'VF-07 majority/minority reveal must clearly communicate the shared flip beat');
 expect(overlay.includes("chant.setText('LẬT KÈO!')") && overlay.includes('leftCard.setScale(0.92, 1)') && overlay.includes('targets: vs'), 'VF-07 RPS duel must keep the shared card-flip and VS impact reveal beat');
 expect(overlay.includes('createScrollableTextViewport070429'), 'VF-07 long result copy must use the shared clipped scroll viewport');
-expect(overlay.includes('fontSize: 23'), 'VF-07 result/ranking body must keep a fixed readable 23px scale');
+expect(overlay.includes('fontSize: 24'), 'VF-07 result/ranking body must keep a fixed readable 23px scale');
 expect(!overlay.includes('denseResult ?'), 'VF-07 must not shrink result typography based on content length');
 expect(overlay.includes("'vf07-minigame-result-body'") && overlay.includes("'vf07-minigame-ranking-rows'"), 'VF-07 canonical Mini Game text must be named so legacy reflow cannot rewrite it');
 expect(overlay.includes('privacyRail') && overlay.includes('LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT'), 'VF-07 choice screen must visibly preserve concealed-choice ownership before reveal');

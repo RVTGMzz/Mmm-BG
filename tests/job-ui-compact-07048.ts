@@ -25,8 +25,8 @@ assert.match(mini, /subtitle\.setVisible\(false\)/);
 assert.match(mini, /stake\.setVisible\(false\)/);
 assert.match(mini, /Hạng \$\{index \+ 1\} •/);
 
-assert.match(picker, /748,\n      352/);
-assert.match(picker, /fixedWidth: 610/);
+assert.match(picker, /820,\n      420/);
+assert.match(picker, /fixedWidth: 660/);
 assert.match(ownership, /const jobDetailRoot = this\.findNamedTopLevelContainer0682\('job-detail-modal'\)/);
 assert.match(ownership, /jobDetailRoot\?\.active/);
 

@@ -24,12 +24,12 @@ assert.match(active, /showCanonicalJobLanding070411/);
 // Job result is a compact centered career card instead of split left/right copy.
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
 assert.match(active, /fillStyle\(0xfff8ec/);
-assert.match(active, /fixedWidth: 540/);
+assert.match(active, /fixedWidth: 620/);
 assert.match(active, /chạm để tiếp tục/);
 
 // Job Hub carries only one glanceable salary row per card and detail on demand.
-assert.match(picker, /JOB_CARD_X_070421 = \[-286, 0, 286\]/);
-assert.match(picker, /250,\n      230/);
+assert.match(picker, /JOB_CARD_X_070421 = \[-300, 0, 300\]/);
+assert.match(picker, /JOB_HUB_VF06\.cardWidth,\n      JOB_HUB_VF06\.cardHeight/);
 assert.ok(
   picker.includes('`Lv1 ${jobSalary(job, 1)}  •  Lv2 ${jobSalary(job, 2)}  •  Lv3 ${jobSalary(job, 3)} B$`'),
   'VF-06 keeps exactly one compact Lv1/Lv2/Lv3 salary row per card',

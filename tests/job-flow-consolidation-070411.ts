@@ -30,9 +30,9 @@ assert.match(active, /showCanonicalJobLanding070411/);
 assert.match(active, /setName\('job-presentation-card'\)/);
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
 assert.match(active, /createScrollableTextViewport070429\(this, root/);
-assert.match(active, /width: 560/);
-assert.match(active, /height: 100/);
-assert.match(active, /fontSize: 21/);
+assert.match(active, /width: 620/);
+assert.match(active, /height: 112/);
+assert.match(active, /fontSize: 23/);
 assert.match(active, /jobBodyViewport070429\.isScrollable/);
 assert.doesNotMatch(
   active.slice(active.indexOf('private showCanonicalJobLanding070411'), active.indexOf('private syncFinalModalOwnership070421')),

@@ -54,10 +54,10 @@ try {
     assert.ok(result.body.text.trim().length > 6, `${surface}: canonical body text blank after inherited updates`);
 
     if (surface === 'ranking') {
-      assert.ok(result.body.fontSize >= 22, `ranking: font shrank to ${result.body.fontSize}`);
+      assert.ok(result.body.fontSize >= 24, `ranking: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /🥇|Hạng 1/u);
     } else if (surface === 'job') {
-      assert.ok(result.body.fontSize >= 20, `job: font shrank to ${result.body.fontSize}`);
+      assert.ok(result.body.fontSize >= 23, `job: font shrank to ${result.body.fontSize}`);
     } else {
       assert.ok(result.body.fontSize >= 20, `${surface}: font shrank to ${result.body.fontSize}`);
     }

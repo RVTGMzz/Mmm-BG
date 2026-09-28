@@ -17,10 +17,10 @@ assert.doesNotMatch(replay, /description: `\$\{job\.icon\} \$\{job\.title\}/);
 // Job result uses one centered card with a dedicated result title and body.
 assert.match(active, /const isResult = model\.title\.includes\('NHẬN VIỆC'\)/);
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
-assert.match(active, /const title = this\.add\.text\(44, -18, displayTitle/);
+assert.match(active, /const title = this\.add\.text\(55, -16, displayTitle/);
 assert.match(active, /const jobBodyViewport070429 = createScrollableTextViewport070429\(this, root/);
-assert.match(active, /width: 560/);
-assert.match(active, /fontSize: 21/);
+assert.match(active, /width: 620/);
+assert.match(active, /fontSize: 23/);
 
 // Card/News removes every inherited child, including graphics/footer strips.
 assert.match(active, /for \(const child of \[\.\.\.root\.list\]\)/);

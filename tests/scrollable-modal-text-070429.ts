@@ -30,10 +30,12 @@ const job = scene.slice(jobStart, ownerStart);
 assert.match(job, /jobBodyViewport070429/);
 assert.match(job, /createScrollableTextViewport070429/);
 assert.match(job, /5000/);
+assert.match(job, /fontSize: 23/);
+assert.match(job, /width: 620/);
 
 assert.match(mini, /vf07-minigame-result-scroll/);
 assert.match(mini, /vf07-minigame-ranking-scroll/);
-assert.match(mini, /fontSize: 23/);
+assert.match(mini, /fontSize: 24/);
 assert.doesNotMatch(mini, /denseResult \?/);
 assert.match(legacy066, /text\.name\.startsWith\('vf07-minigame-'\)/);
 assert.match(legacy0701, /heading\.name\.startsWith\('vf07-minigame-'\)/);
