@@ -47,6 +47,17 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
           (window as any).surfaceReady=true;
         }
       });
+    } else if(mode==='topdice') {
+      const run=startMiniGameOverlay(this, gameSession.players as any, 100, 'MINIGAME_SLOT_04');
+      this.events.on('postupdate',()=>{
+        const stage=run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
+        const heading=stage?.getByName('vf07-minigame-result-heading') as Phaser.GameObjects.Text;
+        if(heading && (heading.text.includes('CẮT TOP') || heading.text.includes('HÒA Ở RANH TOP'))) {
+          this.time.timeScale=0;
+          this.tweens.timeScale=0;
+          (window as any).surfaceReady=true;
+        }
+      });
     } else if(mode==='ranking') {
       this.time.timeScale=25;
       const run=startMiniGameOverlay(this, gameSession.players as any, 100);

@@ -45,7 +45,7 @@ try {
     assert.deepEqual(errors,[]);
     await page.close();
   }
-  for (const surface of ['card', 'news', 'job', 'jobhub', 'jobdetail', 'long', 'choice', 'doors', 'buoys', 'ranking', 'order']) {
+  for (const surface of ['card', 'news', 'job', 'jobhub', 'jobdetail', 'long', 'choice', 'doors', 'buoys', 'topdice', 'ranking', 'order']) {
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
     await page.goto(`http://127.0.0.1:5173/tests/runtime/modal-surfaces.html?surface=${surface}`);
@@ -225,6 +225,25 @@ try {
       assert.equal(buoys.count,3,'PHAO ĐƠN must render exactly three choice cards');
       assert.deepEqual(buoys.labels,['PHAO 1','PHAO 2','PHAO 3']);
       assert.equal(buoys.inside,true,'PHAO ĐƠN cards must remain inside the Mini Game shell');
+    }
+    if(surface==='topdice') {
+      const dice=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const root=s.children.getByName('minigame-modal');
+        const stage=root?.getByName('vf07-minigame-stage');
+        const heading=stage?.getByName('vf07-minigame-result-heading');
+        const body=stage?.getByName('vf07-minigame-result-scroll')?.getByName('vf07-minigame-result-body');
+        const bodyText=String(body?.text ?? '');
+        return {
+          heading:String(heading?.text ?? ''),
+          body:bodyText,
+          rollCount:(bodyText.match(/🎲 [1-6]/g) ?? []).length,
+        };
+      });
+      assert.ok(/CẮT TOP|HÒA Ở RANH TOP/.test(dice.heading),
+        `M35 result heading missing: ${JSON.stringify(dice)}`);
+      assert.ok(dice.rollCount>=3,
+        `M35 must visibly reveal contestant D6 rolls: ${JSON.stringify(dice)}`);
     }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{
