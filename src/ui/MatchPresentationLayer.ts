@@ -4,6 +4,7 @@ import type { MatchEvent } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
 import type { PresentationTimingPolicy } from './presentationFlowPolicy';
+import { diceSettleFeedbackCh09, landingFeedbackCh09 } from './presentationFeedbackCh09';
 import { reactionPlacement070422 } from './presentationLanes070422';
 import {
   buildPresentationModel,
@@ -214,6 +215,9 @@ export class MatchPresentationLayer {
     this.schedule(560, () => {
       if (!die.active) return;
       die.setText(DICE_FACES[result - 1]).setAngle(0).setScale(1.12);
+      const settle = diceSettleFeedbackCh09(result);
+      this.spawnBurst(0xffd34d, settle.burstCount, 640, 344);
+      this.scene.cameras.main.shake(settle.cameraShake.durationMs, settle.cameraShake.intensity);
       this.scene.tweens.add({ targets: die, scaleX: 1, scaleY: 1, duration: 160, ease: 'Back.easeOut' });
     });
     this.schedule(model.holdMs, () => this.finishCurrent(false));
@@ -272,10 +276,14 @@ export class MatchPresentationLayer {
 
     container.add([shadow, panel, icon, eyebrow, title, description]);
     const revealMs = this.revealText(description, model.description);
-    this.playModelSfx(model);
-    this.spawnBurst(palette.accent, model.kind === 'ready_bonus' ? 14 : 8, 640, 350);
+    const landingFeedback = landingFeedbackCh09(model);
+    sfxController.play(landingFeedback.cue);
+    this.spawnBurst(palette.accent, landingFeedback.burstCount, 640, 350);
+    if (landingFeedback.cameraShake) {
+      this.scene.cameras.main.shake(landingFeedback.cameraShake.durationMs, landingFeedback.cameraShake.intensity);
+    }
     if (model.kind === 'ready_bonus') this.spawnConfetti();
-    if (model.tileType === 'money' || model.kind === 'ready_bonus') this.showFloatingMoney(model.amount ?? 0, model.actorId);
+    if (landingFeedback.floatingMoney) this.showFloatingMoney(model.amount ?? 0, model.actorId);
 
     this.scene.tweens.add({
       targets: container, alpha: 1, scaleX: 1, scaleY: 1, duration: 190, ease: 'Back.easeOut',

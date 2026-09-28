@@ -6,6 +6,7 @@ export type SfxCue =
   | 'card_play'
   | 'news'
   | 'reaction'
+  | 'character_passive'
   | 'ready'
   | 'land'
   | 'ui_confirm'
@@ -209,6 +210,10 @@ export class SfxController {
         break;
       case 'reaction':
         this.tone(900, 720, now, 0.07, 0.05, 'sine');
+        break;
+      case 'character_passive':
+        this.tone(420, 760, now, 0.08, 0.06, 'triangle');
+        this.tone(680, 1180, now + 0.065, 0.12, 0.05, 'sine');
         break;
       case 'ready':
         this.tone(520, 780, now, 0.12, 0.09, 'sine');

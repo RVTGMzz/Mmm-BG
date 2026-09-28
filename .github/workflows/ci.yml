@@ -301,6 +301,8 @@ jobs:
         run: npm run test:character-balance-ch06
       - name: CH-07 Character-enabled 1/2/3-lap economy and pacing audit
         run: npm run test:economy-pacing-ch07
+      - name: CH-09 final feedback polish policy and Character passive juice
+        run: npm run test:feedback-polish-ch09
       - name: CH-09 release-candidate branding and package cleanup
         run: npm run test:release-candidate-cleanup-ch09
       - name: Install runtime browser regression dependencies
