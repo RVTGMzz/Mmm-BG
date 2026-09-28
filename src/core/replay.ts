@@ -54,6 +54,12 @@ import {
 import { createRandomSource } from './rng';
 import { MVP_CARD_HAND_LIMIT, MVP_MAX_CARD_PLAYS_PER_TURN } from './rules';
 import {
+  applyDirectCardTargetPassiveCh05,
+  applyMiniGameStartPassivesCh05,
+  applyMoneyLossPassivesCh05,
+  applyTurnStartPassiveCh05,
+} from './characterPassivesCh05';
+import {
   SPECIAL_LOCATION_057,
   isLotteryNode057,
   lotteryReward057,
@@ -338,6 +344,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
       },
       player.id,
     );
+    applyMiniGameStartPassivesCh05(ctx.state, eligible.map((entry) => entry.id));
     return 'done';
   }
 
@@ -365,8 +372,12 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
   switch (node.type) {
     case 'money': {
       const amount = node.value ?? 0;
+      const beforeMoney = player.money;
       player.money += amount;
       appendMatchEvent(ctx.state, 'money_tile', { nodeId: node.id, amount, resultMoney: player.money }, player.id);
+      if (player.money < beforeMoney) {
+        applyMoneyLossPassivesCh05(ctx.state, [{ player, loss: beforeMoney - player.money }], 'money_tile');
+      }
       return 'done';
     }
     case 'card': {
@@ -392,6 +403,7 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
     case 'news': {
       const news = drawWeightedNews(ctx.news, ctx.random);
       if (!news) return 'done';
+      const moneyBefore = new Map(ctx.state.players.map((entry) => [entry.id, entry.money]));
       const resolution = applyNewsEffect(news, player, ctx.state.players);
       const spectatorId = consumeSpectatorRandom(ctx, [player.id]);
       appendMatchEvent(ctx.state, 'news', {
@@ -407,6 +419,13 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
         spectatorId: spectatorId ?? -1,
         affectedPlayerIds: resolution.affectedPlayerIds.join(','),
       }, player.id);
+      applyMoneyLossPassivesCh05(
+        ctx.state,
+        ctx.state.players
+          .map((entry) => ({ player: entry, loss: Math.max(0, (moneyBefore.get(entry.id) ?? entry.money) - entry.money) }))
+          .filter((entry) => entry.loss > 0),
+        'news',
+      );
       return 'done';
     }
     case 'ready':
@@ -653,6 +672,7 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
     return 0;
   }
 
+  applyTurnStartPassiveCh05(ctx.state, player, ctx.cards, ctx.random);
   transition(ctx, 'ROLLING');
   const result = rollD6(ctx.random);
   ctx.state.turn.lastRoll = result;
@@ -848,6 +868,7 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
   const tacticalChoice = card.effect.type === 'tactical_choice'
     ? String(command.data.choice ?? '') as TacticalCardChoice
     : undefined;
+  const moneyBefore = new Map(ctx.state.players.map((entry) => [entry.id, entry.money]));
   const resolution = applyCardEffect(card, caster, ctx.state.players, target, tacticalChoice);
   caster.handCardIds.splice(handIndex, 1);
   caster.cardsPlayedThisTurn += 1;
@@ -870,6 +891,16 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
     tacticalChoice: tacticalChoice ?? null,
     affectedPlayerIds: resolution.affectedPlayerIds.join(','),
   }, caster.id);
+  applyMoneyLossPassivesCh05(
+    ctx.state,
+    ctx.state.players
+      .map((entry) => ({ player: entry, loss: Math.max(0, (moneyBefore.get(entry.id) ?? entry.money) - entry.money) }))
+      .filter((entry) => entry.loss > 0),
+    'card',
+  );
+  if (primaryTarget && primaryTarget.id !== caster.id && card.targetMode !== 'all_others') {
+    applyDirectCardTargetPassiveCh05(ctx.state, caster, primaryTarget, card.title);
+  }
   transition(ctx, 'PRE_ROLL_ACTION');
 }
 

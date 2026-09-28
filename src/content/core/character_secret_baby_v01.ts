@@ -8,7 +8,7 @@ export interface SecretBabyPassiveConcept {
   label: string;
   trigger: CharacterPassiveTrigger;
   designIntent: string;
-  live: false;
+  live: true;
 }
 
 export interface SecretBabyCharacterDefinition extends CharacterDefinition {
@@ -55,7 +55,7 @@ export const SECRET_BABY_V01: SecretBabyCharacterDefinition = {
     label: 'BÉ CƯNG CỦA VŨ TRỤ',
     trigger: 'money_loss',
     designIntent: 'Passive Secret phải mạnh hơn starter nhưng không bảo đảm thắng. Hướng đầu: một lớp bảo kê/giảm cú xấu đáng kể theo nhịp giới hạn; con số và tần suất chưa khóa.',
-    live: false,
+    live: true,
   },
 };
 

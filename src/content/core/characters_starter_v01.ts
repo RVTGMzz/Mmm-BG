@@ -11,8 +11,8 @@ export interface StarterPassiveConcept {
   label: string;
   trigger: CharacterPassiveTrigger;
   designIntent: string;
-  /** CH-02A is design data only. No authoritative resolver consumes this yet. */
-  live: false;
+  /** CH-05 authoritative resolver consumes this signature passive. */
+  live: true;
 }
 
 export type StarterCharacterGenderPresentation = 'female' | 'male';
@@ -74,7 +74,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
       label: 'ĐƯỢC DỖ',
       trigger: 'money_loss',
       designIntent: 'Sau một cú thiệt hại đáng kể, có cơ hội nhận một lợi ích an ủi nhỏ. Ngưỡng và giá trị chưa khóa.',
-      live: false,
+      live: true,
     },
   },
   {
@@ -109,7 +109,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
       label: 'ĐỪNG CHỌC TUI',
       trigger: 'card_played',
       designIntent: 'Có lợi ích phản ứng khi bị người chơi khác nhắm trực tiếp. Cơ chế counter cụ thể chưa khóa.',
-      live: false,
+      live: true,
     },
   },
   {
@@ -144,7 +144,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
       label: 'LO XA',
       trigger: 'turn_start',
       designIntent: 'Nhận lợi thế nhỏ từ việc chuẩn bị hoặc biết trước một lựa chọn/rủi ro. Cách reveal cụ thể chưa khóa.',
-      live: false,
+      live: true,
     },
   },
   {
@@ -179,7 +179,7 @@ export const STARTER_CHARACTERS_V01: readonly StarterCharacterDefinition[] = [
       label: 'KHÔNG NGỒI YÊN',
       trigger: 'minigame_start',
       designIntent: 'Có lợi thế nhỏ gắn với Mini Game, movement hoặc chuỗi hành động. Hiệu ứng gameplay chưa khóa.',
-      live: false,
+      live: true,
     },
   },
 ];

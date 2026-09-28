@@ -436,6 +436,25 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     return tileLandingModel(event, players);
   }
 
+  if (event.type === 'character_passive') {
+    return {
+      ...base,
+      kind: 'tile_land',
+      eyebrow: `${base.actorName} • NỘI TẠI`,
+      title: title || 'NỘI TẠI KÍCH HOẠT',
+      rarity: '',
+      impact: impact || '✨',
+      description,
+      summary,
+      reactions: [],
+      holdMs: 1500,
+      tileType: 'character_passive',
+      amount: dataNumber(event, 'amount', true),
+      targetId,
+      targetName,
+    };
+  }
+
   if (event.type === 'board_shuffle') {
     const lap = dataNumber(event, 'lap') ?? 1;
     const changedCount = dataNumber(event, 'changedCount') ?? 0;
