@@ -5,7 +5,7 @@ import { CareerMinigameBoardScene07044 } from '../../src/scenes/CareerMinigameBo
 import { startMiniGameOverlay } from '../../src/ui/MiniGameOverlay';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
-browserSession.configureSolo([]);
+browserSession.configureSolo(mode === 'ranking' ? [0, 1, 2, 3] : []);
 gameSession.reset();
 gameSession.players.forEach((player) => gameSession.setCharacter(player.id, 'starter-crybaby'));
 
@@ -22,10 +22,17 @@ function findByName(root: Phaser.GameObjects.GameObject, name: string): Phaser.G
 
 class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
   create(): void {
+    // Freeze ranking-mode timers during inherited create so an all-CPU browser
+    // fixture cannot start an unrelated board turn before we install the no-op.
+    if (mode === 'ranking') this.time.timeScale = 0;
     super.create();
 
     const scene = this;
     const runtime = this as any;
+    if (mode === 'ranking') {
+      runtime.queueCpuActionIfNeeded = () => undefined;
+      this.time.timeScale = 1;
+    }
     (window as any).fullSceneUi = {
       scene,
       inspect(name: string) {
