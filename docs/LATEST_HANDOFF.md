@@ -1,3 +1,20 @@
+# September 28 M35 CẮT TOP XÚC XẮC gameplay upgrade
+
+Canonical transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_MINIGAME_CUT_TOP_DICE_0713.md`
+
+**GAMEPLAY + CI + BROWSER VISUAL + PUBLIC PAGES: PASS**
+
+M35 TOP 2 HOẶC VỀ KHÔNG now uses **CẮT TOP XÚC XẮC** for 3+ players. Everyone rolls D6; the two highest scores become finalists. A tie crossing the Top-2 cutoff rerolls only the tied group, never by Player ID. Final two use OẲN TÙ XÌ. Payout remains 30/20/0/0.
+
+- gameplay `6a0d7108b7cb9cdbde9f9859f0d23cac3b27de6d`
+- final validated `e62d0de4928f3f117518cc4b350cd585c4b60a69`
+- CI #3332 SUCCESS
+- mirror `1bfed8711f0e72212cecc082d893fc51d18a3b82`
+- Pages #66 SUCCESS
+
+---
+
 # September 28 M26 PHAO ĐƠN gameplay upgrade
 
 Canonical transfer:

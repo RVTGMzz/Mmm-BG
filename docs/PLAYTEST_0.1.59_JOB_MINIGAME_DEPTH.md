@@ -29,12 +29,14 @@ The criminal Job no longer has a placeholder "future Jail" outcome. If caught:
 The five spaces share one tournament/ranking/payout framework, but arena mechanics may now differ:
 - M17 with 3+ eligible players: **BA CỬA**;
 - M26 with 3+ eligible players: **PHAO ĐƠN**;
-- M09 / M35 / M44 with 3+ eligible players: **NHIỀU RA ÍT BỊ**;
+- M35 with 3+ eligible players: **CẮT TOP XÚC XẮC**;
+- M09 / M44 with 3+ eligible players: **NHIỀU RA ÍT BỊ**;
 - any arena with exactly 2 eligible players: **OẲN TÙ XÌ**;
 - Jail/Hospital eligibility rules remain from 0.1.57.
 
 0.1.71.1 adds the first arena-specific mechanic without changing the M17 payout table.
 0.1.71.2 adds **PHAO ĐƠN** to M26 while retaining the current tuned payout table.
+0.1.71.3 adds **CẮT TOP XÚC XẮC** to M35; only cutoff ties reroll and the 30/20/0/0 table stays unchanged.
 
 Each canonical Mini Game space now has its own stake identity:
 
