@@ -42,6 +42,13 @@ try {
     if (rejectOnPageError) page.off('pageerror', rejectOnPageError);
     page.on('pageerror', (error) => errors.push(String(error)));
     await page.waitForTimeout(900);
+    if (surface === 'passive') {
+      await page.waitForFunction(
+        (name) => String(window.fullSceneUi?.inspect(name)?.text ?? '').includes('roll 18.42%'),
+        names[surface],
+        { timeout: 5000 },
+      );
+    }
 
     const result = await page.evaluate((name) => {
       const api = window.fullSceneUi;
