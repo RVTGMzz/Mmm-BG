@@ -54,7 +54,7 @@ assert.match(demo, /'demo-shell'/);
 assert.match(demo, /InMemoryTransportHub/, 'Solo must retain the in-memory transport');
 
 assert.match(worker, /channel: string/);
-assert.match(worker, /target\.channel !== sender\.channel/);
+assert.match(worker, /this\.logicalSockets070421\(sender\.channel\)/);
 assert.match(worker, /attachment\.channel !== channel/);
 assert.match(worker, /broadcastPresence\(channel\)/);
 
