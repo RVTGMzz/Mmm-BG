@@ -150,7 +150,8 @@
     "test:online-logical-socket-070421": "tsx tests/online-logical-socket-070421.ts",
     "test:online-reconnect-stress-ch08": "tsx tests/online-reconnect-stress-ch08.ts",
     "test:release-candidate-cleanup-ch09": "tsx tests/release-candidate-cleanup-ch09.ts",
-    "test:feedback-polish-ch09": "tsx tests/feedback-polish-ch09.ts"
+    "test:feedback-polish-ch09": "tsx tests/feedback-polish-ch09.ts",
+    "test:rc-acceptance-ch10": "tsx tests/rc-acceptance-ch10.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
