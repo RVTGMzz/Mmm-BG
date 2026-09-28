@@ -5,7 +5,7 @@ QUICK START — WINDOWS
 2) DOUBLE-CLICK: START_PLAYTEST.bat
 3) Trình duyệt tự mở local playtest server.
 4) GIỮ cửa sổ terminal launcher mở trong lúc chơi.
-5) Không mở index.html trực tiếp bằng file://.
+5) Không mở index.html trực tiếp. Nếu thanh địa chỉ bắt đầu bằng file:/// thì hãy đóng tab và chạy START_PLAYTEST.bat.
 6) Chỉ dùng START_PLAYTEST.bat.
 
 FLOW CHUẨN
