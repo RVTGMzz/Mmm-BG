@@ -116,7 +116,7 @@ const presentationSource = await import('node:fs').then(({ readFileSync }) =>
 assert.doesNotMatch(moduleSource, /Math\.random\s*\(/);
 assert.match(presentationSource, /gameSession\.getCharacterId\(speakerId\)/);
 assert.match(presentationSource, /characterReactionLineCh04/);
-assert.match(presentationSource, /if \(gameSession\.getCharacterId\(actorId\)\) return undefined/);
+assert.match(presentationSource, /playerById\(players, actorId\)\?\.characterId \?\? gameSession\.getCharacterId\(actorId\)/);
 
 gameSession.reset();
 console.log('[character-reactions-ch04] PASS Character-selected contextual reactions with deterministic legacy fallback and no passive mutation');
