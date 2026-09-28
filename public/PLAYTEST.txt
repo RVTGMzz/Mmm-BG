@@ -6,6 +6,7 @@ QUICK START — WINDOWS
 3) Trình duyệt tự mở local playtest server.
 4) GIỮ cửa sổ terminal launcher mở trong lúc chơi.
 5) Không mở index.html trực tiếp bằng file://.
+6) Chỉ dùng START_PLAYTEST.bat.
 
 FLOW CHUẨN
 Menu → Setup → Chọn nhân vật → Chọn 1/2/3 vòng → Roll For Order → Trận → Podium → Rematch/Lobby.
