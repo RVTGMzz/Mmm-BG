@@ -66,23 +66,23 @@ assert.match(source, /this\.currentModel !== model/);
 assert.match(source, /setName\('presentation-reaction-bubble-070422'\)/);
 assert.match(source, /reactionPlacement070422\(/);
 
-// No Text/emoji/depth heuristic is allowed to give arbitrary legacy overlays
-// passage over a real modal. Only the actual continue hint and registered
-// side-rail reaction containers are permitted.
-const finalWhitelist = active.slice(
-  active.indexOf('private isAllowedFinalModalAuxiliary070421'),
-  active.indexOf('private findNamedTopLevelContainer070421'),
-);
-assert.match(finalWhitelist, /text === this\.runtime07044\(\)\.presentation\?\.continueHint/);
-assert.match(finalWhitelist, /root\.name !== 'presentation-reaction-bubble-070422'/);
-assert.match(finalWhitelist, /reactionPlacement070422\(seat, seat\)/);
-assert.doesNotMatch(finalWhitelist, /copy\.startsWith|reactionMarker|\[😐😄😤\]/);
-assert.match(active, /Phaser\.Scenes\.Events\.POST_UPDATE/);
-assert.match(active, /findNamedTopLevelContainer070421\('minigame-modal'\)/);
-assert.match(active, /const blockingRoot = miniGameRoot\?\.active/);
-assert.match(active, /this\.retireLegacyPresentationOverlays070414\(\)/);
+// 0.1.71 removes the last-frame Text scavenger entirely. Single ownership is
+// now enforced by preventing historical presentation writers from running.
+assert.match(active, /readonly canonicalUiOwner071 = true/);
+const activeUpdateStart = active.indexOf('  update(): void {');
+const activeRuntimeStart = active.indexOf('  private runtime07044()', activeUpdateStart);
+const activeUpdate = active.slice(activeUpdateStart, activeRuntimeStart);
+assert.doesNotMatch(activeUpdate, /syncFinalModalOwnership070421/);
+assert.doesNotMatch(activeUpdate, /syncCanonicalCinematicOwnership070417/);
+assert.doesNotMatch(activeUpdate, /retireLegacyPresentationOverlays070414/);
+assert.doesNotMatch(active, /POST_UPDATE, postUpdateOwner/);
+
+// Canonical producers still own Card/News and Job directly.
+assert.match(active, /setCinematicRenderer070427/);
+assert.match(active, /showCanonicalJobLanding070411/);
+assert.match(active, /root\.setName\(isNews \? 'news-presentation-card' : 'card-presentation-card'\)/);
 
 for (const text of [parity, source, active]) {
   assert.doesNotMatch(text, /Math\.random\s*\(/);
 }
-console.log('[presentation-owner-070422] PASS duplicate producer off, event-owned reactions, all seat rails + last-frame ownership');
+console.log('[presentation-owner-070422] PASS duplicate producer off, event-owned reactions, safe rails + canonical single owner');
