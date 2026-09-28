@@ -248,6 +248,8 @@ jobs:
         run: npm run test:visual-foundation-minigame-vf07
       - name: Roguelike Lap Shuffle 0.1 deterministic authority
         run: npm run test:roguelike-lap-shuffle-071
+      - name: 0.1.71 canonical UI single-owner cut-over
+        run: npm run test:ui-single-owner-071
       - name: 0.1.70.3.1 mobile landscape and face style
         run: npm run test:mobile-face-07031
       - name: Face image transform bounds
@@ -285,6 +287,7 @@ jobs:
           npm run dev -- --host 127.0.0.1 > /tmp/mmm-vite.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
           node tests/runtime/scroll-viewport.mjs
+          node tests/runtime/full-scene-ui.mjs
       - name: Upload runtime UI evidence
         if: always()
         uses: actions/upload-artifact@v4
