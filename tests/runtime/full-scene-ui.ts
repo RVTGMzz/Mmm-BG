@@ -60,7 +60,9 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
       const presentation = runtime.presentation as any;
       if (mode === 'ranking') {
         this.time.timeScale = 25;
-        const run = startMiniGameOverlay(this, runtime.match.players, 8701);
+        // Two deterministic CPU finalists reach the same canonical ranking owner
+        // without making the visual fixture wait through a full four-seat tournament.
+        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 2), 8701);
         this.events.on('postupdate', () => {
           const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
           if (!stage) return;

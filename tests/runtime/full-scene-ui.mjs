@@ -22,6 +22,7 @@ const names = {
 
 try {
   for (const surface of Object.keys(names)) {
+    console.log('[full-scene-ui] waiting', surface);
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     const errors = [];
     let rejectOnPageError;
