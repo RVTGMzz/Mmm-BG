@@ -147,7 +147,8 @@
     "test:character-balance-ch06": "tsx tests/character-balance-ch06.ts",
     "test:economy-pacing-ch07": "tsx tests/economy-pacing-ch07.ts",
     "test:online-reconnect-stress-070421": "tsx tests/online-reconnect-stress-070421.ts",
-    "test:online-logical-socket-070421": "tsx tests/online-logical-socket-070421.ts"
+    "test:online-logical-socket-070421": "tsx tests/online-logical-socket-070421.ts",
+    "test:online-reconnect-stress-ch08": "tsx tests/online-reconnect-stress-ch08.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
