@@ -242,7 +242,7 @@ export function resolveFinalSprint(activePlayerIds: readonly number[], legRolls:
   const locked: number[] = []; let overtime: number[] = []; let slotsOpen = targetCount;
   for (const group of groups) { if (slotsOpen <= 0) break; if (group.playerIds.length <= slotsOpen) { locked.push(...group.playerIds); slotsOpen -= group.playerIds.length; } else { overtime = [...group.playerIds]; break; } }
   const protectedIds = new Set([...locked,...overtime]);
-  const lower = active.filter((id)=>!protectedIds.has(id)).sort((a,b)=>totals[a]!-totals[b]!);
+  const lower = active.filter((id)=>!protectedIds.has(id)).sort((a,b)=>totals[b]!-totals[a]!);
   return { totals, lockedPlayerIds: locked, overtimePlayerIds: overtime, lowerPlayerIds: lower, slotsOpen, complete: overtime.length===0 && slotsOpen===0 };
 }
 

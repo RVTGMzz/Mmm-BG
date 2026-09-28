@@ -132,6 +132,9 @@ jobs:
         run: npm run test:minigame-solo-buoy-0712
       - name: 0.1.71.3 M35 CẮT TOP XÚC XẮC Mini Game
         run: npm run test:minigame-cut-top-dice-0713
+
+      - name: 0.1.71.4 M44 ĐUA 3 CHẶNG Mini Game finale
+        run: npm run test:minigame-final-sprint-0714
       - name: 0.1.60 pacing economy finish-lock
         run: npm run test:pacing-economy-060
       - name: 0.1.61 deterministic local playtest report
