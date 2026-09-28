@@ -43,14 +43,14 @@ export const MINI_GAME_CHOICE_LAYOUT_070431 = Object.freeze({
   stageOffsetY: 22,
   promptY: -118,
   hintY: -72,
-  cardCenterY: 50,
+  cardCenterY: 74,
   cardWidth: 170,
   cardHeight: 160,
   twoChoiceSpacing: 230,
   multiChoiceSpacing: 200,
   iconOffsetY: -31,
   labelOffsetY: 36,
-  privacyY: 184,
+  privacyY: 206,
   privacyWidth: 650,
   privacyHeight: 42,
 } as const);
@@ -68,8 +68,8 @@ export function miniGameChoiceFits070431(
   const threeChoiceRight = l.multiChoiceSpacing + l.cardWidth / 2;
 
   return hintTop - promptBottom >= 12
-    && cardTop - hintBottom >= 24
+    && cardTop - hintBottom >= 44
     && privacyTop - cardBottom >= 24
-    && l.stageOffsetY + privacyBottom <= 246
+    && l.stageOffsetY + privacyBottom <= 252
     && threeChoiceRight <= 426;
 }

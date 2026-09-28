@@ -1,5 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  MINI_GAME_CHOICE_LAYOUT_070431,
+  miniGameChoiceFits070431,
+} from '../src/ui/miniGameLayout070423';
 
 const root = process.cwd();
 const overlay = fs.readFileSync(path.join(root, 'src/ui/MiniGameOverlay.ts'), 'utf8');
@@ -17,6 +21,9 @@ expect(overlay.includes("submitSystemIntent('resolve_minigame'"), 'authoritative
 expect(overlay.includes("MINI_GAME_DUEL_LAYOUT_070423"), 'retained RPS safe layout must remain wired');
 expect(overlay.includes("D-PAD + A"), 'Steam Deck choice path must remain visible');
 expect(overlay.includes('MINI_GAME_CHOICE_LAYOUT_070431'), 'concealed-choice screen must use one canonical spacing contract');
+expect(miniGameChoiceFits070431(), 'concealed-choice layout must keep prompt/helper/cards/privacy inside the canonical shell');
+expect(MINI_GAME_CHOICE_LAYOUT_070431.cardCenterY >= 70, 'choice cards must sit low enough to leave a readable helper gap');
+expect(MINI_GAME_CHOICE_LAYOUT_070431.privacyY >= 200, 'privacy rail must use the available lower space instead of crowding the choice cards');
 expect(overlay.includes("'vf07-minigame-choice-prompt'") && overlay.includes("'vf07-minigame-choice-hint'"), 'choice prompt/helper must expose stable runtime ownership names');
 expect(overlay.includes("'vf07-minigame-choice-privacy-rail'"), 'choice privacy rail must expose a stable runtime ownership name');
 expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-07 result surface must use owned paper + badge hierarchy');

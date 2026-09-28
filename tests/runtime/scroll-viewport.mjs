@@ -76,6 +76,32 @@ try {
       assert.ok(gaps.hintToCards>=20, `Mini Game helper/cards cramped: ${JSON.stringify(gaps)}`);
       assert.ok(gaps.cardsToPrivacy>=20, `Mini Game cards/privacy cramped: ${JSON.stringify(gaps)}`);
     }
+    if(surface==='choice') {
+      const gaps=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const stage=s.children.getByName('minigame-modal')?.getByName('vf07-minigame-stage');
+        const prompt=stage?.getByName('vf07-minigame-choice-prompt');
+        const hint=stage?.getByName('vf07-minigame-choice-hint');
+        const privacy=stage?.getByName('vf07-minigame-choice-privacy-rail');
+        const boxes=[0,1]
+          .map(i=>stage?.getByName(`vf07-minigame-choice-box-${i}`))
+          .filter(Boolean);
+        if(!prompt||!hint||!privacy||boxes.length<2) return null;
+        const promptB=prompt.getBounds();
+        const hintB=hint.getBounds();
+        const privacyB=privacy.getBounds();
+        const boxBounds=boxes.map(b=>b.getBounds());
+        return {
+          promptHint: hintB.top-promptB.bottom,
+          hintCards: Math.min(...boxBounds.map(b=>b.top))-hintB.bottom,
+          cardsPrivacy: privacyB.top-Math.max(...boxBounds.map(b=>b.bottom)),
+        };
+      });
+      assert.ok(gaps, 'Mini Game choice geometry missing');
+      assert.ok(gaps.promptHint>=12, `Mini Game prompt/helper cramped: ${JSON.stringify(gaps)}`);
+      assert.ok(gaps.hintCards>=36, `Mini Game helper/cards cramped: ${JSON.stringify(gaps)}`);
+      assert.ok(gaps.cardsPrivacy>=20, `Mini Game cards/privacy cramped: ${JSON.stringify(gaps)}`);
+    }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{
         const s=window.surfaceScene;
