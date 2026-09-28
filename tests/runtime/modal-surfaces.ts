@@ -9,7 +9,7 @@ import { gameSession } from '../../src/core/session';
 import { browserSession } from '../../src/core/browserSession';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
-browserSession.configureSolo(mode === 'choice' ? [1, 2, 3] : [0, 1, 2, 3]);
+browserSession.configureSolo(mode === 'choice' || mode === 'doors' ? [1, 2, 3] : [0, 1, 2, 3]);
 gameSession.reset();
 gameSession.players.forEach(p => gameSession.setCharacter(p.id, 'starter-crybaby'));
 const fixtures: Record<string, any> = {
@@ -23,12 +23,21 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
     const self=this as any;
     this.cameras.main.setBackgroundColor('#8cac97');
     const model={eventSeq:100,holdMs:60000, ...fixtures[mode]};
-    if(mode==='choice') {
-      startMiniGameOverlay(this, gameSession.players as any, 100);
+    if(mode==='choice' || mode==='doors') {
+      startMiniGameOverlay(
+        this,
+        gameSession.players as any,
+        100,
+        mode === 'doors' ? 'MINIGAME_SLOT_02' : undefined,
+      );
       this.events.on('postupdate',()=>{
         const root=this.children.getByName('minigame-modal') as Phaser.GameObjects.Container;
         const stage=root?.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
-        if(stage?.getByName('vf07-minigame-choice-prompt')) {
+        const expectedChoices = mode === 'doors' ? 3 : 2;
+        const choiceBoxes = stage?.list.filter((entry: Phaser.GameObjects.GameObject) =>
+          entry.name?.startsWith('vf07-minigame-choice-box-'),
+        ) ?? [];
+        if(stage?.getByName('vf07-minigame-choice-prompt') && choiceBoxes.length === expectedChoices) {
           (window as any).surfaceReady=true;
         }
       });

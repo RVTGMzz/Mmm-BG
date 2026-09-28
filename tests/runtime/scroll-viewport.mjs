@@ -45,7 +45,7 @@ try {
     assert.deepEqual(errors,[]);
     await page.close();
   }
-  for (const surface of ['card', 'news', 'job', 'jobhub', 'jobdetail', 'long', 'choice', 'ranking', 'order']) {
+  for (const surface of ['card', 'news', 'job', 'jobhub', 'jobdetail', 'long', 'choice', 'doors', 'ranking', 'order']) {
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
     await page.goto(`http://127.0.0.1:5173/tests/runtime/modal-surfaces.html?surface=${surface}`);
@@ -112,7 +112,7 @@ try {
       assert.ok(sizes.salary>=19 && sizes.close>=18 && sizes.max>=30,
         `Job detail text too small: ${JSON.stringify(sizes)}`);
     }
-    if(surface==='choice') {
+    if(surface==='choice' || surface==='doors') {
       const gaps=await page.evaluate(()=>{
         const s=window.surfaceScene;
         const root=s.children.getByName('minigame-modal');
@@ -135,7 +135,7 @@ try {
       assert.ok(gaps.hintToCards>=20, `Mini Game helper/cards cramped: ${JSON.stringify(gaps)}`);
       assert.ok(gaps.cardsToPrivacy>=20, `Mini Game cards/privacy cramped: ${JSON.stringify(gaps)}`);
     }
-    if(surface==='choice') {
+    if(surface==='choice' || surface==='doors') {
       const gaps=await page.evaluate(()=>{
         const s=window.surfaceScene;
         const stage=s.children.getByName('minigame-modal')?.getByName('vf07-minigame-stage');
@@ -173,6 +173,32 @@ try {
       });
       assert.ok(sizes.prompt>=25 && sizes.hint>=18 && sizes.privacy>=17 && sizes.labels.every(v=>v>=18),
         `Mini Game choice text too small: ${JSON.stringify(sizes)}`);
+    }
+    if(surface==='doors') {
+      const doors=await page.evaluate(()=>{
+        const s=window.surfaceScene;
+        const root=s.children.getByName('minigame-modal');
+        const stage=root?.getByName('vf07-minigame-stage');
+        const boxes=[0,1,2]
+          .map(i=>stage?.getByName(`vf07-minigame-choice-box-${i}`))
+          .filter(Boolean);
+        const labels=[0,1,2]
+          .map(i=>stage?.getByName(`vf07-minigame-choice-label-${i}`))
+          .filter(Boolean);
+        const panel=root?.list?.find(o=>o?.type==='Rectangle' && o.width>=900);
+        const panelB=panel?.getBounds();
+        return {
+          count:boxes.length,
+          labels:labels.map(x=>x.text),
+          inside:Boolean(panelB) && boxes.every(box=>{
+            const b=box.getBounds();
+            return b.left>=panelB.left && b.right<=panelB.right && b.top>=panelB.top && b.bottom<=panelB.bottom;
+          }),
+        };
+      });
+      assert.equal(doors.count,3,'BA CỬA must render exactly three choice cards');
+      assert.deepEqual(doors.labels,['CỬA A','CỬA B','CỬA C']);
+      assert.equal(doors.inside,true,'BA CỬA cards must remain inside the Mini Game shell');
     }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{
