@@ -18,6 +18,7 @@ const names = {
   news: 'news-scroll-text-070429',
   job: 'job-scroll-text-070429',
   ranking: 'vf07-minigame-ranking-rows',
+  passive: 'character-passive-body-ch05',
 };
 
 try {
@@ -58,11 +59,20 @@ try {
       assert.match(result.body.text, /🥇|Hạng 1/u);
     } else if (surface === 'job') {
       assert.ok(result.body.fontSize >= 23, `job: font shrank to ${result.body.fontSize}`);
+    } else if (surface === 'passive') {
+      assert.ok(result.body.fontSize >= 14, `passive: font shrank to ${result.body.fontSize}`);
+      assert.match(result.body.text, /Tỷ lệ 40%/u);
+      assert.match(result.body.text, /roll 18\.42%/u);
     } else {
       assert.ok(result.body.fontSize >= 20, `${surface}: font shrank to ${result.body.fontSize}`);
     }
 
     await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-1280x800.png` });
+    if (surface === 'passive') {
+      await page.setViewportSize({ width: 960, height: 540 });
+      await page.waitForTimeout(250);
+      await page.screenshot({ path: 'runtime-ui-evidence/full-scene-passive-960x540.png' });
+    }
     assert.deepEqual(errors, [], surface);
     await page.close();
   }

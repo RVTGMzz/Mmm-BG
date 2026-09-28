@@ -264,6 +264,11 @@ export class MatchPresentationLayer {
       fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#f4ede4',
       wordWrap: { width: bodyWidth }, fixedWidth: bodyWidth, fixedHeight: 58, lineSpacing: 3,
     });
+    if (model.tileType === 'character_passive') {
+      container.setName('character-passive-presentation-ch05');
+      title.setName('character-passive-title-ch05');
+      description.setName('character-passive-body-ch05');
+    }
 
     container.add([shadow, panel, icon, eyebrow, title, description]);
     const revealMs = this.revealText(description, model.description);

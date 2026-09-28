@@ -85,7 +85,18 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         amount: 20,
         reactions: [],
       };
-      const model: any = mode === 'job'
+      const model: any = mode === 'passive'
+        ? {
+            ...base,
+            kind: 'tile_land',
+            tileType: 'character_passive',
+            title: 'ĐƯỢC DỖ',
+            description: 'Cú mất 30B$ được dỗ lại +10B$.\nTỷ lệ 40% • roll 18.42%.',
+            summary: '',
+            impact: '✨',
+            eyebrow: 'PLAYER 1 • NỘI TẠI',
+          }
+        : mode === 'job'
         ? {
             ...base,
             kind: 'tile_land',
@@ -119,7 +130,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
 
       presentation.currentModel = model;
       presentation.blocking = true;
-      if (mode === 'job') presentation.showLanding(model);
+      if (mode === 'job' || mode === 'passive') presentation.showLanding(model);
       else presentation.showCinematic(model);
       (window as any).surfaceReady = true;
     });

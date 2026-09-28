@@ -99,7 +99,7 @@ const hyperSeed=seedWhereDraw(1,CHARACTER_PASSIVE_BALANCE_CH05.hyperChance);
 const miniAuth=createEmptyHostAuthority({boardId:miniBoard.id,startNodeId:0,playerNames:names,seed:hyperSeed,characterIds:['starter-hyper',undefined,undefined,undefined]},{board:miniBoard,cards:[],news:[]});
 const miniRoll=submitClientIntent(miniAuth,{intentId:'ch05-mini-roll',clientId:'ch05',actorId:0,type:'roll',observedCommandSeq:hostAuthorityCommandSeq(miniAuth),data:{}}); assert.equal(miniRoll.status,'accepted'); assert.equal(miniAuth.state.players[0]!.money,205); assert(miniAuth.state.eventLog.some((e)=>e.data.passiveId==='passive.starter.hyper.keep-moving'));
 
-const passiveEvent=state.eventLog.find((e)=>e.type==='character_passive'); assert(passiveEvent); const model=buildPresentationModel(passiveEvent,state.players); assert(model); assert.equal(model.kind,'tile_land'); assert.equal(model.tileType,'character_passive'); assert.match(model.eyebrow,/NỘI TẠI/); assert.match(model.summary,/Tỷ lệ/);
+const passiveEvent=state.eventLog.find((e)=>e.type==='character_passive'); assert(passiveEvent); const model=buildPresentationModel(passiveEvent,state.players); assert(model); assert.equal(model.kind,'tile_land'); assert.equal(model.tileType,'character_passive'); assert.match(model.eyebrow,/NỘI TẠI/); assert.match(model.description,/Tỷ lệ 40%/); assert.equal(model.summary,'');
 
 const moduleSource=readFileSync('src/core/characterPassivesCh05.ts','utf8'); const replaySource=readFileSync('src/core/replay.ts','utf8');
 assert.doesNotMatch(moduleSource,/Math\.random\s*\(/);
