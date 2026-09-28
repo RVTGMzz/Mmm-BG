@@ -1,3 +1,14 @@
+# September 28 mobile landscape entry no-deadlock
+
+Newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_MOBILE_LANDSCAPE_ENTRY.md`
+
+Validated source `1e40fb0c64b0f6a1b5563e403c4ec16e4c91193c`, CI #3317 SUCCESS, mirror `59cc3fb0e93eaef45f33d08e30fefa860268395e`, Pages #59 SUCCESS.
+
+Portrait mobile can no longer remain trapped forever at XOAY NGANG when the browser does not support hardware orientation lock.
+
+---
+
 # September 28 canonical UI single-owner reset
 
 Canonical transfer:

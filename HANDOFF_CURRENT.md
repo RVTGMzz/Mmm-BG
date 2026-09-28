@@ -1,3 +1,21 @@
+# MMM — 2026-09-28 MOBILE LANDSCAPE ENTRY FIX
+
+Canonical newest transfer:
+- `docs/SESSION_HANDOFF_2026-09-28_MOBILE_LANDSCAPE_ENTRY.md`
+
+**MOBILE BOOT DEADLOCK: AUTOMATED PASS / REAL DEVICE RETEST NEEDED**
+
+- Validated source: `1e40fb0c64b0f6a1b5563e403c4ec16e4c91193c`
+- CI #3317 / run `36371325357`: SUCCESS
+- Mobile runtime proof: `[mobile-landscape-entry] PASS unsupported orientation lock cannot trap mobile boot`
+- Public mirror: `59cc3fb0e93eaef45f33d08e30fefa860268395e`
+- Pages #59 / run `36371600248`: SUCCESS
+- https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+The rotate gate may no longer wait forever for hardware orientation. After user activation it tries fullscreen + orientation lock, then falls back to entering the game if the browser refuses to auto-rotate.
+
+---
+
 # MMM — 2026-09-28 CANONICAL UI SINGLE-OWNER RESET
 
 Canonical newest transfer:
