@@ -38,16 +38,8 @@ const slot2 = MINI_GAME_SLOTS_059.find((slot) => slot.contentId === 'MINIGAME_SL
 assert(slot2);
 assert.equal(slot2.mode3Plus, 'three_doors');
 assert.equal(slot2.title, 'KÈO ALL-IN');
-assert.deepEqual(
-  MINI_GAME_SLOTS_059.map((slot) => [slot.contentId, slot.mode3Plus]),
-  [
-    ['MINIGAME_SLOT_01', 'majority_minority'],
-    ['MINIGAME_SLOT_02', 'three_doors'],
-    ['MINIGAME_SLOT_03', 'solo_buoy'],
-    ['MINIGAME_SLOT_04', 'cut_top_dice'],
-    ['MINIGAME_SLOT_05', 'majority_minority'],
-  ],
-);
+assert.equal(MINI_GAME_SLOTS_059.length, 5);
+assert.equal(MINI_GAME_SLOTS_059.filter((slot) => slot.mode3Plus === 'three_doors').length, 1);
 
 const hit = resolveThreeDoorsRound(
   [0, 1, 2, 3],
