@@ -162,3 +162,14 @@ body.mememe-phone-portrait { touch-action: none; }
   opacity: .72;
   cursor: wait;
 }
+
+/* 0.1.70.3.6 mobile orientation no-deadlock fallback */
+.mememe-landscape-card-simple .mememe-landscape-note {
+  display: block;
+  margin: 0;
+  max-width: 280px;
+  color: #6d655b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
