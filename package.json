@@ -142,7 +142,8 @@
     "preview": "vite preview",
     "preview:playtest": "vite preview --host 0.0.0.0",
     "test:minigame-final-sprint-0714": "tsx tests/minigame-final-sprint-0714.ts",
-    "test:full-match-audit-0715": "tsx tests/full-match-audit-0715.ts"
+    "test:full-match-audit-0715": "tsx tests/full-match-audit-0715.ts",
+    "test:character-passives-ch05": "tsx tests/character-passives-ch05.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

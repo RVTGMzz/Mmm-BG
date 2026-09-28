@@ -289,6 +289,8 @@ jobs:
         run: npm run test:character-minigame-result-ch04d
       - name: CH-04E Character winner voice on final podium
         run: npm run test:character-podium-ch04e
+      - name: CH-05 HOST-authoritative Character signature passives
+        run: npm run test:character-passives-ch05
       - name: Install runtime browser regression dependencies
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1

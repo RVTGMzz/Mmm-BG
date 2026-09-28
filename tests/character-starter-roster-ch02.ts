@@ -37,7 +37,7 @@ for (const character of STARTER_CHARACTERS_V01) {
   assert.ok(character.reactionDirection.length >= 3);
   assert.equal(character.passiveIds.length, 1);
   assert.equal(character.passiveIds[0], character.passiveConcept.id);
-  assert.equal(character.passiveConcept.live, false, 'CH-02A must not activate passive gameplay');
+  assert.equal(character.passiveConcept.live, true, 'CH-05 must activate the approved signature passive gameplay');
 }
 
 assert.equal(getStarterCharacterV01('starter-crybaby')?.archetypeLabel, 'KHÓC NHÈ');
@@ -46,4 +46,4 @@ assert.equal(getStarterCharacterV01('starter-anxious')?.archetypeLabel, 'LO LẮ
 assert.equal(getStarterCharacterV01('starter-hyper')?.archetypeLabel, 'TĂNG ĐỘNG');
 assert.equal(getStarterCharacterV01('missing-character'), undefined);
 
-console.log('[character-starter-roster-ch02] PASS four starter archetypes + concept-only passives locked');
+console.log('[character-starter-roster-ch02] PASS four starter archetypes + CH-05 live signature passives locked');

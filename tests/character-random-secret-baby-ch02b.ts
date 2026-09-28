@@ -14,7 +14,7 @@ import { STARTER_CHARACTERS_V01 } from '../src/content/core/characters_starter_v
 assert.equal(SECRET_BABY_RANDOM_CHANCE, 0.05);
 assert.equal(SECRET_BABY_V01.randomOnly, true);
 assert.equal(SECRET_BABY_V01.directSelectable, false);
-assert.equal(SECRET_BABY_V01.passiveConcept.live, false);
+assert.equal(SECRET_BABY_V01.passiveConcept.live, true);
 assert.equal(isDirectSelectableCharacterCh02b(SECRET_BABY_CHARACTER_ID), false);
 assert.equal(isDirectSelectableCharacterCh02b('starter-crybaby'), true);
 assert.equal(
