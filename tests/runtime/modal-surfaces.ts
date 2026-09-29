@@ -61,6 +61,8 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
           && (heading.text.includes('CẮT TOP') || heading.text.includes('HÒA Ở RANH TOP'))
           && rollCount >= 3
         ) {
+          this.time.timeScale=0;
+          this.tweens.timeScale=0;
           (window as any).surfaceReady=true;
         }
       });
