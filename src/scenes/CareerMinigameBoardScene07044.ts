@@ -809,19 +809,21 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     }).setOrigin(0, 0.5);
 
     const dieMatch = model.title.match(/🎲\s*(\d)/u);
-    const dieChip = this.add.text(366, -84, dieMatch ? `🎲 ${dieMatch[1]}` : '💼', {
+    const dieChip = this.add.text(366, -84, dieMatch ? `🎲 ${dieMatch[1]}` : '', {
       fontFamily: JOB_UI_FONT_070421,
       fontSize: '19px',
       fontStyle: 'bold',
       color: '#49342c',
       backgroundColor: '#fff5d4',
       padding: { x: 10, y: 5 },
-    }).setOrigin(1, 0.5);
+    }).setOrigin(1, 0.5).setName('job-result-die-chip-070432');
+    dieChip.setVisible(Boolean(dieMatch));
 
-    const icon = this.add.text(-320, 28, model.impact || '💼', {
+    const landingIcon = isResult ? (model.impact || '💼') : '🎲';
+    const icon = this.add.text(-320, 28, landingIcon, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '62px',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setName('job-result-impact-icon-070432');
 
     const displayTitle = isResult ? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ';
     const title = this.add.text(55, -16, displayTitle, {
