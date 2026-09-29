@@ -93,12 +93,16 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
 
 
       if (mode === 'rules') {
+        this.time.timeScale = 8;
+        this.tweens.timeScale = 8;
         const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8713, 'MINIGAME_SLOT_02');
         this.events.on('postupdate', () => {
           const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
-          const body = stage?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
+          const scrollRoot = stage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container | null;
+          const body = scrollRoot?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
           if (!body?.text.includes('Không tính thời gian chọn.')) return;
           this.time.timeScale = 0;
+          this.tweens.timeScale = 0;
           (window as any).surfaceReady = true;
         });
         return;
