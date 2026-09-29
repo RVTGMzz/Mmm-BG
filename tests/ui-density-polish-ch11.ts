@@ -7,7 +7,7 @@ const job=readFileSync('src/ui/JobChoicePicker.ts','utf8');
 const scene=readFileSync('src/scenes/CareerMinigameBoardScene07044.ts','utf8');
 const mini=readFileSync('src/ui/MiniGameOverlay.ts','utf8');
 
-assert.equal(MEMEME_BUILD.version,'0.1.70.4.31');
+assert.equal(MEMEME_BUILD.version,'0.1.70.4.32');
 assert.match(job,/job-detail-salary-label-070432/);
 assert.match(job,/job-detail-salary-levels-070432/);
 assert.match(job,/LƯƠNG \/ VÒNG/);
