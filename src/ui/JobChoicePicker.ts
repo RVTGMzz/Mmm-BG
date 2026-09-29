@@ -195,7 +195,7 @@ export function createJobRollPicker(
       fontFamily: 'Arial, sans-serif',
       fontSize: '52px',
     }).setOrigin(0.5);
-    const detailTitle = scene.add.text(0, -58, job.title, {
+    const detailTitle = scene.add.text(0, -64, job.title, {
       fontFamily: JOB_FONT_070421,
       fontSize: '30px',
       fontStyle: 'bold',
@@ -205,7 +205,7 @@ export function createJobRollPicker(
     }).setOrigin(0.5);
     const salaryLabel = scene.add.text(0, -24, 'LƯƠNG / VÒNG', {
       fontFamily: JOB_FONT_070421,
-      fontSize: '13px',
+      fontSize: '19px',
       fontStyle: 'bold',
       color: '#74594d',
       fixedWidth: 700,
@@ -213,7 +213,7 @@ export function createJobRollPicker(
     }).setOrigin(0.5).setName('job-detail-salary-label-070432');
     const salaries = scene.add.text(
       0,
-      4,
+      8,
       `Lv1 ${jobSalary(job, 1)} B$   •   Lv2 ${jobSalary(job, 2)} B$   •   Lv3 ${jobSalary(job, 3)} B$`,
       {
         fontFamily: JOB_FONT_070421,
@@ -224,8 +224,8 @@ export function createJobRollPicker(
         align: 'center',
       },
     ).setOrigin(0.5).setName('job-detail-salary-levels-070432');
-    const divider = scene.add.rectangle(0, 36, 670, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
-    const special = scene.add.text(0, 80, job.special, {
+    const divider = scene.add.rectangle(0, 42, 670, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
+    const special = scene.add.text(0, 88, job.special, {
       fontFamily: JOB_FONT_070421,
       fontSize: '18px',
       color: '#43352e',
