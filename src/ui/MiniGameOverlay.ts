@@ -125,14 +125,14 @@ export function startMiniGameOverlay(
     MINI_GAME_VISUAL_VF07.shellFill, 1,
   )
     .setStrokeStyle(MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1);
-  const headerBand = scene.add.rectangle(0, -222, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 96, MINI_GAME_VISUAL_VF07.headerFill, 1)
+  const headerBand = scene.add.rectangle(0, -216, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 126, MINI_GAME_VISUAL_VF07.headerFill, 1)
     .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.18);
-  const headerSticker = scene.add.rectangle(-390, -222, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+  const headerSticker = scene.add.rectangle(-390, -216, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1)
     .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55);
-  const title = scene.add.text(0, -238, `${slot.icon} ${slot.title}`, {
+  const title = scene.add.text(0, -244, `${slot.icon} ${slot.title}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -196, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
+  const subtitle = scene.add.text(0, -199, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
     fontSize: '17px',
     color: '#6d5549',
@@ -142,7 +142,7 @@ export function startMiniGameOverlay(
     maxLines: 2,
     lineSpacing: 2,
   }).setOrigin(0.5).setName('vf07-minigame-subtitle');
-  const stake = scene.add.text(0, -163, '', {
+  const stake = scene.add.text(0, -151, '', {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 840,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22).setName('vf07-minigame-stage');
@@ -377,6 +377,72 @@ export function startMiniGameOverlay(
       ease: 'Sine.easeOut',
     });
     await wait(bodyViewport.isScrollable ? Math.max(ms, 5200) : ms);
+  };
+
+
+  const showMajorityFlow = async (
+    heading: string,
+    ids: readonly number[],
+    choices: Record<number, PalmChoice>,
+    tied: boolean,
+    survivingPlayerIds: readonly number[],
+    eliminatedPlayerIds: readonly number[],
+    ms = 2100,
+  ) => {
+    clearStage();
+    const paper = scene.add.rectangle(0, 18, 820, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
+      .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
+    const head = scene.add.text(0, -118, heading, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '25px', fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 760,
+    }).setOrigin(0.5).setName('vf07-majority-flow-heading');
+    const stateTitle = scene.add.text(-235, -78, 'TRẠNG THÁI', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center', fixedWidth: 300,
+    }).setOrigin(0.5);
+    const resultTitle = scene.add.text(225, -78, 'KẾT QUẢ', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center', fixedWidth: 310,
+    }).setOrigin(0.5);
+    const rows = ids.map((id, index) => {
+      const up = choices[id] === 'up';
+      const y = -42 + index * 51;
+      const chip = scene.add.rectangle(-235, y, 300, 42, up ? 0x9eddf0 : 0xffd983, 1)
+        .setStrokeStyle(2.5, MINI_GAME_VISUAL_VF07.shellStroke, 0.68);
+      const label = scene.add.text(-235, y,
+        `${playerById(id)?.name ?? `P${id + 1}`}   ${up ? '🤲 NGỬA' : '🖐️ SẤP'}`, {
+          fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+          fontSize: '17px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
+          fixedWidth: 278, align: 'center',
+        }).setOrigin(0.5);
+      return [chip, label];
+    }).flat();
+    const arrow = scene.add.text(0, 35, '➜', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '48px', fontStyle: 'bold', color: '#8d6c58',
+    }).setOrigin(0.5);
+    const resultBox = scene.add.rectangle(225, 38, 310, 188, tied ? 0xffe1dc : 0xffedb8, 1)
+      .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.48);
+    const losers = eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
+    const survivors = survivingPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
+    const resultCopy = tied
+      ? 'KHÔNG CÓ PHE THIỂU SỐ\n\nRA LẠI!'
+      : `❌ BỊ LOẠI\n${losers || '—'}\n\n✅ CÒN LẠI\n${survivors || '—'}`;
+    const resultText = scene.add.text(225, 38, resultCopy, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: tied ? '20px' : '18px', fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, fixedWidth: 274, align: 'center',
+      lineSpacing: 5, wordWrap: { width: 274, useAdvancedWrap: true },
+    }).setOrigin(0.5).setName('vf07-majority-result-copy');
+    stage.add([paper, head, stateTitle, resultTitle, ...rows, arrow, resultBox, resultText]);
+    scene.tweens.add({
+      targets: [...rows, arrow, resultBox, resultText],
+      alpha: { from: 0.25, to: 1 }, duration: 190, ease: 'Back.easeOut',
+    });
+    await wait(ms);
   };
 
   const showRpsDuel = async (
@@ -854,42 +920,29 @@ export function startMiniGameOverlay(
       }
 
       const result = resolveMajorityMinorityRound(activeIds, choices);
-      clearStage();
-      const revealPaper = scene.add.rectangle(0, 8, 780, 300, MINI_GAME_VISUAL_VF07.resultFill, 1)
-        .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-      const revealTitle = scene.add.text(0, -112, `VÒNG ${round} • CÙNG LẬT!`, {
-        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '24px', fontStyle: 'bold',
-        color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center',
-      }).setOrigin(0.5);
-      const revealRows = activeIds.map((id, index) => {
-        const player = playerById(id);
-        const up = choices[id] === 'up';
-        const x = activeIds.length <= 2 ? (index === 0 ? -190 : 190) : -270 + (index % 2) * 540;
-        const y = activeIds.length <= 2 ? 8 : -28 + Math.floor(index / 2) * 92;
-        const chip = scene.add.rectangle(x, y, 310, 76, up ? 0x9eddf0 : 0xffd983, 1)
-          .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.7);
-        const label = scene.add.text(x, y, `${player?.name ?? `P${id + 1}`}  ${up ? '🤲 NGỬA' : '🖐️ SẤP'}`, {
-          fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold',
-          color: MINI_GAME_VISUAL_VF07.cocoaText, fixedWidth: 288, align: 'center',
-        }).setOrigin(0.5);
-        return [chip, label];
-      }).flat();
-      stage.add([revealPaper, revealTitle, ...revealRows]);
-      scene.tweens.add({ targets: revealRows, scaleX: { from: 0.88, to: 1 }, alpha: { from: 0.25, to: 1 }, duration: 180, ease: 'Back.easeOut' });
-      await wait(520);
-      const reveal = activeIds
-        .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: ${choices[id] === 'up' ? 'NGỬA 🤲' : 'SẤP 🖐️'}`)
-        .join('\n');
       if (result.tied) {
-        await showResult('🤝 HÒA, RA LẠI!', `${reveal}\n\nKhông có phe thiểu số rõ ràng.`);
+        await showMajorityFlow(
+          `VÒNG ${round} • 🤝 HÒA, RA LẠI!`,
+          activeIds,
+          choices,
+          true,
+          activeIds,
+          [],
+        );
         continue;
       }
 
       eliminationOrder.push(...result.eliminatedPlayerIds);
-      const losers = result.eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
+      const previousIds = [...activeIds];
       activeIds = result.survivingPlayerIds;
-      const survivors = activeIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
-      await showResult('😵 ÍT BỊ!', `${reveal}\n\n❌ Bị loại: ${losers}\n✅ Còn lại: ${survivors}`);
+      await showMajorityFlow(
+        `VÒNG ${round} • 😵 ÍT BỊ!`,
+        previousIds,
+        choices,
+        false,
+        activeIds,
+        result.eliminatedPlayerIds,
+      );
       }
     }
 
