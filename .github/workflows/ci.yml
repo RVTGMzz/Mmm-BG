@@ -307,6 +307,8 @@ jobs:
         run: npm run test:release-candidate-cleanup-ch09
       - name: CH-10 release candidate acceptance matrix
         run: npm run test:rc-acceptance-ch10
+      - name: CH-11 Job + majority Mini Game density polish
+        run: npm run test:ui-density-polish-ch11
       - name: Install runtime browser regression dependencies
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1
@@ -330,11 +332,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.30 RC cleanup build
+      - name: Upload MMM 0.1.70.4.31 RC UI density polish build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.30-rc-cleanup
+          name: mmm-playtest-0.1.70.4.31-rc-ui-polish
           path: dist
           if-no-files-found: error
           retention-days: 14
