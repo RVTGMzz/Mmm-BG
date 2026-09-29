@@ -9,9 +9,9 @@ const setup=readFileSync('src/scenes/SetupScene.ts','utf8');
 const workflow=readFileSync('.github/workflows/ci.yml','utf8');
 const splash=readFileSync('src/scenes/SplashScene069.ts','utf8');
 
-assert.equal(MEMEME_BUILD.version,'0.1.70.4.30');
-assert.match(MEMEME_BUILD.lobbyHeader,/^MMM • 0\.1\.70\.4\.30$/);
-assert.match(MEMEME_BUILD.phase,/RELEASE CANDIDATE CLEANUP/);
+assert.equal(MEMEME_BUILD.version,'0.1.70.4.31');
+assert.match(MEMEME_BUILD.lobbyHeader,/^MMM • 0\.1\.70\.4\.31$/);
+assert.match(MEMEME_BUILD.phase,/RC UI DENSITY POLISH/);
 assert.doesNotMatch(MEMEME_BUILD.lobbyHeader,/MeMeMe/);
 assert.doesNotMatch(MEMEME_BUILD.boardHeader,/MeMeMe/);
 
@@ -20,7 +20,7 @@ assert.doesNotMatch(html,/<title>MeMeMe/);
 assert.equal(manifest.name,'MMM Board Game');
 assert.equal(manifest.short_name,'MMM');
 
-assert.match(playtest,/^MMM PLAYTEST 0\.1\.70\.4\.30/m);
+assert.match(playtest,/^MMM PLAYTEST 0\.1\.70\.4\.31/m);
 assert.doesNotMatch(playtest,/MeMeMe MVP|0\.1\.68|Copyright © 2026 MeMeMe/);
 assert.match(playtest,/CH-08|reconnect|Socket cũ/i);
 assert.match(playtest,/KHÓC NHÈ[\s\S]*40%/);
@@ -28,7 +28,7 @@ assert.match(playtest,/SECRET BABY[\s\S]*60%/);
 
 assert.doesNotMatch(setup,/NEUTRAL PROOF/);
 assert.match(setup,/character-layered-proof-ch02g/,'remove only dev label, not the approved layered runtime proof');
-assert.match(workflow,/mmm-playtest-0\.1\.70\.4\.30-rc-cleanup/);
+assert.match(workflow,/mmm-playtest-0\.1\.70\.4\.31-rc-ui-polish/);
 assert.doesNotMatch(workflow,/mmm-playtest-0\.1\.70\.4\.22-presentation-owner/);
 
 // The old filename is retained intentionally until an approved MMM logo artwork exists.
