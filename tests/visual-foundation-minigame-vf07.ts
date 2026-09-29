@@ -28,8 +28,8 @@ expect(overlay.includes("'vf07-minigame-choice-prompt'") && overlay.includes("'v
 expect(overlay.includes("'vf07-minigame-choice-privacy-rail'"), 'choice privacy rail must expose a stable runtime ownership name');
 expect(overlay.includes('resultPaper') && overlay.includes('resultBadge'), 'VF-07 result surface must use owned paper + badge hierarchy');
 expect(overlay.includes('podiumPaper') && overlay.includes('podiumRibbon'), 'VF-07 ranking must use the canonical result presentation');
-expect(overlay.includes('revealPaper') && overlay.includes('revealRows'), 'VF-07 majority/minority round must use one simultaneous owned reveal surface');
-expect(overlay.includes('VÒNG ${round} • CÙNG LẬT!'), 'VF-07 majority/minority reveal must clearly communicate the shared flip beat');
+expect(overlay.includes('showMajorityFlow') && overlay.includes('vf07-majority-result-copy'), 'VF-07 majority/minority round must use the owned horizontal status-to-result surface');
+expect(overlay.includes('TRẠNG THÁI') && overlay.includes('KẾT QUẢ') && overlay.includes('➜'), 'VF-07 majority/minority reveal must read left-to-right without a second scrolling result panel');
 expect(overlay.includes("chant.setText('LẬT KÈO!')") && overlay.includes('leftCard.setScale(0.92, 1)') && overlay.includes('targets: vs'), 'VF-07 RPS duel must keep the shared card-flip and VS impact reveal beat');
 expect(overlay.includes('createScrollableTextViewport070429'), 'VF-07 long result copy must use the shared clipped scroll viewport');
 expect(overlay.includes('fontSize: 24'), 'VF-07 result/ranking body must keep a fixed readable 23px scale');
