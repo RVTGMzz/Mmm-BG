@@ -21,6 +21,7 @@ const names = {
   jobdetail: 'job-detail-salary-levels-070432',
   ranking: 'vf07-minigame-ranking-rows',
   majority: 'vf07-majority-result-copy',
+  rules: 'vf07-minigame-result-body',
   passive: 'character-passive-body-ch05',
 };
 
@@ -64,7 +65,16 @@ try {
     assert.ok(result.body.alpha > 0.9, `${surface}: canonical body alpha changed by inherited writer`);
     assert.ok(result.body.text.trim().length > 6, `${surface}: canonical body text blank after inherited updates`);
 
-    if (surface === 'ranking') {
+    if (surface === 'card' || surface === 'news') {
+      assert.ok(result.body.fontSize >= 20, `${surface}: font shrank to ${result.body.fontSize}`);
+      assert.ok(result.body.y >= 0, `${surface}: short body copy should be vertically balanced, got y=${result.body.y}`);
+      const chrome = await page.evaluate((rootName) => ({
+        texts: window.fullSceneUi?.visibleTexts(rootName) ?? [],
+        impact: window.fullSceneUi?.inspect('cinematic-impact-ch13'),
+      }), surface === 'card' ? 'card-presentation-card' : 'news-presentation-card');
+      assert.equal(chrome.texts.includes('N'), false, `${surface}: rarity badge N must not render`);
+      assert.ok(chrome.impact?.visible, `${surface}: impact sticker missing`);
+    } else if (surface === 'ranking') {
       assert.ok(result.body.fontSize >= 24, `ranking: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /🥇|Hạng 1/u);
     } else if (surface === 'job' || surface === 'jobwait') {
@@ -86,6 +96,10 @@ try {
     } else if (surface === 'majority') {
       assert.ok(result.body.fontSize >= 18, `majority: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /KHÔNG CÓ PHE THIỂU SỐ|BỊ LOẠI/u);
+    } else if (surface === 'rules') {
+      assert.ok(result.body.fontSize >= 24, `rules: font shrank to ${result.body.fontSize}`);
+      assert.match(result.body.text, /Không tính thời gian chọn/u);
+      assert.match(result.body.text, /OẲN TÙ XÌ/u);
     } else if (surface === 'passive') {
       assert.ok(result.body.fontSize >= 14, `passive: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /Tỷ lệ 40%/u);
@@ -95,7 +109,7 @@ try {
     }
 
     await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-1280x800.png` });
-    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority') {
+    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'card' || surface === 'news') {
       await page.setViewportSize({ width: 960, height: 540 });
       await page.waitForTimeout(250);
       await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-960x540.png` });
