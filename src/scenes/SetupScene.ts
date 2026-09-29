@@ -49,7 +49,7 @@ export class SetupScene extends Phaser.Scene {
     const frame = this.add.graphics();
     frame.fillStyle(0xfffbf3, 1).fillRoundedRect(45, 30, 1190, 660, 32);
     frame.lineStyle(5, 0x202020, 1).strokeRoundedRect(45, 30, 1190, 660, 32);
-    this.add.text(72, 54, MEMEME_BUILD.setupHeader, { fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#202020' });
+    this.add.text(72, 54, MEMEME_BUILD.setupHeader, { fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#202020' });
 
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;

@@ -132,7 +132,7 @@ export function startMiniGameOverlay(
   const title = scene.add.text(0, -246, `${slot.icon} ${slot.title}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -204, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
+  const subtitle = scene.add.text(0, -204, `${slot.boardLabel} • ${slot.identity}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
     fontSize: '17px',
     color: '#6d5549',
@@ -141,7 +141,7 @@ export function startMiniGameOverlay(
     wordWrap: { width: 810, useAdvancedWrap: true },
     maxLines: 2,
     lineSpacing: 2,
-  }).setOrigin(0.5).setName('vf07-minigame-subtitle');
+  }).setOrigin(0.5).setName('vf07-minigame-subtitle').setVisible(false);
   const stake = scene.add.text(0, -145, '', {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 840,
   }).setOrigin(0.5).setVisible(false);
@@ -156,7 +156,9 @@ export function startMiniGameOverlay(
     headerBand.setVisible(true);
     headerSticker.setVisible(true);
     title.setVisible(true);
-    subtitle.setVisible(true);
+    subtitle.setVisible(false);
+    stake.setVisible(false);
+    headerSticker.setVisible(false);
   };
   const wait = (ms: number) => new Promise<void>((resolve) => scene.time.delayedCall(ms, resolve));
 
@@ -379,6 +381,62 @@ export function startMiniGameOverlay(
     await wait(bodyViewport.isScrollable ? Math.max(ms, 5200) : ms);
   };
 
+
+
+  const rulesCopy = (baseType: MiniGameBaseRewardType): string => {
+    const payout = `THƯỞNG • ${miniGameRewardCopy059(slot.contentId, baseType)}`;
+    if (baseType === 'rps') {
+      return ['OẲN TÙ XÌ 1 VS 1.', 'Hòa thì chơi lại.', payout].join('\n');
+    }
+    if (baseType === 'three_doors') {
+      return [
+        'Chọn kín 1 trong 3 cửa.',
+        'D6 mở cửa sống: 1–2=A • 3–4=B • 5–6=C.',
+        'Không ai hoặc tất cả cùng trúng → chơi lại.',
+        'Nhiều người bị loại cùng lượt → chỉ nhóm đó OẲN TÙ XÌ để xếp hạng.',
+        'Không tính thời gian chọn.',
+        payout,
+      ].join('\n');
+    }
+    if (baseType === 'solo_buoy') {
+      return [
+        'Chọn kín 1 trong 3 phao.',
+        'Chỉ phao có đúng 1 người mới nổi.',
+        'Không ai rớt hoặc không ai sống → chọn lại.',
+        payout,
+      ].join('\n');
+    }
+    if (baseType === 'cut_top_dice') {
+      return [
+        'Tất cả cùng đổ D6.',
+        'Hai điểm cao nhất giữ Top 2.',
+        'Hòa đúng ranh Top → chỉ nhóm hòa đổ lại.',
+        payout,
+      ].join('\n');
+    }
+    if (baseType === 'final_sprint') {
+      return [
+        'Chạy đủ 3 chặng D6 và cộng tổng.',
+        'Top 2 vào chung kết.',
+        'Hòa ranh Top → chỉ nhóm hòa chạy hiệp phụ.',
+        payout,
+      ].join('\n');
+    }
+    return [
+      'Chọn kín NGỬA hoặc SẤP.',
+      'Phe ít người hơn bị loại.',
+      'Không có phe thiểu số rõ ràng → ra lại.',
+      payout,
+    ].join('\n');
+  };
+
+  const showRulesIntro = async (baseType: MiniGameBaseRewardType): Promise<void> => {
+    await showResult(
+      `📘 LUẬT • ${rewardTitle(baseType)}`,
+      rulesCopy(baseType),
+      baseType === 'three_doors' ? 5600 : 4400,
+    );
+  };
 
   const showMajorityFlow = async (
     heading: string,
@@ -644,7 +702,7 @@ export function startMiniGameOverlay(
       duration: 210,
       ease: 'Sine.easeOut',
     });
-    await wait(rowsViewport.isScrollable ? 5000 : 2600);
+    await wait(rowsViewport.isScrollable ? 10000 : 5200);
   };
 
   const runRpsFinal = async (
@@ -681,6 +739,40 @@ export function startMiniGameOverlay(
     return undefined;
   };
 
+
+  const rankSimultaneousThreeDoorLosers = async (
+    ids: readonly number[],
+    roundOffset: number,
+  ): Promise<number[]> => {
+    if (ids.length <= 1) return [...ids];
+
+    const seeded = [...ids];
+    for (let index = seeded.length - 1; index > 0; index -= 1) {
+      const swapIndex = deterministicBit(eventSeq, 733 + roundOffset + index, 911 + index) % (index + 1);
+      [seeded[index], seeded[swapIndex]] = [seeded[swapIndex]!, seeded[index]!];
+    }
+
+    let champion = seeded[0]!;
+    const lowToHigh: number[] = [];
+    for (let index = 1; index < seeded.length; index += 1) {
+      const challenger = seeded[index]!;
+      const duel = await runRpsFinal([champion, challenger], roundOffset + index * 20);
+      if (duel) {
+        lowToHigh.push(duel.loserId);
+        champion = duel.winnerId;
+        continue;
+      }
+
+      const fallbackBit = deterministicBit(eventSeq, 977 + roundOffset + index, 1201 + index) % 2;
+      const winner = fallbackBit === 0 ? champion : challenger;
+      const loser = fallbackBit === 0 ? challenger : champion;
+      lowToHigh.push(loser);
+      champion = winner;
+    }
+    lowToHigh.push(champion);
+    return lowToHigh;
+  };
+
   const runTournament = async (): Promise<MiniGameOutcome> => {
     let activeIds = players.map((player) => player.id);
     const eliminationOrder: number[] = [];
@@ -688,7 +780,8 @@ export function startMiniGameOverlay(
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
     stake
       .setText(`${rewardTitle(baseType)} • ${miniGameRewardCopy059(slot.contentId, baseType)}`)
-      .setVisible(true);
+      .setVisible(false);
+    await showRulesIntro(baseType);
 
     if (activeIds.length <= 1) {
       const rankingPlayerIds = [...activeIds];
@@ -741,8 +834,8 @@ export function startMiniGameOverlay(
           continue;
         }
 
-        eliminationOrder.push(...result.eliminatedPlayerIds);
-        const losers = result.eliminatedPlayerIds
+        const eliminatedThisRound = [...result.eliminatedPlayerIds];
+        const losers = eliminatedThisRound
           .map((id) => playerById(id)?.name ?? `P${id + 1}`)
           .join(', ');
         activeIds = result.survivingPlayerIds;
@@ -753,6 +846,10 @@ export function startMiniGameOverlay(
           `🎲 ${roll} • CỬA ${door} TRÚNG!`,
           `${reveal}\n\n✅ Đi tiếp: ${survivors}\n❌ Bị loại: ${losers}`,
         );
+        const rankedLosers = eliminatedThisRound.length > 1
+          ? await rankSimultaneousThreeDoorLosers(eliminatedThisRound, round * 100)
+          : eliminatedThisRound;
+        eliminationOrder.push(...rankedLosers);
       }
     } else if (baseType === 'solo_buoy') {
       subtitle.setText(`${slot.title} • PHAO ĐƠN • chỉ phao có đúng 1 người mới nổi`);

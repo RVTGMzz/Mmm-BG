@@ -1,7 +1,9 @@
 .mememe-character-select-ch02c {
   width: min(1180px, calc(100vw - 48px));
   color: #3b2a24;
-  font-family: var(--vf-font-family, "Arial Rounded MT Bold", Arial, sans-serif);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
 .character-select-panel-ch02c {
@@ -72,15 +74,24 @@
 }
 
 .character-emoji-ch02c { font-size: 48px; line-height: 1; }
-.character-card-ch02c strong { font-size: 20px; font-weight: 950; }
-.character-card-ch02c small { font: 800 12px/1.35 Arial, sans-serif; color: #7a685c; }
+.character-card-ch02c strong { font-size: 20px; font-weight: 900; line-height: 1.15; }
+.character-card-ch02c small {
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 800;
+  color: #7a685c;
+}
 
 .character-passive-ch02c {
   margin-top: 3px;
   padding: 6px 9px;
   border-radius: 12px;
   background: rgba(255,255,255,.76);
-  font: 800 12px/1.25 Arial, sans-serif;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 800;
   color: #5a463b;
 }
 
@@ -89,7 +100,10 @@
   margin: 17px 0 13px;
   text-align: center;
   color: #6f5c50;
-  font: 800 14px/1.4 Arial, sans-serif;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 800;
 }
 
 .character-select-actions-ch02c {

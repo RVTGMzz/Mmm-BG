@@ -550,11 +550,11 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       maxLines: 2,
     });
 
-    const impact = new Phaser.GameObjects.Text(this, 314, -108, model.impact || '•', {
+    const impact = new Phaser.GameObjects.Text(this, 292, -98, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '22px',
       color: '#3f2b27',
-    }).setOrigin(1, 0);
+    }).setOrigin(0.5).setName('cinematic-impact-ch13');
 
     const source = new Phaser.GameObjects.Text(
       this,
@@ -578,7 +578,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       y: -18,
       width: bodyWidth070429,
       height: bodyHeight070429,
-      minHeight: 38,
+      minHeight: bodyHeight070429,
       text: bodyCopy,
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: 21,
@@ -591,17 +591,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     else paintVisualFoundationCardVf051(shadow, panel, bodyViewport.height, footerHeight);
     const body = bodyViewport.text;
     body.setName(isNews ? 'news-scroll-text-070429' : 'card-scroll-text-070429');
-
-    if (model.rarity) {
-      const rarityText = new Phaser.GameObjects.Text(this, 275, -118, model.rarity, {
-        fontFamily: MOBILE_UI_FONT_07044,
-        fontSize: '10px',
-        fontStyle: 'bold',
-        color: '#24211d',
-        backgroundColor: '#eee8dc',
-        padding: { x: 18, y: 4 },
-      }).setOrigin(0.5);
-      root.add(rarityText);
+    if (!bodyViewport.isScrollable) {
+      body.setY(Math.max(0, Math.round((bodyViewport.height - body.height) / 2)));
     }
 
     const amount = Math.abs(model.amount ?? 0);
@@ -1168,6 +1159,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       const copy = object.text.trim().toUpperCase();
       const legacyTopChrome =
         object.text.startsWith('CITY • MVP 0.1.')
+        || object.text.startsWith('MMM CITY •')
         || (object.text.startsWith('PLAYTEST 0.1.') && object.text.includes('•'))
         || copy.includes('TỔNG QUAN')
         || copy.includes('CHUNG KẾT')
