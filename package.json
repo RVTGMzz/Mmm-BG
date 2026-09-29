@@ -152,7 +152,8 @@
     "test:release-candidate-cleanup-ch09": "tsx tests/release-candidate-cleanup-ch09.ts",
     "test:feedback-polish-ch09": "tsx tests/feedback-polish-ch09.ts",
     "test:rc-acceptance-ch10": "tsx tests/rc-acceptance-ch10.ts",
-    "test:ui-density-polish-ch11": "tsx tests/ui-density-polish-ch11.ts"
+    "test:ui-density-polish-ch11": "tsx tests/ui-density-polish-ch11.ts",
+    "test:ux-simplify-ch13": "tsx tests/ux-simplify-ch13.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
