@@ -8,7 +8,7 @@ import jobsJson from '../../src/content/core/jobs_mvp.json';
 import type { JobDefinition } from '../../src/core/jobs';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
-browserSession.configureSolo(mode === 'ranking' || mode === 'majority' ? [0, 1, 2, 3] : []);
+browserSession.configureSolo(mode === 'ranking' || mode === 'majority' || mode === 'rules' ? [0, 1, 2, 3] : []);
 gameSession.reset();
 gameSession.players.forEach((player) => gameSession.setCharacter(player.id, 'starter-crybaby'));
 
@@ -27,12 +27,12 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
   create(): void {
     // Freeze ranking-mode timers during inherited create so an all-CPU browser
     // fixture cannot start an unrelated board turn before we install the no-op.
-    if (mode === 'ranking' || mode === 'majority') this.time.timeScale = 0;
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules') this.time.timeScale = 0;
     super.create();
 
     const scene = this;
     const runtime = this as any;
-    if (mode === 'ranking' || mode === 'majority') {
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules') {
       runtime.queueCpuActionIfNeeded = () => undefined;
       this.time.timeScale = 1;
     }
@@ -56,6 +56,20 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         }
         return undefined;
       },
+      visibleTexts(name: string) {
+        for (const object of scene.children.list) {
+          const found = findByName(object, name);
+          if (!found) continue;
+          const copies: string[] = [];
+          const collect = (node: Phaser.GameObjects.GameObject) => {
+            if (node instanceof Phaser.GameObjects.Text && node.visible && node.active) copies.push(node.text);
+            if (node instanceof Phaser.GameObjects.Container) node.list.forEach(collect);
+          };
+          collect(found);
+          return copies;
+        }
+        return [];
+      },
       canonical: (this as any).canonicalUiOwner071 === true,
     };
 
@@ -77,6 +91,18 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         return;
       }
 
+
+      if (mode === 'rules') {
+        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8713, 'MINIGAME_SLOT_02');
+        this.events.on('postupdate', () => {
+          const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
+          const body = stage?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
+          if (!body?.text.includes('Không tính thời gian chọn.')) return;
+          this.time.timeScale = 0;
+          (window as any).surfaceReady = true;
+        });
+        return;
+      }
 
       if (mode === 'majority') {
         this.time.timeScale = 8;
@@ -113,6 +139,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         targetName: 'CPU 2',
         amount: 20,
         reactions: [],
+        rarity: 'N',
       };
       const model: any = mode === 'jobwait'
         ? {
