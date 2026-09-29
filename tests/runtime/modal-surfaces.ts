@@ -52,7 +52,15 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
       this.events.on('postupdate',()=>{
         const stage=run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
         const heading=stage?.getByName('vf07-minigame-result-heading') as Phaser.GameObjects.Text;
-        if(heading && (heading.text.includes('CẮT TOP') || heading.text.includes('HÒA Ở RANH TOP'))) {
+        const scrollRoot=stage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container;
+        const body=scrollRoot?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text;
+        const rollCount=(String(body?.text ?? '').match(/🎲 [1-6]/g) ?? []).length;
+        if(
+          heading
+          && !heading.text.includes('LUẬT')
+          && (heading.text.includes('CẮT TOP') || heading.text.includes('HÒA Ở RANH TOP'))
+          && rollCount >= 3
+        ) {
           (window as any).surfaceReady=true;
         }
       });
