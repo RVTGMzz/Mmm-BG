@@ -125,14 +125,14 @@ export function startMiniGameOverlay(
     MINI_GAME_VISUAL_VF07.shellFill, 1,
   )
     .setStrokeStyle(MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1);
-  const headerBand = scene.add.rectangle(0, -216, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 126, MINI_GAME_VISUAL_VF07.headerFill, 1)
+  const headerBand = scene.add.rectangle(0, -222, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 112, MINI_GAME_VISUAL_VF07.headerFill, 1)
     .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.18);
-  const headerSticker = scene.add.rectangle(-390, -216, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1)
+  const headerSticker = scene.add.rectangle(-390, -222, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1)
     .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55);
-  const title = scene.add.text(0, -244, `${slot.icon} ${slot.title}`, {
+  const title = scene.add.text(0, -246, `${slot.icon} ${slot.title}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
-  const subtitle = scene.add.text(0, -199, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
+  const subtitle = scene.add.text(0, -204, `${slot.boardLabel} • ${slot.identity} • ${slot.description}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
     fontSize: '17px',
     color: '#6d5549',
@@ -142,7 +142,7 @@ export function startMiniGameOverlay(
     maxLines: 2,
     lineSpacing: 2,
   }).setOrigin(0.5).setName('vf07-minigame-subtitle');
-  const stake = scene.add.text(0, -151, '', {
+  const stake = scene.add.text(0, -145, '', {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 840,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22).setName('vf07-minigame-stage');
