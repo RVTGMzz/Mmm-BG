@@ -3,9 +3,12 @@ import { browserSession } from '../../src/core/browserSession';
 import { gameSession } from '../../src/core/session';
 import { CareerMinigameBoardScene07044 } from '../../src/scenes/CareerMinigameBoardScene07044';
 import { startMiniGameOverlay } from '../../src/ui/MiniGameOverlay';
+import { createJobRollPicker } from '../../src/ui/JobChoicePicker';
+import jobsJson from '../../src/content/core/jobs_mvp.json';
+import type { JobDefinition } from '../../src/core/jobs';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
-browserSession.configureSolo(mode === 'ranking' ? [0, 1, 2, 3] : []);
+browserSession.configureSolo(mode === 'ranking' || mode === 'majority' ? [0, 1, 2, 3] : []);
 gameSession.reset();
 gameSession.players.forEach((player) => gameSession.setCharacter(player.id, 'starter-crybaby'));
 
@@ -24,12 +27,12 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
   create(): void {
     // Freeze ranking-mode timers during inherited create so an all-CPU browser
     // fixture cannot start an unrelated board turn before we install the no-op.
-    if (mode === 'ranking') this.time.timeScale = 0;
+    if (mode === 'ranking' || mode === 'majority') this.time.timeScale = 0;
     super.create();
 
     const scene = this;
     const runtime = this as any;
-    if (mode === 'ranking') {
+    if (mode === 'ranking' || mode === 'majority') {
       runtime.queueCpuActionIfNeeded = () => undefined;
       this.time.timeScale = 1;
     }
@@ -74,6 +77,32 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         return;
       }
 
+
+      if (mode === 'majority') {
+        this.time.timeScale = 8;
+        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8709, 'MINIGAME_SLOT_01');
+        this.events.on('postupdate', () => {
+          const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
+          if (!stage?.getByName('vf07-majority-result-copy')) return;
+          this.time.timeScale = 0;
+          (window as any).surfaceReady = true;
+        });
+        return;
+      }
+
+      if (mode === 'jobdetail') {
+        const allJobs = jobsJson as JobDefinition[];
+        const doctor = allJobs.find((job) => job.id === 'JOB_DOCTOR');
+        if (!doctor) throw new Error('Doctor fixture missing.');
+        const fallback = allJobs.filter((job) => job.id !== doctor.id).slice(0, 2);
+        const picker = createJobRollPicker(this, 'Player 1', [doctor, ...fallback]);
+        const hit = findByName(picker.root, 'job-hub-card-hit-0') as Phaser.GameObjects.Rectangle | undefined;
+        if (!hit) throw new Error('Job detail card hit missing.');
+        hit.emit('pointerdown');
+        (window as any).surfaceReady = true;
+        return;
+      }
+
       if (!presentation) throw new Error('presentation missing from full live scene');
       const base = {
         eventSeq: 8701,
@@ -85,7 +114,18 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         amount: 20,
         reactions: [],
       };
-      const model: any = mode === 'passive'
+      const model: any = mode === 'jobwait'
+        ? {
+            ...base,
+            kind: 'tile_land',
+            tileType: 'job',
+            title: '3 JOB XUẤT HIỆN!',
+            description: 'Đổ xúc xắc để nhận việc.\nMỗi nghề có lương riêng khi qua cổng và có đặc tính khác nhau.',
+            summary: '',
+            impact: '💼🎲',
+            eyebrow: 'CPU 4 • JOB',
+          }
+        : mode === 'passive'
         ? {
             ...base,
             kind: 'tile_land',
@@ -130,7 +170,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
 
       presentation.currentModel = model;
       presentation.blocking = true;
-      if (mode === 'job' || mode === 'passive') presentation.showLanding(model);
+      if (mode === 'job' || mode === 'jobwait' || mode === 'passive') presentation.showLanding(model);
       else presentation.showCinematic(model);
       (window as any).surfaceReady = true;
     });
