@@ -26,6 +26,8 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
     this.cameras.main.setBackgroundColor('#8cac97');
     const model={eventSeq:100,holdMs:60000, ...fixtures[mode]};
     if(mode==='choice' || mode==='doors' || mode==='buoys') {
+      this.time.timeScale=20;
+      this.tweens.timeScale=20;
       startMiniGameOverlay(
         this,
         gameSession.players as any,
@@ -44,10 +46,14 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
           entry.name?.startsWith('vf07-minigame-choice-box-'),
         ) ?? [];
         if(stage?.getByName('vf07-minigame-choice-prompt') && choiceBoxes.length === expectedChoices) {
+          this.time.timeScale=0;
+          this.tweens.timeScale=0;
           (window as any).surfaceReady=true;
         }
       });
     } else if(mode==='topdice') {
+      this.time.timeScale=20;
+      this.tweens.timeScale=20;
       const run=startMiniGameOverlay(this, gameSession.players as any, 100, 'MINIGAME_SLOT_04');
       this.events.on('postupdate',()=>{
         const stage=run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
