@@ -203,21 +203,29 @@ export function createJobRollPicker(
       fixedWidth: 700,
       align: 'center',
     }).setOrigin(0.5);
+    const salaryLabel = scene.add.text(0, -24, 'LƯƠNG / VÒNG', {
+      fontFamily: JOB_FONT_070421,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#74594d',
+      fixedWidth: 700,
+      align: 'center',
+    }).setOrigin(0.5).setName('job-detail-salary-label-070432');
     const salaries = scene.add.text(
       0,
-      -8,
-      `LƯƠNG / VÒNG   Lv1 ${jobSalary(job, 1)}   •   Lv2 ${jobSalary(job, 2)}   •   Lv3 ${jobSalary(job, 3)} B$`,
+      4,
+      `Lv1 ${jobSalary(job, 1)} B$   •   Lv2 ${jobSalary(job, 2)} B$   •   Lv3 ${jobSalary(job, 3)} B$`,
       {
         fontFamily: JOB_FONT_070421,
-        fontSize: '19px',
+        fontSize: '18px',
         fontStyle: 'bold',
-        color: '#5c4439',
+        color: '#4f392f',
         fixedWidth: 700,
         align: 'center',
       },
-    ).setOrigin(0.5);
-    const divider = scene.add.rectangle(0, 26, 670, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
-    const special = scene.add.text(0, 75, job.special, {
+    ).setOrigin(0.5).setName('job-detail-salary-levels-070432');
+    const divider = scene.add.rectangle(0, 36, 670, 2, risky ? 0xefb8b3 : 0xd8cab9, 1);
+    const special = scene.add.text(0, 80, job.special, {
       fontFamily: JOB_FONT_070421,
       fontSize: '18px',
       color: '#43352e',
@@ -252,6 +260,7 @@ export function createJobRollPicker(
       detailIconWell,
       detailIcon,
       detailTitle,
+      salaryLabel,
       salaries,
       divider,
       special,
@@ -355,7 +364,8 @@ export function createJobRollPicker(
       color: risky ? '#8c2f2a' : '#4a5d58',
     }).setOrigin(0.5);
     const hit = scene.add.rectangle(x, 5, JOB_HUB_VF06.cardWidth, JOB_HUB_VF06.cardHeight, 0xffffff, 0.001)
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({ useHandCursor: true })
+      .setName(`job-hub-card-hit-${index}`);
     cardHits.push(hit);
 
     root.add([
