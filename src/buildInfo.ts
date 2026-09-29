@@ -3,7 +3,7 @@ const version = '0.1.70.4.31' as const;
 /** Canonical visible build identity. Keep visible version copy centralized here. */
 export const MEMEME_BUILD = {
   version,
-  phase: 'RC UI DENSITY POLISH + VERIFIED AUTHORITY',
+  phase: 'RELEASE CANDIDATE • RC UI DENSITY POLISH + VERIFIED AUTHORITY',
   lobbyHeader: `MMM • ${version}`,
   lobbySubtitle: 'Chọn cách chơi',
   setupHeader: `TẠO NGƯỜI CHƠI • ${version}`,
