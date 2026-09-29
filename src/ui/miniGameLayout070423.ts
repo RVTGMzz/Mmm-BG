@@ -41,9 +41,9 @@ export function miniGameDuelFits070423(
  */
 export const MINI_GAME_CHOICE_LAYOUT_070431 = Object.freeze({
   stageOffsetY: 22,
-  promptY: -118,
-  hintY: -72,
-  cardCenterY: 76,
+  promptY: -105,
+  hintY: -62,
+  cardCenterY: 80,
   cardWidth: 178,
   cardHeight: 166,
   twoChoiceSpacing: 242,
