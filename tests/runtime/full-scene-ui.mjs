@@ -17,7 +17,10 @@ const names = {
   card: 'card-scroll-text-070429',
   news: 'news-scroll-text-070429',
   job: 'job-scroll-text-070429',
+  jobwait: 'job-scroll-text-070429',
+  jobdetail: 'job-detail-salary-levels-070432',
   ranking: 'vf07-minigame-ranking-rows',
+  majority: 'vf07-majority-result-copy',
   passive: 'character-passive-body-ch05',
 };
 
@@ -64,8 +67,25 @@ try {
     if (surface === 'ranking') {
       assert.ok(result.body.fontSize >= 24, `ranking: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /🥇|Hạng 1/u);
-    } else if (surface === 'job') {
-      assert.ok(result.body.fontSize >= 23, `job: font shrank to ${result.body.fontSize}`);
+    } else if (surface === 'job' || surface === 'jobwait') {
+      assert.ok(result.body.fontSize >= 23, `${surface}: font shrank to ${result.body.fontSize}`);
+      if (surface === 'jobwait') {
+        const waitVisual = await page.evaluate(() => ({
+          die: window.fullSceneUi?.inspect('job-result-die-chip-070432'),
+          icon: window.fullSceneUi?.inspect('job-result-impact-icon-070432'),
+        }));
+        assert.equal(waitVisual.die?.visible, false, 'jobwait: stale header chip should be hidden');
+        assert.equal(waitVisual.icon?.text, '🎲', 'jobwait: body icon must be dice only');
+      }
+    } else if (surface === 'jobdetail') {
+      assert.ok(result.body.fontSize >= 18, `jobdetail: salary font shrank to ${result.body.fontSize}`);
+      assert.doesNotMatch(result.body.text, /LƯƠNG \/ VÒNG/u);
+      assert.match(result.body.text, /Lv1 .* B\$.*Lv2 .* B\$.*Lv3 .* B\$/u);
+      const label = await page.evaluate(() => window.fullSceneUi?.inspect('job-detail-salary-label-070432'));
+      assert.equal(label?.text, 'LƯƠNG / VÒNG');
+    } else if (surface === 'majority') {
+      assert.ok(result.body.fontSize >= 18, `majority: font shrank to ${result.body.fontSize}`);
+      assert.match(result.body.text, /KHÔNG CÓ PHE THIỂU SỐ|BỊ LOẠI/u);
     } else if (surface === 'passive') {
       assert.ok(result.body.fontSize >= 14, `passive: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /Tỷ lệ 40%/u);
@@ -75,10 +95,10 @@ try {
     }
 
     await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-1280x800.png` });
-    if (surface === 'passive') {
+    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority') {
       await page.setViewportSize({ width: 960, height: 540 });
       await page.waitForTimeout(250);
-      await page.screenshot({ path: 'runtime-ui-evidence/full-scene-passive-960x540.png' });
+      await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-960x540.png` });
     }
     assert.deepEqual(errors, [], surface);
     await page.close();
