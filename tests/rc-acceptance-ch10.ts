@@ -20,7 +20,7 @@ const matrix:{gate:string;pass:boolean}[]=[];
 const gate=(name:string,condition:unknown)=>{const pass=Boolean(condition); matrix.push({gate:name,pass}); assert(pass,name);};
 
 // Identity / release packaging.
-gate('RC build identity',/^0\.1\.70\.4\.30$/.test(MEMEME_BUILD.version)&&/RELEASE CANDIDATE/.test(MEMEME_BUILD.phase));
+gate('RC build identity',/^0\.1\.70\.4\.31$/.test(MEMEME_BUILD.version)&&/RELEASE CANDIDATE/.test(MEMEME_BUILD.phase));
 gate('MMM visible branding',MEMEME_BUILD.lobbyHeader.startsWith('MMM •')&&!MEMEME_BUILD.boardHeader.includes('MeMeMe'));
 gate('single public tester launcher',/Unexpected tester launcher set/.test(packageVerifier)&&/START_PLAYTEST\.bat/.test(packageVerifier));
 gate('audio checksum guard',/bgmTracks/.test(packageVerifier)&&/eventSfx/.test(packageVerifier)&&/checksum mismatch/i.test(packageVerifier));
