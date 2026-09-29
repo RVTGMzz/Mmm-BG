@@ -50,7 +50,7 @@ export const MINI_GAME_CHOICE_LAYOUT_070431 = Object.freeze({
   multiChoiceSpacing: 212,
   iconOffsetY: -33,
   labelOffsetY: 39,
-  privacyY: 208,
+  privacyY: 210,
   privacyWidth: 690,
   privacyHeight: 44,
 } as const);
