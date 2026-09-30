@@ -7,6 +7,7 @@ import { MEMEME_ONLINE_BASE_URL } from '../core/onlineTransport0702';
 import {
   createOnlineRoom0703,
   joinOnlineRoom0703,
+  probeOnlineService0705,
 } from '../core/onlineLobby0703';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 
@@ -32,6 +33,8 @@ export class LocalLobbyScene extends Phaser.Scene {
     const root = document.createElement('div');
     root.className = 'mememe-lobby mememe-lobby-069';
     const initialRoom = generateRoomCode();
+    const inviteRoom = normalizeRoomCode(new URLSearchParams(window.location.search).get('room') ?? '');
+    const savedOnline = browserSession.peekOnlineResume0705();
     const broadcastReady = typeof BroadcastChannel !== 'undefined';
     root.innerHTML = `
       <header class="lobby-head-069">
@@ -52,14 +55,16 @@ export class LocalLobbyScene extends Phaser.Scene {
         </section>
         <section class="lobby-card join-card online-card">
           <div class="lobby-icon">🌐</div><h2>ONLINE</h2><p>Khác máy • qua Internet</p>
+          <div class="online-service-row"><span id="online-service-state">🟡 ĐANG KIỂM TRA SERVER</span><button id="online-service-retry" type="button" aria-label="Kiểm tra lại server">↻</button></div>
           <label>TÊN CỦA BẠN<input id="online-name" maxlength="18" value="Player" /></label>
-          <label>MÃ PHÒNG<input id="online-room" maxlength="8" placeholder="Tự đặt 4–8 ký tự • để trống = ngẫu nhiên" /></label>
+          <label>MÃ PHÒNG<input id="online-room" maxlength="8" value="${inviteRoom}" placeholder="Tự đặt 4–8 ký tự • để trống = ngẫu nhiên" /></label>
           <div class="online-host-options">
             <label><input id="online-camera" type="checkbox" /> 📷 Cho phép Camera Call</label>
             <label><input id="online-voice" type="checkbox" /> 🎤 Cho phép Voice Chat</label>
             <label><input id="online-cpu" type="checkbox" checked /> 🤖 Tự lấp ghế trống bằng CPU</label>
           </div>
           <div class="lobby-actions"><button id="lobby-online-host" type="button">TẠO ONLINE</button><button id="lobby-online-join" type="button">VÀO</button></div>
+          <button id="lobby-online-resume" class="online-resume-button" type="button"${savedOnline ? '' : ' hidden'}>${savedOnline ? `↩ TIẾP TỤC PHÒNG ${savedOnline.roomCode}` : '↩ TIẾP TỤC PHÒNG'}</button>
         </section>
       </div>
       <p id="lobby-status" class="lobby-status">${broadcastReady ? '' : '⚠️ Local 2-tab không khả dụng trên trình duyệt này.'}</p>`;
@@ -72,6 +77,8 @@ export class LocalLobbyScene extends Phaser.Scene {
       { selector: '#lobby-local-join', variant: 'secondary', size: 'md' },
       { selector: '#lobby-online-host', variant: 'primary', size: 'md' },
       { selector: '#lobby-online-join', variant: 'secondary', size: 'md' },
+      { selector: '#lobby-online-resume', variant: 'success', size: 'sm' },
+      { selector: '#online-service-retry', variant: 'subtle', size: 'sm' },
     ]);
     const status = node.querySelector<HTMLParagraphElement>('#lobby-status');
     const setStatus = (message: string, error = false) => {
@@ -82,6 +89,58 @@ export class LocalLobbyScene extends Phaser.Scene {
     const onlineRoomInput = node.querySelector<HTMLInputElement>('#online-room');
     onlineRoomInput?.addEventListener('input', () => {
       onlineRoomInput.value = normalizeRoomCode(onlineRoomInput.value);
+    });
+
+    const onlineServiceState = node.querySelector<HTMLElement>('#online-service-state');
+    let onlineServiceReady = false;
+    let onlineProbe: Promise<boolean> | undefined;
+    const checkOnlineService = async (force = false): Promise<boolean> => {
+      if (onlineServiceReady && !force) return true;
+      if (onlineProbe && !force) return onlineProbe;
+      if (onlineServiceState) {
+        onlineServiceState.textContent = '🟡 ĐANG KIỂM TRA SERVER';
+        onlineServiceState.className = '';
+      }
+      onlineProbe = probeOnlineService0705()
+        .then(() => {
+          onlineServiceReady = true;
+          if (onlineServiceState) {
+            onlineServiceState.textContent = '🟢 SERVER SẴN SÀNG';
+            onlineServiceState.className = 'ready';
+          }
+          if (inviteRoom) setStatus(`🔗 Link mời đã điền phòng ${inviteRoom}. Nhập tên rồi bấm VÀO.`);
+          return true;
+        })
+        .catch((error) => {
+          onlineServiceReady = false;
+          if (onlineServiceState) {
+            onlineServiceState.textContent = '🔴 SERVER CHƯA KẾT NỐI';
+            onlineServiceState.className = 'error';
+          }
+          setStatus(error instanceof Error ? error.message : 'Không kết nối được server online.', true);
+          return false;
+        })
+        .finally(() => { onlineProbe = undefined; });
+      return onlineProbe;
+    };
+    void checkOnlineService();
+
+    node.querySelector<HTMLButtonElement>('#online-service-retry')?.addEventListener('click', () => {
+      void checkOnlineService(true);
+    });
+
+    node.querySelector<HTMLButtonElement>('#lobby-online-resume')?.addEventListener('click', async () => {
+      sfxController.play('ui_confirm');
+      const restored = browserSession.restoreOnlineResume0705();
+      if (!restored) {
+        const button = node.querySelector<HTMLButtonElement>('#lobby-online-resume');
+        if (button) button.hidden = true;
+        return setStatus('Phiên online cũ không còn thông tin reconnect.', true);
+      }
+      setStatus(`↩ Đang nối lại phòng ${restored.roomCode}...`);
+      if (!await checkOnlineService()) return;
+      this.registry.set(PRESERVE_SETUP_REGISTRY_KEY, false);
+      this.scene.start('OnlineRoomLobbyScene');
     });
 
     const consumePreserveSetup = () => {
@@ -127,6 +186,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       if (button) button.disabled = true;
       setStatus('🌐 Đang tạo phòng online...');
       try {
+        if (!await checkOnlineService()) return;
         const hostName = node.querySelector<HTMLInputElement>('#online-name')?.value ?? 'Host';
         const requestedRoomCode = normalizeRoomCode(node.querySelector<HTMLInputElement>('#online-room')?.value ?? '');
         if (requestedRoomCode && requestedRoomCode.length < 4) {
@@ -159,6 +219,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       if (button) button.disabled = true;
       setStatus(`🌐 Đang vào phòng ${room}...`);
       try {
+        if (!await checkOnlineService()) return;
         const joined = await joinOnlineRoom0703(room, displayName);
         browserSession.configureOnlineClient(
           joined.roomCode,
