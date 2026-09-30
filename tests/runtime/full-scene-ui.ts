@@ -167,7 +167,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const currentStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
           if (currentStage?.getByName('vf07-minigame-result-body')) sawRules = true;
           const flow = currentStage?.getByName('vf07-round-flow-result-copy-ch142') as Phaser.GameObjects.Text | null;
-          if (!flow) return;
+          if (!flow || flow.alpha < 0.95) return;
           (window as any).cpuRulesState = { sawRules, result: flow.text };
           this.time.timeScale = 0;
           this.tweens.timeScale = 0;
