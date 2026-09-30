@@ -9,7 +9,7 @@ const setup=readFileSync('src/scenes/SetupScene.ts','utf8');
 const workflow=readFileSync('.github/workflows/ci.yml','utf8');
 const splash=readFileSync('src/scenes/SplashScene069.ts','utf8');
 
-assert.match(MEMEME_BUILD.version,/^0\\.1\\.70\\.4\\.\\d+$/);
+assert.match(MEMEME_BUILD.version,/^0\.1\.70\.4\.\d+$/);
 assert.equal(MEMEME_BUILD.lobbyHeader,`MMM • ${MEMEME_BUILD.version}`);
 assert.match(MEMEME_BUILD.phase,/RELEASE CANDIDATE/);
 assert.doesNotMatch(MEMEME_BUILD.lobbyHeader,/MeMeMe/);
