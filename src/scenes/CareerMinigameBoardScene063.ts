@@ -98,6 +98,10 @@ export class CareerMinigameBoardScene063 extends CareerMinigameBoardScene062 {
     factor: number,
   ): void {
     if (!root) return;
+    // CH-14.1 canonical Card/News own their final geometry. The historical
+    // 0.1.63 cinematic inflation would otherwise move -123px to -140.22px and
+    // push the shared header kicker back into the top stroke.
+    if (root.name === 'card-presentation-card' || root.name === 'news-presentation-card') return;
     for (const child of root.list) {
       const transform = child as Phaser.GameObjects.GameObject & {
         x?: number;
