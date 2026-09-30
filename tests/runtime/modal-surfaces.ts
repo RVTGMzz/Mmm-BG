@@ -28,7 +28,6 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
     if(mode==='choice' || mode==='doors' || mode==='buoys') {
       this.time.timeScale=20;
       this.tweens.timeScale=20;
-      let advancedRulesCh142=false;
       const run=startMiniGameOverlay(
         this,
         gameSession.players as any,
@@ -43,9 +42,8 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
         const root=run.root;
         const stage=root?.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
         const continueControl=stage?.getByName('vf07-minigame-rules-continue-ch142') as Phaser.GameObjects.Text;
-        if(continueControl && !advancedRulesCh142) {
-          advancedRulesCh142=true;
-          continueControl.emit('pointerdown');
+        if(continueControl) {
+          (window as any).rulesReadyToAdvance=true;
           return;
         }
         const expectedChoices = mode === 'doors' || mode === 'buoys' ? 3 : 2;

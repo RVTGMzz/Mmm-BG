@@ -49,6 +49,10 @@ try {
     const page=await browser.newPage({viewport:{width:1280,height:800}});
     const errors=[]; page.on('pageerror',e=>errors.push(String(e)));
     await page.goto(`http://127.0.0.1:5173/tests/runtime/modal-surfaces.html?surface=${surface}`);
+    if(surface==='choice' || surface==='doors' || surface==='buoys') {
+      await page.waitForFunction(()=>window.rulesReadyToAdvance===true, {timeout:30000});
+      await page.keyboard.press('Enter');
+    }
     await page.waitForFunction(()=>window.surfaceReady, {timeout:30000});
     await page.waitForTimeout(500);
     await page.screenshot({path:`runtime-ui-evidence/surface-${surface}-1280x800.png`});
