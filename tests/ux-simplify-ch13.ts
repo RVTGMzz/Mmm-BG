@@ -28,7 +28,7 @@ assert.match(mini,/const showRulesIntro = async/);
 assert.match(mini,/subtitle\.setVisible\(false\)/);
 assert.match(mini,/stake\.setVisible\(false\)/);
 assert.match(mini,/headerSticker\.setVisible\(false\)/);
-assert.match(mini,/await showRulesIntro\(baseType\)/);
+assert.match(mini,/await showRulesIntro\(baseType, activeIds\)/);
 assert.match(mini,/Không tính thời gian chọn\./);
 assert.match(mini,/rankSimultaneousThreeDoorLosers/);
 assert.match(mini,/await runRpsFinal\(\[champion, challenger\]/);
