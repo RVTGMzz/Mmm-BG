@@ -27,7 +27,8 @@ const profile = readFileSync('src/core/characterReactionProfilesCh04.ts', 'utf8'
 assert.match(overlay, /const winnerVoice = winner/);
 assert.match(overlay, /characterWinnerVoiceCh04d\(winner\.id, winner\.name, winnerReward, eventSeq\)/);
 assert.match(overlay, /winnerVoiceText/);
-assert.match(overlay, /const podiumPaper = scene\.add\.rectangle\(0, 12, 780, 380/);
+assert.match(overlay, /const podiumPaper = roundedSurfaceCh141\(/);
+assert.match(overlay, /vf07-minigame-podium-paper-ch141/);
 assert.match(overlay, /vf07-minigame-ranking-scroll/);
 assert.match(overlay, /submitSystemIntent\('resolve_minigame'/);
 assert.doesNotMatch(profile, /Math\.random\s*\(/);
