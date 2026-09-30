@@ -1232,7 +1232,7 @@ export function startMiniGameOverlay(
           [
             lockedCopy,
             eliminatedCopy,
-            `🔁 ${tieCopy}\nĐổ lại tranh ${result.slotsOpen} ghế.`,
+            `🔁 ${tieCopy}\nĐổ lại để tranh ${result.slotsOpen} ghế.`,
           ].filter(Boolean).join('\n\n'),
         );
 
