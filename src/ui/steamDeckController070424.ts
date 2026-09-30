@@ -91,7 +91,7 @@ function candidates070424(root: Phaser.GameObjects.Container): Focusable070424[]
 function modalRoot070424(scene: Phaser.Scene): Phaser.GameObjects.Container | undefined {
   const named = new Set([
     'branch-picker-modal', 'card-hand-picker-modal', 'target-picker-modal',
-    'tactical-choice-modal',
+    'tactical-choice-modal', 'match-recap-ch14',
   ]);
   return scene.children.list
     .filter((o): o is Phaser.GameObjects.Container =>
@@ -343,7 +343,7 @@ export function installSteamDeckController070424(game: Phaser.Game): () => void 
     if (action === 'back') {
       // Only cancel-capable dialogs may be dismissed. Branch/target choices
       // must not fabricate a gameplay decision just to satisfy the B button.
-      if (root.name === 'card-hand-picker-modal' || root.name === 'tactical-choice-modal') {
+      if (root.name === 'card-hand-picker-modal' || root.name === 'tactical-choice-modal' || root.name === 'match-recap-ch14') {
         const cancel = root.list.filter((item): item is Focusable070424 =>
           Boolean(item.input?.enabled) && item.listenerCount('pointerdown') > 0).at(-1);
         cancel?.emit('pointerdown');

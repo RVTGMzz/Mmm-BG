@@ -13,6 +13,7 @@ import { podiumWinnerVoiceCh04e } from '../ui/characterPodiumVoiceCh04e';
 import { reactionPlacement070422 } from '../ui/presentationLanes070422';
 import { isDetachedCinematicCopy070423 } from '../ui/presentationTextOwnership070423';
 import { createScrollableTextViewport070429 } from '../ui/scrollableTextViewport070429';
+import { showMatchRecapCh14, type MatchRecapOverlayCh14 } from '../ui/matchRecapOverlayCh14';
 import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04';
 import { NEWS_SHEET_VF05, paintVisualFoundationNewsVf05 } from '../ui/visualFoundationNewsVf05';
 import { paintVisualFoundationCardVf051 } from '../ui/visualFoundationCardVf051';
@@ -54,6 +55,13 @@ type Presentation07044 = {
   finishCurrent(animate?: boolean): void;
 };
 
+type MatchRecapInternalsCh14 = {
+  match: MatchState;
+  shell: { status: 'waiting' | 'active' | 'ended' };
+  shellOverlay: Phaser.GameObjects.GameObject[];
+  renderShellOverlay(): void;
+};
+
 type Runtime07044 = {
   match: MatchState;
   hud: Map<number, Hud07044>;
@@ -93,6 +101,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
   private compactLandscape07044 = false;
   private readonly hiddenDetachedCinematicText070417 = new Map<Phaser.GameObjects.Text, boolean>();
   private readonly hiddenFinalModalText070421 = new Map<Phaser.GameObjects.Text, boolean>();
+  private matchRecapCh14?: MatchRecapOverlayCh14;
   private lapShuffleVisualRoot071?: Phaser.GameObjects.Container;
   private lapShuffleVisualSignature071 = '';
   private readonly originalMutableTileVisuals071 = new Map<number, {
@@ -125,6 +134,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     this.refreshBuildLabels07044();
     if (this.compactLandscape07044) this.applyMobileLandscapeUi07044();
     this.syncFoundationHudSafeAreaVf04();
+    this.installMatchRecapCh14();
   }
 
   update(): void {
@@ -1182,4 +1192,44 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       }
     }
   }
+
+  private installMatchRecapCh14(): void {
+    const internals = this as unknown as MatchRecapInternalsCh14;
+    const originalRenderShellOverlay = internals.renderShellOverlay.bind(this);
+
+    internals.renderShellOverlay = () => {
+      if (internals.shell.status !== 'ended') this.closeMatchRecapCh14();
+      originalRenderShellOverlay();
+      if (internals.shell.status !== 'ended' || internals.shellOverlay.length === 0) return;
+
+      const trigger = this.add.text(640, 530, '✨ XEM TỔNG KẾT', {
+        fontFamily: JOB_UI_FONT_070421,
+        fontSize: '16px',
+        fontStyle: 'bold',
+        color: '#2f2925',
+        backgroundColor: '#ffd86b',
+        padding: { x: 18, y: 11 },
+      }).setOrigin(0.5).setDepth(706).setInteractive({ useHandCursor: true })
+        .setName('match-recap-trigger-ch14');
+      trigger.on('pointerover', () => trigger.setScale(1.04));
+      trigger.on('pointerout', () => trigger.setScale(1));
+      trigger.on('pointerdown', () => {
+        if (this.matchRecapCh14?.root.active) return;
+        this.matchRecapCh14 = showMatchRecapCh14(this, internals.match, () => {
+          this.matchRecapCh14 = undefined;
+        });
+      });
+      internals.shellOverlay.push(trigger);
+    };
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.closeMatchRecapCh14());
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.closeMatchRecapCh14());
+  }
+
+  private closeMatchRecapCh14(): void {
+    const recap = this.matchRecapCh14;
+    this.matchRecapCh14 = undefined;
+    if (recap?.root.active) recap.destroy();
+  }
+
 }
