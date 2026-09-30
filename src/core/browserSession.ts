@@ -28,6 +28,8 @@ function normalizeCpuSeatIds(seatIds: number[]): number[] {
     .sort((a, b) => a - b);
 }
 
+const ONLINE_RESUME_KEY_0705 = 'mememe-online-resume-0705';
+
 function normalizeOnlineBaseUrl(value: string): string {
   return value.trim().replace(/\/+$/, '');
 }
@@ -77,6 +79,62 @@ class BrowserSessionState {
     return this.config.mode !== 'solo' && this.config.transport === 'online';
   }
 
+  private persistOnlineResume0705(): void {
+    if (!this.isOnline) return;
+    try {
+      sessionStorage.setItem(ONLINE_RESUME_KEY_0705, JSON.stringify({
+        ...this.config,
+        cpuSeatIds: [...this.config.cpuSeatIds],
+        savedAt: Date.now(),
+      }));
+    } catch {}
+  }
+
+  peekOnlineResume0705(): BrowserSessionConfig | undefined {
+    try {
+      const raw = sessionStorage.getItem(ONLINE_RESUME_KEY_0705);
+      if (!raw) return undefined;
+      const parsed = JSON.parse(raw) as Partial<BrowserSessionConfig> & { savedAt?: number };
+      const roomCode = normalizeRoomCode(String(parsed.roomCode ?? ''));
+      const onlineBaseUrl = normalizeOnlineBaseUrl(String(parsed.onlineBaseUrl ?? ''));
+      const mode = parsed.mode === 'host' ? 'host' : parsed.mode === 'client' ? 'client' : undefined;
+      if (!mode || parsed.transport !== 'online' || !roomCode || !onlineBaseUrl) return undefined;
+      const seatId = mode === 'host' ? 0 : Number(parsed.seatId);
+      if (mode === 'client') validateRemoteSeat(seatId);
+      const hostToken = String(parsed.hostToken ?? '').trim();
+      const reconnectToken = String(parsed.reconnectToken ?? '').trim();
+      const clientId = String(parsed.clientId ?? (mode === 'host' ? 'host' : '')).trim();
+      if (mode === 'host' && !hostToken) return undefined;
+      if (mode === 'client' && (!clientId || !reconnectToken)) return undefined;
+      return {
+        mode,
+        transport: 'online',
+        roomCode,
+        clientId: mode === 'host' ? 'host' : clientId,
+        seatId,
+        cpuSeatIds: normalizeCpuSeatIds(Array.isArray(parsed.cpuSeatIds) ? parsed.cpuSeatIds : []),
+        onlineBaseUrl,
+        hostToken,
+        reconnectToken,
+        cameraAllowed: parsed.cameraAllowed === true,
+        voiceAllowed: parsed.voiceAllowed === true,
+      };
+    } catch {
+      return undefined;
+    }
+  }
+
+  restoreOnlineResume0705(): BrowserSessionConfig | undefined {
+    const saved = this.peekOnlineResume0705();
+    if (!saved) return undefined;
+    this.config = { ...saved, cpuSeatIds: [...saved.cpuSeatIds] };
+    return this.current;
+  }
+
+  clearOnlineResume0705(): void {
+    try { sessionStorage.removeItem(ONLINE_RESUME_KEY_0705); } catch {}
+  }
+
   get channelName(): string {
     if (!this.config.roomCode) return 'mememe-local-solo';
     return `mememe-local-${this.config.roomCode}`;
@@ -88,11 +146,13 @@ class BrowserSessionState {
 
   setCpuSeatIds(seatIds: number[]): BrowserSessionConfig {
     this.config = { ...this.config, cpuSeatIds: normalizeCpuSeatIds(seatIds) };
+    this.persistOnlineResume0705();
     return this.current;
   }
 
   setOnlineMediaPolicy(cameraAllowed: boolean, voiceAllowed: boolean): BrowserSessionConfig {
     this.config = { ...this.config, cameraAllowed: Boolean(cameraAllowed), voiceAllowed: Boolean(voiceAllowed) };
+    this.persistOnlineResume0705();
     return this.current;
   }
 
@@ -172,6 +232,7 @@ class BrowserSessionState {
       cameraAllowed: false,
       voiceAllowed: false,
     };
+    this.persistOnlineResume0705();
     return this.current;
   }
 
@@ -201,6 +262,7 @@ class BrowserSessionState {
       cameraAllowed: false,
       voiceAllowed: false,
     };
+    this.persistOnlineResume0705();
     return this.current;
   }
 }
