@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const mini=readFileSync('src/ui/MiniGameOverlay.ts','utf8');
+const job=readFileSync('src/ui/JobChoicePicker.ts','utf8');
+const model=readFileSync('src/ui/presentationModel.ts','utf8');
+
+assert.doesNotMatch(job,/Đổ xúc xắc để chọn nghề/);
+assert.match(mini,/participantIds\.some\(\(id\) => !browserSession\.isCpuSeat\(id\)\)/);
+assert.match(mini,/if \(!hasHumanParticipant\) return/);
+assert.match(mini,/vf07-minigame-rules-continue-ch142/);
+assert.match(mini,/manualAdvance/);
+assert.match(mini,/showRoundFlowCh142/);
+assert.match(mini,/vf07-round-flow-result-copy-ch142/);
+for(const marker of ['BA CỬA','PHAO ĐƠN','CẮT TOP','CHẶNG']) assert.ok(mini.includes(marker));
+assert.match(model,/passive chance\/roll are hidden gameplay stats/);
+const passiveBlock=model.slice(model.indexOf("if (event.type === 'character_passive')"),model.indexOf("if (event.type === 'board_shuffle')"));
+assert.doesNotMatch(passiveBlock,/\[description, summary\]/);
+assert.match(passiveBlock,/description,\n\s+summary: ''/);
+assert.doesNotMatch(mini,/Math\.random\s*\(/);
+console.log('[minigame-flow-ch142] PASS human rules gate + CPU skip + hidden passive stats + horizontal Mini Game round flow');

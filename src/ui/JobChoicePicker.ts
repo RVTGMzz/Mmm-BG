@@ -97,23 +97,9 @@ export function createJobRollPicker(
     fontStyle: 'bold',
     color: '#6c5146',
   }).setOrigin(1, 0.5);
-  const subtitlePlate = scene.add.graphics();
-  subtitlePlate.fillStyle(JOB_HUB_VF06.creamHighlight, 0.98);
-  subtitlePlate.fillRoundedRect(-184, -174, 368, 42, 18);
-  subtitlePlate.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.3);
-  subtitlePlate.strokeRoundedRect(-184, -174, 368, 42, 18);
-
-  const subtitle = scene.add.text(0, -153, 'Đổ xúc xắc để chọn nghề', {
-    fontFamily: JOB_FONT_070421,
-    fontSize: '19px',
-    fontStyle: 'bold',
-    color: '#574239',
-  }).setOrigin(0.5);
-
   shell.setName('job-hub-shell');
   title.setName('job-hub-title');
-  subtitle.setName('job-hub-subtitle');
-  root.add([backdrop, shell, headerBand, title, player, subtitlePlate, subtitle]);
+  root.add([backdrop, shell, headerBand, title, player]);
 
   const cardHits: Phaser.GameObjects.Rectangle[] = [];
   let detailRoot: Phaser.GameObjects.Container | undefined;

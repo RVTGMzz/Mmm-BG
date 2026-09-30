@@ -23,6 +23,7 @@ const names = {
   majority: 'vf07-majority-result-copy',
   rules: 'vf07-minigame-result-body',
   rulesplay: 'vf07-minigame-choice-prompt',
+  rulescpu: 'vf07-round-flow-result-copy-ch142',
   passive: 'character-passive-body-ch05',
 };
 
@@ -40,6 +41,13 @@ try {
       page.once('pageerror', rejectOnPageError);
     });
     await page.goto(`http://127.0.0.1:5173/tests/runtime/full-scene-ui.html?surface=${surface}`);
+    if (surface === 'rulesplay') {
+      await Promise.race([
+        page.waitForFunction(() => window.rulesReadyToAdvance === true, { timeout: 45000 }),
+        pageErrorPromise,
+      ]);
+      await page.keyboard.press('Enter');
+    }
     await Promise.race([
       page.waitForFunction(() => window.surfaceReady === true, { timeout: 45000 }),
       pageErrorPromise,
@@ -47,14 +55,6 @@ try {
     if (rejectOnPageError) page.off('pageerror', rejectOnPageError);
     page.on('pageerror', (error) => errors.push(String(error)));
     await page.waitForTimeout(900);
-    if (surface === 'passive') {
-      await page.waitForFunction(
-        (name) => String(window.fullSceneUi?.inspect(name)?.text ?? '').includes('roll 18.42%'),
-        names[surface],
-        { timeout: 5000 },
-      );
-    }
-
     const result = await page.evaluate((name) => {
       const api = window.fullSceneUi;
       return { canonical: api.canonical, body: api.inspect(name) };
@@ -110,6 +110,12 @@ try {
       assert.match(result.body.text, /OẲN TÙ XÌ/u);
       const resultPaper = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-minigame-result-paper-ch141'));
       assert.equal(resultPaper?.type, 'Graphics', 'rules: result paper must use rounded Graphics owner');
+    } else if (surface === 'rulescpu') {
+      const cpuRules = await page.evaluate(() => window.cpuRulesState);
+      assert.equal(cpuRules?.sawRules, false, 'rulescpu: CPU-only Mini Game must skip the rules screen');
+      assert.match(String(cpuRules?.result ?? ''), /CỬA|Đi tiếp|Bị loại|ra lại/i);
+      const flowBox = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-round-flow-result-box-ch142'));
+      assert.equal(flowBox?.type, 'Graphics', 'rulescpu: result must use horizontal rounded flow');
     } else if (surface === 'rulesplay') {
       assert.ok(result.body.fontSize >= 25, `rulesplay: prompt font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /CHỌN KÍN/u);
@@ -122,14 +128,13 @@ try {
       assert.match(String(transition?.promptText ?? ''), /CHỌN KÍN/u);
     } else if (surface === 'passive') {
       assert.ok(result.body.fontSize >= 14, `passive: font shrank to ${result.body.fontSize}`);
-      assert.match(result.body.text, /Tỷ lệ 40%/u);
-      assert.match(result.body.text, /roll 18\.42%/u);
+      assert.doesNotMatch(result.body.text, /Tỷ lệ|roll|%/iu, 'passive: hidden probability stats leaked into presentation');
     } else {
       assert.ok(result.body.fontSize >= 20, `${surface}: font shrank to ${result.body.fontSize}`);
     }
 
     await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-1280x800.png` });
-    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'rulesplay' || surface === 'card' || surface === 'news') {
+    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'rulesplay' || surface === 'rulescpu' || surface === 'card' || surface === 'news') {
       await page.setViewportSize({ width: 960, height: 540 });
       await page.waitForTimeout(250);
       await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-960x540.png` });

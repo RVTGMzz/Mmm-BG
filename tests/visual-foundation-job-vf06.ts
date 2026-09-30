@@ -29,7 +29,7 @@ assert.match(picker, /fontSize: '54px'/);
 assert.match(picker, /Lv1 \$\{jobSalary\(job, 1\)\}/);
 assert.doesNotMatch(picker, /\$\{job\.icon\}  \$\{job\.title\}/, 'detail title must not repeat the small icon beside the name');
 assert.match(picker, /const detailIcon = scene\.add\.text/);
-assert.match(picker, /Đổ xúc xắc để chọn nghề/);
+assert.doesNotMatch(picker, /Đổ xúc xắc để chọn nghề/);
 assert.match(picker, /XEM CHI TIẾT/);
 assert.match(picker, /let focused: JobHubFocus = canRoll \? 'roll' : 0/);
 assert.match(picker, /if \(focused === 'roll'\) submitRoll\(\)/);

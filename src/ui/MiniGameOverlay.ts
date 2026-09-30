@@ -375,7 +375,7 @@ export function startMiniGameOverlay(
     });
   });
 
-  const showResult = async (heading: string, body: string, ms = 1700) => {
+  const showResult = async (heading: string, body: string, ms = 1700, manualAdvance = false) => {
     clearStage();
     const resultPaper = roundedSurfaceCh141(
       scene, 0, 10, 780, 330, MINI_GAME_VISUAL_VF07.resultFill, 1,
@@ -438,6 +438,55 @@ export function startMiniGameOverlay(
       duration: 190,
       ease: 'Sine.easeOut',
     });
+    if (manualAdvance) {
+      scrollHint
+        .setText(bodyViewport.isScrollable
+          ? '↕ CUỘN ĐỂ ĐỌC • ENTER / SPACE / A: TIẾP'
+          : 'ENTER / SPACE / A: TIẾP')
+        .setPadding(12, 8, 12, 8)
+        .setInteractive({ useHandCursor: true })
+        .setName('vf07-minigame-rules-continue-ch142');
+
+      await new Promise<void>((resolve) => {
+        let settled = false;
+        let previousConfirm = false;
+        let padTimer: Phaser.Time.TimerEvent | undefined;
+        const cleanup = () => {
+          scene.input.keyboard?.off('keydown', keyboard);
+          scrollHint.off('pointerdown', commit);
+          padTimer?.remove(false);
+        };
+        const commit = () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          sfxController.play('ui_confirm');
+          resolve();
+        };
+        const keyboard = (event: KeyboardEvent) => {
+          if (event.repeat) return;
+          if (event.key !== 'Enter' && event.key !== ' ' && event.code !== 'Space') return;
+          event.preventDefault();
+          commit();
+        };
+        scrollHint.on('pointerdown', commit);
+        scene.input.keyboard?.on('keydown', keyboard);
+        padTimer = scene.time.addEvent({
+          delay: 70,
+          loop: true,
+          callback: () => {
+            const pads = typeof navigator !== 'undefined' && navigator.getGamepads
+              ? Array.from(navigator.getGamepads()).filter((pad): pad is Gamepad => Boolean(pad))
+              : [];
+            const confirm = Boolean(pads[0]?.buttons[0]?.pressed);
+            if (confirm && !previousConfirm) commit();
+            previousConfirm = confirm;
+          },
+        });
+      });
+      return;
+    }
+
     await wait(bodyViewport.isScrollable ? Math.max(ms, 5200) : ms);
   };
 
@@ -490,12 +539,87 @@ export function startMiniGameOverlay(
     ].join('\n');
   };
 
-  const showRulesIntro = async (baseType: MiniGameBaseRewardType): Promise<void> => {
+  const showRulesIntro = async (
+    baseType: MiniGameBaseRewardType,
+    participantIds: readonly number[],
+  ): Promise<void> => {
+    // CH-14.2: CPU-only tables never stop at a rules card. If at least one
+    // human seat participates, the rules remain until that player confirms.
+    const hasHumanParticipant = participantIds.some((id) => !browserSession.isCpuSeat(id));
+    if (!hasHumanParticipant) return;
     await showResult(
       `📘 LUẬT • ${rewardTitle(baseType)}`,
       rulesCopy(baseType),
-      baseType === 'three_doors' ? 5600 : 4400,
+      0,
+      true,
     );
+  };
+
+  const showRoundFlowCh142 = async (
+    heading: string,
+    leftTitle: string,
+    leftRows: readonly string[],
+    rightTitle: string,
+    rightCopy: string,
+    ms = 2100,
+  ) => {
+    clearStage();
+    const paper = roundedSurfaceCh141(
+      scene, 0, 18, 820, 340, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setName('vf07-round-flow-paper-ch142');
+    const head = scene.add.text(0, -124, heading, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '25px', fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText, align: 'center', fixedWidth: 760,
+    }).setOrigin(0.5).setName('vf07-round-flow-heading-ch142');
+    const stateTitle = scene.add.text(-235, -82, leftTitle, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center', fixedWidth: 320,
+    }).setOrigin(0.5);
+    const resultTitle = scene.add.text(225, -82, rightTitle, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center', fixedWidth: 310,
+    }).setOrigin(0.5);
+
+    const rowObjects = leftRows.slice(0, 4).map((copy, index) => {
+      const y = -43 + index * 52;
+      const chip = roundedSurfaceCh141(
+        scene, -235, y, 320, 43,
+        index % 2 === 0 ? 0xfff0bd : 0xd9f3f2, 1,
+        MINI_GAME_VISUAL_VF07.chipRadius, 2.5, MINI_GAME_VISUAL_VF07.shellStroke, 0.58,
+      );
+      const label = scene.add.text(-235, y, copy, {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '16px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
+        fixedWidth: 298, align: 'center',
+      }).setOrigin(0.5);
+      return [chip, label];
+    }).flat();
+
+    const arrow = scene.add.text(0, 35, '➜', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '48px', fontStyle: 'bold', color: '#8d6c58',
+    }).setOrigin(0.5);
+    const resultBox = roundedSurfaceCh141(
+      scene, 225, 38, 310, 210, 0xffedb8, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.48,
+    ).setName('vf07-round-flow-result-box-ch142');
+    const resultText = scene.add.text(225, 38, rightCopy, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '16px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
+      fixedWidth: 276, align: 'center', lineSpacing: 4,
+      wordWrap: { width: 276, useAdvancedWrap: true }, maxLines: 9,
+    }).setOrigin(0.5).setName('vf07-round-flow-result-copy-ch142');
+
+    stage.add([paper, head, stateTitle, resultTitle, ...rowObjects, arrow, resultBox, resultText]);
+    scene.tweens.add({
+      targets: [...rowObjects, arrow, resultBox, resultText],
+      alpha: { from: 0.25, to: 1 }, duration: 190, ease: 'Back.easeOut',
+    });
+    await wait(ms);
   };
 
   const showMajorityFlow = async (
@@ -868,7 +992,7 @@ export function startMiniGameOverlay(
     stake
       .setText(`${rewardTitle(baseType)} • ${miniGameRewardCopy059(slot.contentId, baseType)}`)
       .setVisible(false);
-    await showRulesIntro(baseType);
+    await showRulesIntro(baseType, activeIds);
 
     if (activeIds.length <= 1) {
       const rankingPlayerIds = [...activeIds];
@@ -907,9 +1031,6 @@ export function startMiniGameOverlay(
 
         const roll = threeDoorRoll(eventSeq, round);
         const result = resolveThreeDoorsRound(activeIds, choices, roll);
-        const reveal = activeIds
-          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: CỬA ${threeDoorLabel(choices[id] ?? 'a')}`)
-          .join('\n');
         const door = threeDoorLabel(result.winningDoor);
 
         if (result.tied) {
@@ -917,7 +1038,13 @@ export function startMiniGameOverlay(
             && activeIds.every((id) => choices[id] === result.winningDoor)
             ? 'Tất cả cùng trúng cửa, chưa ai bị loại.'
             : 'Không ai chọn đúng cửa, ra lại!';
-          await showResult(`🎲 ${roll} • CỬA ${door}`, `${reveal}\n\n🤝 ${reason}`);
+          await showRoundFlowCh142(
+            `🎲 VÒNG ${round} • BA CỬA`,
+            'NGƯỜI CHƠI • LỰA CHỌN',
+            activeIds.map((id) => `${playerById(id)?.name ?? `P${id + 1}`}  •  🚪 CỬA ${threeDoorLabel(choices[id] ?? 'a')}`),
+            'KẾT QUẢ',
+            `🎲 ${roll} • CỬA ${door}\n\n🤝 ${reason}`,
+          );
           continue;
         }
 
@@ -929,9 +1056,14 @@ export function startMiniGameOverlay(
         const survivors = activeIds
           .map((id) => playerById(id)?.name ?? `P${id + 1}`)
           .join(', ');
-        await showResult(
-          `🎲 ${roll} • CỬA ${door} TRÚNG!`,
-          `${reveal}\n\n✅ Đi tiếp: ${survivors}\n❌ Bị loại: ${losers}`,
+        await showRoundFlowCh142(
+          `🎲 VÒNG ${round} • BA CỬA`,
+          'NGƯỜI CHƠI • LỰA CHỌN',
+          [...result.survivingPlayerIds, ...eliminatedThisRound].map((id) =>
+            `${playerById(id)?.name ?? `P${id + 1}`}  •  🚪 CỬA ${threeDoorLabel(choices[id] ?? 'a')}`,
+          ),
+          'KẾT QUẢ',
+          `🎲 ${roll} • CỬA ${door} TRÚNG!\n\n✅ Đi tiếp\n${survivors || '—'}\n\n❌ Bị loại\n${losers || '—'}`,
         );
         const rankedLosers = eliminatedThisRound.length > 1
           ? await rankSimultaneousThreeDoorLosers(eliminatedThisRound, round * 100)
@@ -957,9 +1089,6 @@ export function startMiniGameOverlay(
         }
 
         const result = resolveSoloBuoyRound(activeIds, choices);
-        const reveal = activeIds
-          .map((id) => `${playerById(id)?.name ?? `P${id + 1}`}: PHAO ${choices[id] ?? '1'}`)
-          .join('\n');
         const countCopy = `Phao 1: ${result.counts['1']} • Phao 2: ${result.counts['2']} • Phao 3: ${result.counts['3']}`;
 
         if (result.tied) {
@@ -970,7 +1099,13 @@ export function startMiniGameOverlay(
           const reason = everyoneUnique
             ? 'Ai cũng đứng một mình, chưa ai chìm.'
             : 'Không có phao đơn nào nổi, chọn lại!';
-          await showResult('🛟 CHƯA AI RỚT!', `${reveal}\n\n${countCopy}\n🤝 ${reason}`);
+          await showRoundFlowCh142(
+            `🛟 VÒNG ${round} • PHAO ĐƠN`,
+            'NGƯỜI CHƠI • LỰA CHỌN',
+            activeIds.map((id) => `${playerById(id)?.name ?? `P${id + 1}`}  •  🛟 PHAO ${choices[id] ?? '1'}`),
+            'KẾT QUẢ',
+            `${countCopy}\n\n🤝 ${reason}`,
+          );
           continue;
         }
 
@@ -982,9 +1117,14 @@ export function startMiniGameOverlay(
         const losers = result.eliminatedPlayerIds
           .map((id) => playerById(id)?.name ?? `P${id + 1}`)
           .join(', ');
-        await showResult(
-          '🛟 PHAO ĐƠN NỔI!',
-          `${reveal}\n\n${countCopy}\n✅ Nổi: ${survivors}\n❌ Chìm: ${losers}`,
+        await showRoundFlowCh142(
+          `🛟 VÒNG ${round} • PHAO ĐƠN`,
+          'NGƯỜI CHƠI • LỰA CHỌN',
+          [...result.survivorPlayerIds, ...result.eliminatedPlayerIds].map((id) =>
+            `${playerById(id)?.name ?? `P${id + 1}`}  •  🛟 PHAO ${choices[id] ?? '1'}`,
+          ),
+          'KẾT QUẢ',
+          `${countCopy}\n\n✅ Nổi\n${survivors || '—'}\n\n❌ Chìm\n${losers || '—'}`,
         );
       }
     } else if (baseType === 'final_sprint') {
@@ -995,8 +1135,18 @@ export function startMiniGameOverlay(
         round = leg;
         for (const id of activeIds) legRolls[id]!.push(finalSprintRoll(eventSeq, id, leg));
         const standings = activeIds.map((id) => ({ id, total: legRolls[id]!.reduce((sum, roll) => sum + roll, 0) })).sort((a, b) => b.total - a.total);
-        const rows = standings.map(({ id, total }) => `${playerById(id)?.name ?? `P${id + 1}`} • ${legRolls[id]!.map((roll) => `🎲${roll}`).join(' ')} • Tổng ${total}`).join('\n');
-        await showResult(`🏁 CHẶNG ${leg}/3`, rows, leg === 3 ? 1900 : 1350);
+        const sprintRows = standings.map(({ id, total }) =>
+          `${playerById(id)?.name ?? `P${id + 1}`} • ${legRolls[id]!.map((roll) => `🎲${roll}`).join(' ')} • Σ${total}`,
+        );
+        const leader = standings[0];
+        await showRoundFlowCh142(
+          `🏁 CHẶNG ${leg}/3`,
+          'NGƯỜI CHƠI • THÀNH TÍCH',
+          sprintRows,
+          'KẾT QUẢ',
+          leader ? `🏁 ĐANG DẪN\n${playerById(leader.id)?.name ?? `P${leader.id + 1}`}\n\nTỔNG ${leader.total}` : '—',
+          leg === 3 ? 1900 : 1350,
+        );
       }
       const sprint = resolveFinalSprint(activeIds, legRolls, 2);
       const finalists = [...sprint.lockedPlayerIds];
@@ -1014,9 +1164,18 @@ export function startMiniGameOverlay(
           for (const id of overtime) rolls[id] = finalSprintRoll(eventSeq, id, 20 + overtimeRound);
           const cut = resolveCutTopDiceRound(overtime, rolls, slotsOpen);
           finalists.push(...cut.lockedPlayerIds); eliminationOrder.push(...cut.eliminatedPlayerIds);
-          const rollCopy = overtime.map((id) => `${playerById(id)?.name ?? `P${id + 1}`} 🎲 ${rolls[id]}`).join(' • ');
-          if (cut.complete) { await showResult('⚡ HIỆP PHỤ CHỐT TOP', rollCopy); overtime = []; slotsOpen = 0; break; }
-          await showResult('⚡ HÒA RANH TOP • CHẠY TIẾP', `${rollCopy}\n🔁 ${cut.rerollPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')} tranh ${cut.slotsOpen} ghế.`);
+          const overtimeRows = overtime.map((id) => `${playerById(id)?.name ?? `P${id + 1}`} • 🎲 ${rolls[id]}`);
+          if (cut.complete) {
+            await showRoundFlowCh142(
+              '⚡ HIỆP PHỤ CHỐT TOP', 'NGƯỜI CHƠI • D6', overtimeRows, 'KẾT QUẢ',
+              `✅ Chốt ghế: ${cut.lockedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ') || '—'}`,
+            );
+            overtime = []; slotsOpen = 0; break;
+          }
+          await showRoundFlowCh142(
+            '⚡ HÒA RANH TOP • CHẠY TIẾP', 'NGƯỜI CHƠI • D6', overtimeRows, 'KẾT QUẢ',
+            `🔁 ${cut.rerollPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}\n\nTranh ${cut.slotsOpen} ghế còn lại.`,
+          );
           overtime = cut.rerollPlayerIds; slotsOpen = cut.slotsOpen;
         }
         if (overtime.length === slotsOpen && slotsOpen > 0) finalists.push(...overtime);
@@ -1048,10 +1207,14 @@ export function startMiniGameOverlay(
           ? `❌ Rời Top: ${result.eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}`
           : '';
 
+        const cutRows = contenders.map((id) => `${playerById(id)?.name ?? `P${id + 1}`} • 🎲 ${rolls[id]}`);
         if (result.complete) {
-          await showResult(
+          await showRoundFlowCh142(
             `🎲 CẮT TOP • VÒNG ${round}`,
-            [rollCopy, lockedCopy, eliminatedCopy].filter(Boolean).join('\n'),
+            'NGƯỜI CHƠI • D6',
+            cutRows,
+            'KẾT QUẢ',
+            [lockedCopy, eliminatedCopy].filter(Boolean).join('\n\n') || 'ĐÃ CHỐT TOP',
           );
           contenders = [];
           slotsOpen = 0;
@@ -1061,14 +1224,16 @@ export function startMiniGameOverlay(
         const tieCopy = result.rerollPlayerIds
           .map((id) => playerById(id)?.name ?? `P${id + 1}`)
           .join(', ');
-        await showResult(
+        await showRoundFlowCh142(
           '🎲 HÒA Ở RANH TOP • ĐỔ LẠI',
+          'NGƯỜI CHƠI • D6',
+          cutRows,
+          'KẾT QUẢ',
           [
-            rollCopy,
             lockedCopy,
             eliminatedCopy,
-            `🔁 ${tieCopy} đổ lại để tranh ${result.slotsOpen} ghế còn lại.`,
-          ].filter(Boolean).join('\n'),
+            `🔁 ${tieCopy}\nĐổ lại tranh ${result.slotsOpen} ghế.`,
+          ].filter(Boolean).join('\n\n'),
         );
 
         contenders = result.rerollPlayerIds;

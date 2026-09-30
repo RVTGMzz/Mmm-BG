@@ -444,7 +444,9 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       title: title || 'NỘI TẠI KÍCH HOẠT',
       rarity: '',
       impact: impact || '✨',
-      description: [description, summary].filter(Boolean).join('\n'),
+      // CH-14.2: passive chance/roll are hidden gameplay stats. Keep them in the
+      // authoritative event for replay/debug, but never expose event.summary here.
+      description,
       summary: '',
       reactions: [],
       holdMs: 1500,

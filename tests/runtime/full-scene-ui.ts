@@ -9,9 +9,9 @@ import type { JobDefinition } from '../../src/core/jobs';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
 browserSession.configureSolo(
-  mode === 'ranking' || mode === 'majority' || mode === 'rules'
+  mode === 'ranking' || mode === 'majority' || mode === 'rulescpu'
     ? [0, 1, 2, 3]
-    : mode === 'rulesplay'
+    : mode === 'rules' || mode === 'rulesplay'
       ? [1, 2, 3]
       : [],
 );
@@ -33,12 +33,12 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
   create(): void {
     // Freeze ranking-mode timers during inherited create so an all-CPU browser
     // fixture cannot start an unrelated board turn before we install the no-op.
-    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay') this.time.timeScale = 0;
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay' || mode === 'rulescpu') this.time.timeScale = 0;
     super.create();
 
     const scene = this;
     const runtime = this as any;
-    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay') {
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay' || mode === 'rulescpu') {
       runtime.queueCpuActionIfNeeded = () => undefined;
       this.time.timeScale = 1;
     }
@@ -127,7 +127,14 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         this.time.timeScale = 8;
         this.tweens.timeScale = 8;
         const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8714, 'MINIGAME_SLOT_02');
+        let rulesSeen = false;
         this.events.on('postupdate', () => {
+          const currentStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
+          const rulesBody = currentStage?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
+          if (rulesBody?.text.includes('Không tính thời gian chọn.') && !rulesSeen) {
+            rulesSeen = true;
+            (window as any).rulesReadyToAdvance = true;
+          }
           const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
           const prompt = stage?.getByName('vf07-minigame-choice-prompt') as Phaser.GameObjects.Text | null;
           const choiceBoxes = stage?.list.filter((entry: Phaser.GameObjects.GameObject) =>
@@ -143,6 +150,24 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
             staleRules: Boolean(staleRules),
             subtitleVisible: Boolean(subtitle?.visible),
           };
+          this.time.timeScale = 0;
+          this.tweens.timeScale = 0;
+          (window as any).surfaceReady = true;
+        });
+        return;
+      }
+
+      if (mode === 'rulescpu') {
+        this.time.timeScale = 8;
+        this.tweens.timeScale = 8;
+        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8715, 'MINIGAME_SLOT_02');
+        let sawRules = false;
+        this.events.on('postupdate', () => {
+          const currentStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
+          if (currentStage?.getByName('vf07-minigame-result-body')) sawRules = true;
+          const flow = currentStage?.getByName('vf07-round-flow-result-copy-ch142') as Phaser.GameObjects.Text | null;
+          if (!flow) return;
+          (window as any).cpuRulesState = { sawRules, result: flow.text };
           this.time.timeScale = 0;
           this.tweens.timeScale = 0;
           (window as any).surfaceReady = true;
@@ -204,7 +229,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
             kind: 'tile_land',
             tileType: 'character_passive',
             title: 'ĐƯỢC DỖ',
-            description: 'Cú mất 30B$ được dỗ lại +10B$.\nTỷ lệ 40% • roll 18.42%.',
+            description: 'Cú mất 30B$ được dỗ lại +10B$.',
             summary: '',
             impact: '✨',
             eyebrow: 'PLAYER 1 • NỘI TẠI',
