@@ -139,10 +139,10 @@ function roundedSurfaceCh141(
   height: number,
   fill: number,
   fillAlpha: number,
-  radius = MINI_GAME_VISUAL_VF07.surfaceRadius,
-  strokeWidth = 0,
-  stroke = MINI_GAME_VISUAL_VF07.shellStroke,
-  strokeAlpha = 0,
+  radius: number = MINI_GAME_VISUAL_VF07.surfaceRadius,
+  strokeWidth: number = 0,
+  stroke: number = MINI_GAME_VISUAL_VF07.shellStroke,
+  strokeAlpha: number = 0,
 ): Phaser.GameObjects.Graphics {
   const surface = scene.add.graphics().setPosition(x, y);
   return paintRoundedSurfaceCh141(surface, width, height, fill, fillAlpha, radius, strokeWidth, stroke, strokeAlpha);
