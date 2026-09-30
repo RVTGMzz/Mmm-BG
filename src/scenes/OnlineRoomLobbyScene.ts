@@ -39,7 +39,10 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     root.innerHTML = `
       <header class="online-room-head">
         <div><span class="online-kicker">ONLINE ROOM</span><h1>PHÒNG <strong id="online-room-code"></strong></h1></div>
-        <button id="online-copy-code" type="button">📋 COPY MÃ</button>
+        <div class="online-room-head-actions">
+          <button id="online-copy-code" type="button">📋 COPY MÃ</button>
+          <button id="online-copy-link" type="button">🔗 COPY LINK</button>
+        </div>
       </header>
       <div class="online-room-columns">
         <section class="online-room-panel">
@@ -65,6 +68,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     this.root = root;
     decorateVisualFoundationButtonsV01(root, [
       { selector: '#online-copy-code', variant: 'secondary', size: 'sm' },
+      { selector: '#online-copy-link', variant: 'secondary', size: 'sm' },
       { selector: '#online-ready', variant: 'secondary', size: 'lg' },
       { selector: '#online-start', variant: 'primary', size: 'lg' },
       { selector: '#online-leave', variant: 'subtle', size: 'sm' },
@@ -83,6 +87,20 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
         this.setStatus(`Đã copy mã ${config.roomCode}.`);
       } catch {
         this.setStatus(`Mã phòng: ${config.roomCode}`);
+      }
+    });
+
+    root.querySelector<HTMLButtonElement>('#online-copy-link')?.addEventListener('click', async () => {
+      sfxController.play('ui_confirm');
+      const invite = new URL(window.location.href);
+      invite.search = '';
+      invite.hash = '';
+      invite.searchParams.set('room', config.roomCode);
+      try {
+        await navigator.clipboard.writeText(invite.toString());
+        this.setStatus('🔗 Đã copy link mời • gửi cho bạn bè rồi bấm Ready.');
+      } catch {
+        this.setStatus(`Link mời: ${invite.toString()}`);
       }
     });
 
@@ -158,6 +176,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
       } catch {
         // Leaving the local scene must remain possible even if the network is already gone.
       }
+      browserSession.clearOnlineResume0705();
       this.cleanupLobbyUi07042();
       this.scene.start('LocalLobbyScene');
     });
@@ -213,6 +232,7 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
     if (this.exitingRoom) return;
     this.exitingRoom = true;
     this.time.delayedCall(delay, () => {
+      browserSession.clearOnlineResume0705();
       this.cleanupLobbyUi07042();
       this.scene.start('LocalLobbyScene');
     });
