@@ -121,10 +121,20 @@ try {
         const hint=stage.getByName('vf07-minigame-choice-hint');
         const privacy=stage.getByName('vf07-minigame-choice-privacy-rail');
         const boxes=stage.list.filter(o=>o.name?.startsWith('vf07-minigame-choice-box-'));
-        const promptBounds=prompt.getBounds();
-        const hintBounds=hint.getBounds();
-        const privacyBounds=privacy.getBounds();
-        const cardBounds=boxes.map(o=>o.getBounds());
+        const boundsOf=o=>{
+          if(typeof o?.getBounds==='function') return o.getBounds();
+          if(typeof o?.getLocalBounds==='function'){
+            const local=o.getLocalBounds();
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
+          }
+          return null;
+        };
+        const promptBounds=boundsOf(prompt);
+        const hintBounds=boundsOf(hint);
+        const privacyBounds=boundsOf(privacy);
+        const cardBounds=boxes.map(boundsOf);
         return {
           promptToHint: hintBounds.top-promptBounds.bottom,
           hintToCards: Math.min(...cardBounds.map(b=>b.top))-hintBounds.bottom,
@@ -146,10 +156,20 @@ try {
           .map(i=>stage?.getByName(`vf07-minigame-choice-box-${i}`))
           .filter(Boolean);
         if(!prompt||!hint||!privacy||boxes.length<2) return null;
-        const promptB=prompt.getBounds();
-        const hintB=hint.getBounds();
-        const privacyB=privacy.getBounds();
-        const boxBounds=boxes.map(b=>b.getBounds());
+        const boundsOf=o=>{
+          if(typeof o?.getBounds==='function') return o.getBounds();
+          if(typeof o?.getLocalBounds==='function'){
+            const local=o.getLocalBounds();
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
+          }
+          return null;
+        };
+        const promptB=boundsOf(prompt);
+        const hintB=boundsOf(hint);
+        const privacyB=boundsOf(privacy);
+        const boxBounds=boxes.map(boundsOf);
         return {
           promptHint: hintB.top-promptB.bottom,
           hintCards: Math.min(...boxBounds.map(b=>b.top))-hintB.bottom,
@@ -185,14 +205,24 @@ try {
         const labels=[0,1,2]
           .map(i=>stage?.getByName(`vf07-minigame-choice-label-${i}`))
           .filter(Boolean);
-        const panel=root?.list?.find(o=>o?.type==='Rectangle' && o.width>=900);
-        const panelB=panel?.getBounds();
+        const panel=root?.getByName('vf07-minigame-shell-ch141');
+        const boundsOf=o=>{
+          if(typeof o?.getBounds==='function') return o.getBounds();
+          if(typeof o?.getLocalBounds==='function'){
+            const local=o.getLocalBounds();
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
+          }
+          return null;
+        };
+        const panelB=boundsOf(panel);
         return {
           count:boxes.length,
           labels:labels.map(x=>x.text),
           inside:Boolean(panelB) && boxes.every(box=>{
-            const b=box.getBounds();
-            return b.left>=panelB.left && b.right<=panelB.right && b.top>=panelB.top && b.bottom<=panelB.bottom;
+            const b=boundsOf(box);
+            return Boolean(b) && b.left>=panelB.left && b.right<=panelB.right && b.top>=panelB.top && b.bottom<=panelB.bottom;
           }),
         };
       });
@@ -211,14 +241,24 @@ try {
         const labels=[0,1,2]
           .map(i=>stage?.getByName(`vf07-minigame-choice-label-${i}`))
           .filter(Boolean);
-        const panel=root?.list?.find(o=>o?.type==='Rectangle' && o.width>=900);
-        const panelB=panel?.getBounds();
+        const panel=root?.getByName('vf07-minigame-shell-ch141');
+        const boundsOf=o=>{
+          if(typeof o?.getBounds==='function') return o.getBounds();
+          if(typeof o?.getLocalBounds==='function'){
+            const local=o.getLocalBounds();
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
+          }
+          return null;
+        };
+        const panelB=boundsOf(panel);
         return {
           count:boxes.length,
           labels:labels.map(x=>x.text),
           inside:Boolean(panelB) && boxes.every(box=>{
-            const b=box.getBounds();
-            return b.left>=panelB.left && b.right<=panelB.right && b.top>=panelB.top && b.bottom<=panelB.bottom;
+            const b=boundsOf(box);
+            return Boolean(b) && b.left>=panelB.left && b.right<=panelB.right && b.top>=panelB.top && b.bottom<=panelB.bottom;
           }),
         };
       });
