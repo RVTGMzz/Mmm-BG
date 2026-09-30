@@ -1,3 +1,32 @@
+# MMM - 2026-09-30 CH-13 FINAL AUTOMATED ACCEPTANCE
+
+**AUTOMATED / BROWSER RUNTIME VISUAL ACCEPTANCE: PASS. PHYSICAL STEAM DECK ACCEPTANCE: STILL PENDING.**
+
+Canonical record:
+- `docs/SESSION_HANDOFF_2026-09-30_CH13_FINAL_AUTOMATED_ACCEPTANCE.md`
+- validated automated-acceptance HEAD: `a83c499bd62a850839533206188a77538e23c15b`
+- CI #3383 / run `36670769258`: **SUCCESS**
+- runtime evidence artifact: `11078141883`
+- RC package artifact: `11078137006`
+- compiled public mirror remains `8617f61536e75db039cf69e918ccfc741c3137cd`
+- public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+What this final automated pass adds:
+- Character Select now has a real browser runtime gate at both 1280x800 and 960x540.
+- The gate opens the live SetupScene Character Select, verifies exactly four starter cards + RANDOM, and rejects panel/card overflow.
+- It locks the Vietnamese-safe `system-ui / Segoe UI / Arial` stack and rejects the retired rounded-font fallback.
+- Runtime screenshots were manually reviewed after CI; the five-card row stays contained and readable at both target sizes.
+- Existing CH-13 Card/News, compact Job, one-time Mini Game rules, rules-to-gameplay transition, majority result and ranking evidence remain visually clean in the same artifact.
+
+No production gameplay, economy, Character probability, online authority, RNG, payout or compiled public output changed.
+
+What remains:
+- only human / physical-device acceptance on Steam Deck or another real device;
+- do not call physical Runtime PASS until Ron actually plays it;
+- do not reopen CH-13 code without new real-device evidence.
+
+---
+
 # MMM - 2026-09-30 CH-13 POST-RUNTIME HARDENING
 
 **RUNTIME ACCEPTANCE HARDENING: PASS. PUBLIC BUILD REMAINS 0.1.70.4.33.**
