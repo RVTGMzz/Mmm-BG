@@ -1,0 +1,65 @@
+name: Fast publish CH-15 online
+
+on:
+  push:
+    branches:
+      - mmm-mvp-0.1-core
+    paths:
+      - .github/workflows/fast-public-online.yml
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build public CH-15
+        run: npm run build
+
+      - name: Validate public-online source gate
+        run: npm run test:public-online-ch15
+
+      - name: Checkout compiled GitHub playtest mirror
+        uses: actions/checkout@v4
+        with:
+          repository: ronvotri/MeMeMe-Web-Playtest
+          token: ${{ secrets.MMM_WEB_DEPLOY_TOKEN }}
+          path: public-mirror
+
+      - name: Publish compiled mirror
+        shell: bash
+        run: |
+          set -euo pipefail
+          find public-mirror -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' -exec rm -rf {} +
+          cp -a dist/. public-mirror/
+          sed -i '1i<!-- Compiled playtest build only. Source is not mirrored here. -->' public-mirror/index.html
+
+          test -f public-mirror/.github/workflows/pages.yml
+          test -f public-mirror/index.html
+          test -f public-mirror/manifest.webmanifest
+          test -d public-mirror/assets
+
+          cd public-mirror
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Compiled GitHub playtest already matches this build.'
+            exit 0
+          fi
+          git commit -m "Publish CH-15 online ${GITHUB_SHA::7}"
+          git push
