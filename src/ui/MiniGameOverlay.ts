@@ -122,6 +122,8 @@ function paintRoundedSurfaceCh141(
   strokeAlpha: number,
 ): Phaser.GameObjects.Graphics {
   surface.clear();
+  surface.setData('ch141Width', width);
+  surface.setData('ch141Height', height);
   surface.fillStyle(fill, fillAlpha);
   surface.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
   if (strokeWidth > 0 && strokeAlpha > 0) {

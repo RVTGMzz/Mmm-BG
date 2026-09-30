@@ -129,6 +129,13 @@ try {
             while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
             return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
           }
+          const width=Number(o?.getData?.('ch141Width')??0)*Math.abs(Number(o?.scaleX??1));
+          const height=Number(o?.getData?.('ch141Height')??0)*Math.abs(Number(o?.scaleY??1));
+          if(width>0&&height>0){
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x-width/2,right:x+width/2,top:y-height/2,bottom:y+height/2};
+          }
           return null;
         };
         const promptBounds=boundsOf(prompt);
@@ -163,6 +170,13 @@ try {
             let x=0,y=0,node=o;
             while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
             return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
+          }
+          const width=Number(o?.getData?.('ch141Width')??0)*Math.abs(Number(o?.scaleX??1));
+          const height=Number(o?.getData?.('ch141Height')??0)*Math.abs(Number(o?.scaleY??1));
+          if(width>0&&height>0){
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x-width/2,right:x+width/2,top:y-height/2,bottom:y+height/2};
           }
           return null;
         };
@@ -214,6 +228,13 @@ try {
             while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
             return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
           }
+          const width=Number(o?.getData?.('ch141Width')??0)*Math.abs(Number(o?.scaleX??1));
+          const height=Number(o?.getData?.('ch141Height')??0)*Math.abs(Number(o?.scaleY??1));
+          if(width>0&&height>0){
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x-width/2,right:x+width/2,top:y-height/2,bottom:y+height/2};
+          }
           return null;
         };
         const panelB=boundsOf(panel);
@@ -249,6 +270,13 @@ try {
             let x=0,y=0,node=o;
             while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
             return {left:x+local.x,right:x+local.x+local.width,top:y+local.y,bottom:y+local.y+local.height};
+          }
+          const width=Number(o?.getData?.('ch141Width')??0)*Math.abs(Number(o?.scaleX??1));
+          const height=Number(o?.getData?.('ch141Height')??0)*Math.abs(Number(o?.scaleY??1));
+          if(width>0&&height>0){
+            let x=0,y=0,node=o;
+            while(node){ x+=Number(node.x??0); y+=Number(node.y??0); node=node.parentContainer; }
+            return {left:x-width/2,right:x+width/2,top:y-height/2,bottom:y+height/2};
           }
           return null;
         };
