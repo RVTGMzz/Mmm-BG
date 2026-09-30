@@ -24,7 +24,8 @@ assert.equal(MINI_GAME_CHOICE_LAYOUT_070431.cardCenterY,80);
 assert.equal(miniGameChoiceFits070431(),true);
 
 
-assert.match(mini,/headerBand = scene\.add\.rectangle\(0, -222, MINI_GAME_VISUAL_VF07\.bounds\.safeWidth, 112/);
+assert.match(mini,/const headerBand = roundedSurfaceCh141\(/);
+assert.match(mini,/vf07-minigame-header-ch141/);
 assert.match(mini,/stake = scene\.add\.text\(0, -145/);
 assert.match(mini,/const showMajorityFlow = async/);
 assert.match(mini,/TRẠNG THÁI/);
