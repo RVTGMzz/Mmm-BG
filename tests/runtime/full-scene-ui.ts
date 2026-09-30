@@ -130,7 +130,8 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         let rulesSeen = false;
         this.events.on('postupdate', () => {
           const currentStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
-          const rulesBody = currentStage?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
+          const rulesScroll = currentStage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container | null;
+          const rulesBody = rulesScroll?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
           if (rulesBody?.text.includes('Không tính thời gian chọn.') && !rulesSeen) {
             rulesSeen = true;
             (window as any).rulesReadyToAdvance = true;
