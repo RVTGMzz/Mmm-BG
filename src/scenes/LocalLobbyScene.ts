@@ -186,7 +186,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       if (button) button.disabled = true;
       setStatus('🌐 Đang tạo phòng online...');
       try {
-        if (!await checkOnlineService()) return;
+        if (!await checkOnlineService()) { if (button) button.disabled = false; return; }
         const hostName = node.querySelector<HTMLInputElement>('#online-name')?.value ?? 'Host';
         const requestedRoomCode = normalizeRoomCode(node.querySelector<HTMLInputElement>('#online-room')?.value ?? '');
         if (requestedRoomCode && requestedRoomCode.length < 4) {
@@ -219,7 +219,7 @@ export class LocalLobbyScene extends Phaser.Scene {
       if (button) button.disabled = true;
       setStatus(`🌐 Đang vào phòng ${room}...`);
       try {
-        if (!await checkOnlineService()) return;
+        if (!await checkOnlineService()) { if (button) button.disabled = false; return; }
         const joined = await joinOnlineRoom0703(room, displayName);
         browserSession.configureOnlineClient(
           joined.roomCode,
