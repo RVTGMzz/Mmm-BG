@@ -595,7 +595,7 @@ export function startMiniGameOverlay(
         fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
         fontSize: '16px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.cocoaText,
         fixedWidth: 298, align: 'center',
-      }).setOrigin(0.5);
+      }).setOrigin(0.5).setName(`vf07-round-flow-left-row-${index}-ch142`);
       return [chip, label];
     }).flat();
 

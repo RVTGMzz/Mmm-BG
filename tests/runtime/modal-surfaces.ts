@@ -28,7 +28,8 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
     if(mode==='choice' || mode==='doors' || mode==='buoys') {
       this.time.timeScale=20;
       this.tweens.timeScale=20;
-      startMiniGameOverlay(
+      let advancedRulesCh142=false;
+      const run=startMiniGameOverlay(
         this,
         gameSession.players as any,
         100,
@@ -39,8 +40,14 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
             : undefined,
       );
       this.events.on('postupdate',()=>{
-        const root=this.children.getByName('minigame-modal') as Phaser.GameObjects.Container;
+        const root=run.root;
         const stage=root?.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
+        const continueControl=stage?.getByName('vf07-minigame-rules-continue-ch142') as Phaser.GameObjects.Text;
+        if(continueControl && !advancedRulesCh142) {
+          advancedRulesCh142=true;
+          continueControl.emit('pointerdown');
+          return;
+        }
         const expectedChoices = mode === 'doors' || mode === 'buoys' ? 3 : 2;
         const choiceBoxes = stage?.list.filter((entry: Phaser.GameObjects.GameObject) =>
           entry.name?.startsWith('vf07-minigame-choice-box-'),
@@ -57,13 +64,15 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
       const run=startMiniGameOverlay(this, gameSession.players as any, 100, 'MINIGAME_SLOT_04');
       this.events.on('postupdate',()=>{
         const stage=run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container;
-        const heading=stage?.getByName('vf07-minigame-result-heading') as Phaser.GameObjects.Text;
-        const scrollRoot=stage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container;
-        const body=scrollRoot?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text;
-        const rollCount=(String(body?.text ?? '').match(/🎲 [1-6]/g) ?? []).length;
+        const heading=stage?.getByName('vf07-round-flow-heading-ch142') as Phaser.GameObjects.Text;
+        const result=stage?.getByName('vf07-round-flow-result-copy-ch142') as Phaser.GameObjects.Text;
+        const leftRows=[0,1,2,3]
+          .map((index)=>stage?.getByName(`vf07-round-flow-left-row-${index}-ch142`) as Phaser.GameObjects.Text)
+          .filter(Boolean);
+        const rollCount=leftRows.filter((row)=>/🎲\s*[1-6]/.test(String(row.text ?? ''))).length;
         if(
           heading
-          && !heading.text.includes('LUẬT')
+          && result
           && (heading.text.includes('CẮT TOP') || heading.text.includes('HÒA Ở RANH TOP'))
           && rollCount >= 3
         ) {

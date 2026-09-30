@@ -300,24 +300,32 @@ try {
         const s=window.surfaceScene;
         const root=s.children.getByName('minigame-modal');
         const stage=root?.getByName('vf07-minigame-stage');
-        const heading=stage?.getByName('vf07-minigame-result-heading');
-        const scrollRoot=stage?.getByName('vf07-minigame-result-scroll');
-        const body=scrollRoot?.getByName('vf07-minigame-result-body');
-        const hint=stage?.getByName('vf07-minigame-scroll-hint');
-        const bodyText=String(body?.text ?? '');
+        const heading=stage?.getByName('vf07-round-flow-heading-ch142');
+        const result=stage?.getByName('vf07-round-flow-result-copy-ch142');
+        const resultBox=stage?.getByName('vf07-round-flow-result-box-ch142');
+        const leftRows=[0,1,2,3]
+          .map(i=>stage?.getByName(`vf07-round-flow-left-row-${i}-ch142`))
+          .filter(Boolean);
+        const leftText=leftRows.map(row=>String(row.text ?? ''));
         return {
           heading:String(heading?.text ?? ''),
-          body:bodyText,
-          rollCount:(bodyText.match(/🎲 [1-6]/g) ?? []).length,
-          scrollHint:String(hint?.text ?? ''),
+          result:String(result?.text ?? ''),
+          rollCount:leftText.filter(copy=>/🎲\s*[1-6]/.test(copy)).length,
+          leftXs:leftRows.map(row=>Number(row.x)),
+          resultX:Number(result?.x ?? 0),
+          resultBoxType:String(resultBox?.type ?? ''),
+          hasLegacyScroll:Boolean(stage?.getByName('vf07-minigame-result-scroll')),
         };
       });
       assert.ok(/CẮT TOP|HÒA Ở RANH TOP/.test(dice.heading),
-        `M35 result heading missing: ${JSON.stringify(dice)}`);
+        `M35 horizontal heading missing: ${JSON.stringify(dice)}`);
       assert.ok(dice.rollCount>=3,
-        `M35 must visibly reveal contestant D6 rolls: ${JSON.stringify(dice)}`);
-      assert.equal(dice.scrollHint,'',
-        `M35 normal four-player result should fit without mandatory scrolling: ${JSON.stringify(dice)}`);
+        `M35 must visibly reveal contestant D6 rolls on the left: ${JSON.stringify(dice)}`);
+      assert.ok(dice.leftXs.every(x=>x<0) && dice.resultX>0,
+        `M35 must keep players left and result right: ${JSON.stringify(dice)}`);
+      assert.equal(dice.resultBoxType,'Graphics');
+      assert.equal(dice.hasLegacyScroll,false,
+        `M35 horizontal result must not require the legacy scroll viewport: ${JSON.stringify(dice)}`);
     }
     if(surface==='order') {
       const gap=await page.evaluate(()=>{
