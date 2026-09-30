@@ -1,33 +1,44 @@
-# NEXT CHAT PROMPT — 2026-09-30 AFTER CH-14.1
+# NEXT CHAT PROMPT — 2026-09-30 AFTER CH-14.2
 
 Continue MMM from repo `RVTGMzz/Mmm-BG`, branch `mmm-mvp-0.1-core`.
 
 Read first:
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/SESSION_HANDOFF_2026-09-30_CH141_RUNTIME_POLISH.md`
+3. `docs/SESSION_HANDOFF_2026-09-30_CH142_MINIGAME_FLOW.md`
 4. Ron's newest screenshots / physical Steam Deck feedback.
 
 Current authority:
-- build `0.1.70.4.35`
-- phase `RELEASE CANDIDATE • CH-14.1 RUNTIME POLISH`
-- validated source HEAD `93cf43e71fcde4bf4ca287b821ba47853341d300`
-- CI #3396 / run `36699807175`: SUCCESS
-- runtime evidence `11089534356`
-- package `11089349661`
-- public mirror `97c32a881c22da2a73827804986b32ca48d62efd`
-- Pages #82 / `36700549046`: SUCCESS
+- build `0.1.70.4.36`
+- phase `RELEASE CANDIDATE • CH-14.2 MINI GAME FLOW`
+- validated source/test HEAD `818e592eaa7092791103997bae637102503c7674`
+- CI #3408 / run `36731988615`: SUCCESS
+- runtime evidence artifact `11105935846`
+- package artifact `11105856035`
+- public mirror `6a4780c42f24f712726cbe61b28ffa1e69b69e19`
+- Pages #83 / `36733257627`: SUCCESS
 - public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
 
-CH-14.1 fixed four user-reported issues:
-1. active highlight follows the current presentation actor instead of the next authoritative turn while the previous action still animates;
-2. Space remains gameplay interact/confirm and cannot reopen Settings because of stale DOM focus;
-3. Card + News shared header kicker is vertically centered and canonical roots bypass the old 1.14 cinematic child inflation;
-4. all internal Mini Game surfaces use a unified rounded Graphics language; only the fullscreen backdrop remains a raw Rectangle.
+CH-14.2 is complete in source + browser acceptance:
+- Job Hub no longer renders `Đổ xúc xắc để chọn nghề`;
+- human-involved Mini Games hold rules until Enter/Space/A/pointer confirmation;
+- CPU-only Mini Games skip the rules screen;
+- Character passive presentation hides chance/roll percentages while authoritative event data retains them;
+- BA CỬA, PHAO ĐƠN, CẮT TOP and ĐUA 3 CHẶNG result moments use a horizontal left-state/right-result flow.
 
-Browser/runtime and public Pages are green. Physical Steam Deck acceptance is still pending and must not be claimed without Ron testing the public build.
+Locked earlier behavior remains:
+- CH-14.1 active spotlight ownership, Space/Settings isolation, Card/News header geometry and rounded Mini Game surfaces;
+- no client Math.random();
+- HOST/replay authority for gameplay RNG and B$;
+- Character probabilities 40/50/20/45/60;
+- current economy and Mini Game payouts unchanged;
+- PR #1 remains Draft/Open.
 
-If Ron supplies new screenshots, fix shared owner/layout/input rules rather than exact content. Do not reopen CH-14.1 from scratch, do not change economy/Character probabilities/RNG/Worker authority, and do not merge PR #1 unless explicitly asked.
+Next action:
+- prioritize Ron's newest physical-device screenshots/full-match observations;
+- if a new layout issue appears, fix the shared owner/layout rule and add a regression gate;
+- do not claim physical Steam Deck PASS until Ron tests it;
+- do not merge PR #1 unless Ron explicitly asks.
 
 Always include the public link at the end of a completed build/fix report:
 https://ronvotri.github.io/MeMeMe-Web-Playtest/
