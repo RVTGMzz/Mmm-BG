@@ -1033,3 +1033,45 @@ canvas {
       0 10px 24px rgba(63, 43, 39, .10);
   }
 }
+
+
+/* CH-15 public online entry + reconnect */
+.online-service-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-height:34px;
+  padding:6px 8px 6px 10px;
+  border:2px solid #d9d0c4;
+  border-radius:14px;
+  background:#fff;
+}
+.online-service-row span {
+  min-width:0;
+  color:#8a6b24;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.04em;
+}
+.online-service-row span.ready { color:#2f7a4b; }
+.online-service-row span.error { color:#b73b3b; }
+.online-service-row button {
+  width:32px;
+  min-width:32px;
+  min-height:28px;
+  margin:0 !important;
+  padding:4px !important;
+}
+.online-resume-button {
+  width:100%;
+  margin-top:8px !important;
+  padding:9px 10px !important;
+  font-size:11px !important;
+}
+.online-resume-button[hidden] { display:none !important; }
+.online-room-head-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
