@@ -33,14 +33,14 @@ export function showMatchRecapCh14(
     .setStrokeStyle(5, 0x3b2a24, 1);
   root.add([backdrop, shadow, panel]);
 
-  root.add(
+  root.add([
     scene.add.text(0, -270, '✨ VÁN NÀY ĐÃ XẢY RA GÌ?', {
       fontFamily: FONT_CH14, fontSize:'31px', fontStyle:'bold', color:'#2b2522',
     }).setOrigin(0.5).setName('match-recap-title-ch14'),
     scene.add.text(0, -232, 'Tổng kết từ dữ liệu authoritative của chính ván đấu', {
       fontFamily: FONT_CH14, fontSize:'14px', fontStyle:'bold', color:'#75685f',
     }).setOrigin(0.5),
-  );
+  ]);
 
   const tabs: Array<{ playerId:number; hit:Phaser.GameObjects.Rectangle; label:Phaser.GameObjects.Text }> = [];
   const tabXs = [-405, -135, 135, 405];
