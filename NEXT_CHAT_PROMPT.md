@@ -1,44 +1,33 @@
-# NEXT CHAT PROMPT — 2026-09-30 AFTER CH-14
+# NEXT CHAT PROMPT — 2026-09-30 AFTER CH-14.1
 
 Continue MMM from repo `RVTGMzz/Mmm-BG`, branch `mmm-mvp-0.1-core`.
 
 Read first:
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/SESSION_HANDOFF_2026-09-30_CH14_MATCH_RECAP.md`
-4. Ron's newest screenshots / real-device feedback.
+3. `docs/SESSION_HANDOFF_2026-09-30_CH141_RUNTIME_POLISH.md`
+4. Ron's newest screenshots / physical Steam Deck feedback.
 
 Current authority:
-- build `0.1.70.4.34`
-- phase `RELEASE CANDIDATE • CH-14 MATCH RECAP`
-- validated source HEAD `3e3cbef1002c51376ad661c8a5ebe06a7d835996`
-- CI #3389 / run `36683250579`, attempt 2: SUCCESS
-- runtime evidence artifact `11083448053`
-- package artifact `11083408087`
-- public mirror `846dd16e24eae571661cc901188e5c50ae27e2a0`
-- Pages #81 / run `36684224672`: SUCCESS
+- build `0.1.70.4.35`
+- phase `RELEASE CANDIDATE • CH-14.1 RUNTIME POLISH`
+- validated source HEAD `93cf43e71fcde4bf4ca287b821ba47853341d300`
+- CI #3396 / run `36699807175`: SUCCESS
+- runtime evidence `11089534356`
+- package `11089349661`
+- public mirror `97c32a881c22da2a73827804986b32ca48d62efd`
+- Pages #82 / `36700549046`: SUCCESS
 - public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
 
-CH-14 is complete in source and automated/browser acceptance. It adds a read-only post-match recap opened from the final Podium through `✨ XEM TỔNG KẾT`. The recap derives P1–P4 stats, display-only awards and up to eight chronological moments from authoritative MatchState/eventLog. It must never mutate gameplay or ranking.
+CH-14.1 fixed four user-reported issues:
+1. active highlight follows the current presentation actor instead of the next authoritative turn while the previous action still animates;
+2. Space remains gameplay interact/confirm and cannot reopen Settings because of stale DOM focus;
+3. Card + News shared header kicker is vertically centered and canonical roots bypass the old 1.14 cinematic child inflation;
+4. all internal Mini Game surfaces use a unified rounded Graphics language; only the fullscreen backdrop remains a raw Rectangle.
 
-Browser evidence passes at 1280×800 and 960×540 with no observed overflow. Physical Steam Deck acceptance is still pending.
+Browser/runtime and public Pages are green. Physical Steam Deck acceptance is still pending and must not be claimed without Ron testing the public build.
 
-Locked behavior from earlier chapters remains authoritative:
-- Card/News canonical single-owner and no rarity N badge;
-- compact salary-only Job detail;
-- Mini Game rules shown once, then compact gameplay;
-- doubled result/ranking dwell;
-- BA CỬA simultaneous elimination uses internal RPS only, never speed or seat order;
-- no client Math.random();
-- HOST/replay authority for RNG and money;
-- Character probabilities 40/50/20/45/60;
-- current Mini Game payouts/economy unchanged.
+If Ron supplies new screenshots, fix shared owner/layout/input rules rather than exact content. Do not reopen CH-14.1 from scratch, do not change economy/Character probabilities/RNG/Worker authority, and do not merge PR #1 unless explicitly asked.
 
-Next action:
-- if Ron supplies screenshots, fix the shared owner/layout rule and add a regression gate;
-- otherwise prioritize one human full-match pass through Podium → XEM TỔNG KẾT → all four player tabs → close → Rematch/Lobby;
-- do not claim physical-device PASS without real-device evidence;
-- do not merge PR #1 unless Ron explicitly asks.
-
-Public link must be included at the end of each completed build/fix report:
+Always include the public link at the end of a completed build/fix report:
 https://ronvotri.github.io/MeMeMe-Web-Playtest/
