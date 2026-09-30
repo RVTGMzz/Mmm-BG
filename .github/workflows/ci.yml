@@ -317,6 +317,8 @@ jobs:
         run: npm run test:runtime-polish-ch141
       - name: CH-14.2 Mini Game flow and hidden passive stats
         run: npm run test:minigame-flow-ch142
+      - name: CH-15 public online entry and resume
+        run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1
@@ -330,6 +332,7 @@ jobs:
           node tests/runtime/character-select-ui.mjs
           node tests/runtime/match-recap-ui.mjs
           node tests/runtime/settings-space-ui.mjs
+          node tests/runtime/online-entry-ui.mjs
           node tests/runtime/mobile-landscape-entry.mjs
       - name: Upload runtime UI evidence
         if: always()
@@ -343,11 +346,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.36 CH-14.2 Mini Game Flow build
+      - name: Upload MMM 0.1.70.4.37 CH-15 Public Online build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.36-ch142-minigame-flow
+          name: mmm-playtest-0.1.70.4.37-ch15-public-online
           path: dist
           if-no-files-found: error
           retention-days: 14
