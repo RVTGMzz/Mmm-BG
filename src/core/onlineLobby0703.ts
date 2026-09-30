@@ -32,6 +32,12 @@ export interface OnlineLobbyState0703 {
   error?: string;
 }
 
+export interface OnlineServiceHealth0705 {
+  ok: boolean;
+  transport?: string;
+  service?: string;
+}
+
 export interface OnlineRoomCreate0703 {
   ok: true;
   roomCode: string;
@@ -125,6 +131,30 @@ function saveIdentity(identity: SavedClientIdentity): void {
 
 export function clearOnlineClientIdentity0703(roomCode: string): void {
   try { sessionStorage.removeItem(identityKey(roomCode)); } catch {}
+}
+
+export async function probeOnlineService0705(
+  baseUrl = MEMEME_ONLINE_BASE_URL,
+  timeoutMs = 4500,
+): Promise<OnlineServiceHealth0705> {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : undefined;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
+  try {
+    const response = await fetch(`${base(baseUrl)}/health`, {
+      cache: 'no-store',
+      signal: controller?.signal,
+    });
+    const body = await response.json().catch(() => ({})) as OnlineServiceHealth0705;
+    if (!response.ok || body.ok !== true) throw new Error('Server online chưa sẵn sàng.');
+    return body;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Server online phản hồi quá chậm.');
+    }
+    throw error instanceof Error ? error : new Error('Không kết nối được server online.');
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 export async function createOnlineRoom0703(
