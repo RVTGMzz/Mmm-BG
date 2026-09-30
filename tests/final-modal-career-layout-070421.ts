@@ -36,7 +36,7 @@ assert.ok(
 );
 assert.doesNotMatch(picker, /LƯƠNG Lv1 • Lv2 • Lv3/, 'VF-06 replaces the redundant second salary label with one compact salary row');
 assert.match(picker, /XEM CHI TIẾT/);
-assert.match(picker, /Đổ xúc xắc để chọn nghề/);
+assert.doesNotMatch(picker, /Đổ xúc xắc để chọn nghề/);
 assert.doesNotMatch(picker, /LƯƠNG KHỞI ĐIỂM/);
 assert.doesNotMatch(picker, /Arial Rounded MT Bold/);
 assert.doesNotMatch(picker, /Math\.random\s*\(/);
