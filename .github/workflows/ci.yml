@@ -313,6 +313,8 @@ jobs:
         run: npm run test:ux-simplify-ch13
       - name: CH-14 authoritative match recap
         run: npm run test:match-recap-ch14
+      - name: CH-14.1 runtime polish regression
+        run: npm run test:runtime-polish-ch141
       - name: Install runtime browser regression dependencies
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1
@@ -325,6 +327,7 @@ jobs:
           node tests/runtime/full-scene-ui.mjs
           node tests/runtime/character-select-ui.mjs
           node tests/runtime/match-recap-ui.mjs
+          node tests/runtime/settings-space-ui.mjs
           node tests/runtime/mobile-landscape-entry.mjs
       - name: Upload runtime UI evidence
         if: always()
@@ -338,11 +341,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.34 CH-14 Match Recap build
+      - name: Upload MMM 0.1.70.4.35 CH-14.1 Runtime Polish build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.34-ch14-match-recap
+          name: mmm-playtest-0.1.70.4.35-ch141-runtime-polish
           path: dist
           if-no-files-found: error
           retention-days: 14

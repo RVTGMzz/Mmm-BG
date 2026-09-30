@@ -110,6 +110,44 @@ function rewardTitle(gameType: MiniGameBaseRewardType): string {
   return 'NHIỀU RA ÍT BỊ';
 }
 
+function paintRoundedSurfaceCh141(
+  surface: Phaser.GameObjects.Graphics,
+  width: number,
+  height: number,
+  fill: number,
+  fillAlpha: number,
+  radius: number,
+  strokeWidth: number,
+  stroke: number,
+  strokeAlpha: number,
+): Phaser.GameObjects.Graphics {
+  surface.clear();
+  surface.fillStyle(fill, fillAlpha);
+  surface.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+  if (strokeWidth > 0 && strokeAlpha > 0) {
+    surface.lineStyle(strokeWidth, stroke, strokeAlpha);
+    surface.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
+  }
+  return surface;
+}
+
+function roundedSurfaceCh141(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fill: number,
+  fillAlpha: number,
+  radius = MINI_GAME_VISUAL_VF07.surfaceRadius,
+  strokeWidth = 0,
+  stroke = MINI_GAME_VISUAL_VF07.shellStroke,
+  strokeAlpha = 0,
+): Phaser.GameObjects.Graphics {
+  const surface = scene.add.graphics().setPosition(x, y);
+  return paintRoundedSurfaceCh141(surface, width, height, fill, fillAlpha, radius, strokeWidth, stroke, strokeAlpha);
+}
+
 export function startMiniGameOverlay(
   scene: Phaser.Scene,
   players: readonly PlayerState[],
@@ -120,15 +158,19 @@ export function startMiniGameOverlay(
   // The fullscreen Mini Game owns the UI camera above the P1–P4 HUD (depth 1000).
   const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal').setScrollFactor(0);
   const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
-  const panel = scene.add.rectangle(
-    0, 0, MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height,
-    MINI_GAME_VISUAL_VF07.shellFill, 1,
-  )
-    .setStrokeStyle(MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1);
-  const headerBand = scene.add.rectangle(0, -222, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 112, MINI_GAME_VISUAL_VF07.headerFill, 1)
-    .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.18);
-  const headerSticker = scene.add.rectangle(-390, -222, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1)
-    .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55);
+  const panel = roundedSurfaceCh141(
+    scene, 0, 0, MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height,
+    MINI_GAME_VISUAL_VF07.shellFill, 1, MINI_GAME_VISUAL_VF07.shellRadius,
+    MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1,
+  ).setName('vf07-minigame-shell-ch141');
+  const headerBand = roundedSurfaceCh141(
+    scene, 0, -222, MINI_GAME_VISUAL_VF07.bounds.safeWidth, 112, MINI_GAME_VISUAL_VF07.headerFill, 1,
+    MINI_GAME_VISUAL_VF07.surfaceRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.18,
+  ).setName('vf07-minigame-header-ch141');
+  const headerSticker = roundedSurfaceCh141(
+    scene, -390, -222, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1,
+    MINI_GAME_VISUAL_VF07.chipRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55,
+  ).setName('vf07-minigame-sticker-ch141');
   const title = scene.add.text(0, -246, `${slot.icon} ${slot.title}`, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
@@ -152,7 +194,11 @@ export function startMiniGameOverlay(
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
   const clearStage = () => {
     stage.removeAll(true);
-    panel.setSize(MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height).setY(0);
+    paintRoundedSurfaceCh141(
+      panel, MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height,
+      MINI_GAME_VISUAL_VF07.shellFill, 1, MINI_GAME_VISUAL_VF07.shellRadius,
+      MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1,
+    ).setY(0);
     headerBand.setVisible(true);
     headerSticker.setVisible(true);
     title.setVisible(true);
@@ -182,7 +228,7 @@ export function startMiniGameOverlay(
     stage.add([prompt, hint]);
 
     const spacing = choices.length === 2 ? l.twoChoiceSpacing : l.multiChoiceSpacing;
-    const boxes: Phaser.GameObjects.Rectangle[] = [];
+    const boxes: Phaser.GameObjects.Graphics[] = [];
     let selectedIndex = 0;
     let settled = false;
     let gamepadTimer: Phaser.Time.TimerEvent | undefined;
@@ -193,9 +239,11 @@ export function startMiniGameOverlay(
     const refreshFocus = () => {
       boxes.forEach((box, index) => {
         const focused = index === selectedIndex;
-        box
-          .setScale(focused ? 1.055 : 1)
-          .setStrokeStyle(focused ? 7 : 4, focused ? MINI_GAME_VISUAL_VF07.choiceFocusStroke : MINI_GAME_VISUAL_VF07.shellStroke, 1);
+        paintRoundedSurfaceCh141(
+          box, l.cardWidth, l.cardHeight, choices[index]?.fill ?? MINI_GAME_VISUAL_VF07.resultFill, 1,
+          MINI_GAME_VISUAL_VF07.surfaceRadius, focused ? 7 : 4,
+          focused ? MINI_GAME_VISUAL_VF07.choiceFocusStroke : MINI_GAME_VISUAL_VF07.shellStroke, 1,
+        ).setScale(focused ? 1.055 : 1);
       });
     };
 
@@ -245,9 +293,14 @@ export function startMiniGameOverlay(
 
     choices.forEach((choice, index) => {
       const x = (index - (choices.length - 1) / 2) * spacing;
-      const box = scene.add.rectangle(x, l.cardCenterY, l.cardWidth, l.cardHeight, choice.fill, 1)
-        .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 1)
-        .setInteractive({ useHandCursor: true })
+      const box = roundedSurfaceCh141(
+        scene, x, l.cardCenterY, l.cardWidth, l.cardHeight, choice.fill, 1,
+        MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 1,
+      )
+        .setInteractive(
+          new Phaser.Geom.Rectangle(-l.cardWidth / 2, -l.cardHeight / 2, l.cardWidth, l.cardHeight),
+          Phaser.Geom.Rectangle.Contains,
+        )
         .setName(`vf07-minigame-choice-box-${index}`);
       boxes.push(box);
       const icon = scene.add.text(x, l.cardCenterY + l.iconOffsetY, choice.icon, {
@@ -267,16 +320,10 @@ export function startMiniGameOverlay(
       stage.add([box, icon, label]);
     });
 
-    const privacyRail = scene.add.rectangle(
-      0,
-      l.privacyY,
-      l.privacyWidth,
-      l.privacyHeight,
-      MINI_GAME_VISUAL_VF07.resultFill,
-      0.94,
-    )
-      .setStrokeStyle(2, MINI_GAME_VISUAL_VF07.shellStroke, 0.24)
-      .setName('vf07-minigame-choice-privacy-rail');
+    const privacyRail = roundedSurfaceCh141(
+      scene, 0, l.privacyY, l.privacyWidth, l.privacyHeight, MINI_GAME_VISUAL_VF07.resultFill, 0.94,
+      MINI_GAME_VISUAL_VF07.chipRadius, 2, MINI_GAME_VISUAL_VF07.shellStroke, 0.24,
+    ).setName('vf07-minigame-choice-privacy-rail');
     const privacyHint = scene.add.text(
       0,
       l.privacyY,
@@ -328,10 +375,14 @@ export function startMiniGameOverlay(
 
   const showResult = async (heading: string, body: string, ms = 1700) => {
     clearStage();
-    const resultPaper = scene.add.rectangle(0, 10, 780, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
-      .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const resultBadge = scene.add.rectangle(0, -116, 400, 62, MINI_GAME_VISUAL_VF07.stickerFill, 1)
-      .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.5);
+    const resultPaper = roundedSurfaceCh141(
+      scene, 0, 10, 780, 330, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setName('vf07-minigame-result-paper-ch141');
+    const resultBadge = roundedSurfaceCh141(
+      scene, 0, -116, 400, 62, MINI_GAME_VISUAL_VF07.stickerFill, 1,
+      MINI_GAME_VISUAL_VF07.chipRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.5,
+    ).setName('vf07-minigame-result-badge-ch141');
     const head = scene.add.text(0, -116, heading, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '29px',
@@ -358,9 +409,16 @@ export function startMiniGameOverlay(
     });
     bodyViewport.text.setName('vf07-minigame-result-body');
     const resultBottom = -62 + bodyViewport.height + (bodyViewport.isScrollable ? 54 : 24);
-    resultPaper.setSize(780, resultBottom + 150).setY((resultBottom - 150) / 2);
+    paintRoundedSurfaceCh141(
+      resultPaper, 780, resultBottom + 150, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setY((resultBottom - 150) / 2);
     const shellBottom = stage.y + resultBottom + 24;
-    panel.setSize(960, shellBottom + 282).setY((shellBottom - 270) / 2);
+    paintRoundedSurfaceCh141(
+      panel, 960, shellBottom + 282, MINI_GAME_VISUAL_VF07.shellFill, 1,
+      MINI_GAME_VISUAL_VF07.shellRadius, MINI_GAME_VISUAL_VF07.shellStrokeWidth,
+      MINI_GAME_VISUAL_VF07.shellStroke, 1,
+    ).setY((shellBottom - 270) / 2);
 
     const scrollHint = scene.add.text(0, resultBottom - 25, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
@@ -448,8 +506,10 @@ export function startMiniGameOverlay(
     ms = 2100,
   ) => {
     clearStage();
-    const paper = scene.add.rectangle(0, 18, 820, 330, MINI_GAME_VISUAL_VF07.resultFill, 1)
-      .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
+    const paper = roundedSurfaceCh141(
+      scene, 0, 18, 820, 330, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setName('vf07-majority-paper-ch141');
     const head = scene.add.text(0, -118, heading, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '25px', fontStyle: 'bold',
@@ -468,8 +528,10 @@ export function startMiniGameOverlay(
     const rows = ids.map((id, index) => {
       const up = choices[id] === 'up';
       const y = -42 + index * 51;
-      const chip = scene.add.rectangle(-235, y, 300, 42, up ? 0x9eddf0 : 0xffd983, 1)
-        .setStrokeStyle(2.5, MINI_GAME_VISUAL_VF07.shellStroke, 0.68);
+      const chip = roundedSurfaceCh141(
+        scene, -235, y, 300, 42, up ? 0x9eddf0 : 0xffd983, 1,
+        MINI_GAME_VISUAL_VF07.chipRadius, 2.5, MINI_GAME_VISUAL_VF07.shellStroke, 0.68,
+      );
       const label = scene.add.text(-235, y,
         `${playerById(id)?.name ?? `P${id + 1}`}   ${up ? '🤲 NGỬA' : '🖐️ SẤP'}`, {
           fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
@@ -482,8 +544,10 @@ export function startMiniGameOverlay(
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '48px', fontStyle: 'bold', color: '#8d6c58',
     }).setOrigin(0.5);
-    const resultBox = scene.add.rectangle(225, 38, 310, 188, tied ? 0xffe1dc : 0xffedb8, 1)
-      .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.48);
+    const resultBox = roundedSurfaceCh141(
+      scene, 225, 38, 310, 188, tied ? 0xffe1dc : 0xffedb8, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.48,
+    ).setName('vf07-majority-result-box-ch141');
     const losers = eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
     const survivors = survivingPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
     const resultCopy = tied
@@ -527,10 +591,14 @@ export function startMiniGameOverlay(
       fontSize: '22px', fontStyle: 'bold', color: '#30251f',
       fixedWidth: l.cardWidth + 12, align: 'center',
     }).setOrigin(0.5);
-    const leftCard = scene.add.rectangle(-l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xffe09a, 1)
-      .setStrokeStyle(4, 0x4b332b, 1);
-    const rightCard = scene.add.rectangle(l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xd1b0f0, 1)
-      .setStrokeStyle(4, 0x4b332b, 1);
+    const leftCard = roundedSurfaceCh141(
+      scene, -l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xffe09a, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, 0x4b332b, 1,
+    ).setName('vf07-rps-card-left-ch141');
+    const rightCard = roundedSurfaceCh141(
+      scene, l.cardCenterX, l.cardCenterY, l.cardWidth, l.cardHeight, 0xd1b0f0, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, 0x4b332b, 1,
+    ).setName('vf07-rps-card-right-ch141');
     const leftIcon = scene.add.text(-l.cardCenterX, -14, '✊', { fontSize: '74px' }).setOrigin(0.5);
     const rightIcon = scene.add.text(l.cardCenterX, -14, '✊', { fontSize: '74px' }).setOrigin(0.5);
     const leftChoice = scene.add.text(-l.cardCenterX, 55, '?', {
@@ -604,8 +672,14 @@ export function startMiniGameOverlay(
       const winner = playerById(winnerId ?? -1);
       chant.setText('🏆 KẾT QUẢ');
       verdict.setText(`${winner?.name ?? '???'} THẮNG KÈO!`);
-      if (winnerId === a.id) leftCard.setStrokeStyle(5, 0xe7ae35, 1);
-      if (winnerId === b.id) rightCard.setStrokeStyle(5, 0xe7ae35, 1);
+      if (winnerId === a.id) paintRoundedSurfaceCh141(
+        leftCard, l.cardWidth, l.cardHeight, 0xffe09a, 1,
+        MINI_GAME_VISUAL_VF07.surfaceRadius, 5, 0xe7ae35, 1,
+      );
+      if (winnerId === b.id) paintRoundedSurfaceCh141(
+        rightCard, l.cardWidth, l.cardHeight, 0xd1b0f0, 1,
+        MINI_GAME_VISUAL_VF07.surfaceRadius, 5, 0xe7ae35, 1,
+      );
     }
     await wait(tied ? 900 : 1150);
   };
@@ -620,10 +694,14 @@ export function startMiniGameOverlay(
     headerSticker.setVisible(false);
 
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
-    const podiumPaper = scene.add.rectangle(0, 12, 780, 380, MINI_GAME_VISUAL_VF07.resultFill, 1)
-      .setStrokeStyle(4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35);
-    const podiumRibbon = scene.add.rectangle(0, -136, 470, 66, MINI_GAME_VISUAL_VF07.headerFill, 1)
-      .setStrokeStyle(3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45);
+    const podiumPaper = roundedSurfaceCh141(
+      scene, 0, 12, 780, 380, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setName('vf07-minigame-podium-paper-ch141');
+    const podiumRibbon = roundedSurfaceCh141(
+      scene, 0, -136, 470, 66, MINI_GAME_VISUAL_VF07.headerFill, 1,
+      MINI_GAME_VISUAL_VF07.chipRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.45,
+    ).setName('vf07-minigame-podium-ribbon-ch141');
     const heading = scene.add.text(0, -136, '🏆 BẢNG XẾP HẠNG', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '29px',
@@ -693,8 +771,15 @@ export function startMiniGameOverlay(
     ).setOrigin(0.5).setName('vf07-minigame-ranking-hint');
 
     const rankingBottom = rewardHint.y + 30;
-    podiumPaper.setSize(780, rankingBottom + 168).setY((rankingBottom - 168) / 2);
-    panel.setSize(900, rankingBottom + 210).setY(22 + (rankingBottom - 190) / 2);
+    paintRoundedSurfaceCh141(
+      podiumPaper, 780, rankingBottom + 168, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setY((rankingBottom - 168) / 2);
+    paintRoundedSurfaceCh141(
+      panel, 900, rankingBottom + 210, MINI_GAME_VISUAL_VF07.shellFill, 1,
+      MINI_GAME_VISUAL_VF07.shellRadius, MINI_GAME_VISUAL_VF07.shellStrokeWidth,
+      MINI_GAME_VISUAL_VF07.shellStroke, 1,
+    ).setY(22 + (rankingBottom - 190) / 2);
     stage.add([winnerVoiceText, rewardHint]);
     scene.tweens.add({
       targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, winnerVoiceText, rewardHint],

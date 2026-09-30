@@ -8,6 +8,7 @@ import type { ClientIntentType } from '../core/authority';
 import type { MatchEventValue, MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import { clampDiceFace, compactPlayerStatus, movementStepDurationMs } from '../ui/boardFeelPolicy';
+import { resolveCameraActor0632 } from '../ui/cameraTarget0632';
 import { MatchPresentationLayer } from '../ui/MatchPresentationLayer';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import {
@@ -415,7 +416,11 @@ export class PresentationParityBoardScene extends PlaytestDemoBoardScene {
           .join('\n'),
       );
     }
-    this.updateActiveTokenHalo(player.id);
+    const presentationActorId = resolveCameraActor0632(
+      player.id,
+      (this.presentation as unknown as PresentationLayerRuntime | undefined)?.currentModel,
+    );
+    this.updateActiveTokenHalo(presentationActorId ?? player.id);
   }
 
   private updateActiveTokenHalo(currentPlayerId: number): void {

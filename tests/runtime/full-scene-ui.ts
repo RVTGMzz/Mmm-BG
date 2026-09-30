@@ -52,6 +52,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           return {
             active: found.active,
             visible: found.visible,
+            type: found.type,
             x: (found as any).x,
             y: (found as any).y,
             alpha: (found as any).alpha,
@@ -137,6 +138,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const staleRules = findByName(stage, 'vf07-minigame-result-body');
           (window as any).rulesPlayState = {
             choiceCount: choiceBoxes.length,
+            choiceTypes: choiceBoxes.map((entry) => entry.type),
             promptText: prompt.text,
             staleRules: Boolean(staleRules),
             subtitleVisible: Boolean(subtitle?.visible),

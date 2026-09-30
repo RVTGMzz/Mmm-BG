@@ -18,6 +18,7 @@ import { clampHudCenterVf04, HUD_SKIN_VF04 } from '../ui/visualFoundationHudVf04
 import { NEWS_SHEET_VF05, paintVisualFoundationNewsVf05 } from '../ui/visualFoundationNewsVf05';
 import { paintVisualFoundationCardVf051 } from '../ui/visualFoundationCardVf051';
 import { canonicalHudPosition0561 } from '../ui/canonicalPresentation0561';
+import { resolveCameraActor0632 } from '../ui/cameraTarget0632';
 import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import {
   MOBILE_UI_FONT_07044,
@@ -542,13 +543,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     const shadow = new Phaser.GameObjects.Graphics(this);
     const panel = new Phaser.GameObjects.Graphics(this);
 
-    const kicker = new Phaser.GameObjects.Text(this, -322, -118, model.eyebrow, {
+    const kicker = new Phaser.GameObjects.Text(this, -322, -123, model.eyebrow, {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '17px',
       fontStyle: 'bold',
       color: isNews ? '#31543c' : '#5d4e88',
       fixedWidth: 500,
-    });
+    }).setOrigin(0, 0.5).setName('cinematic-kicker-ch141');
 
     const title = new Phaser.GameObjects.Text(this, -322, -88, model.title, {
       fontFamily: MOBILE_UI_FONT_07044,
@@ -1069,7 +1070,10 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
   private syncMobileLandscapeUi07044(): void {
     const runtime = this.runtime07044();
-    const currentId = runtime.currentPlayer()?.id;
+    const currentId = resolveCameraActor0632(
+      runtime.currentPlayer()?.id,
+      runtime.presentation?.isBlocking() ? runtime.presentation.currentModel : undefined,
+    );
 
     for (const player of runtime.match.players) {
       const ui = runtime.hud.get(player.id);

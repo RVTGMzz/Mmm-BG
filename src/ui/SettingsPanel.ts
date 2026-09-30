@@ -127,6 +127,11 @@ export function installSettingsPanel(): void {
   const fullscreenToggle = root.querySelector<HTMLButtonElement>('.settings-fullscreen-toggle');
   const mobileFullscreenShortcut = root.querySelector<HTMLButtonElement>('.mobile-fullscreen-shortcut');
 
+  const blurSettingsFocusCh141 = () => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && root.contains(active)) active.blur();
+  };
+
   const setOpen = (open: boolean) => {
     if (!panel || !trigger) return;
     panel.hidden = !open;
@@ -134,7 +139,21 @@ export function installSettingsPanel(): void {
     trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
     trigger.textContent = open ? '×' : '⚙️';
     trigger.setAttribute('aria-label', open ? 'Đóng cài đặt' : 'Mở cài đặt');
+    if (!open) blurSettingsFocusCh141();
   };
+
+  // CH-14.1: a focused DOM button normally turns Space into a synthetic click.
+  // When Settings is closed, Space belongs to gameplay. Prevent only the browser
+  // default click and keep propagation alive for Phaser's keyboard owner.
+  const suppressClosedSettingsSpaceCh141 = (event: KeyboardEvent) => {
+    if (!(panel?.hidden ?? true)) return;
+    if (event.code !== 'Space' && event.key !== ' ') return;
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !root.contains(target)) return;
+    event.preventDefault();
+    target.blur();
+  };
+  root.addEventListener('keydown', suppressClosedSettingsSpaceCh141);
 
   const refreshFullscreenButton = () => {
     const target = document.documentElement as LegacyFullscreenElement;

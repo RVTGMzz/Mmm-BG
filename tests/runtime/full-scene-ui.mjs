@@ -75,9 +75,14 @@ try {
       }), surface === 'card' ? 'card-presentation-card' : 'news-presentation-card');
       assert.equal(chrome.texts.includes('N'), false, `${surface}: rarity badge N must not render`);
       assert.ok(chrome.impact?.visible, `${surface}: impact sticker missing`);
+      const kicker = await page.evaluate(() => window.fullSceneUi?.inspect('cinematic-kicker-ch141'));
+      assert.equal(kicker?.visible, true, `${surface}: shared kicker missing`);
+      assert.equal(kicker?.y, -123, `${surface}: kicker must be vertically centered in shared header`);
     } else if (surface === 'ranking') {
       assert.ok(result.body.fontSize >= 24, `ranking: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /🥇|Hạng 1/u);
+      const podiumPaper = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-minigame-podium-paper-ch141'));
+      assert.equal(podiumPaper?.type, 'Graphics', 'ranking: podium surface must use rounded Graphics owner');
     } else if (surface === 'job' || surface === 'jobwait') {
       assert.ok(result.body.fontSize >= 23, `${surface}: font shrank to ${result.body.fontSize}`);
       if (surface === 'jobwait') {
@@ -97,15 +102,21 @@ try {
     } else if (surface === 'majority') {
       assert.ok(result.body.fontSize >= 18, `majority: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /KHÔNG CÓ PHE THIỂU SỐ|BỊ LOẠI/u);
+      const resultBox = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-majority-result-box-ch141'));
+      assert.equal(resultBox?.type, 'Graphics', 'majority: result box must use rounded Graphics owner');
     } else if (surface === 'rules') {
       assert.ok(result.body.fontSize >= 24, `rules: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /Không tính thời gian chọn/u);
       assert.match(result.body.text, /OẲN TÙ XÌ/u);
+      const resultPaper = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-minigame-result-paper-ch141'));
+      assert.equal(resultPaper?.type, 'Graphics', 'rules: result paper must use rounded Graphics owner');
     } else if (surface === 'rulesplay') {
       assert.ok(result.body.fontSize >= 25, `rulesplay: prompt font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /CHỌN KÍN/u);
       const transition = await page.evaluate(() => window.rulesPlayState);
       assert.equal(transition?.choiceCount, 3, 'rulesplay: Three Doors gameplay must expose exactly 3 choices');
+      assert.deepEqual(transition?.choiceTypes, ['Graphics', 'Graphics', 'Graphics'],
+        'rulesplay: all choice cards must use rounded Graphics owners');
       assert.equal(transition?.staleRules, false, 'rulesplay: rule body must be destroyed before gameplay');
       assert.equal(transition?.subtitleVisible, false, 'rulesplay: repeated subtitle chrome must stay hidden during gameplay');
       assert.match(String(transition?.promptText ?? ''), /CHỌN KÍN/u);

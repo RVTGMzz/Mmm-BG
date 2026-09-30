@@ -154,7 +154,8 @@
     "test:rc-acceptance-ch10": "tsx tests/rc-acceptance-ch10.ts",
     "test:ui-density-polish-ch11": "tsx tests/ui-density-polish-ch11.ts",
     "test:ux-simplify-ch13": "tsx tests/ux-simplify-ch13.ts",
-    "test:match-recap-ch14": "tsx tests/match-recap-ch14.ts"
+    "test:match-recap-ch14": "tsx tests/match-recap-ch14.ts",
+    "test:runtime-polish-ch141": "tsx tests/runtime-polish-ch141.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
