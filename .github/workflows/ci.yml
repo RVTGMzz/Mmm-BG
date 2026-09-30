@@ -321,6 +321,7 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
           node tests/runtime/scroll-viewport.mjs
           node tests/runtime/full-scene-ui.mjs
+          node tests/runtime/character-select-ui.mjs
           node tests/runtime/mobile-landscape-entry.mjs
       - name: Upload runtime UI evidence
         if: always()
