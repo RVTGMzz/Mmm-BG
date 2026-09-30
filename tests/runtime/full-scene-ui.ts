@@ -8,7 +8,13 @@ import jobsJson from '../../src/content/core/jobs_mvp.json';
 import type { JobDefinition } from '../../src/core/jobs';
 
 const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
-browserSession.configureSolo(mode === 'ranking' || mode === 'majority' || mode === 'rules' ? [0, 1, 2, 3] : []);
+browserSession.configureSolo(
+  mode === 'ranking' || mode === 'majority' || mode === 'rules'
+    ? [0, 1, 2, 3]
+    : mode === 'rulesplay'
+      ? [1, 2, 3]
+      : [],
+);
 gameSession.reset();
 gameSession.players.forEach((player) => gameSession.setCharacter(player.id, 'starter-crybaby'));
 
@@ -27,12 +33,12 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
   create(): void {
     // Freeze ranking-mode timers during inherited create so an all-CPU browser
     // fixture cannot start an unrelated board turn before we install the no-op.
-    if (mode === 'ranking' || mode === 'majority' || mode === 'rules') this.time.timeScale = 0;
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay') this.time.timeScale = 0;
     super.create();
 
     const scene = this;
     const runtime = this as any;
-    if (mode === 'ranking' || mode === 'majority' || mode === 'rules') {
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay') {
       runtime.queueCpuActionIfNeeded = () => undefined;
       this.time.timeScale = 1;
     }
@@ -101,6 +107,32 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const scrollRoot = stage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container | null;
           const body = scrollRoot?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
           if (!body?.text.includes('Không tính thời gian chọn.')) return;
+          this.time.timeScale = 0;
+          this.tweens.timeScale = 0;
+          (window as any).surfaceReady = true;
+        });
+        return;
+      }
+
+      if (mode === 'rulesplay') {
+        this.time.timeScale = 8;
+        this.tweens.timeScale = 8;
+        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8714, 'MINIGAME_SLOT_02');
+        this.events.on('postupdate', () => {
+          const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
+          const prompt = stage?.getByName('vf07-minigame-choice-prompt') as Phaser.GameObjects.Text | null;
+          const choiceBoxes = stage?.list.filter((entry: Phaser.GameObjects.GameObject) =>
+            entry.name?.startsWith('vf07-minigame-choice-box-'),
+          ) ?? [];
+          if (!stage || !prompt || choiceBoxes.length !== 3) return;
+          const subtitle = run.root.getByName('vf07-minigame-subtitle') as Phaser.GameObjects.Text | null;
+          const staleRules = findByName(stage, 'vf07-minigame-result-body');
+          (window as any).rulesPlayState = {
+            choiceCount: choiceBoxes.length,
+            promptText: prompt.text,
+            staleRules: Boolean(staleRules),
+            subtitleVisible: Boolean(subtitle?.visible),
+          };
           this.time.timeScale = 0;
           this.tweens.timeScale = 0;
           (window as any).surfaceReady = true;

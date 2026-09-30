@@ -22,6 +22,7 @@ const names = {
   ranking: 'vf07-minigame-ranking-rows',
   majority: 'vf07-majority-result-copy',
   rules: 'vf07-minigame-result-body',
+  rulesplay: 'vf07-minigame-choice-prompt',
   passive: 'character-passive-body-ch05',
 };
 
@@ -100,6 +101,14 @@ try {
       assert.ok(result.body.fontSize >= 24, `rules: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /Không tính thời gian chọn/u);
       assert.match(result.body.text, /OẲN TÙ XÌ/u);
+    } else if (surface === 'rulesplay') {
+      assert.ok(result.body.fontSize >= 25, `rulesplay: prompt font shrank to ${result.body.fontSize}`);
+      assert.match(result.body.text, /CHỌN KÍN/u);
+      const transition = await page.evaluate(() => window.rulesPlayState);
+      assert.equal(transition?.choiceCount, 3, 'rulesplay: Three Doors gameplay must expose exactly 3 choices');
+      assert.equal(transition?.staleRules, false, 'rulesplay: rule body must be destroyed before gameplay');
+      assert.equal(transition?.subtitleVisible, false, 'rulesplay: repeated subtitle chrome must stay hidden during gameplay');
+      assert.match(String(transition?.promptText ?? ''), /CHỌN KÍN/u);
     } else if (surface === 'passive') {
       assert.ok(result.body.fontSize >= 14, `passive: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /Tỷ lệ 40%/u);
@@ -109,7 +118,7 @@ try {
     }
 
     await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-1280x800.png` });
-    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'card' || surface === 'news') {
+    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'rulesplay' || surface === 'card' || surface === 'news') {
       await page.setViewportSize({ width: 960, height: 540 });
       await page.waitForTimeout(250);
       await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-960x540.png` });
