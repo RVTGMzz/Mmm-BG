@@ -156,7 +156,8 @@
     "test:ux-simplify-ch13": "tsx tests/ux-simplify-ch13.ts",
     "test:match-recap-ch14": "tsx tests/match-recap-ch14.ts",
     "test:runtime-polish-ch141": "tsx tests/runtime-polish-ch141.ts",
-    "test:minigame-flow-ch142": "tsx tests/minigame-flow-ch142.ts"
+    "test:minigame-flow-ch142": "tsx tests/minigame-flow-ch142.ts",
+    "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
