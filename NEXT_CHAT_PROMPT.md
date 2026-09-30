@@ -6,19 +6,21 @@ Read first:
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
 3. `docs/SESSION_HANDOFF_2026-09-30_CH13_RC_UX_SIMPLIFY.md`
-4. Ron's newest screenshots / device feedback.
+4. `docs/SESSION_HANDOFF_2026-09-30_CH13_RUNTIME_HARDENING.md`
+5. Ron's newest screenshots / device feedback.
 
 Current authority:
 - build `0.1.70.4.33`
-- validated source `46c411ef7ced227c16955ea9e8f4ea96739594a8`
-- CI #3379 / run `36622100043`: SUCCESS
-- runtime evidence artifact `11058648007`
-- package artifact `11058622902`
+- public-build source `46c411ef7ced227c16955ea9e8f4ea96739594a8`
+- validated runtime-test HEAD `0472e46a0c37ab4b6db930a38f4bab57006e77c9`
+- CI #3382 / run `36662586775`: SUCCESS
+- runtime evidence artifact `11075216491`
+- package artifact `11074898703`
 - public mirror `8617f61536e75db039cf69e918ccfc741c3137cd`
 - Pages #80 / run `36623115256`: SUCCESS
 - public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
 
-CH-13 is source/CI complete. Do not redo it from scratch.
+CH-13 is source/CI complete. Post-CH13 rules-to-gameplay runtime hardening is also complete. Do not redo either from scratch.
 
 Locked CH-13 behavior:
 - Character Select uses Vietnamese-safe system font stack.
@@ -32,6 +34,10 @@ Locked CH-13 behavior:
 
 Historical runtime fixture alignment after CH-13 is intentional:
 `ffbd66ad` → `aba53ad2` → `ee35ac1a` → `fcf89774` → `46c411ef`.
+
+Post-CH13 runtime hardening is also intentional:
+`de0d3832` → `1c6f1eec` → `0472e46a`.
+It proves the one-time rules screen is removed before compact BA CỬA gameplay and captures both 1280x800 and 960x540 evidence.
 
 Next action:
 - first verify current branch HEAD + CI are still green;

@@ -1,3 +1,28 @@
+# MMM - 2026-09-30 CH-13 POST-RUNTIME HARDENING
+
+**RUNTIME ACCEPTANCE HARDENING: PASS. PUBLIC BUILD REMAINS 0.1.70.4.33.**
+
+Canonical hardening record:
+- `docs/SESSION_HANDOFF_2026-09-30_CH13_RUNTIME_HARDENING.md`
+- validated runtime-test HEAD: `0472e46a0c37ab4b6db930a38f4bab57006e77c9`
+- CI #3382 / run `36662586775`: **SUCCESS**
+- runtime evidence artifact: `11075216491`
+- RC package artifact: `11074898703`
+- compiled public mirror remains `8617f61536e75db039cf69e918ccfc741c3137cd`
+- Pages remains #80 / run `36623115256`: **SUCCESS**
+- public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+New runtime proof now locks the CH-13 transition from the one-time Mini Game rules screen into compact BA CỬA gameplay:
+- exactly 3 choice cards appear;
+- the old rules body is destroyed before gameplay;
+- repeated subtitle/rule chrome stays hidden;
+- evidence exists at 1280x800 and 960x540;
+- the rules screenshot is captured only after its fade settles, so evidence no longer freezes at low alpha.
+
+No production gameplay, economy, Character, online authority, RNG, payout, or public compiled output changed in this hardening pass.
+
+---
+
 # MMM — 2026-09-30 CH-13 RC UX SIMPLIFY HANDOFF
 
 **CH-13 SOURCE + CI + RUNTIME GATE + PACKAGE + PUBLIC PAGES: PASS**
