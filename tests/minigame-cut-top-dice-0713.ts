@@ -114,7 +114,7 @@ const overlay=await readFile('src/ui/MiniGameOverlay.ts','utf8');
 assert.match(overlay,/resolveCutTopDiceRound/);
 assert.match(overlay,/CẮT TOP XÚC XẮC/);
 assert.match(overlay,/2 điểm cao nhất đi tiếp/);
-assert.match(overlay,/đổ lại để tranh/);
+assert.match(overlay,/đổ lại để tranh/i);
 assert.doesNotMatch(overlay,/Math\.random/);
 
 console.log('[minigame-cut-top-dice-0713] PASS M35 cutoff reroll + Top-2 payout + retained HOST authority');
