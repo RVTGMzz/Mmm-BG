@@ -23,7 +23,7 @@ assert.match(board, /Phaser\.Math\.Clamp/);
 assert.match(board, /1280 - HUD_SAFE_MARGIN_07046 - halfWidth/);
 assert.match(board, /720 - HUD_SAFE_MARGIN_07046 - halfHeight/);
 
-assert.match(job, /Đổ xúc xắc để chọn nghề/);
+assert.doesNotMatch(job, /Đổ xúc xắc để chọn nghề/);
 assert.match(job, /XEM CHI TIẾT/);
 assert.match(job, /XEM NGHỀ/);
 assert.match(job, /LƯƠNG \/ VÒNG/);
