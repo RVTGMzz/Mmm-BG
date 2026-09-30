@@ -83,13 +83,14 @@ try {
         const details=texts.filter(x=>x.text==='XEM CHI TIẾT');
         return {
           title:font(texts.find(x=>x.text==='💼 JOB HUB')),
-          subtitle:font(texts.find(x=>x.text==='Đổ xúc xắc để chọn nghề')),
+          hasRemovedSubtitle:texts.some(x=>x.text==='Đổ xúc xắc để chọn nghề'),
           salaryMin:Math.min(...salaries.map(font)),
           detailMin:Math.min(...details.map(font)),
           roll:font(texts.find(x=>String(x.text).includes('ĐỔ XÚC XẮC'))),
         };
       });
-      assert.ok(sizes.title>=29 && sizes.subtitle>=19 && sizes.salaryMin>=14 && sizes.detailMin>=13 && sizes.roll>=21,
+      assert.equal(sizes.hasRemovedSubtitle,false,'Job Hub must not restore the removed instruction subtitle');
+      assert.ok(sizes.title>=29 && sizes.salaryMin>=14 && sizes.detailMin>=13 && sizes.roll>=21,
         `Job Hub text too small: ${JSON.stringify(sizes)}`);
     }
     if(surface==='jobdetail') {
