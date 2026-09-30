@@ -1,44 +1,52 @@
-# NEXT CHAT PROMPT — 2026-09-30 AFTER CH-14.2
+# NEXT CHAT PROMPT — 2026-09-30 AFTER CH-15 PUBLIC ONLINE
 
 Continue MMM from repo `RVTGMzz/Mmm-BG`, branch `mmm-mvp-0.1-core`.
 
 Read first:
 1. `HANDOFF_CURRENT.md`
 2. `docs/LATEST_HANDOFF.md`
-3. `docs/SESSION_HANDOFF_2026-09-30_CH142_MINIGAME_FLOW.md`
-4. Ron's newest screenshots / physical Steam Deck feedback.
+3. `docs/SESSION_HANDOFF_2026-09-30_CH15_PUBLIC_ONLINE.md`
+4. Ron's newest screenshots / two-device online feedback.
 
 Current authority:
-- build `0.1.70.4.36`
-- phase `RELEASE CANDIDATE • CH-14.2 MINI GAME FLOW`
-- validated source/test HEAD `818e592eaa7092791103997bae637102503c7674`
-- CI #3408 / run `36731988615`: SUCCESS
-- runtime evidence artifact `11105935846`
-- package artifact `11105856035`
-- public mirror `6a4780c42f24f712726cbe61b28ffa1e69b69e19`
-- Pages #83 / `36733257627`: SUCCESS
+- build `0.1.70.4.37`
+- phase `RELEASE CANDIDATE • CH-15 PUBLIC ONLINE`
+- validated source/test HEAD `6ec56ccd0cc92ca72131ed5f3a7a275bc9334fcc`
+- full CI #3422 / run `36743533044`: SUCCESS
+- runtime evidence artifact `11110879402`
+- package artifact `11111004466`
+- Fast Publish #2 / run `36743533077`: SUCCESS
+- public mirror `5a44add638a3877e39f74ed2847248f8b742680d`
+- Pages #88 / run `36744538810`: SUCCESS
 - public test: https://ronvotri.github.io/MeMeMe-Web-Playtest/
 
-CH-14.2 is complete in source + browser acceptance:
-- Job Hub no longer renders `Đổ xúc xắc để chọn nghề`;
-- human-involved Mini Games hold rules until Enter/Space/A/pointer confirmation;
-- CPU-only Mini Games skip the rules screen;
-- Character passive presentation hides chance/roll percentages while authoritative event data retains them;
-- BA CỬA, PHAO ĐƠN, CẮT TOP and ĐUA 3 CHẶNG result moments use a horizontal left-state/right-result flow.
+CH-15 is public and automated/live-Worker accepted:
+- Worker health probe is visible in ONLINE menu;
+- create/join/Ready/Start use existing Worker + Durable Object authority;
+- COPY LINK creates `?room=CODE`; invite links prefill the room field;
+- host/client reconnect credentials are saved per tab in sessionStorage;
+- reload shows `TIẾP TỤC PHÒNG` and restores the same room/seat;
+- explicit leave/dead-room return clears stale resume state;
+- live two-device smoke, repeated reconnect/ghost-seat stress and half-open socket replacement all PASS;
+- browser online-entry/resume gate PASS.
 
-Locked earlier behavior remains:
-- CH-14.1 active spotlight ownership, Space/Settings isolation, Card/News header geometry and rounded Mini Game surfaces;
+Physical two-device acceptance is still pending. Do not claim real-device online PASS until Ron tests it.
+
+Locked prior behavior:
+- CH-14.2 Job Hub compact copy, participant-aware rules, CPU-only rules skip, hidden passive percentages, horizontal Mini Game result flow;
+- CH-14.1 spotlight/input/Card-News/rounded UI fixes;
+- CH-14 Match Recap;
 - no client Math.random();
-- HOST/replay authority for gameplay RNG and B$;
+- HOST/replay gameplay RNG/B$ authority;
 - Character probabilities 40/50/20/45/60;
-- current economy and Mini Game payouts unchanged;
-- PR #1 remains Draft/Open.
+- current economy and Mini Game payouts;
+- PR #1 stays Draft/Open.
 
 Next action:
-- prioritize Ron's newest physical-device screenshots/full-match observations;
-- if a new layout issue appears, fix the shared owner/layout rule and add a regression gate;
-- do not claim physical Steam Deck PASS until Ron tests it;
+- prioritize Ron's newest real two-device online test;
+- if online fails, capture exact room state / seat / action / reconnect moment and fix the shared authority/session rule;
+- do not rewrite Worker/reconnect architecture for presentation bugs;
 - do not merge PR #1 unless Ron explicitly asks.
 
-Always include the public link at the end of a completed build/fix report:
+Public link must be included at the end of every completed build/fix report:
 https://ronvotri.github.io/MeMeMe-Web-Playtest/
