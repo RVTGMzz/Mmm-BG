@@ -6,7 +6,6 @@ import {
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
-import { controlsMiniGameSeatCh16 } from './minigameSeatControlCh16';
 import { createScrollableTextViewport070429 } from './scrollableTextViewport070429';
 import { characterWinnerVoiceCh04d } from './characterMiniGameWinnerVoiceCh04d';
 import {
@@ -194,7 +193,7 @@ export function startMiniGameOverlay(
   root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
-  const isInteractiveHuman = (id: number) => controlsMiniGameSeatCh16(browserSession.current, id);
+  const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
   const clearStage = () => {
     stage.removeAll(true);
     paintRoundedSurfaceCh141(
