@@ -15,9 +15,11 @@ assert.match(overlay,/ĐUA 3 CHẶNG/);
 assert.match(overlay,/finalSprintReroll/);
 assert.match(overlay,/GIỮ 🎲/);
 assert.match(overlay,/REROLL/);
+const tournamentStart=overlay.indexOf('const runTournament');
+const sprintStart=overlay.indexOf("baseType === 'final_sprint'", tournamentStart);
 const sprintBlock=overlay.slice(
-  overlay.indexOf("baseType === 'final_sprint'"),
-  overlay.indexOf("baseType === 'cut_top_dice'", overlay.indexOf("baseType === 'final_sprint'")),
+  sprintStart,
+  overlay.indexOf("baseType === 'cut_top_dice'", sprintStart),
 );
 assert.match(sprintBlock,/rankTiedIdsByDiceLowToHigh/);
 assert.doesNotMatch(sprintBlock,/runRpsFinal/);
