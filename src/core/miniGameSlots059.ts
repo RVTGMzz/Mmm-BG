@@ -20,7 +20,7 @@ export interface MiniGameSlot059 {
  * but lowers table-wide inflation for the one-lap economy:
  * - 3+/4-player tables distribute exactly 50 B$ total;
  * - direct 1v1 tables distribute exactly 30 B$ total.
- * Ranking, hidden-choice rules and HOST payout ownership are unchanged.
+ * Reward totals and HOST payout ownership stay unchanged while arena mechanics can evolve.
  */
 export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
   {
@@ -78,7 +78,7 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     title: 'NƯỚC RÚT CUỐI VÒNG',
     icon: '🏁',
     identity: 'CHUNG KẾT',
-    description: 'Chạy đủ 3 chặng D6; cộng tổng rồi cắt Top 2 vào chung kết.',
+    description: 'Chạy 3 chặng D6; mỗi người có 1 quyền REROLL; cộng tổng để xếp hạng.',
     mode3Plus: 'final_sprint',
     majorityRewards: [25, 15, 5, 5],
     rpsRewards: [17, 13, 0, 0],
