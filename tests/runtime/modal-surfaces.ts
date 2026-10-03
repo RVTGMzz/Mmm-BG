@@ -46,7 +46,7 @@ class SurfaceScene extends CareerMinigameBoardScene07044 {
           (window as any).rulesReadyToAdvance=true;
           return;
         }
-        const expectedChoices = mode === 'doors' || mode === 'buoys' ? 3 : 2;
+        const expectedChoices = mode === 'buoys' ? 3 : 2;
         const choiceBoxes = stage?.list.filter((entry: Phaser.GameObjects.GameObject) =>
           entry.name?.startsWith('vf07-minigame-choice-box-'),
         ) ?? [];
