@@ -108,13 +108,13 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
           const scrollRoot = stage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container | null;
           const body = scrollRoot?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
-          if (!body?.text.includes('Không tính thời gian chọn.') || rulesSettleQueued) return;
+          if (!body?.text.includes('🎯 MỤC TIÊU') || rulesSettleQueued) return;
           rulesSettleQueued = true;
           this.time.delayedCall(240, () => {
             const liveStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
             const liveScrollRoot = liveStage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container | null;
             const liveBody = liveScrollRoot?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
-            if (!liveBody?.text.includes('Không tính thời gian chọn.')) return;
+            if (!liveBody?.text.includes('🎯 MỤC TIÊU')) return;
             this.time.timeScale = 0;
             this.tweens.timeScale = 0;
             (window as any).surfaceReady = true;
@@ -132,7 +132,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const currentStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
           const rulesScroll = currentStage?.getByName('vf07-minigame-result-scroll') as Phaser.GameObjects.Container | null;
           const rulesBody = rulesScroll?.getByName('vf07-minigame-result-body') as Phaser.GameObjects.Text | null;
-          if (rulesBody?.text.includes('Không tính thời gian chọn.') && !rulesSeen) {
+          if (rulesBody?.text.includes('🎯 MỤC TIÊU') && !rulesSeen) {
             rulesSeen = true;
             (window as any).rulesReadyToAdvance = true;
           }
@@ -144,9 +144,16 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           if (!stage || !prompt || choiceBoxes.length !== 3) return;
           const subtitle = run.root.getByName('vf07-minigame-subtitle') as Phaser.GameObjects.Text | null;
           const staleRules = findByName(stage, 'vf07-minigame-result-body');
+          const choiceLabels = [0, 1, 2].map((index) =>
+            (stage.getByName(`vf07-minigame-choice-label-${index}`) as Phaser.GameObjects.Text | null)?.text ?? '',
+          );
           (window as any).rulesPlayState = {
             choiceCount: choiceBoxes.length,
             choiceTypes: choiceBoxes.map((entry) => entry.type),
+            choiceVisible: choiceBoxes.map((entry) => entry.visible && entry.active),
+            choiceAlpha: choiceBoxes.map((entry) => entry.alpha),
+            choiceInteractive: choiceBoxes.map((entry) => Boolean((entry as any).input?.enabled)),
+            choiceLabels,
             promptText: prompt.text,
             staleRules: Boolean(staleRules),
             subtitleVisible: Boolean(subtitle?.visible),
