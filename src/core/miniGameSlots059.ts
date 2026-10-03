@@ -1,4 +1,4 @@
-export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'solo_buoy' | 'cut_top_dice' | 'final_sprint';
+export type MiniGameBaseMode059 = 'majority_minority' | 'rps' | 'three_doors' | 'all_in' | 'solo_buoy' | 'cut_top_dice' | 'final_sprint';
 export type MiniGameThreePlusMode059 = Exclude<MiniGameBaseMode059, 'rps'>;
 export type MiniGameRewardTable059 = readonly [number, number, number, number];
 
@@ -42,8 +42,8 @@ export const MINI_GAME_SLOTS_059: readonly MiniGameSlot059[] = [
     title: 'KÈO ALL-IN',
     icon: '🔥',
     identity: 'HẠNG 1 ĂN DÀY',
-    description: 'Chọn kín một trong ba cửa; D6 quyết định cửa sống sót.',
-    mode3Plus: 'three_doors',
+    description: 'Đổ D6 đầu rồi chọn CHỐT hoặc ALL-IN; tổng vượt 9 là cháy.',
+    mode3Plus: 'all_in',
     majorityRewards: [35, 10, 5, 0],
     rpsRewards: [22, 8, 0, 0],
   },
