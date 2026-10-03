@@ -13,7 +13,7 @@ match.players[2]!.money=155;
 match.players[3]!.money=205;
 
 appendMatchEvent(match,'job_selected',{jobId:'JOB_DOCTOR',jobTitle:'Bác sĩ',jobIcon:'🩺'},0);
-appendMatchEvent(match,'minigame_tile',{contentId:'MINIGAME_SLOT_02',title:'MINI GAME • BA CỬA',affectedPlayerIds:'0,1,2,3'},0);
+appendMatchEvent(match,'minigame_tile',{contentId:'MINIGAME_SLOT_02',title:'MINI GAME • KÈO ALL-IN',affectedPlayerIds:'0,1,2,3'},0);
 appendMatchEvent(match,'minigame_reward',{sourceEventSeq:2,rank:1,amount:35},0);
 appendMatchEvent(match,'minigame_reward',{sourceEventSeq:2,rank:2,amount:10},1);
 appendMatchEvent(match,'card_play',{title:'Ví Ai Nấy Lo',targetId:2,affectedPlayerIds:'2'},1);
@@ -40,7 +40,7 @@ assert.equal(p3.newsAffected,1);
 assert.equal(p3.hospitalEntries,1);
 assert.match(p3.award,/BỆNH VIỆN/u);
 assert.ok(recap.moments.length >= 5 && recap.moments.length <= 8);
-assert.ok(recap.moments.some((entry)=>entry.text.includes('BA CỬA')));
+assert.ok(recap.moments.some((entry)=>entry.text.includes('KÈO ALL-IN')));
 assert.ok(recap.moments.some((entry)=>entry.text.includes('Xổ số')));
 
 const scene=await readFile('src/scenes/CareerMinigameBoardScene07044.ts','utf8');
