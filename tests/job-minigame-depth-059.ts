@@ -56,7 +56,7 @@ for (const slot of MINI_GAME_SLOTS_059) {
 assert.equal(new Set(MINI_GAME_SLOTS_059.map((slot) => slot.majorityRewards.join(','))).size, 5, 'Each canonical Mini Game space must keep a distinct majority/minority stake profile.');
 
 const allInType = expectedMiniGameRewardType059('MINIGAME_SLOT_02', 4)!;
-assert.equal(allInType, 'three_doors@MINIGAME_SLOT_02');
+assert.equal(allInType, 'all_in@MINIGAME_SLOT_02');
 assert.equal(isMiniGameRewardType(allInType), true);
 assert.equal(isMiniGameRewardType('majority_minority@MINIGAME_SLOT_99'), false);
 assert.equal(miniGameRewardForRank(allInType, 1), 35);
