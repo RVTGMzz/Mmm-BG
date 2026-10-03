@@ -23,12 +23,14 @@ import {
   resolveMajorityMinorityRound,
   resolveRpsRound,
   resolveThreeDoorsRound,
+  resolveAllInRound,
   resolveSoloBuoyRound,
   resolveCutTopDiceRound,
   resolveFinalSprint,
   type PalmChoice,
   type RpsChoice,
   type ThreeDoorChoice,
+  type AllInChoice,
   type SoloBuoyChoice,
 } from '../core/minigames';
 import type { MatchEventValue } from '../core/matchState';
@@ -69,6 +71,14 @@ function cpuThreeDoor(eventSeq: number, playerId: number, round: number): ThreeD
   return (['a', 'b', 'c'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? 'a';
 }
 
+function cpuAllIn(firstRoll: number): AllInChoice {
+  return firstRoll <= 4 ? 'all_in' : 'hold';
+}
+
+function allInRoll(eventSeq: number, playerId: number, phase: number): number {
+  return deterministicBit(eventSeq, playerId + 401, phase + 211) % 6 + 1;
+}
+
 function cpuSoloBuoy(eventSeq: number, playerId: number, round: number): SoloBuoyChoice {
   return (['1', '2', '3'] as const)[deterministicBit(eventSeq, playerId, round) % 3] ?? '1';
 }
@@ -83,6 +93,10 @@ function cutTopDiceRoll(eventSeq: number, playerId: number, round: number): numb
 
 function finalSprintRoll(eventSeq: number, playerId: number, leg: number): number {
   return deterministicBit(eventSeq, playerId + 307, leg + 113) % 6 + 1;
+}
+
+function finalSprintReroll(eventSeq: number, playerId: number, leg: number): number {
+  return deterministicBit(eventSeq, playerId + 509, leg + 271) % 6 + 1;
 }
 
 function threeDoorLabel(choice: ThreeDoorChoice): string {
@@ -104,6 +118,7 @@ function rpsLabel(choice: RpsChoice): string {
 function rewardTitle(gameType: MiniGameBaseRewardType): string {
   if (gameType === 'rps') return 'OẲN TÙ XÌ';
   if (gameType === 'three_doors') return 'BA CỬA';
+  if (gameType === 'all_in') return 'KÈO ALL-IN';
   if (gameType === 'solo_buoy') return 'PHAO ĐƠN';
   if (gameType === 'cut_top_dice') return 'CẮT TOP XÚC XẮC';
   if (gameType === 'final_sprint') return 'ĐUA 3 CHẶNG';
@@ -511,6 +526,15 @@ export function startMiniGameOverlay(
         payout,
       ].join('\n');
     }
+    if (baseType === 'all_in') {
+      return [
+        '🎯 MỤC TIÊU  Có điểm cao nhưng đừng vượt 9.',
+        '🎲 BẮT ĐẦU  Mỗi người nhận 1 D6.',
+        '🎮 CHỌN  CHỐT điểm hiện tại hoặc ALL-IN đổ thêm 1 D6.',
+        '💥 CHÁY  ALL-IN mà tổng > 9 → 0 điểm.',
+        payout,
+      ].join('\n');
+    }
     if (baseType === 'solo_buoy') {
       return [
         '🎯 MỤC TIÊU  Đứng một mình trên phao.',
@@ -532,9 +556,9 @@ export function startMiniGameOverlay(
     if (baseType === 'final_sprint') {
       return [
         '🎯 MỤC TIÊU  Lấy tổng điểm sau 3 chặng.',
-        '🏁 CHƠI  Mỗi chặng mỗi người đổ 1 D6.',
-        '✅ TOP  Cộng 3 D6 → lấy Top 2.',
-        '🤝 HÒA RANH TOP  Chỉ nhóm hòa chạy hiệp phụ.',
+        '🏁 CHƠI  3 chặng D6; mỗi người có 1 quyền REROLL cho cả cuộc đua.',
+        '↻ REROLL  Dùng sau khi thấy điểm; đã reroll phải nhận điểm mới.',
+        '✅ XẾP HẠNG  Cộng 3 chặng; tổng cao đứng trước.',
         payout,
       ].join('\n');
     }
