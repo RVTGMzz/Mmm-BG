@@ -102,6 +102,8 @@ assert.match(overlay,/PHAO 1/);
 assert.match(overlay,/PHAO 2/);
 assert.match(overlay,/PHAO 3/);
 assert.match(overlay,/chỉ phao có đúng 1 người mới nổi/);
+assert.match(overlay,/CÙNG CHÌM • PHÂN HẠNG/);
+assert.match(overlay,/rankTiedIdsByDiceLowToHigh/);
 assert.doesNotMatch(overlay,/Math\.random/);
 
 console.log('[minigame-solo-buoy-0712] PASS M26 PHAO ĐƠN unique-choice elimination + retained HOST payout authority');
