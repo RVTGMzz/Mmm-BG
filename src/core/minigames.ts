@@ -3,6 +3,7 @@ import type { MiniGameBaseMode059, MiniGameThreePlusMode059 } from './miniGameSl
 export type PalmChoice = 'up' | 'down';
 export type RpsChoice = 'rock' | 'paper' | 'scissors';
 export type ThreeDoorChoice = 'a' | 'b' | 'c';
+export type AllInChoice = 'hold' | 'all_in';
 export type SoloBuoyChoice = '1' | '2' | '3';
 export type MiniGameMode = MiniGameBaseMode059;
 
@@ -24,6 +25,13 @@ export interface ThreeDoorsRoundResult {
   eliminatedPlayerIds: number[];
   survivingPlayerIds: number[];
   tied: boolean;
+}
+
+export interface AllInRoundResult {
+  scores: Readonly<Record<number, number>>;
+  firstRolls: Readonly<Record<number, number>>;
+  secondRolls: Readonly<Record<number, number | undefined>>;
+  bustedPlayerIds: number[];
 }
 
 export interface SoloBuoyRoundResult {
@@ -124,6 +132,70 @@ export function resolveMajorityMinorityRound(
     eliminatedPlayerIds: eliminated,
     survivingPlayerIds: active.filter((id) => !eliminatedSet.has(id)),
     tied: false,
+  };
+}
+
+/**
+ * KÈO ALL-IN:
+ * - every active player starts with one D6;
+ * - HOLD keeps that score;
+ * - ALL-IN adds one more D6, but totals above the bust limit score 0;
+ * - ranking/tie-break presentation is handled by the Mini Game owner.
+ */
+export function resolveAllInRound(
+  activePlayerIds: readonly number[],
+  firstRolls: Readonly<Record<number, number>>,
+  choices: Readonly<Record<number, AllInChoice>>,
+  secondRolls: Readonly<Record<number, number>>,
+  bustLimit = 9,
+): AllInRoundResult {
+  const active = [...new Set(activePlayerIds)];
+  if (!Number.isInteger(bustLimit) || bustLimit < 2) {
+    throw new RangeError(`All-In bustLimit must be an integer >= 2, got ${String(bustLimit)}.`);
+  }
+
+  const scores: Record<number, number> = {};
+  const retainedFirst: Record<number, number> = {};
+  const retainedSecond: Record<number, number | undefined> = {};
+  const bustedPlayerIds: number[] = [];
+
+  for (const id of active) {
+    const first = firstRolls[id];
+    if (!Number.isInteger(first) || first < 1 || first > 6) {
+      throw new RangeError(`All-In first roll for P${id} must be D6 1..6, got ${String(first)}.`);
+    }
+    retainedFirst[id] = first;
+
+    const choice = choices[id];
+    if (choice !== 'hold' && choice !== 'all_in') {
+      throw new RangeError(`All-In choice for P${id} must be hold/all_in.`);
+    }
+
+    if (choice === 'hold') {
+      retainedSecond[id] = undefined;
+      scores[id] = first;
+      continue;
+    }
+
+    const second = secondRolls[id];
+    if (!Number.isInteger(second) || second < 1 || second > 6) {
+      throw new RangeError(`All-In second roll for P${id} must be D6 1..6, got ${String(second)}.`);
+    }
+    retainedSecond[id] = second;
+    const total = first + second;
+    if (total > bustLimit) {
+      scores[id] = 0;
+      bustedPlayerIds.push(id);
+    } else {
+      scores[id] = total;
+    }
+  }
+
+  return {
+    scores,
+    firstRolls: retainedFirst,
+    secondRolls: retainedSecond,
+    bustedPlayerIds,
   };
 }
 
