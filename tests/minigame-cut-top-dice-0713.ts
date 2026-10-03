@@ -115,9 +115,11 @@ assert.match(overlay,/resolveCutTopDiceRound/);
 assert.match(overlay,/CẮT TOP XÚC XẮC/);
 assert.match(overlay,/2 điểm cao nhất đi tiếp/);
 assert.match(overlay,/đổ lại để tranh/i);
+const tournamentStart=overlay.indexOf('const runTournament');
+const cutTopStart=overlay.indexOf("baseType === 'cut_top_dice'", tournamentStart);
 const cutTopBlock=overlay.slice(
-  overlay.indexOf("baseType === 'cut_top_dice'"),
-  overlay.indexOf("NHIỀU RA ÍT BỊ", overlay.indexOf("baseType === 'cut_top_dice'")),
+  cutTopStart,
+  overlay.indexOf("NHIỀU RA ÍT BỊ", cutTopStart),
 );
 assert.match(cutTopBlock,/runDiceDuel/);
 assert.match(cutTopBlock,/TOP 2 • CHỐT HẠNG/);
