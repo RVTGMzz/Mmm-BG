@@ -983,6 +983,74 @@ export function startMiniGameOverlay(
   };
 
 
+  const runDiceDuel = async (
+    finalists: readonly number[],
+    roundOffset: number,
+    heading = '🎲 ĐẤU XÚC XẮC',
+  ): Promise<{ winnerId: number; loserId: number }> => {
+    const aId = finalists[0] ?? -1;
+    const bId = finalists[1] ?? -1;
+    const a = playerById(aId);
+    const b = playerById(bId);
+    if (!a || !b) {
+      const fallbackWinner = a ? aId : bId;
+      const fallbackLoser = a ? bId : aId;
+      return { winnerId: fallbackWinner, loserId: fallbackLoser };
+    }
+
+    for (let duelRound = 1; duelRound <= 8; duelRound += 1) {
+      const aRoll = cutTopDiceRoll(eventSeq, aId, roundOffset + duelRound);
+      const bRoll = cutTopDiceRoll(eventSeq, bId, roundOffset + duelRound);
+      await showRoundFlowCh142(
+        heading,
+        'NGƯỜI CHƠI • D6',
+        [
+          `${a.name} • 🎲 ${aRoll}`,
+          `${b.name} • 🎲 ${bRoll}`,
+        ],
+        'KẾT QUẢ',
+        aRoll === bRoll
+          ? '🤝 HÒA • ĐỔ LẠI'
+          : `🏆 ${aRoll > bRoll ? a.name : b.name} thắng kèo`,
+        1250,
+      );
+      if (aRoll !== bRoll) {
+        return aRoll > bRoll
+          ? { winnerId: aId, loserId: bId }
+          : { winnerId: bId, loserId: aId };
+      }
+    }
+
+    const fallbackBit = deterministicBit(eventSeq, 1701 + roundOffset, 1901 + roundOffset) % 2;
+    return fallbackBit === 0
+      ? { winnerId: aId, loserId: bId }
+      : { winnerId: bId, loserId: aId };
+  };
+
+  const rankTiedIdsByDiceLowToHigh = async (
+    ids: readonly number[],
+    roundOffset: number,
+    heading: string,
+  ): Promise<number[]> => {
+    if (ids.length <= 1) return [...ids];
+
+    const seeded = [...ids];
+    for (let index = seeded.length - 1; index > 0; index -= 1) {
+      const swapIndex = deterministicBit(eventSeq, 1801 + roundOffset + index, 2001 + index) % (index + 1);
+      [seeded[index], seeded[swapIndex]] = [seeded[swapIndex]!, seeded[index]!];
+    }
+
+    let champion = seeded[0]!;
+    const lowToHigh: number[] = [];
+    for (let index = 1; index < seeded.length; index += 1) {
+      const duel = await runDiceDuel([champion, seeded[index]!], roundOffset + index * 20, heading);
+      lowToHigh.push(duel.loserId);
+      champion = duel.winnerId;
+    }
+    lowToHigh.push(champion);
+    return lowToHigh;
+  };
+
   const rankSimultaneousThreeDoorLosers = async (
     ids: readonly number[],
     roundOffset: number,
