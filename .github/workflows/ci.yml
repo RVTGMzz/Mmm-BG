@@ -126,7 +126,7 @@ jobs:
         run: npm run test:news-card-depth-058
       - name: 0.1.59 Job and five Mini Game arena depth
         run: npm run test:job-minigame-depth-059
-      - name: 0.1.71.1 M17 BA CỬA Mini Game variety
+      - name: CH-16 M17 KÈO ALL-IN Mini Game
         run: npm run test:minigame-three-doors-0711
       - name: 0.1.71.2 M26 PHAO ĐƠN Mini Game variety
         run: npm run test:minigame-solo-buoy-0712
@@ -309,7 +309,7 @@ jobs:
         run: npm run test:rc-acceptance-ch10
       - name: CH-11 Job + majority Mini Game density polish
         run: npm run test:ui-density-polish-ch11
-      - name: CH-13 runtime UX simplify and Three Doors tie-ranking
+      - name: CH-13/16 runtime UX + deterministic Mini Game tie-ranking
         run: npm run test:ux-simplify-ch13
       - name: CH-14 authoritative match recap
         run: npm run test:match-recap-ch14
@@ -346,11 +346,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.37 CH-15 Public Online build
+      - name: Upload MMM 0.1.70.4.38 CH-16 Mini Game Overhaul build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.37-ch15-public-online
+          name: mmm-playtest-0.1.70.4.38-ch16-minigame-overhaul
           path: dist
           if-no-files-found: error
           retention-days: 14
