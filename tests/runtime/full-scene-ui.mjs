@@ -106,8 +106,9 @@ try {
       assert.equal(resultBox?.type, 'Graphics', 'majority: result box must use rounded Graphics owner');
     } else if (surface === 'rules') {
       assert.ok(result.body.fontSize >= 24, `rules: font shrank to ${result.body.fontSize}`);
-      assert.match(result.body.text, /Không tính thời gian chọn/u);
-      assert.match(result.body.text, /OẲN TÙ XÌ/u);
+      assert.match(result.body.text, /MỤC TIÊU/u);
+      assert.match(result.body.text, /CỬA A/u);
+      assert.match(result.body.text, /THƯỞNG/u);
       const resultPaper = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-minigame-result-paper-ch141'));
       assert.equal(resultPaper?.type, 'Graphics', 'rules: result paper must use rounded Graphics owner');
     } else if (surface === 'rulescpu') {
@@ -123,6 +124,14 @@ try {
       assert.equal(transition?.choiceCount, 3, 'rulesplay: Three Doors gameplay must expose exactly 3 choices');
       assert.deepEqual(transition?.choiceTypes, ['Graphics', 'Graphics', 'Graphics'],
         'rulesplay: all choice cards must use rounded Graphics owners');
+      assert.deepEqual(transition?.choiceVisible, [true, true, true],
+        'rulesplay: CỬA A/B/C must all be visible');
+      assert.ok(transition?.choiceAlpha?.every((value) => value > 0.9),
+        'rulesplay: CỬA A/B/C must not be transparent');
+      assert.deepEqual(transition?.choiceInteractive, [true, true, true],
+        'rulesplay: CỬA A/B/C must all accept pointer input');
+      assert.deepEqual(transition?.choiceLabels, ['CỬA A', 'CỬA B', 'CỬA C'],
+        'rulesplay: Three Doors must visibly label all three doors');
       assert.equal(transition?.staleRules, false, 'rulesplay: rule body must be destroyed before gameplay');
       assert.equal(transition?.subtitleVisible, false, 'rulesplay: repeated subtitle chrome must stay hidden during gameplay');
       assert.match(String(transition?.promptText ?? ''), /CHỌN KÍN/u);
