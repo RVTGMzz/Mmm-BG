@@ -6,6 +6,7 @@ import {
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
+import { controlsMiniGameSeatCh16 } from './minigameSeatControlCh16';
 import { createScrollableTextViewport070429 } from './scrollableTextViewport070429';
 import { characterWinnerVoiceCh04d } from './characterMiniGameWinnerVoiceCh04d';
 import {
@@ -193,7 +194,7 @@ export function startMiniGameOverlay(
   root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
-  const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
+  const isInteractiveHuman = (id: number) => controlsMiniGameSeatCh16(browserSession.current, id);
   const clearStage = () => {
     stage.removeAll(true);
     paintRoundedSurfaceCh141(
@@ -493,50 +494,58 @@ export function startMiniGameOverlay(
 
 
   const rulesCopy = (baseType: MiniGameBaseRewardType): string => {
-    const payout = `THƯỞNG • ${miniGameRewardCopy059(slot.contentId, baseType)}`;
+    const payout = `💰 THƯỞNG  ${miniGameRewardCopy059(slot.contentId, baseType)}`;
     if (baseType === 'rps') {
-      return ['OẲN TÙ XÌ 1 VS 1.', 'Hòa thì chơi lại.', payout].join('\n');
+      return [
+        '🎯 MỤC TIÊU  Thắng kèo 1 VS 1.',
+        '🎮 CHƠI  Chọn BÚA / BAO / KÉO rồi cùng lật.',
+        '🤝 HÒA  Giống nhau → chơi lại.',
+        payout,
+      ].join('\n\n');
     }
     if (baseType === 'three_doors') {
       return [
-        'Chọn kín 1 trong 3 cửa.',
-        'D6 mở cửa sống: 1–2=A • 3–4=B • 5–6=C.',
-        'Không ai hoặc tất cả cùng trúng → chơi lại.',
-        'Nhiều người bị loại cùng lượt → chỉ nhóm đó OẲN TÙ XÌ để xếp hạng.',
-        'Không tính thời gian chọn.',
+        '🎯 MỤC TIÊU  Chọn đúng cửa sống.',
+        '🎮 CHỌN  🚪 A   🚪 B   🚪 C',
+        '🎲 D6  1–2 → A   •   3–4 → B   •   5–6 → C',
+        '🤝 HÒA  Không ai hoặc tất cả cùng trúng → chơi lại.',
         payout,
-      ].join('\n');
+      ].join('\n\n');
     }
     if (baseType === 'solo_buoy') {
       return [
-        'Chọn kín 1 trong 3 phao.',
-        'Chỉ phao có đúng 1 người mới nổi.',
-        'Không ai rớt hoặc không ai sống → chọn lại.',
+        '🎯 MỤC TIÊU  Đứng một mình trên phao.',
+        '🎮 CHỌN  🛟 1   🛟 2   🛟 3',
+        '✅ SỐNG  Chỉ phao có đúng 1 người mới nổi.',
+        '🤝 HÒA  Không ai rớt hoặc không ai sống → chọn lại.',
         payout,
-      ].join('\n');
+      ].join('\n\n');
     }
     if (baseType === 'cut_top_dice') {
       return [
-        'Tất cả cùng đổ D6.',
-        'Hai điểm cao nhất giữ Top 2.',
-        'Hòa đúng ranh Top → chỉ nhóm hòa đổ lại.',
+        '🎯 MỤC TIÊU  Giành 1 trong 2 ghế Top.',
+        '🎲 CHƠI  Mỗi người đổ 1 D6.',
+        '✅ TOP  Hai điểm cao nhất đi tiếp.',
+        '🤝 HÒA RANH TOP  Chỉ nhóm hòa đổ lại.',
         payout,
-      ].join('\n');
+      ].join('\n\n');
     }
     if (baseType === 'final_sprint') {
       return [
-        'Chạy đủ 3 chặng D6 và cộng tổng.',
-        'Top 2 vào chung kết.',
-        'Hòa ranh Top → chỉ nhóm hòa chạy hiệp phụ.',
+        '🎯 MỤC TIÊU  Lấy tổng điểm sau 3 chặng.',
+        '🏁 CHƠI  Mỗi chặng mỗi người đổ 1 D6.',
+        '✅ TOP  Cộng 3 D6 → lấy Top 2.',
+        '🤝 HÒA RANH TOP  Chỉ nhóm hòa chạy hiệp phụ.',
         payout,
-      ].join('\n');
+      ].join('\n\n');
     }
     return [
-      'Chọn kín NGỬA hoặc SẤP.',
-      'Phe ít người hơn bị loại.',
-      'Không có phe thiểu số rõ ràng → ra lại.',
+      '🎯 MỤC TIÊU  Tránh phe ít người hơn.',
+      '🎮 CHỌN KÍN  🤲 NGỬA  hoặc  🖐️ SẤP',
+      '❌ BỊ LOẠI  Phe có ít người hơn.',
+      '🤝 HÒA  2–2 hoặc tất cả cùng phía → ra lại.',
       payout,
-    ].join('\n');
+    ].join('\n\n');
   };
 
   const showRulesIntro = async (
