@@ -1277,7 +1277,14 @@ export function startMiniGameOverlay(
           continue;
         }
 
-        eliminationOrder.push(...result.eliminatedPlayerIds);
+        const rankedDrowned = result.eliminatedPlayerIds.length > 1
+          ? await rankTiedIdsByDiceLowToHigh(
+              result.eliminatedPlayerIds,
+              2600 + round * 100,
+              '🛟 CÙNG CHÌM • PHÂN HẠNG',
+            )
+          : result.eliminatedPlayerIds;
+        eliminationOrder.push(...rankedDrowned);
         activeIds = result.survivorPlayerIds;
         const survivors = activeIds
           .map((id) => playerById(id)?.name ?? `P${id + 1}`)
@@ -1296,59 +1303,91 @@ export function startMiniGameOverlay(
         );
       }
     } else if (baseType === 'final_sprint') {
-      subtitle.setText(`${slot.title} • ĐUA 3 CHẶNG • cộng tổng D6 rồi lấy Top 2`);
+      subtitle.setText(`${slot.title} • ĐUA 3 CHẶNG • mỗi người có 1 quyền REROLL`);
       const legRolls: Record<number, number[]> = {};
+      const rerollUsed = new Set<number>();
       for (const id of activeIds) legRolls[id] = [];
+
       for (let leg = 1; leg <= 3; leg += 1) {
         round = leg;
-        for (const id of activeIds) legRolls[id]!.push(finalSprintRoll(eventSeq, id, leg));
-        const standings = activeIds.map((id) => ({ id, total: legRolls[id]!.reduce((sum, roll) => sum + roll, 0) })).sort((a, b) => b.total - a.total);
-        const sprintRows = standings.map(({ id, total }) =>
-          `${playerById(id)?.name ?? `P${id + 1}`} • ${legRolls[id]!.map((roll) => `🎲${roll}`).join(' ')} • Σ${total}`,
-        );
+        const rerolledThisLeg = new Set<number>();
+
+        for (const id of activeIds) {
+          const player = playerById(id);
+          if (!player) continue;
+          const first = finalSprintRoll(eventSeq, id, leg);
+          let finalRoll = first;
+
+          if (!rerollUsed.has(id)) {
+            const decision = isInteractiveHuman(id)
+              ? await choiceButtons(player, [
+                  { value: 'keep', icon: '✅', label: `GIỮ 🎲${first}`, fill: 0x9eddf0 },
+                  { value: 'reroll', icon: '↻', label: 'REROLL', fill: 0xffd983 },
+                ])
+              : (first <= 2 ? 'reroll' : 'keep');
+
+            if (decision === 'reroll') {
+              finalRoll = finalSprintReroll(eventSeq, id, leg);
+              rerollUsed.add(id);
+              rerolledThisLeg.add(id);
+            }
+          }
+
+          legRolls[id]!.push(finalRoll);
+        }
+
+        const standings = activeIds
+          .map((id) => ({
+            id,
+            total: legRolls[id]!.reduce((sum, roll) => sum + roll, 0),
+          }))
+          .sort((a, b) => b.total - a.total);
+
+        const sprintRows = standings.map(({ id, total }) => {
+          const rolls = legRolls[id]!.map((roll) => `🎲${roll}`).join(' ');
+          const usedNow = rerolledThisLeg.has(id) ? ' ↻' : '';
+          const token = rerollUsed.has(id) ? ' • REROLL ĐÃ DÙNG' : ' • ↻ CÒN 1';
+          return `${playerById(id)?.name ?? `P${id + 1}`} • ${rolls}${usedNow} • Σ${total}${token}`;
+        });
         const leader = standings[0];
+
         await showRoundFlowCh142(
           `🏁 CHẶNG ${leg}/3`,
           'NGƯỜI CHƠI • THÀNH TÍCH',
           sprintRows,
           'KẾT QUẢ',
-          leader ? `🏁 ĐANG DẪN\n${playerById(leader.id)?.name ?? `P${leader.id + 1}`}\n\nTỔNG ${leader.total}` : '—',
-          leg === 3 ? 1900 : 1350,
+          leader
+            ? `🏁 ĐANG DẪN\n${playerById(leader.id)?.name ?? `P${leader.id + 1}`}\n\nTỔNG ${leader.total}`
+            : '—',
+          leg === 3 ? 1900 : 1450,
         );
       }
-      const sprint = resolveFinalSprint(activeIds, legRolls, 2);
-      const finalists = [...sprint.lockedPlayerIds];
-      eliminationOrder.push(...sprint.lowerPlayerIds);
-      let overtime = [...sprint.overtimePlayerIds];
-      let slotsOpen = sprint.slotsOpen;
-      if (sprint.complete) {
-        activeIds = finalists.slice(0, 2);
-        await showResult('🏁 CẮT TOP SAU 3 CHẶNG', `✅ Vào chung kết: ${activeIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}`);
-      } else {
-        let overtimeRound = 0;
-        while (overtime.length > slotsOpen && safety < 16) {
-          safety += 1; overtimeRound += 1;
-          const rolls: Record<number, number> = {};
-          for (const id of overtime) rolls[id] = finalSprintRoll(eventSeq, id, 20 + overtimeRound);
-          const cut = resolveCutTopDiceRound(overtime, rolls, slotsOpen);
-          finalists.push(...cut.lockedPlayerIds); eliminationOrder.push(...cut.eliminatedPlayerIds);
-          const overtimeRows = overtime.map((id) => `${playerById(id)?.name ?? `P${id + 1}`} • 🎲 ${rolls[id]}`);
-          if (cut.complete) {
-            await showRoundFlowCh142(
-              '⚡ HIỆP PHỤ CHỐT TOP', 'NGƯỜI CHƠI • D6', overtimeRows, 'KẾT QUẢ',
-              `✅ Chốt ghế: ${cut.lockedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ') || '—'}`,
-            );
-            overtime = []; slotsOpen = 0; break;
-          }
-          await showRoundFlowCh142(
-            '⚡ HÒA RANH TOP • CHẠY TIẾP', 'NGƯỜI CHƠI • D6', overtimeRows, 'KẾT QUẢ',
-            `🔁 ${cut.rerollPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ')}\n\nTranh ${cut.slotsOpen} ghế còn lại.`,
-          );
-          overtime = cut.rerollPlayerIds; slotsOpen = cut.slotsOpen;
-        }
-        if (overtime.length === slotsOpen && slotsOpen > 0) finalists.push(...overtime);
-        activeIds = finalists.slice(0, 2);
+
+      const totals: Record<number, number> = {};
+      for (const id of activeIds) {
+        totals[id] = legRolls[id]!.reduce((sum, roll) => sum + roll, 0);
       }
+
+      const rankingPlayerIds: number[] = [];
+      const totalGroups = [...new Set(activeIds.map((id) => totals[id] ?? 0))]
+        .sort((a, b) => b - a);
+      for (let groupIndex = 0; groupIndex < totalGroups.length; groupIndex += 1) {
+        const total = totalGroups[groupIndex]!;
+        const tiedIds = activeIds.filter((id) => (totals[id] ?? 0) === total);
+        if (tiedIds.length <= 1) {
+          rankingPlayerIds.push(...tiedIds);
+          continue;
+        }
+        const lowToHigh = await rankTiedIdsByDiceLowToHigh(
+          tiedIds,
+          4400 + groupIndex * 100,
+          `🏁 HÒA TỔNG ${total} • HIỆP PHỤ`,
+        );
+        rankingPlayerIds.push(...lowToHigh.reverse());
+      }
+
+      await showRanking(rankingPlayerIds, baseType);
+      return { gameType: payoutType, rankingPlayerIds };
     } else if (baseType === 'cut_top_dice') {
       subtitle.setText(`${slot.title} • CẮT TOP XÚC XẮC • 2 điểm cao nhất đi tiếp`);
       const finalists: number[] = [];
@@ -1419,6 +1458,17 @@ export function startMiniGameOverlay(
           .filter((id) => !activeIds.includes(id) && !eliminationOrder.includes(id));
         activeIds.push(...fallbackPool.slice(0, 2 - activeIds.length));
       }
+
+      if (activeIds.length === 2) {
+        const final = await runDiceDuel(activeIds, 3500, '⚔️ TOP 2 • CHỐT HẠNG');
+        const rankingPlayerIds = [
+          final.winnerId,
+          final.loserId,
+          ...[...eliminationOrder].reverse(),
+        ];
+        await showRanking(rankingPlayerIds, baseType);
+        return { gameType: payoutType, rankingPlayerIds };
+      }
     } else {
       subtitle.setText(`${slot.title} • NHIỀU RA ÍT BỊ • phe thiểu số bị loại`);
       while (activeIds.length > 2 && safety < 16) {
@@ -1465,10 +1515,15 @@ export function startMiniGameOverlay(
 
     let rankingPlayerIds: number[];
     if (activeIds.length === 2) {
-      const final = await runRpsFinal(activeIds, round * 10);
-      rankingPlayerIds = final
-        ? [final.winnerId, final.loserId, ...[...eliminationOrder].reverse()]
-        : [...activeIds, ...[...eliminationOrder].reverse()];
+      if (baseType === 'solo_buoy') {
+        const final = await runDiceDuel(activeIds, 2800 + round * 10, '🛟 CÒN 2 • PHAO CỨU HỘ');
+        rankingPlayerIds = [final.winnerId, final.loserId, ...[...eliminationOrder].reverse()];
+      } else {
+        const final = await runRpsFinal(activeIds, round * 10);
+        rankingPlayerIds = final
+          ? [final.winnerId, final.loserId, ...[...eliminationOrder].reverse()]
+          : [...activeIds, ...[...eliminationOrder].reverse()];
+      }
       await showRanking(rankingPlayerIds, baseType);
       return { gameType: payoutType, rankingPlayerIds };
     }
