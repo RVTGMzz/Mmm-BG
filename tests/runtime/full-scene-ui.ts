@@ -141,10 +141,10 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const choiceBoxes = stage?.list.filter((entry: Phaser.GameObjects.GameObject) =>
             entry.name?.startsWith('vf07-minigame-choice-box-'),
           ) ?? [];
-          if (!stage || !prompt || choiceBoxes.length !== 3) return;
+          if (!stage || !prompt || choiceBoxes.length !== 2) return;
           const subtitle = run.root.getByName('vf07-minigame-subtitle') as Phaser.GameObjects.Text | null;
           const staleRules = findByName(stage, 'vf07-minigame-result-body');
-          const choiceLabels = [0, 1, 2].map((index) =>
+          const choiceLabels = [0, 1].map((index) =>
             (stage.getByName(`vf07-minigame-choice-label-${index}`) as Phaser.GameObjects.Text | null)?.text ?? '',
           );
           (window as any).rulesPlayState = {
