@@ -115,6 +115,13 @@ assert.match(overlay,/resolveCutTopDiceRound/);
 assert.match(overlay,/CẮT TOP XÚC XẮC/);
 assert.match(overlay,/2 điểm cao nhất đi tiếp/);
 assert.match(overlay,/đổ lại để tranh/i);
+const cutTopBlock=overlay.slice(
+  overlay.indexOf("baseType === 'cut_top_dice'"),
+  overlay.indexOf("NHIỀU RA ÍT BỊ", overlay.indexOf("baseType === 'cut_top_dice'")),
+);
+assert.match(cutTopBlock,/runDiceDuel/);
+assert.match(cutTopBlock,/TOP 2 • CHỐT HẠNG/);
+assert.doesNotMatch(cutTopBlock,/runRpsFinal/);
 assert.doesNotMatch(overlay,/Math\.random/);
 
 console.log('[minigame-cut-top-dice-0713] PASS M35 cutoff reroll + Top-2 payout + retained HOST authority');
