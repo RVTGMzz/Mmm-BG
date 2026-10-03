@@ -501,7 +501,7 @@ export function startMiniGameOverlay(
         '🎮 CHƠI  Chọn BÚA / BAO / KÉO rồi cùng lật.',
         '🤝 HÒA  Giống nhau → chơi lại.',
         payout,
-      ].join('\n\n');
+      ].join('\n');
     }
     if (baseType === 'three_doors') {
       return [
@@ -510,7 +510,7 @@ export function startMiniGameOverlay(
         '🎲 D6  1–2 → A   •   3–4 → B   •   5–6 → C',
         '🤝 HÒA  Không ai hoặc tất cả cùng trúng → chơi lại.',
         payout,
-      ].join('\n\n');
+      ].join('\n');
     }
     if (baseType === 'solo_buoy') {
       return [
@@ -519,7 +519,7 @@ export function startMiniGameOverlay(
         '✅ SỐNG  Chỉ phao có đúng 1 người mới nổi.',
         '🤝 HÒA  Không ai rớt hoặc không ai sống → chọn lại.',
         payout,
-      ].join('\n\n');
+      ].join('\n');
     }
     if (baseType === 'cut_top_dice') {
       return [
@@ -528,7 +528,7 @@ export function startMiniGameOverlay(
         '✅ TOP  Hai điểm cao nhất đi tiếp.',
         '🤝 HÒA RANH TOP  Chỉ nhóm hòa đổ lại.',
         payout,
-      ].join('\n\n');
+      ].join('\n');
     }
     if (baseType === 'final_sprint') {
       return [
@@ -537,7 +537,7 @@ export function startMiniGameOverlay(
         '✅ TOP  Cộng 3 D6 → lấy Top 2.',
         '🤝 HÒA RANH TOP  Chỉ nhóm hòa chạy hiệp phụ.',
         payout,
-      ].join('\n\n');
+      ].join('\n');
     }
     return [
       '🎯 MỤC TIÊU  Tránh phe ít người hơn.',
@@ -545,7 +545,7 @@ export function startMiniGameOverlay(
       '❌ BỊ LOẠI  Phe có ít người hơn.',
       '🤝 HÒA  2–2 hoặc tất cả cùng phía → ra lại.',
       payout,
-    ].join('\n\n');
+    ].join('\n');
   };
 
   const showRulesIntro = async (
