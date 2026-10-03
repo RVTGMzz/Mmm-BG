@@ -32,9 +32,9 @@ assert.match(mini,/await showRulesIntro\(baseType, activeIds\)/);
 assert.match(mini,/🎯 MỤC TIÊU/);
 assert.match(mini,/💰 THƯỞNG/);
 assert.doesNotMatch(mini,/Không tính thời gian chọn\./);
-assert.match(mini,/rankSimultaneousThreeDoorLosers/);
-assert.match(mini,/await runRpsFinal\(\[champion, challenger\]/);
+assert.match(mini,/rankTiedIdsByDiceLowToHigh/);
+assert.match(mini,/runDiceDuel/);
 assert.doesNotMatch(mini,/performance\.now\(\)|Date\.now\(\)/);
 assert.match(mini,/rowsViewport\.isScrollable \? 10000 : 5200/);
 
-console.log('[ux-simplify-ch13] PASS font + Card/News + Job + Mini Game intro/timing + Three Doors simultaneous-elimination ranking');
+console.log('[ux-simplify-ch13] PASS font + Card/News + Job + compact Mini Game intro + deterministic tie ranking');
