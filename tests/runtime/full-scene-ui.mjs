@@ -107,31 +107,34 @@ try {
     } else if (surface === 'rules') {
       assert.ok(result.body.fontSize >= 24, `rules: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /MỤC TIÊU/u);
-      assert.match(result.body.text, /CỬA A/u);
+      assert.match(result.body.text, /CHỐT/u);
+      assert.match(result.body.text, /ALL-IN/u);
       assert.match(result.body.text, /THƯỞNG/u);
       const resultPaper = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-minigame-result-paper-ch141'));
       assert.equal(resultPaper?.type, 'Graphics', 'rules: result paper must use rounded Graphics owner');
     } else if (surface === 'rulescpu') {
       const cpuRules = await page.evaluate(() => window.cpuRulesState);
       assert.equal(cpuRules?.sawRules, false, 'rulescpu: CPU-only Mini Game must skip the rules screen');
-      assert.match(String(cpuRules?.result ?? ''), /CỬA|Đi tiếp|Bị loại|ra lại/i);
+      assert.match(String(cpuRules?.result ?? ''), /DẪN ĐẦU|CHÁY|ĐIỂM/i);
       const flowBox = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-round-flow-result-box-ch142'));
       assert.equal(flowBox?.type, 'Graphics', 'rulescpu: result must use horizontal rounded flow');
     } else if (surface === 'rulesplay') {
       assert.ok(result.body.fontSize >= 25, `rulesplay: prompt font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /CHỌN KÍN/u);
       const transition = await page.evaluate(() => window.rulesPlayState);
-      assert.equal(transition?.choiceCount, 3, 'rulesplay: Three Doors gameplay must expose exactly 3 choices');
-      assert.deepEqual(transition?.choiceTypes, ['Graphics', 'Graphics', 'Graphics'],
-        'rulesplay: all choice cards must use rounded Graphics owners');
-      assert.deepEqual(transition?.choiceVisible, [true, true, true],
-        'rulesplay: CỬA A/B/C must all be visible');
+      assert.equal(transition?.choiceCount, 2, 'rulesplay: M17 All-In must expose CHỐT and ALL-IN');
+      assert.deepEqual(transition?.choiceTypes, ['Graphics', 'Graphics'],
+        'rulesplay: both All-In choice cards must use rounded Graphics owners');
+      assert.deepEqual(transition?.choiceVisible, [true, true],
+        'rulesplay: CHỐT and ALL-IN must both be visible');
       assert.ok(transition?.choiceAlpha?.every((value) => value > 0.9),
-        'rulesplay: CỬA A/B/C must not be transparent');
-      assert.deepEqual(transition?.choiceInteractive, [true, true, true],
-        'rulesplay: CỬA A/B/C must all accept pointer input');
-      assert.deepEqual(transition?.choiceLabels, ['CỬA A', 'CỬA B', 'CỬA C'],
-        'rulesplay: Three Doors must visibly label all three doors');
+        'rulesplay: CHỐT and ALL-IN must not be transparent');
+      assert.deepEqual(transition?.choiceInteractive, [true, true],
+        'rulesplay: CHỐT and ALL-IN must both accept pointer input');
+      assert.match(String(transition?.choiceLabels?.[0] ?? ''), /CHỐT 🎲[1-6]/u,
+        'rulesplay: first card must show the current D6 and CHỐT');
+      assert.equal(transition?.choiceLabels?.[1], 'ALL-IN',
+        'rulesplay: second card must visibly say ALL-IN');
       assert.equal(transition?.staleRules, false, 'rulesplay: rule body must be destroyed before gameplay');
       assert.equal(transition?.subtitleVisible, false, 'rulesplay: repeated subtitle chrome must stay hidden during gameplay');
       assert.match(String(transition?.promptText ?? ''), /CHỌN KÍN/u);
