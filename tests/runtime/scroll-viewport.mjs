@@ -214,14 +214,15 @@ try {
         `Mini Game choice text too small: ${JSON.stringify(sizes)}`);
     }
     if(surface==='doors') {
-      const doors=await page.evaluate(()=>{
+      // Retained surface key for M17; canonical M17 is CH-16 KÈO ALL-IN.
+      const allIn=await page.evaluate(()=>{
         const s=window.surfaceScene;
         const root=s.children.getByName('minigame-modal');
         const stage=root?.getByName('vf07-minigame-stage');
-        const boxes=[0,1,2]
+        const boxes=[0,1]
           .map(i=>stage?.getByName(`vf07-minigame-choice-box-${i}`))
           .filter(Boolean);
-        const labels=[0,1,2]
+        const labels=[0,1]
           .map(i=>stage?.getByName(`vf07-minigame-choice-label-${i}`))
           .filter(Boolean);
         const panel=root?.getByName('vf07-minigame-shell-ch141');
@@ -252,9 +253,10 @@ try {
           }),
         };
       });
-      assert.equal(doors.count,3,'BA CỬA must render exactly three choice cards');
-      assert.deepEqual(doors.labels,['CỬA A','CỬA B','CỬA C']);
-      assert.equal(doors.inside,true,'BA CỬA cards must remain inside the Mini Game shell');
+      assert.equal(allIn.count,2,'KÈO ALL-IN must render CHỐT and ALL-IN');
+      assert.match(String(allIn.labels[0] ?? ''),/^CHỐT 🎲[1-6]$/u);
+      assert.equal(allIn.labels[1],'ALL-IN');
+      assert.equal(allIn.inside,true,'KÈO ALL-IN choice cards must remain inside the Mini Game shell');
     }
     if(surface==='buoys') {
       const buoys=await page.evaluate(()=>{
