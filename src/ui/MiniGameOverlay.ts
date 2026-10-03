@@ -1108,6 +1108,74 @@ export function startMiniGameOverlay(
       return { gameType: payoutType, rankingPlayerIds };
     }
 
+    if (baseType === 'all_in') {
+      subtitle.setText(`${slot.title} • CHỐT HAY ALL-IN • tổng > 9 là cháy`);
+      const firstRolls: Record<number, number> = {};
+      const secondRolls: Record<number, number> = {};
+      const choices: Record<number, AllInChoice> = {};
+
+      for (const id of activeIds) {
+        const player = playerById(id);
+        if (!player) continue;
+        const first = allInRoll(eventSeq, id, 1);
+        firstRolls[id] = first;
+        choices[id] = isInteractiveHuman(id)
+          ? await choiceButtons(player, [
+              { value: 'hold', icon: '✋', label: `CHỐT 🎲${first}`, fill: 0x9eddf0 },
+              { value: 'all_in', icon: '🔥', label: 'ALL-IN', fill: 0xffd983 },
+            ])
+          : cpuAllIn(first);
+        if (choices[id] === 'all_in') secondRolls[id] = allInRoll(eventSeq, id, 2);
+      }
+
+      const result = resolveAllInRound(activeIds, firstRolls, choices, secondRolls, 9);
+      const resultRows = activeIds.map((id) => {
+        const name = playerById(id)?.name ?? `P${id + 1}`;
+        const first = firstRolls[id] ?? 0;
+        const choice = choices[id] ?? 'hold';
+        const second = result.secondRolls[id];
+        const score = result.scores[id] ?? 0;
+        if (choice === 'hold') return `${name} • 🎲${first} • ✋ CHỐT = ${score}`;
+        return result.bustedPlayerIds.includes(id)
+          ? `${name} • 🎲${first} + 🎲${second ?? 0} • 💥 CHÁY = 0`
+          : `${name} • 🎲${first} + 🎲${second ?? 0} • 🔥 ALL-IN = ${score}`;
+      });
+      const bestScore = Math.max(...activeIds.map((id) => result.scores[id] ?? 0));
+      const leaders = activeIds
+        .filter((id) => (result.scores[id] ?? 0) === bestScore)
+        .map((id) => playerById(id)?.name ?? `P${id + 1}`)
+        .join(', ');
+      await showRoundFlowCh142(
+        '🔥 KÈO ALL-IN',
+        'NGƯỜI CHƠI • QUYẾT ĐỊNH',
+        resultRows,
+        'KẾT QUẢ',
+        `🏆 DẪN ĐẦU\n${leaders || '—'}\n\nĐIỂM ${bestScore}`,
+        2300,
+      );
+
+      const rankingPlayerIds: number[] = [];
+      const scoreGroups = [...new Set(activeIds.map((id) => result.scores[id] ?? 0))]
+        .sort((a, b) => b - a);
+      for (let groupIndex = 0; groupIndex < scoreGroups.length; groupIndex += 1) {
+        const score = scoreGroups[groupIndex]!;
+        const tiedIds = activeIds.filter((id) => (result.scores[id] ?? 0) === score);
+        if (tiedIds.length <= 1) {
+          rankingPlayerIds.push(...tiedIds);
+          continue;
+        }
+        const lowToHigh = await rankTiedIdsByDiceLowToHigh(
+          tiedIds,
+          2200 + groupIndex * 100,
+          `🎲 HÒA ${score} ĐIỂM • PHÂN HẠNG`,
+        );
+        rankingPlayerIds.push(...lowToHigh.reverse());
+      }
+
+      await showRanking(rankingPlayerIds, baseType);
+      return { gameType: payoutType, rankingPlayerIds };
+    }
+
     let round = 0;
     let safety = 0;
 
