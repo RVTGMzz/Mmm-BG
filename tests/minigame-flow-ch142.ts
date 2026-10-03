@@ -10,6 +10,8 @@ assert.match(mini,/if \(!hasHumanParticipant\) return/);
 assert.match(mini,/vf07-minigame-rules-continue-ch142/);
 assert.match(mini,/manualAdvance/);
 assert.match(mini,/showRoundFlowCh142/);
+assert.match(mini,/controlsMiniGameSeatCh16\(browserSession\.current, id\)/);
+for (const marker of ['🎯 MỤC TIÊU','🎮 CHỌN','💰 THƯỞNG']) assert.ok(mini.includes(marker));
 assert.match(mini,/vf07-round-flow-result-copy-ch142/);
 for(const marker of ['BA CỬA','PHAO ĐƠN','CẮT TOP','CHẶNG']) assert.ok(mini.includes(marker));
 assert.match(model,/passive chance\/roll are hidden gameplay stats/);
