@@ -15,7 +15,7 @@ const NEWS=newsJson as NewsDefinition[];
 const runtime={board:BOARD,cards:CARDS,news:NEWS};
 
 assert.equal(expectedMiniGameRewardType059('MINIGAME_SLOT_01',4),'majority_minority@MINIGAME_SLOT_01');
-assert.equal(expectedMiniGameRewardType059('MINIGAME_SLOT_02',4),'three_doors@MINIGAME_SLOT_02');
+assert.equal(expectedMiniGameRewardType059('MINIGAME_SLOT_02',4),'all_in@MINIGAME_SLOT_02');
 assert.equal(expectedMiniGameRewardType059('MINIGAME_SLOT_03',4),'solo_buoy@MINIGAME_SLOT_03');
 assert.equal(expectedMiniGameRewardType059('MINIGAME_SLOT_04',4),'cut_top_dice@MINIGAME_SLOT_04');
 assert.equal(expectedMiniGameRewardType059('MINIGAME_SLOT_05',4),'final_sprint@MINIGAME_SLOT_05');
