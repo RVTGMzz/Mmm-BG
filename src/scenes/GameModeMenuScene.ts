@@ -3,17 +3,14 @@ import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
+import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 
 export class GameModeMenuScene extends Phaser.Scene {
   constructor() { super('GameModeMenuScene'); }
 
   create(): void {
     bgmController.playMenu();
-    this.cameras.main.setBackgroundColor('#f4ead7');
-
-    const frame = this.add.graphics();
-    frame.fillStyle(0xfffbf3, 1).fillRoundedRect(150, 90, 980, 540, 34);
-    frame.lineStyle(5, 0x202020, 1).strokeRoundedRect(150, 90, 980, 540, 34);
+    paintToyTownBackdropCh17(this, 'peach', { x: 150, y: 90, width: 980, height: 540, radius: 34 });
 
     const root = document.createElement('div');
     root.className = 'mememe-mode-menu';
