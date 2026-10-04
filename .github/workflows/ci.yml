@@ -2,7 +2,7 @@ name: MMM MVP CI
 
 on:
   push:
-    branches: [main, mmm-mvp-0.1-core]
+    branches: [main, mmm-mvp-0.1-dev]
   pull_request:
     branches: [main]
 
@@ -356,7 +356,7 @@ jobs:
           retention-days: 14
 
       - name: Checkout compiled GitHub playtest mirror
-        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-core'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-dev'
         uses: actions/checkout@v4
         with:
           repository: ronvotri/MeMeMe-Web-Playtest
@@ -364,7 +364,7 @@ jobs:
           path: public-mirror
 
       - name: Verify public Pages release guard
-        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-core'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-dev'
         shell: bash
         run: |
           set -euo pipefail
@@ -373,7 +373,7 @@ jobs:
           grep -q 'Publish playtest Pages' public-mirror/.github/workflows/pages.yml
 
       - name: Publish compiled GitHub playtest mirror
-        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-core'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/mmm-mvp-0.1-dev'
         shell: bash
         run: |
           set -euo pipefail
