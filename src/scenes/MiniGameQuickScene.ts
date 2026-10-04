@@ -8,6 +8,7 @@ import { MINI_GAME_SLOTS_059 } from '../core/miniGameSlots059';
 import { startMiniGameOverlay, type MiniGameOutcome } from '../ui/MiniGameOverlay';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 import type { PlayerState } from '../core/types';
+import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 
 function cpuSeatsForQuickMode(mode: string): number[] {
   if (mode === '1p3cpu') return [1, 2, 3];
@@ -27,7 +28,6 @@ export class MiniGameQuickScene extends Phaser.Scene {
 
   create(): void {
     bgmController.playMenu();
-    this.cameras.main.setBackgroundColor('#f4ead7');
     this.paintBackground();
     this.showSelector();
 
@@ -40,9 +40,8 @@ export class MiniGameQuickScene extends Phaser.Scene {
   }
 
   private paintBackground(): void {
-    const frame = this.add.graphics().setName('quick-minigame-frame');
-    frame.fillStyle(0xfffbf3, 1).fillRoundedRect(70, 38, 1140, 644, 34);
-    frame.lineStyle(5, 0x202020, 1).strokeRoundedRect(70, 38, 1140, 644, 34);
+    paintToyTownBackdropCh17(this, 'butter', { x: 70, y: 38, width: 1140, height: 644, radius: 34 })
+      .setName('quick-minigame-frame');
   }
 
   private showSelector(): void {
