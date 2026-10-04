@@ -39,12 +39,14 @@ try {
       const title = card.querySelector('strong');
       const titleStyle = title ? getComputedStyle(title) : null;
       return {
-        x: rect.x,
-        y: rect.y,
-        right: rect.right,
-        bottom: rect.bottom,
-        width: rect.width,
-        height: rect.height,
+        x: card.offsetLeft,
+        y: card.offsetTop,
+        right: card.offsetLeft + card.offsetWidth,
+        bottom: card.offsetTop + card.offsetHeight,
+        width: card.offsetWidth,
+        height: card.offsetHeight,
+        visualX: rect.x,
+        visualY: rect.y,
         scrollWidth: card.scrollWidth,
         clientWidth: card.clientWidth,
         flexDirection: style.flexDirection,
@@ -65,7 +67,7 @@ try {
   assert(a && b && c && d && e);
 
   assert.ok(Math.abs(a.y - b.y) < 3 && Math.abs(b.y - c.y) < 3, 'cards 1-3 must share the first row');
-  assert.ok(Math.abs(d.y - e.y) < 3, 'cards 4-5 must share the second row');
+  assert.ok(Math.abs(d.y - e.y) < 3, 'cards 4-5 must share the second layout row independent of selected-card transforms');
   assert.ok(d.y > a.bottom + 5, 'second row must sit below first row instead of overlapping it');
   assert.ok(d.x > a.x + 40, 'bottom row must be inset from the left');
   assert.ok(e.right < c.right - 40, 'bottom row must be inset from the right');

@@ -37,6 +37,8 @@ try {
       const strong = cards[0]?.querySelector('strong');
       const small = cards[0]?.querySelector('small');
       const passive = cards[0]?.querySelector('.character-passive-ch02c');
+      const productionPortraits = [...document.querySelectorAll('.character-production-portrait-ch181')];
+      const productionImages = productionPortraits.map((portrait) => portrait.querySelector('img'));
       const rect = (node) => {
         const r = node?.getBoundingClientRect();
         return r ? { left:r.left, top:r.top, right:r.right, bottom:r.bottom, width:r.width, height:r.height } : null;
@@ -53,10 +55,16 @@ try {
         passiveFont: passive ? Number.parseFloat(getComputedStyle(passive).fontSize) : 0,
         scrollWidth: document.documentElement.scrollWidth,
         scrollHeight: document.documentElement.scrollHeight,
+        productionPortraitCount: productionPortraits.length,
+        productionImagesReady: productionImages.every((image) => Boolean(image?.complete && image.naturalWidth >= 300 && image.naturalHeight >= 200)),
+        secretPortraitLeak: productionImages.some((image) => /secret-baby/i.test(image?.getAttribute('src') ?? '')),
       };
     });
 
     assert.equal(state.count, 5, `${viewport.name}: Character Select must show four starters + RANDOM`);
+    assert.equal(state.productionPortraitCount, 4, `${viewport.name}: four visible starters must use CH-18.1 production portraits`);
+    assert.equal(state.productionImagesReady, true, `${viewport.name}: production portrait atlas failed to decode/load`);
+    assert.equal(state.secretPortraitLeak, false, `${viewport.name}: Secret Baby art leaked into normal Character Select`);
     assert.match(state.randomText, /RANDOM \(\?\)/u);
     assert.match(state.fontFamily, /system-ui/i, `${viewport.name}: Character Select must retain the Vietnamese-safe system font stack`);
     assert.doesNotMatch(state.fontFamily, /Arial Rounded/i, `${viewport.name}: rounded fallback must not return`);
@@ -82,7 +90,7 @@ try {
     await page.close();
   }
 
-  console.log('[character-select-ui] PASS Vietnamese-safe typography + 5-card containment at 1280x800 and 960x540');
+  console.log('[character-select-ui] PASS CH-18.1 production portraits + Secret-safe 5-card containment at 1280x800 and 960x540');
 } finally {
   await browser.close();
 }
