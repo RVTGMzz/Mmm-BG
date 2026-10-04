@@ -158,6 +158,7 @@
     "test:runtime-polish-ch141": "tsx tests/runtime-polish-ch141.ts",
     "test:minigame-flow-ch142": "tsx tests/minigame-flow-ch142.ts",
     "test:game-mode-minigame-ch161": "tsx tests/game-mode-minigame-ch161.ts",
+    "test:visual-refresh-turn-order-ch172": "tsx tests/visual-refresh-turn-order-ch172.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
