@@ -323,6 +323,10 @@ jobs:
         run: npm run test:minigame-flow-ch142
       - name: CH-16.1 Board or Mini Game entry + Quick Play
         run: npm run test:game-mode-minigame-ch161
+      - name: CH-16C host-authoritative Mini Game choice sync
+        run: npm run test:minigame-online-choice-sync-ch16c
+      - name: CH-16C Mini Game overlay online choice ownership
+        run: npm run test:minigame-online-overlay-ch16c
       - name: CH-17.2 Roll For Order visual refresh
         run: npm run test:visual-refresh-turn-order-ch172
       - name: CH-17.3 in-match HUD + turn-control visual refresh
@@ -372,11 +376,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.49 CH-17.10 Group Media Visual Refresh build
+      - name: Upload MMM 0.1.70.4.50 CH-16C Online Mini Game Sync build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.49-ch17-10-group-media-refresh
+          name: mmm-playtest-0.1.70.4.50-ch16c-online-minigame-sync
           path: dist
           if-no-files-found: error
           retention-days: 14
