@@ -174,7 +174,11 @@ export function startMiniGameOverlay(
   const slot = miniGameSlot059(contentId);
   // The fullscreen Mini Game owns the UI camera above the P1–P4 HUD (depth 1000).
   const root = scene.add.container(640, 360).setDepth(1500).setName('minigame-modal').setScrollFactor(0);
-  const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x111111, 0.72).setInteractive();
+  const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x4b302a, 0.58).setInteractive();
+  const shellShadow = roundedSurfaceCh141(
+    scene, 0, 10, MINI_GAME_VISUAL_VF07.bounds.width + 12, MINI_GAME_VISUAL_VF07.bounds.height + 12,
+    0x4b302a, 0.24, MINI_GAME_VISUAL_VF07.shellRadius + 4,
+  ).setName('vf07-minigame-shell-shadow-ch174');
   const panel = roundedSurfaceCh141(
     scene, 0, 0, MINI_GAME_VISUAL_VF07.bounds.width, MINI_GAME_VISUAL_VF07.bounds.height,
     MINI_GAME_VISUAL_VF07.shellFill, 1, MINI_GAME_VISUAL_VF07.shellRadius,
@@ -188,7 +192,14 @@ export function startMiniGameOverlay(
     scene, -390, -222, 96, 60, MINI_GAME_VISUAL_VF07.stickerFill, 1,
     MINI_GAME_VISUAL_VF07.chipRadius, 3, MINI_GAME_VISUAL_VF07.shellStroke, 0.55,
   ).setName('vf07-minigame-sticker-ch141');
-  const title = scene.add.text(0, -246, `${slot.icon} ${slot.title}`, {
+  const headerGloss = roundedSurfaceCh141(
+    scene, 0, -251, MINI_GAME_VISUAL_VF07.bounds.safeWidth - 30, 14, 0xffffff, 0.42,
+    7,
+  ).setName('vf07-minigame-header-gloss-ch174');
+  const stickerIcon = scene.add.text(-390, -222, slot.icon, {
+    fontFamily: 'Arial, sans-serif', fontSize: '34px',
+  }).setOrigin(0.5).setName('vf07-minigame-sticker-icon-ch174');
+  const title = scene.add.text(0, -246, slot.title, {
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#30251f',
   }).setOrigin(0.5);
   const subtitle = scene.add.text(0, -204, `${slot.boardLabel} • ${slot.identity}`, {
@@ -205,7 +216,7 @@ export function startMiniGameOverlay(
     fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '18px', fontStyle: 'bold', color: MINI_GAME_VISUAL_VF07.mutedText, align: 'center', fixedWidth: 840,
   }).setOrigin(0.5).setVisible(false);
   const stage = scene.add.container(0, 22).setName('vf07-minigame-stage');
-  root.add([backdrop, panel, headerBand, headerSticker, title, subtitle, stake, stage]);
+  root.add([backdrop, shellShadow, panel, headerBand, headerGloss, headerSticker, stickerIcon, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
@@ -216,12 +227,14 @@ export function startMiniGameOverlay(
       MINI_GAME_VISUAL_VF07.shellFill, 1, MINI_GAME_VISUAL_VF07.shellRadius,
       MINI_GAME_VISUAL_VF07.shellStrokeWidth, MINI_GAME_VISUAL_VF07.shellStroke, 1,
     ).setY(0);
+    shellShadow.setVisible(true);
     headerBand.setVisible(true);
+    headerGloss.setVisible(true);
     headerSticker.setVisible(true);
+    stickerIcon.setVisible(true);
     title.setVisible(true);
     subtitle.setVisible(false);
     stake.setVisible(false);
-    headerSticker.setVisible(false);
   };
   const wait = (ms: number) => new Promise<void>((resolve) => scene.time.delayedCall(ms, resolve));
 
@@ -852,7 +865,9 @@ export function startMiniGameOverlay(
     subtitle.setVisible(false);
     stake.setVisible(false);
     headerBand.setVisible(false);
+    headerGloss.setVisible(false);
     headerSticker.setVisible(false);
+    stickerIcon.setVisible(false);
 
     const payoutType = miniGameRewardType059(baseType, slot.contentId);
     const podiumPaper = roundedSurfaceCh141(
