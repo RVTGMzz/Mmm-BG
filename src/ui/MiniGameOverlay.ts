@@ -1507,7 +1507,7 @@ export function startMiniGameOverlay(
         const firstRolls: Record<number, number> = {};
         for (const id of activeIds) firstRolls[id] = finalSprintRoll(eventSeq, id, leg);
         const decisionIds = activeIds.filter((id) => !rerollUsed.has(id));
-        const decisions = decisionIds.length > 0
+        const decisions: Record<number, 'keep' | 'reroll'> = decisionIds.length > 0
           ? await collectChoices<'keep' | 'reroll'>(
               `final_sprint:${leg}`,
               decisionIds,
