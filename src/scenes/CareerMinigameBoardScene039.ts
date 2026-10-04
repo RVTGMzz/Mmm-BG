@@ -80,25 +80,46 @@ export class CareerMinigameBoardScene039 extends CareerMinigameBoardScene037 {
     const root = this.add.container(640, 338).setDepth(990).setAlpha(0).setScale(0.84);
     this.finalResultTransition = root;
 
-    const shadow = this.add.rectangle(0, 9, 650, 178, 0x000000, 0.22);
-    const panel = this.add.rectangle(0, 0, 650, 178, 0xfffbf3, 1)
-      .setStrokeStyle(7, 0xffd34d, 1);
-    const flag = this.add.text(0, -50, '🏁', { fontSize: '38px' }).setOrigin(0.5);
-    const title = this.add.text(0, -4, `${progress.completedPlayers}/${progress.totalPlayers} HOÀN THÀNH!`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '31px',
+    const shadow = this.add.graphics().setName('final-transition-shadow-ch176');
+    shadow.fillStyle(0x4b302a, 0.24);
+    shadow.fillRoundedRect(-334, -82, 668, 188, 30);
+
+    const panel = this.add.graphics().setName('final-transition-panel-ch176');
+    panel.fillStyle(0xfff7e8, 1);
+    panel.fillRoundedRect(-328, -91, 656, 184, 28);
+    panel.lineStyle(5, 0x4b302a, 0.96);
+    panel.strokeRoundedRect(-328, -91, 656, 184, 28);
+
+    const headerBand = this.add.graphics().setName('final-transition-header-ch176');
+    headerBand.fillStyle(0xffd76a, 1);
+    headerBand.fillRoundedRect(-304, -72, 608, 50, { tl: 18, tr: 18, bl: 10, br: 10 });
+    headerBand.fillStyle(0xffffff, 0.48);
+    headerBand.fillRoundedRect(-290, -65, 580, 9, 4);
+
+    const flagWell = this.add.graphics().setName('final-transition-flag-well-ch176');
+    flagWell.fillStyle(0xfffdf8, 1);
+    flagWell.fillCircle(-256, -46, 28);
+    flagWell.lineStyle(3, 0xd99b38, 0.88);
+    flagWell.strokeCircle(-256, -46, 28);
+    const flag = this.add.text(-256, -46, '🏁', { fontSize: '31px' }).setOrigin(0.5);
+
+    const title = this.add.text(28, -47, `${progress.completedPlayers}/${progress.totalPlayers} HOÀN THÀNH!`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '30px',
       fontStyle: 'bold',
-      color: '#202020',
+      color: '#4b302a',
+      fixedWidth: 510,
+      align: 'center',
     }).setOrigin(0.5);
-    const detail = this.add.text(0, 42, 'KHÓA BẢNG B$ • CHỐT THỨ HẠNG', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '17px',
+    const detail = this.add.text(0, 37, 'CHỐT B$ • XẾP HẠNG CUỐI VÁN', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '16px',
       fontStyle: 'bold',
-      color: '#6d655b',
+      color: '#6c5146',
       letterSpacing: 1,
     }).setOrigin(0.5);
 
-    root.add([shadow, panel, flag, title, detail]);
+    root.add([shadow, panel, headerBand, flagWell, flag, title, detail]);
 
     // Small deterministic presentation sparkles. Their positions are fixed constants,
     // not gameplay RNG and not Math.random().
