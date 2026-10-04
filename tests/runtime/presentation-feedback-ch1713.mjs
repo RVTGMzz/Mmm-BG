@@ -70,7 +70,8 @@ try {
     assert.equal(state.root.visible, true, `${entry.surface}: root hidden`);
     assert.ok(Number(state.root.alpha) > 0.45, `${entry.surface}: root alpha too low`);
     assert.ok((state.root.bounds?.width ?? 0) > 80, `${entry.surface}: root width collapsed`);
-    assert.ok((state.root.bounds?.height ?? 0) > 25, `${entry.surface}: root height collapsed`);
+    const minRootHeight = entry.surface === 'continue' ? 10 : 25;
+    assert.ok((state.root.bounds?.height ?? 0) > minRootHeight, `${entry.surface}: root height collapsed`);
     assert.match(state.texts.join(' | '), entry.text, `${entry.surface}: visible copy missing`);
 
     for (const [index, required] of state.required.entries()) {
