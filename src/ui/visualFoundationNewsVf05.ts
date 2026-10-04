@@ -53,24 +53,39 @@ export function paintVisualFoundationNewsVf05(
   const left = -n.width / 2;
   const top = -n.height / 2;
   const height = 132 + bodyHeight + footerHeight;
+  // CH-17.4: lifted paper-card depth, still inside the exact VF-05 owner.
   shadow.clear();
-  shadow.fillStyle(n.cocoa, 0.18);
-  shadow.fillRoundedRect(left - 4, top + 3, n.width + 8, height + 3, n.radius + 2);
-  shadow.setPosition(0, 7);
+  shadow.fillStyle(n.cocoa, 0.24);
+  shadow.fillRoundedRect(left - 5, top + 6, n.width + 10, height + 4, n.radius + 3);
+  shadow.setPosition(0, 8);
+
   panel.clear();
-  panel.fillStyle(n.cream, 0.995);
+  panel.fillStyle(n.cream, 0.998);
   panel.fillRoundedRect(left, top, n.width, height, n.radius);
-  // Icon-first pastel header and a quiet paper inset for long descriptions.
+
+  // Mint masthead + small paper highlight makes News read like a town notice board.
   panel.fillStyle(n.mint, 1);
-  panel.fillRoundedRect(left + 3, top + 3, n.width - 6, 46,
-    { tl: n.radius - 2, tr: n.radius - 2, bl: 9, br: 9 });
-  panel.fillStyle(0xf3f5e9, 0.97);
-  panel.fillRoundedRect(left + 17, -33, n.width - 34, bodyHeight + 30, 15);
-  // Keep the event's emoji in a distinct sticker well.
-  panel.fillStyle(0xfff6dc, 1);
-  panel.fillCircle(292, -98, 29);
-  panel.lineStyle(2, n.cocoa, 0.6);
-  panel.strokeCircle(292, -98, 29);
-  panel.lineStyle(3, n.cocoa, 1);
+  panel.fillRoundedRect(left + 3, top + 3, n.width - 6, 52,
+    { tl: n.radius - 2, tr: n.radius - 2, bl: 11, br: 11 });
+  panel.fillStyle(0xffffff, 0.48);
+  panel.fillRoundedRect(left + 15, top + 9, n.width - 30, 10, 5);
+
+  // Quiet inset body sheet for Vietnamese copy.
+  panel.fillStyle(0xf3f5e9, 0.99);
+  panel.fillRoundedRect(left + 17, -33, n.width - 34, bodyHeight + 30, 17);
+  panel.lineStyle(2, n.cocoa, 0.12);
+  panel.strokeRoundedRect(left + 17, -33, n.width - 34, bodyHeight + 30, 17);
+
+  // Sticker well for impact icon + two tiny notice-board pins.
+  panel.fillStyle(0xfff0bc, 1);
+  panel.fillCircle(292, -98, 31);
+  panel.lineStyle(3, n.cocoa, 0.62);
+  panel.strokeCircle(292, -98, 31);
+  panel.fillStyle(0xff8f86, 0.92);
+  panel.fillCircle(left + 30, top + 27, 5);
+  panel.fillStyle(0xffd86b, 0.95);
+  panel.fillCircle(left + 47, top + 27, 5);
+
+  panel.lineStyle(4, n.cocoa, 1);
   panel.strokeRoundedRect(left + 2, top + 2, n.width - 4, height - 4, n.radius - 2);
 }
