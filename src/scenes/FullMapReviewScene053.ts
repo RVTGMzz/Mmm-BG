@@ -37,14 +37,26 @@ export class FullMapReviewScene053 extends Phaser.Scene {
     }
 
     this.add.text(1005, 585, 'MeMeMe', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '66px', fontStyle: 'bold', color: '#ffffff', stroke: '#303454', strokeThickness: 9,
     }).setOrigin(0.5).setDepth(-35);
 
-    this.add.text(1005, 72, 'FULL MAP REVIEW 0.1.53  •  3 NGÃ RẼ TRÁI / PHẢI  •  MỌI ĐƯỜNG ĐỀU TIẾN VỀ READY', {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '18px', fontStyle: 'bold', color: '#20242b', backgroundColor: '#fff8e8', padding: { x: 14, y: 8 },
-    }).setOrigin(0.5).setDepth(20);
+    const headerShadow = this.add.graphics().setDepth(19).setName('full-map-header-shadow-ch1711');
+    headerShadow.fillStyle(0x4b302a, 0.22);
+    headerShadow.fillRoundedRect(540, 43, 930, 66, 22);
+
+    const header = this.add.graphics().setDepth(20).setName('full-map-header-ch1711');
+    header.fillStyle(0xfff7e8, 0.98);
+    header.fillRoundedRect(540, 36, 930, 66, 22);
+    header.fillStyle(0xffd76a, 1);
+    header.fillRoundedRect(550, 44, 910, 14, 7);
+    header.lineStyle(4, 0x4b302a, 0.94);
+    header.strokeRoundedRect(540, 36, 930, 66, 22);
+
+    this.add.text(1005, 71, 'BẢN ĐỒ TỔNG QUAN  •  3 NGÃ RẼ TRÁI / PHẢI  •  MỌI ĐƯỜNG ĐỀU TIẾN VỀ READY', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '18px', fontStyle: 'bold', color: '#4b302a',
+    }).setOrigin(0.5).setDepth(21);
   }
 
   private drawBoard(): void {
@@ -54,10 +66,14 @@ export class FullMapReviewScene053 extends Phaser.Scene {
       const specialExit = [100, 101, 102, 103, 110, 111, 112, 113].includes(edge.from);
       const optionalBranch = isDraftDBranchNode(edge.from) || isDraftDBranchNode(edge.to) || ([3, 16, 34].includes(edge.from) && edge.route === 'branch');
       const line = this.add.graphics().setDepth(0);
-      if (specialExit) line.lineStyle(10, 0xf3a43b, 0.92);
-      else if (optionalBranch) line.lineStyle(9, 0x66d0cc, 0.95);
-      else line.lineStyle(13, 0xf6e6b6, 0.98);
+      line.lineStyle(specialExit ? 14 : optionalBranch ? 12 : 16, 0x4b302a, 0.17);
+      line.lineBetween(from.x + 2, from.y + 3, to.x + 2, to.y + 3);
+      if (specialExit) line.lineStyle(10, 0xf3a43b, 0.95);
+      else if (optionalBranch) line.lineStyle(8, 0x66d0cc, 0.98);
+      else line.lineStyle(11, 0xf6e6b6, 1);
       line.lineBetween(from.x, from.y, to.x, to.y);
+      line.lineStyle(2, 0xffffff, 0.34);
+      line.lineBetween(from.x - 1, from.y - 1, to.x - 1, to.y - 1);
     }
 
     for (const node of BOARD.nodes) this.drawNode(node);
@@ -68,10 +84,17 @@ export class FullMapReviewScene053 extends Phaser.Scene {
   }
 
   private addBranchLabel(x: number, y: number, label: string): void {
+    const width = 270;
+    const skin = this.add.graphics().setDepth(8).setName('full-map-branch-label-ch1711');
+    skin.fillStyle(0x4b302a, 0.16);
+    skin.fillRoundedRect(x - width / 2 + 2, y - 15 + 3, width, 30, 11);
+    skin.fillStyle(0xdffaf7, 0.98);
+    skin.fillRoundedRect(x - width / 2, y - 15, width, 30, 11);
+    skin.lineStyle(2, 0x4b302a, 0.52);
+    skin.strokeRoundedRect(x - width / 2, y - 15, width, 30, 11);
     this.add.text(x, y, label, {
-      fontFamily: 'Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#173b43',
-      backgroundColor: '#dffaf7', padding: { x: 8, y: 4 },
-    }).setOrigin(0.5).setDepth(8);
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '13px', fontStyle: 'bold', color: '#31584f',
+    }).setOrigin(0.5).setDepth(9);
   }
 
   private drawNode(node: BoardNode): void {
@@ -94,18 +117,43 @@ export class FullMapReviewScene053 extends Phaser.Scene {
     if (isReady) fill = 0x3c8ff0;
     if (isOptional) fill = 0x66d0cc;
 
+    const skin = this.add.graphics().setDepth(4).setName('full-map-node-ch1711');
     if (isHolding || isReady || isGate || isLottery) {
       const radius = isHolding ? 42 : 30;
-      this.add.circle(node.x, node.y, radius, fill, 1).setStrokeStyle(5, 0x30343b, 0.95).setDepth(4);
+      skin.fillStyle(0x4b302a, 0.20);
+      skin.fillCircle(node.x + 2, node.y + 4, radius + 2);
+      skin.fillStyle(fill, 1);
+      skin.fillCircle(node.x, node.y, radius);
+      skin.fillStyle(0xffffff, 0.42);
+      skin.fillCircle(node.x - radius * 0.25, node.y - radius * 0.30, Math.max(5, radius * 0.18));
+      skin.lineStyle(4, 0x4b302a, 0.90);
+      skin.strokeCircle(node.x, node.y, radius);
     } else if (isOptional) {
-      this.add.rectangle(node.x, node.y, 36, 36, fill, 1).setRotation(Math.PI / 4).setStrokeStyle(4, 0x30343b, 0.95).setDepth(4);
+      const size = 36;
+      skin.save();
+      skin.translateCanvas(node.x, node.y);
+      skin.rotateCanvas(Math.PI / 4);
+      skin.fillStyle(0x4b302a, 0.20);
+      skin.fillRoundedRect(-size / 2 + 2, -size / 2 + 3, size, size, 7);
+      skin.fillStyle(fill, 1);
+      skin.fillRoundedRect(-size / 2, -size / 2, size, size, 7);
+      skin.lineStyle(3, 0x4b302a, 0.90);
+      skin.strokeRoundedRect(-size / 2, -size / 2, size, size, 7);
+      skin.restore();
     } else {
-      this.add.rectangle(node.x, node.y, 48, 34, fill, 1).setStrokeStyle(4, 0x30343b, 0.92).setDepth(4);
+      skin.fillStyle(0x4b302a, 0.18);
+      skin.fillRoundedRect(node.x - 22, node.y - 13, 48, 34, 9);
+      skin.fillStyle(fill, 1);
+      skin.fillRoundedRect(node.x - 24, node.y - 17, 48, 34, 9);
+      skin.fillStyle(0xffffff, 0.36);
+      skin.fillRoundedRect(node.x - 19, node.y - 13, 38, 6, 3);
+      skin.lineStyle(3, 0x4b302a, 0.88);
+      skin.strokeRoundedRect(node.x - 24, node.y - 17, 48, 34, 9);
     }
 
     this.add.text(node.x, node.y, this.nodeLabel(node), {
       fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: isHolding ? '17px' : '11px', fontStyle: 'bold', color: '#20242b', align: 'center',
+      fontSize: isHolding ? '17px' : '11px', fontStyle: 'bold', color: '#4b302a', align: 'center',
     }).setOrigin(0.5).setDepth(5);
   }
 
