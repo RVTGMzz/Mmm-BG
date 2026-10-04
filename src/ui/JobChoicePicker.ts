@@ -38,7 +38,7 @@ function roundedPanel070421(
   const root = scene.add.container(x, y);
   if (shadow) {
     const shade = scene.add.graphics();
-    shade.fillStyle(0x3e2b25, 0.22);
+    shade.fillStyle(JOB_HUB_VF06.cocoa, 0.22);
     shade.fillRoundedRect(-width / 2, -height / 2 + 8, width, height, radius);
     root.add(shade);
   }
@@ -67,7 +67,7 @@ export function createJobRollPicker(
 
   const canRoll = options.canRoll ?? true;
   const root = scene.add.container(640, 360).setDepth(980).setName('job-hub-modal');
-  const backdrop = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.7).setInteractive();
+  const backdrop = scene.add.rectangle(0, 0, 1280, 720, JOB_HUB_VF06.cocoa, 0.58).setInteractive();
 
   const shell = roundedPanel070421(
     scene,
@@ -85,21 +85,32 @@ export function createJobRollPicker(
   headerBand.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.72);
   headerBand.strokeRoundedRect(-476, -252, 952, 78, { tl: 21, tr: 21, bl: 12, br: 12 });
 
+  const headerGloss = scene.add.graphics();
+  headerGloss.fillStyle(0xffffff, 0.48);
+  headerGloss.fillRoundedRect(-458, -244, 916, 11, 5);
+
   const title = scene.add.text(-438, -226, '💼 JOB HUB', {
     fontFamily: JOB_FONT_070421,
     fontSize: '29px',
     fontStyle: 'bold',
     color: '#3d2924',
   }).setOrigin(0, 0.5);
-  const player = scene.add.text(438, -226, playerName, {
+  const playerPill = scene.add.graphics();
+  playerPill.fillStyle(JOB_HUB_VF06.creamHighlight, 0.96);
+  playerPill.fillRoundedRect(230, -242, 220, 34, 14);
+  playerPill.lineStyle(2, JOB_HUB_VF06.cocoaSoft, 0.3);
+  playerPill.strokeRoundedRect(230, -242, 220, 34, 14);
+  const player = scene.add.text(438, -225, playerName, {
     fontFamily: JOB_FONT_070421,
     fontSize: '17px',
     fontStyle: 'bold',
-    color: '#6c5146',
+    color: '#5f493f',
+    fixedWidth: 190,
+    align: 'right',
   }).setOrigin(1, 0.5);
   shell.setName('job-hub-shell');
   title.setName('job-hub-title');
-  root.add([backdrop, shell, headerBand, title, player]);
+  root.add([backdrop, shell, headerBand, headerGloss, playerPill, title, player]);
 
   const cardHits: Phaser.GameObjects.Rectangle[] = [];
   let detailRoot: Phaser.GameObjects.Container | undefined;
@@ -154,7 +165,7 @@ export function createJobRollPicker(
     const detail = scene.add.container(640, 360).setDepth(995).setName('job-detail-modal');
     detailRoot = detail;
     renderKeyboardFocus(); // The detail sheet owns the focus until it closes.
-    const dim = scene.add.rectangle(0, 0, 1280, 720, 0x17120f, 0.78).setInteractive();
+    const dim = scene.add.rectangle(0, 0, 1280, 720, JOB_HUB_VF06.cocoa, 0.62).setInteractive();
     const detailPalette = jobCardPaletteVf06(index, risky);
     const detailShell = roundedPanel070421(
       scene,
