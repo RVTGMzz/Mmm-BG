@@ -17,7 +17,7 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as { script
 const runtimePatch = Number(MEMEME_BUILD.version.split('.')[2] ?? 0);
 assert(Number.isInteger(runtimePatch) && runtimePatch >= 69, '0.1.69 presentation guard must accept later canonical runtimes');
 assert.match(main, /SplashScene069,[\s\S]*LocalLobbyScene,[\s\S]*SetupScene,[\s\S]*TurnOrderScene,[\s\S]*ActiveBoardScene/);
-assert.match(main, /CareerMinigameBoardScene07044 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardSceneCh173 as ActiveBoardScene/);
 assert.match(board07044, /extends CareerMinigameBoardScene0701/);
 assert(!board07044.includes('submitIntent(')); assert(!board07044.includes('Math.random'));
 assert.match(board0701, /extends CareerMinigameBoardScene069/);
