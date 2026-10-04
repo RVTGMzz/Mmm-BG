@@ -38,7 +38,10 @@ export class LocalLobbyScene extends Phaser.Scene {
     const broadcastReady = typeof BroadcastChannel !== 'undefined';
     root.innerHTML = `
       <header class="lobby-head-069">
-        <h1>CHỌN CÁCH CHƠI</h1>
+        <div class="lobby-title-row">
+          <button id="lobby-back-main" class="lobby-back-main" type="button">← MENU</button>
+          <h1>BOARD GAME</h1>
+        </div>
         <span>${MEMEME_BUILD.lobbyHeader}</span>
       </header>
       <div class="lobby-grid">
@@ -72,6 +75,7 @@ export class LocalLobbyScene extends Phaser.Scene {
     const dom = this.add.dom(640, 370, root).setOrigin(0.5);
     const node = dom.node as HTMLDivElement;
     decorateVisualFoundationButtonsV01(node, [
+      { selector: '#lobby-back-main', variant: 'subtle', size: 'sm' },
       { selector: '#lobby-solo', variant: 'primary', size: 'lg' },
       { selector: '#lobby-local-host', variant: 'primary', size: 'md' },
       { selector: '#lobby-local-join', variant: 'secondary', size: 'md' },
@@ -80,6 +84,11 @@ export class LocalLobbyScene extends Phaser.Scene {
       { selector: '#lobby-online-resume', variant: 'success', size: 'sm' },
       { selector: '#online-service-retry', variant: 'subtle', size: 'sm' },
     ]);
+    node.querySelector<HTMLButtonElement>('#lobby-back-main')?.addEventListener('click', () => {
+      sfxController.play('ui_confirm');
+      this.scene.start('GameModeMenuScene');
+    });
+
     const status = node.querySelector<HTMLParagraphElement>('#lobby-status');
     const setStatus = (message: string, error = false) => {
       if (!status) return;
