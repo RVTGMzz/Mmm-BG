@@ -1,3 +1,62 @@
+# CURRENT CHECKPOINT — 2026-10-04 — CH-16.1 QUICK MINI GAME + LANDING FIX
+
+**ACTIVE DEV + FULL CI + GITHUB PAGES: PASS. CLOUDFLARE WORKER: FROZEN / NOT REDEPLOYED.**
+
+Current authority:
+- repo: `RVTGMzz/Mmm-BG`
+- active development branch: `mmm-mvp-0.1-dev`
+- frozen Cloudflare production checkpoint branch: `mmm-mvp-0.1-core`
+- build: `0.1.70.4.39`
+- phase: `RELEASE CANDIDATE • CH-16.1 QUICK MINI GAME + LANDING FIX`
+- validated source/test HEAD: `99568a66ca0b8fef631ec47c7d599ad0620445f3`
+- full CI #3495 / run `37174659272`: **SUCCESS**
+- compiled GitHub playtest mirror: `7181d56262876fb3b20dcf6a318ea6a8bfb9456f`
+- GitHub Pages #91 / run `37175044361`: **SUCCESS**
+- test URL: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+## CH-16.1 shipped in this checkpoint
+1. **Landing B$ surprise timing**
+   - authoritative money/economy is unchanged;
+   - visible HUD money is held on its presentation snapshot while movement is still resolving;
+   - inherited compact-HUD redraws immediately restore the visible snapshot, preventing future landing B$ from flashing before the token arrives;
+   - deterministic landing-money regression PASS.
+
+2. **Mini Game rules readability**
+   - manual rules use a dedicated body area plus a separate footer lane;
+   - `ENTER / SPACE / A: TIẾP` no longer shares the reward line;
+   - browser runtime covers both M17 rules and the M09 rules screen that reproduced Ron's screenshot;
+   - runtime overlap gate PASS.
+
+3. **Outer game mode menu**
+   - normal boot: Splash → `BOARD GAME` / `MINI GAME`;
+   - Board Game opens the existing Quick/Local/Online lobby;
+   - invite URL `?room=CODE` still bypasses the outer menu and lands directly in Board lobby, preserving CH-15 invite behavior;
+   - Board lobby has `← MENU` back to the outer selector.
+
+4. **Standalone Mini Game Quick Play**
+   - exposes all five canonical Mini Games;
+   - modes: 1 human + 3 CPU, 2 human + 2 CPU, 4-player hotseat, 4 CPU autoplay;
+   - reuses the real `startMiniGameOverlay` gameplay implementation rather than duplicating Mini Game rules;
+   - result screen offers Play Again / Change Mini Game / Main Menu;
+   - deterministic; no client `Math.random()`.
+
+5. **CI efficiency**
+   - dev workflow uses same-branch concurrency with `cancel-in-progress: true` so stale commits do not keep burning CI or publish over newer builds.
+
+## Release / backend policy
+- Continue routine work only on `mmm-mvp-0.1-dev`.
+- GitHub Pages test build should continue updating from the dev branch.
+- Keep the currently deployed Cloudflare Worker online for optional ONLINE testing.
+- **Do NOT deploy/update Cloudflare Worker or move routine dev work back to `mmm-mvp-0.1-core` unless Ron explicitly asks.**
+- PR #1 remains Draft/Open and must not be merged unless Ron explicitly asks.
+
+## Next development target
+- Continue CH-16C: properly synchronize human Mini Game choices for Local/Online through Host authority.
+- Do not solve CH-16C by merely making remote seats locally interactive: Mini Game choices/results must be host-synchronized to avoid desync.
+- Physical two-device acceptance remains human-owned and is not PASS until Ron tests it.
+
+---
+
 # MMM — 2026-09-30 CH-15 PUBLIC ONLINE
 
 **SOURCE + LIVE WORKER + BROWSER RUNTIME + PACKAGE + PUBLIC PAGES: PASS.**
