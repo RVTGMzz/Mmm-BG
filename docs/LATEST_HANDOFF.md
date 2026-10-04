@@ -1,3 +1,18 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.1 CHARACTER PRODUCTION
+
+Build `0.1.70.4.55` begins the approved Character art cut-over. Character Select now renders production portraits for the four visible starters from a compact runtime atlas derived from the approved sheets. The existing player-face composite proof remains intact, and Secret Baby stays concealed from normal Character Select.
+
+Locked demographics/art authority:
+- KHÓC NHÈ — female 55–65.
+- CAU CÓ — male 40–50.
+- LO LẮNG — male 28–35.
+- TĂNG ĐỘNG — female 18–24.
+- Secret Baby — infant, RANDOM-only.
+
+Next Character production slice: movement sprite integration + contextual portrait reactions. Do not redesign the cast.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-04 — CH-17.14 MODE ENTRY HARDENING
 
 Current build: `0.1.70.4.54`.

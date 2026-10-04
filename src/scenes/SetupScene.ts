@@ -20,6 +20,7 @@ import {
   decorateVisualFoundationPanelV01,
 } from '../ui/visualFoundationV01';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
+import { characterProductionPortraitCh181 } from '../ui/characterProductionArtCh181';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -120,8 +121,11 @@ export class SetupScene extends Phaser.Scene {
         <div class="character-select-kicker-ch02c">CHỌN NHÂN VẬT</div>
         <div class="character-select-owner-ch02c" id="character-owner-ch02c"></div>
         <div class="character-card-grid-ch02c">
-          ${STARTER_CHARACTERS_V01.map((character) => `
-            <button type="button" class="character-card-ch02c" data-character-id="${character.id}">
+          ${STARTER_CHARACTERS_V01.map((character) => {
+            const productionPortrait = characterProductionPortraitCh181(character.id, 'neutral');
+            return `
+            <button type="button" class="character-card-ch02c character-production-card-ch181" data-character-id="${character.id}">
+              ${productionPortrait ? `<span class="character-production-portrait-ch181" style="${productionPortrait.style}" aria-hidden="true"><img src="${productionPortrait.src}" alt="" /></span>` : ''}
               ${character.id === 'starter-crybaby' ? `
                 <span class="character-layered-proof-ch02g" aria-hidden="true">
                   <img class="character-layered-body-ch02g" src="./assets/characters/starter-crybaby/neutral/body-back.webp" alt="" />
@@ -139,7 +143,8 @@ export class SetupScene extends Phaser.Scene {
               <strong>${character.archetypeLabel}</strong>
               <small>${character.genderPresentation === 'female' ? 'NỮ' : 'NAM'} · ${character.ageBand.min}–${character.ageBand.max}</small>
               <span class="character-passive-ch02c">${character.passiveConcept.label}</span>
-            </button>`).join('')}
+            </button>`;
+          }).join('')}
           <button type="button" class="character-card-ch02c character-random-ch02c" data-character-mode="random">
             <span class="character-emoji-ch02c">🎲</span>
             <strong>RANDOM (?)</strong>

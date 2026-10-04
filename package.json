@@ -172,7 +172,8 @@
     "test:visual-refresh-decision-ui-ch1711": "tsx tests/visual-refresh-decision-ui-ch1711.ts",
     "test:visual-refresh-special-reactions-ch1712": "tsx tests/visual-refresh-special-reactions-ch1712.ts",
     "test:visual-refresh-presentation-feedback-ch1713": "tsx tests/visual-refresh-presentation-feedback-ch1713.ts",
-    "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
+    "test:public-online-ch15": "tsx tests/public-online-ch15.ts",
+    "test:character-production-ch181": "tsx tests/character-production-ch181.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
