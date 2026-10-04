@@ -1,6 +1,6 @@
 # NEXT CHAT PROMPT — 2026-09-30 AFTER CH-15 PUBLIC ONLINE
 
-Continue MMM from repo `RVTGMzz/Mmm-BG`, branch `mmm-mvp-0.1-core`.
+Continue MMM from repo `RVTGMzz/Mmm-BG`, branch `mmm-mvp-0.1-dev`. Do not resume routine work on `mmm-mvp-0.1-core`; that branch is the frozen Cloudflare production checkpoint.
 
 Read first:
 1. `HANDOFF_CURRENT.md`
@@ -9,7 +9,7 @@ Read first:
 4. Ron's newest screenshots / two-device online feedback.
 
 Current authority:
-- build `0.1.70.4.37`
+- build `0.1.70.4.38`
 - phase `RELEASE CANDIDATE • CH-15 PUBLIC ONLINE`
 - validated source/test HEAD `6ec56ccd0cc92ca72131ed5f3a7a275bc9334fcc`
 - full CI #3422 / run `36743533044`: SUCCESS
@@ -51,12 +51,13 @@ Next action:
 Public link must be included at the end of every completed build/fix report:
 https://ronvotri.github.io/MeMeMe-Web-Playtest/
 
-
 ## ACTIVE DEVELOPMENT RELEASE POLICY — 2026-10-04
-- **REPO-ONLY until Ron explicitly says otherwise.**
-- Run source build/tests/CI on `mmm-mvp-0.1-core` normally.
-- Do **NOT** upload playtest build artifacts for routine commits.
-- Do **NOT** checkout/push `ronvotri/MeMeMe-Web-Playtest`.
-- Do **NOT** update public GitHub Pages during active development.
-- Existing public build may remain online but is considered frozen/stale test material.
-- Re-enable public publishing only after Ron explicitly asks to publish a new online test build.
+- **Active development branch:** `mmm-mvp-0.1-dev`.
+- **Cloudflare production branch stays frozen:** `mmm-mvp-0.1-core`.
+- Continue normal build/test/CI on the dev branch.
+- Continue publishing the compiled playtest to `ronvotri/MeMeMe-Web-Playtest` so Ron can always test at the GitHub Pages link.
+- **Do NOT deploy/update the Cloudflare Worker** during routine development.
+- Keep the currently deployed Worker online and usable for optional ONLINE testing.
+- Do not modify/redeploy the Worker unless Ron explicitly asks to update Cloudflare/backend.
+- The Cloudflare Git integration is documented as following `mmm-mvp-0.1-core`, so routine dev commits must stay on `mmm-mvp-0.1-dev`.
+- Public test link remains: https://ronvotri.github.io/MeMeMe-Web-Playtest/
