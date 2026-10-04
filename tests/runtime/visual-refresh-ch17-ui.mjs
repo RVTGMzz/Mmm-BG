@@ -49,6 +49,35 @@ try {
 
   await page.screenshot({ path: 'runtime-ui-evidence/ch17-mode-menu.png', fullPage: true });
 
+  await page.click('.settings-trigger');
+  await page.waitForSelector('.settings-panel:not([hidden])', { timeout: 10000 });
+  const settings = await page.evaluate(() => {
+    const trigger = document.querySelector('.settings-trigger');
+    const panel = document.querySelector('.settings-panel');
+    const section = document.querySelector('.settings-section');
+    if (!trigger || !panel || !section) return null;
+    const ts = getComputedStyle(trigger);
+    const ps = getComputedStyle(panel);
+    const ss = getComputedStyle(section);
+    return {
+      triggerRadius: parseFloat(ts.borderRadius),
+      triggerShadow: ts.boxShadow,
+      panelRadius: parseFloat(ps.borderRadius),
+      panelShadow: ps.boxShadow,
+      panelBackground: ps.backgroundImage,
+      sectionRadius: parseFloat(ss.borderRadius),
+    };
+  });
+  assert(settings, 'CH-17.8 Settings panel missing');
+  assert.ok(settings.triggerRadius >= 14, 'Settings trigger lost rounded toy geometry');
+  assert.notEqual(settings.triggerShadow, 'none', 'Settings trigger lost depth');
+  assert.ok(settings.panelRadius >= 22, 'Settings panel lost rounded paper geometry');
+  assert.notEqual(settings.panelShadow, 'none', 'Settings panel lost paper depth');
+  assert.match(settings.panelBackground, /linear-gradient/i, 'Settings panel must use layered CH-17.8 material');
+  assert.ok(settings.sectionRadius >= 16, 'Settings section must stay rounded');
+  await page.screenshot({ path: 'runtime-ui-evidence/ch178-settings.png', fullPage: true });
+  await page.click('.settings-close');
+
   await page.click('#mode-mini');
   await page.waitForSelector('.mememe-minigame-quick', { timeout: 30000 });
 
@@ -91,7 +120,7 @@ try {
   assert(quick.icon && quick.icon.width >= 40 && quick.icon.height >= 40, 'Mini Game icon bubble missing');
 
   await page.screenshot({ path: 'runtime-ui-evidence/ch17-minigame-menu.png', fullPage: true });
-  console.log('[visual-refresh-ch17-ui] PASS cozy toy-town menu material + 3/2 Mini Game layout');
+  console.log('[visual-refresh-ch17-ui] PASS cozy toy-town menu + CH-17.8 Settings material + 3/2 Mini Game layout');
 } finally {
   await browser.close();
 }
