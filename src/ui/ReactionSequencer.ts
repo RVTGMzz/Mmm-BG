@@ -10,6 +10,10 @@ import {
 } from '../core/reactions';
 import { gameSession, type PersonalityTag } from '../core/session';
 import type { PlayerState } from '../core/types';
+import {
+  CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+  characterProductionPortraitFrameCh182,
+} from './characterProductionArtCh181';
 
 const ROLE_ACCENTS: Record<ReactionSpeakerRole, number> = {
   caster: 0xef4545,
@@ -120,14 +124,28 @@ function showReactionBubble(
   if (face && scene.textures.exists(face.textureKey)) {
     objects.push(scene.add.image(-96, 0, face.textureKey).setDisplaySize(58, 58));
   } else {
-    objects.push(
-      scene.add
-        .text(-96, 0, step.expression === 'happy' ? '😆' : step.expression === 'angry' ? '😡' : '😐', {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '42px',
-        })
-        .setOrigin(0.5),
-    );
+    const characterId = gameSession.getCharacterId(speaker.id) ?? speaker.characterId;
+    const productionFrame = characterProductionPortraitFrameCh182(characterId, step.expression);
+    if (
+      productionFrame !== undefined
+      && scene.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)
+    ) {
+      objects.push(
+        scene.add
+          .image(-96, 0, CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182, productionFrame)
+          .setDisplaySize(58, 58)
+          .setName('character-production-reaction-avatar-ch182'),
+      );
+    } else {
+      objects.push(
+        scene.add
+          .text(-96, 0, step.expression === 'happy' ? '😆' : step.expression === 'angry' ? '😡' : '😐', {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '42px',
+          })
+          .setOrigin(0.5),
+      );
+    }
   }
 
   const name = scene.add

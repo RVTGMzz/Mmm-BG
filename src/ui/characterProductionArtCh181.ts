@@ -45,3 +45,16 @@ export function characterProductionPortraitCh181(
     column,
   };
 }
+
+
+/** CH-18.2 Phaser runtime texture key for contextual Character portraits. */
+export const CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182 = 'character-portrait-atlas-ch182' as const;
+
+export function characterProductionPortraitFrameCh182(
+  characterId: string | undefined,
+  emotion: CharacterProductionEmotionCh181 = 'neutral',
+): number | undefined {
+  if (!characterId) return undefined;
+  const portrait = characterProductionPortraitCh181(characterId, emotion);
+  return portrait ? portrait.row * 8 + portrait.column : undefined;
+}

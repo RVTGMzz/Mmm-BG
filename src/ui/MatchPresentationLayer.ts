@@ -4,6 +4,10 @@ import type { MatchEvent } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
 import type { PresentationTimingPolicy } from './presentationFlowPolicy';
+import {
+  CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+  characterProductionPortraitFrameCh182,
+} from './characterProductionArtCh181';
 import { diceSettleFeedbackCh09, landingFeedbackCh09 } from './presentationFeedbackCh09';
 import { reactionPlacement070422 } from './presentationLanes070422';
 import {
@@ -872,6 +876,22 @@ export class MatchPresentationLayer {
       const face = gameSession.getFace(playerId, expression);
       if (face && this.scene.textures.exists(face.textureKey)) {
         avatar.add(this.scene.add.image(0, 0, face.textureKey).setDisplaySize(38, 38));
+        return avatar;
+      }
+
+      const characterId = gameSession.getCharacterId(playerId)
+        ?? this.getPlayers().find((player) => player.id === playerId)?.characterId;
+      const productionFrame = characterProductionPortraitFrameCh182(characterId, expression);
+      if (
+        productionFrame !== undefined
+        && this.scene.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)
+      ) {
+        avatar.add(
+          this.scene.add
+            .image(0, 0, CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182, productionFrame)
+            .setDisplaySize(38, 38)
+            .setName('character-production-reaction-avatar-ch182'),
+        );
         return avatar;
       }
     }

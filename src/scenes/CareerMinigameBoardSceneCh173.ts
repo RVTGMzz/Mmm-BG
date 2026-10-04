@@ -3,6 +3,11 @@ import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
+import {
+  CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181,
+  CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181,
+  CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+} from '../ui/characterProductionArtCh181';
 import { publicAssetUrl } from '../ui/publicAssetUrl';
 import { CareerMinigameBoardScene07044 } from './CareerMinigameBoardScene07044';
 
@@ -55,6 +60,16 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         'character-walk-atlas-ch181',
         publicAssetUrl('assets/characters/ch181/walk-atlas.webp'),
         { frameWidth: 48, frameHeight: 48 },
+      );
+    }
+    if (!this.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)) {
+      this.load.spritesheet(
+        CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+        publicAssetUrl(CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181),
+        {
+          frameWidth: CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181,
+          frameHeight: CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181,
+        },
       );
     }
   }

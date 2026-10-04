@@ -293,6 +293,8 @@ jobs:
         run: npm run test:character-production-runtime-ch181
       - name: CH-18.1 approved Character production portraits
         run: npm run test:character-production-ch181
+      - name: CH-18.2 contextual Character portrait fallback
+        run: npm run test:character-production-reactions-ch182
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -387,11 +389,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.55 CH-18.1 Character Production build
+      - name: Upload MMM 0.1.70.4.56 CH-18.2 Context Portraits build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.55-ch18-1-character-production
+          name: mmm-playtest-0.1.70.4.56-ch18-2-context-portraits
           path: dist
           if-no-files-found: error
           retention-days: 14

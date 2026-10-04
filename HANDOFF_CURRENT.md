@@ -1,3 +1,12 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.2 CONTEXT PORTRAITS
+
+Current build: `0.1.70.4.56`.
+CH-18.1 is green on source CI #3663 and GitHub Pages #106. CH-18.2 wires the approved Character portrait atlas into live reaction surfaces. Uploaded player faces remain first priority; when absent, Card/News/landing/reaction bubbles use the selected Character's canonical production portrait for neutral/happy/angry instead of initials or emoji. Secret Baby remains concealed before RANDOM reveal.
+
+Presentation-only. No Host/RNG/B$/passive/movement authority changes. Cloudflare Worker remains frozen.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-05 — CH-18.1 CHARACTER PRODUCTION RUNTIME
 
 Current build: `0.1.70.4.55`.
