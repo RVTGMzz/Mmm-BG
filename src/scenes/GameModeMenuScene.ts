@@ -61,7 +61,8 @@ export class GameModeMenuScene extends Phaser.Scene {
         if (transitioning || !this.scene.isActive()) return;
         transitioning = true;
         sfxController.play('ui_confirm');
-        this.scene.start(nextScene);
+        if (nextScene === 'LocalLobbyScene') this.scene.start('LocalLobbyScene');
+        else this.scene.start('MiniGameQuickScene');
       };
 
       button.addEventListener('click', (event) => {
