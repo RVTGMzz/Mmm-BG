@@ -16,6 +16,8 @@ assert.equal(atlas.subarray(0, 4).toString('ascii'), 'RIFF');
 assert.equal(atlas.subarray(8, 12).toString('ascii'), 'WEBP');
 assert.ok(atlas.length > 20_000, 'CH-18.1 portrait atlas must contain real Character pixels');
 assert.equal(CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181, './assets/characters/ch181/portraits.webp');
+const productionModule = await readFile('src/ui/characterProductionArtCh181.ts', 'utf8');
+assert(productionModule.includes('publicAssetUrl(CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181)'), 'portrait URL must resolve under nested runtime harnesses and GitHub Pages subpaths');
 
 const expected = [
   ['starter-crybaby', 'female', 55, 65, 0],

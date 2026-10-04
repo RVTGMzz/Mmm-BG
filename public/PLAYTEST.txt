@@ -18,9 +18,11 @@ QUICK START — WINDOWS
 6) Chỉ dùng START_PLAYTEST.bat.
 
 CHARACTER PRODUCTION — CH-18.1
-- Character Select now uses the approved KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG production portraits instead of emoji placeholders.
-- Age/gender/canonical silhouette remain locked to the approved concept sheets; RANDOM still conceals Secret Baby until reveal.
-- Existing Your Face composite proof is preserved when a player provides a face image.
+- Character Select dùng portrait production của đúng 4 thiết kế canon: KHÓC NHÈ, CAU CÓ, LO LẮNG, TĂNG ĐỘNG; không còn emoji placeholder.
+- Portrait atlas có 8 biểu cảm/ngữ cảnh cho mỗi nhân vật; Your Face vẫn được ưu tiên khi người chơi đã đưa ảnh mặt.
+- SECRET BABY vẫn được giấu khỏi Character Select và chỉ xuất hiện sau RANDOM reveal.
+- Token trên Board dùng walk atlas 8 frame của đúng nhân vật đã chọn; khi token di chuyển sẽ cycle frame và lật hướng trái/phải.
+- CH-18.1 chỉ đổi presentation; Host authority, RNG, B$, passive và movement state không đổi.
 
 VISUAL REFRESH — CH-17
 - Art direction mới: cozy/chibi town UI, pastel ấm, panel kem–đào, viền cacao dày, icon bubble, nút nổi nhiều lớp.
@@ -44,12 +46,6 @@ Splash → BOARD GAME / MINI GAME.
 - BOARD GAME → Menu chơi nhanh / local / online → Setup → Chọn nhân vật → Chọn 1/2/3 vòng → Roll For Order → Trận → Podium → Xem Tổng Kết → Rematch/Lobby.
 - MINI GAME → Chọn 1 trong 5 game + số người/CPU → chơi ngay → Chơi lại / Đổi Mini Game / Menu chính.
 - B$ của ô đến chỉ hiện thay đổi sau khi token đã tới ô và presentation của ô bắt đầu; không hé kết quả tiền giữa lúc đang chạy.
-
-CHARACTER PRODUCTION — CH-18.1
-- Character Select đã thay emoji starter bằng portrait production của đúng 4 thiết kế canon: KHÓC NHÈ, CAU CÓ, LO LẮNG, TĂNG ĐỘNG.
-- SECRET BABY vẫn không lộ ở Character Select; portrait riêng chỉ dành cho flow reveal/context sau khi RANDOM đã được chốt.
-- Token trên Board dùng atlas 8-frame của đúng nhân vật đã chọn; khi token di chuyển sẽ cycle walk frame và lật hướng trái/phải.
-- Đây là presentation-only integration; Host authority, RNG, B$, passive và movement state không đổi.
 
 NHÂN VẬT & NỘI TẠI
 - KHÓC NHÈ / ĐƯỢC DỖ: 40% khi mất ít nhất 20B$, hoàn 10B$.

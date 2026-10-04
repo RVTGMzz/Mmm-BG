@@ -3,7 +3,8 @@
  * and nested /tests/runtime/*.html Vite harnesses.
  */
 export function publicAssetUrl(path: string): string {
-  const clean = path.replace(/^\/+/, '');
+  const clean = path.replace(/^\.\//, '').replace(/^\/+/, '');
+  if (typeof window === 'undefined') return `./${clean}`;
   const pathname = window.location.pathname;
   const runtimeMarker = '/tests/runtime/';
   const runtimeIndex = pathname.indexOf(runtimeMarker);

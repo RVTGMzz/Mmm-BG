@@ -1,3 +1,4 @@
+import { publicAssetUrl } from './publicAssetUrl';
 export const CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181 = './assets/characters/ch181/portraits.webp' as const;
 export const CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181 = 48 as const;
 
@@ -38,7 +39,7 @@ export function characterProductionPortraitCh181(
   if (row === undefined) return undefined;
   const column = COLUMN_BY_EMOTION_CH181[emotion];
   return {
-    src: CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181,
+    src: publicAssetUrl(CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181),
     style: `--ch181-x:-${column * 100}%;--ch181-y:-${row * 100}%;`,
     row,
     column,

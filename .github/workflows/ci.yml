@@ -289,8 +289,8 @@ jobs:
         run: npm run test:character-face-fit-ch02f
       - name: CH-02G KHÓC NHÈ neutral layered runtime proof
         run: npm run test:character-crybaby-ch02g
-      - name: CH-18.1 production portraits + board walk animation
-        run: npm run test:character-production-ch181
+      - name: CH-18.1 board walk animation runtime
+        run: npm run test:character-production-runtime-ch181
       - name: CH-18.1 approved Character production portraits
         run: npm run test:character-production-ch181
       - name: CH-04A Character-selected contextual reaction profiles

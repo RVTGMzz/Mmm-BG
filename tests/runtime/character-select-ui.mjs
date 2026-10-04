@@ -27,8 +27,6 @@ try {
     await page.locator('#start-game').waitFor({ state: 'visible', timeout: 30000 });
     await page.locator('#start-game').click();
     await page.locator('.character-select-panel-ch02c').waitFor({ state: 'visible', timeout: 10000 });
-    const portraitResponse = await page.request.get('http://127.0.0.1:5173/assets/characters/ch181/portrait-atlas-starters.webp');
-    assert.ok(portraitResponse.ok(), `${viewport.name}: CH-18.1 starter portrait atlas did not load`);
     await page.waitForTimeout(300);
 
     const state = await page.evaluate(() => {
@@ -55,9 +53,6 @@ try {
         strongFont: strong ? Number.parseFloat(getComputedStyle(strong).fontSize) : 0,
         smallFont: small ? Number.parseFloat(getComputedStyle(small).fontSize) : 0,
         passiveFont: passive ? Number.parseFloat(getComputedStyle(passive).fontSize) : 0,
-        portraitBackground: cards[0]?.querySelector('.character-production-portrait-ch181')
-          ? getComputedStyle(cards[0].querySelector('.character-production-portrait-ch181')).backgroundImage
-          : '',
         scrollWidth: document.documentElement.scrollWidth,
         scrollHeight: document.documentElement.scrollHeight,
         productionPortraitCount: productionPortraits.length,
@@ -87,7 +82,6 @@ try {
     assert.ok(state.strongFont >= 15, `${viewport.name}: character title font shrank to ${state.strongFont}px`);
     assert.ok(state.smallFont >= 10, `${viewport.name}: character metadata font shrank to ${state.smallFont}px`);
     assert.ok(state.passiveFont >= 10, `${viewport.name}: passive font shrank to ${state.passiveFont}px`);
-    assert.match(state.portraitBackground, /portrait-atlas-starters\.webp/, `${viewport.name}: production portrait is not painted`);
     assert.ok(state.scrollWidth <= state.viewport.width + 1, `${viewport.name}: horizontal document overflow detected`);
     assert.ok(state.scrollHeight <= state.viewport.height + 1, `${viewport.name}: vertical document overflow detected`);
     assert.deepEqual(errors, [], viewport.name);

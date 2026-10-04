@@ -6,9 +6,9 @@
   "scripts": {
     "materialize:brand": "node scripts/materialize-brand.mjs",
     "materialize:sfx": "node scripts/materialize-sfx.mjs",
-    "predev": "npm run materialize:character-art",
+    "predev": "npm run materialize:sfx && npm run materialize:character-art",
     "dev": "vite",
-    "predev:playtest": "npm run materialize:sfx",
+    "predev:playtest": "npm run materialize:sfx && npm run materialize:character-art",
     "dev:playtest": "vite --host 0.0.0.0",
     "prebuild": "npm run materialize:sfx && npm run materialize:character-art",
     "build": "tsc --noEmit && vite build",
@@ -133,7 +133,7 @@
     "test:character-art-ch02e": "tsx tests/character-art-layer-pipeline-ch02e.ts",
     "test:character-face-fit-ch02f": "tsx tests/character-face-socket-fit-ch02f.ts",
     "test:character-crybaby-ch02g": "tsx tests/character-crybaby-runtime-proof-ch02g.ts",
-    "test:character-production-ch181": "tsx tests/character-production-runtime-ch181.ts",
+    "test:character-production-ch181": "tsx tests/character-production-ch181.ts",
     "test:character-reactions-ch04": "tsx tests/character-reactions-ch04.ts",
     "test:character-reaction-moments-ch04b": "tsx tests/character-reaction-moments-ch04b.ts",
     "test:character-special-release-ch04c": "tsx tests/character-special-release-ch04c.ts",
@@ -174,8 +174,8 @@
     "test:visual-refresh-special-reactions-ch1712": "tsx tests/visual-refresh-special-reactions-ch1712.ts",
     "test:visual-refresh-presentation-feedback-ch1713": "tsx tests/visual-refresh-presentation-feedback-ch1713.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts",
-    "test:character-production-ch181": "tsx tests/character-production-ch181.ts",
-    "materialize:character-art": "node scripts/materialize-character-art-ch181.mjs"
+    "materialize:character-art": "node scripts/materialize-character-art-ch181.mjs",
+    "test:character-production-runtime-ch181": "tsx tests/character-production-runtime-ch181.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
