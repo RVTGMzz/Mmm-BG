@@ -105,15 +105,30 @@ export function drawVisualFoundationHudVf04(
   const halfH = c.height / 2;
   graphics.clear();
 
-  // Soft shadow stays *inside* measured 268x104 art bounds.
-  graphics.fillStyle(0x4a302a, active ? 0.17 : 0.10);
-  graphics.fillRoundedRect(-halfW + 4, -halfH + 6, c.width - 8, c.height - 9, c.radius);
-  graphics.fillStyle(0xfffaf1, active ? 1 : 0.96);
+  // CH-17.3 cozy sticker card: cocoa depth, warm paper and a player-colour tab.
+  graphics.fillStyle(0x4b302a, active ? 0.22 : 0.15);
+  graphics.fillRoundedRect(-halfW + 5, -halfH + 7, c.width - 10, c.height - 10, c.radius);
+  graphics.fillStyle(0xfff7e8, active ? 1 : 0.97);
   graphics.fillRoundedRect(-halfW, -halfH, c.width, c.height, c.radius);
-  graphics.fillStyle(0xffffff, active ? 0.60 : 0.42);
-  graphics.fillRoundedRect(-halfW + 8, -halfH + 7, c.width - 16, 25, 14);
-  graphics.fillStyle(accent, active ? 1 : 0.86);
-  graphics.fillRoundedRect(-halfW + 11, -halfH + 6, c.width - 22, 5, 3);
+  graphics.fillStyle(0xffffff, active ? 0.72 : 0.52);
+  graphics.fillRoundedRect(-halfW + 8, -halfH + 7, c.width - 16, 21, 13);
+
+  // Short coloured nameplate tab keeps seat identity visible without painting the whole card.
+  graphics.fillStyle(accent, 1);
+  graphics.fillRoundedRect(-halfW + 68, -halfH + 5, 124, 10, 5);
+  graphics.lineStyle(2, 0x4b302a, 0.26);
+  graphics.lineBetween(-halfW + 68, -halfH + 17, -halfW + 68 + 124, -halfH + 17);
+
+  // Dedicated money and career/material lanes. Text ownership remains inherited.
+  graphics.fillStyle(0xffe8a6, active ? 0.98 : 0.88);
+  graphics.fillRoundedRect(-62, -13, 118, 25, 13);
+  graphics.lineStyle(2, 0x4b302a, 0.25);
+  graphics.strokeRoundedRect(-62, -13, 118, 25, 13);
+
+  graphics.fillStyle(0xf2e2cf, active ? 0.98 : 0.90);
+  graphics.fillRoundedRect(-62, 14, 184, 31, 14);
+  graphics.lineStyle(2, 0x4b302a, 0.16);
+  graphics.strokeRoundedRect(-62, 14, 184, 31, 14);
 
   if (active) {
     // Two distinct jobs: gold OUTER turn indicator, coloured INNER seat identity.
@@ -144,13 +159,19 @@ export function drawVisualFoundationHudVf04(
   graphics.lineStyle(active ? 4 : 3, accent, 1);
   graphics.strokeRoundedRect(-130, -35, c.avatarFrameWidth, c.avatarFrameHeight, 18);
 
-  // Shape + label (▶ in player name) communicates the current player beyond colour.
+  // Active turn uses a toy-like ribbon tab in addition to the text ▶ marker.
   if (palette.showTurnMarker) {
     const pop = Math.max(0, Math.min(1, turnEntryStrength));
-    const markerRadius = 6 + 2 * pop;
+    const tabLift = 2 * pop;
+    graphics.fillStyle(0xc99a36, 1);
+    graphics.fillRoundedRect(82, -49 - tabLift, 45, 24, 10);
     graphics.fillStyle(c.turnGold, 1);
-    graphics.fillCircle(116, -38, markerRadius);
-    graphics.lineStyle(2, 0x4a302a, 0.95);
-    graphics.strokeCircle(116, -38, markerRadius);
+    graphics.fillRoundedRect(80, -52 - tabLift, 45, 24, 10);
+    graphics.lineStyle(2, 0x4b302a, 0.92);
+    graphics.strokeRoundedRect(80, -52 - tabLift, 45, 24, 10);
+    graphics.fillStyle(0xffffff, 0.72);
+    graphics.fillCircle(92, -43 - tabLift, 3);
+    graphics.fillCircle(102, -43 - tabLift, 3);
+    graphics.fillCircle(112, -43 - tabLift, 3);
   }
 }
