@@ -785,3 +785,227 @@ button.character-card-ch02c.vf-button[aria-pressed='true'] {
     padding-block: 6px !important;
   }
 }
+
+
+/* ---------- CH-17.9 Face Editor / Camera ---------- */
+.face-editor-overlay,
+.face-camera-overlay {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255,215,106,.14), transparent 32%),
+    rgba(75,48,42,.72) !important;
+  backdrop-filter: blur(7px);
+}
+
+.face-editor {
+  position: relative;
+  overflow: hidden auto;
+  border: 5px solid var(--ch17-cocoa) !important;
+  border-radius: 30px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 18%),
+    linear-gradient(155deg, #fffdf6, #f0dfc6) !important;
+  box-shadow:
+    0 10px 0 rgba(75,48,42,.24),
+    0 22px 42px rgba(47,28,24,.26) !important;
+  color: var(--ch17-cocoa) !important;
+}
+.face-editor::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 auto;
+  height: 13px;
+  content: '';
+  border-bottom: 2px solid rgba(75,48,42,.25);
+  background: var(--ch17-peach);
+}
+.face-editor > * {
+  position: relative;
+  z-index: 1;
+}
+.face-editor-head {
+  margin-top: 5px;
+  padding: 4px 3px 11px;
+  border-bottom: 2px dashed rgba(75,48,42,.18);
+}
+.face-editor-head strong {
+  color: var(--ch17-cocoa);
+  font-size: 21px;
+  letter-spacing: -.01em;
+}
+.face-editor-head span {
+  color: #80675d !important;
+}
+.face-editor-close,
+.face-camera-close {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 13px !important;
+  background:
+    linear-gradient(180deg, #fffefb, #f2e0c8) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 3px 0 #b99c86;
+}
+
+.face-editor-stage-wrap {
+  border: 5px solid var(--ch17-cocoa) !important;
+  border-radius: 28px !important;
+  background:
+    radial-gradient(circle at 50% 35%, #f7ead8, #d7c7b1) !important;
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.6),
+    0 6px 0 rgba(75,48,42,.18);
+}
+.face-editor-guide {
+  border: 3px dashed rgba(255,255,255,.90) !important;
+  box-shadow:
+    0 0 0 999px rgba(75,48,42,.10),
+    0 0 0 3px rgba(75,48,42,.16) !important;
+}
+
+.face-editor-filter {
+  border: 3px solid rgba(75,48,42,.38) !important;
+  border-radius: 19px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 24%),
+    #fff7e8 !important;
+  box-shadow: inset 0 2px 0 #fff;
+}
+.face-editor-section-label {
+  color: #986451 !important;
+}
+.face-editor-filter-options button,
+.face-editor-actions button {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.75) 0 25%, transparent 26%),
+    linear-gradient(180deg, #fffdf8, #f1dfc8) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 4px 0 #b99c86 !important;
+}
+.face-editor-filter-options button.selected {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.66) 0 25%, transparent 26%),
+    linear-gradient(180deg, #ffe98e, var(--ch17-butter)) !important;
+  box-shadow: 0 4px 0 var(--ch17-butter-deep) !important;
+}
+.face-editor-actions button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #b99c86 !important;
+}
+.face-editor-confirm {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.64) 0 25%, transparent 26%),
+    linear-gradient(180deg, #baf0bd, #78cf8a) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 4px 0 var(--ch17-mint-deep) !important;
+}
+.face-editor-controls label {
+  border: 2px solid rgba(75,48,42,.18);
+  border-radius: 14px;
+  padding: 8px 9px;
+  background: rgba(255,253,247,.66);
+  color: #6e584f;
+}
+.face-editor-controls input {
+  accent-color: var(--ch17-peach-deep) !important;
+}
+.face-editor-note {
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,.48);
+  color: #756158 !important;
+}
+
+/* Camera capture uses the same card language, but keeps the live preview dark. */
+.face-camera-panel {
+  position: relative;
+  overflow: hidden auto;
+  border: 5px solid var(--ch17-cocoa) !important;
+  border-radius: 30px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 17%),
+    linear-gradient(155deg, #fffdf6, #e9efd9) !important;
+  box-shadow:
+    0 10px 0 rgba(75,48,42,.24),
+    0 22px 42px rgba(47,28,24,.28);
+  color: var(--ch17-cocoa) !important;
+}
+.face-camera-panel::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 auto;
+  height: 12px;
+  content: '';
+  border-bottom: 2px solid rgba(75,48,42,.24);
+  background: var(--ch17-mint);
+}
+.face-camera-panel > * {
+  position: relative;
+  z-index: 1;
+}
+.face-camera-head {
+  margin-top: 5px;
+  padding: 3px 2px 10px;
+  border-bottom: 2px dashed rgba(75,48,42,.18);
+}
+.face-camera-head strong {
+  color: var(--ch17-cocoa);
+  font-size: 20px;
+}
+.face-camera-head span {
+  color: #66705f !important;
+}
+.face-camera-preview {
+  border: 5px solid var(--ch17-cocoa) !important;
+  border-radius: 25px !important;
+  box-shadow: 0 6px 0 rgba(75,48,42,.18);
+}
+.face-camera-guide {
+  border: 3px dashed rgba(255,247,232,.92) !important;
+  box-shadow: 0 0 0 2px rgba(75,48,42,.20);
+}
+.face-camera-label {
+  border: 3px solid var(--ch17-cocoa) !important;
+  background: rgba(255,247,232,.94) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 3px 0 rgba(75,48,42,.18);
+}
+.face-camera-actions button {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.74) 0 25%, transparent 26%),
+    linear-gradient(180deg, #fffdf8, #f1dfc8) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 4px 0 #b99c86;
+}
+.face-camera-actions .face-camera-shot {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.52) 0 24%, transparent 25%),
+    linear-gradient(180deg, #ff9f91, #ed7568) !important;
+  color: #4b302a !important;
+  box-shadow: 0 4px 0 #bd5b51 !important;
+}
+.face-camera-actions button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #b99c86 !important;
+}
+.face-camera-panel > small {
+  border-radius: 11px;
+  padding: 6px 9px;
+  background: rgba(255,255,255,.52);
+  color: #6d6056 !important;
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .face-editor,
+  .face-camera-panel {
+    border-width: 4px !important;
+    border-radius: 24px !important;
+  }
+  .face-editor-stage-wrap,
+  .face-camera-preview {
+    border-width: 4px !important;
+    border-radius: 21px !important;
+  }
+}
