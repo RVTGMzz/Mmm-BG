@@ -1866,3 +1866,13 @@ Keep visible game vocabulary:
 **TIN TỨC / LÁ BÀI**
 
 Do not merge PR #1.
+
+
+## ACTIVE DEVELOPMENT RELEASE POLICY — 2026-10-04
+- **REPO-ONLY until Ron explicitly says otherwise.**
+- Run source build/tests/CI on `mmm-mvp-0.1-core` normally.
+- Do **NOT** upload playtest build artifacts for routine commits.
+- Do **NOT** checkout/push `ronvotri/MeMeMe-Web-Playtest`.
+- Do **NOT** update public GitHub Pages during active development.
+- Existing public build may remain online but is considered frozen/stale test material.
+- Re-enable public publishing only after Ron explicitly asks to publish a new online test build.
