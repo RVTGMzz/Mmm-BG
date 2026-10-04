@@ -329,6 +329,8 @@ jobs:
         run: npm run test:visual-refresh-board-ch173
       - name: CH-17.4 News Card Job Mini Game modal refresh
         run: npm run test:visual-refresh-modals-ch174
+      - name: CH-17.5 board tile chrome + Match Recap refresh
+        run: npm run test:visual-refresh-board-recap-ch175
       - name: CH-15 public online entry and resume
         run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies
@@ -360,11 +362,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.43 CH-17.4 Modal Visual Refresh build
+      - name: Upload MMM 0.1.70.4.44 CH-17.5 Board Recap Visual Refresh build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.43-ch17-4-modal-refresh
+          name: mmm-playtest-0.1.70.4.44-ch17-5-board-recap-refresh
           path: dist
           if-no-files-found: error
           retention-days: 14
