@@ -349,6 +349,8 @@ jobs:
         run: npm run test:visual-refresh-decision-ui-ch1711
       - name: CH-17.12 Reaction bubbles + Jail Hospital hold refresh
         run: npm run test:visual-refresh-special-reactions-ch1712
+      - name: CH-17.13 Dice landing cinematic and feedback refresh
+        run: npm run test:visual-refresh-presentation-feedback-ch1713
       - name: CH-15 public online entry and resume
         run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies
@@ -380,11 +382,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.52 CH-17.12 Special Reaction Visual Refresh build
+      - name: Upload MMM 0.1.70.4.53 CH-17.13 Presentation Feedback Refresh build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.52-ch17-12-special-reaction-refresh
+          name: mmm-playtest-0.1.70.4.53-ch17-13-presentation-feedback-refresh
           path: dist
           if-no-files-found: error
           retention-days: 14

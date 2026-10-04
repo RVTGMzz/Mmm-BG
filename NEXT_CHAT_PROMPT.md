@@ -1,3 +1,23 @@
+# CURRENT CHECKPOINT — 2026-10-04 — CH-17.13 PRESENTATION FEEDBACK REFRESH
+
+Continue MeMeMe from `RVTGMzz/Mmm-BG` on `mmm-mvp-0.1-dev`.
+
+Current build: `0.1.70.4.53`.
+Prior validated build: `0.1.70.4.52`, CI #3648 SUCCESS.
+CH-17.13 refreshes dice, landing/ready-bonus, generic cinematic fallback, continue/skip chip, floating B$, action line and rarity badge presentation only.
+
+Keep these rules locked:
+- GitHub Pages dev playtest may update.
+- Cloudflare Worker remains frozen; do not redeploy/update it unless Ron explicitly asks.
+- No client gameplay RNG or presentation-owned B$ mutation.
+- PR #1 stays Draft/Open.
+- Physical two-device online acceptance remains human-owned.
+
+Public test:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-04 — CH-17 VISUAL OVERHAUL COMPLETE THROUGH CH-17.10
 
 **GITHUB PLAYTEST LIVE • CLOUDFLARE WORKER STILL FROZEN / NOT REDEPLOYED**

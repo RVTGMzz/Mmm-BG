@@ -15,6 +15,15 @@ import {
 const PLAYER_COLORS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
+const COCOA_CH1713 = 0x4b302a;
+const CREAM_CH1713 = 0xfff7e8;
+const PAPER_CH1713 = 0xfffcf6;
+const BUTTER_CH1713 = 0xffd76a;
+const MINT_CH1713 = 0xa9e0b1;
+const PEACH_CH1713 = 0xffb69f;
+const TEXT_CH1713 = '#4b302a';
+const BODY_CH1713 = '#66534b';
+
 // 0.1.70.4.22: reaction geometry is owned by presentationLanes070422.
 // Do not put a 328px bubble in the ~240px side rail again.
 
@@ -66,7 +75,7 @@ export class MatchPresentationLayer {
   private readonly queue: PresentationEventModel[] = [];
   private active?: Phaser.GameObjects.Container;
   private currentModel?: PresentationEventModel;
-  private continueHint?: Phaser.GameObjects.Text;
+  private continueHint?: Phaser.GameObjects.Container;
   private readonly timers = new Set<Phaser.Time.TimerEvent>();
   private readonly reactionObjects = new Set<Phaser.GameObjects.Container>();
   private destroyed = false;
@@ -176,24 +185,54 @@ export class MatchPresentationLayer {
 
   private showDiceRoll(model: PresentationEventModel): void {
     const result = Math.max(1, Math.min(6, model.roll ?? 1));
-    const container = this.scene.add.container(640, 344).setDepth(920).setAlpha(0).setScale(0.72);
+    const container = this.scene.add.container(640, 344)
+      .setName('presentation-dice-card-ch1713')
+      .setDepth(920)
+      .setAlpha(0)
+      .setScale(0.72);
     this.active = container;
 
-    const glow = this.scene.add.circle(0, 0, 72, 0xfffbf3, 0.96).setStrokeStyle(5, 0x24211d, 1);
-    const die = this.scene.add.text(0, -4, DICE_FACES[(result + 1) % 6], {
+    const shadow = this.scene.add.graphics().setName('presentation-dice-shadow-ch1713');
+    shadow.fillStyle(COCOA_CH1713, 0.20);
+    shadow.fillRoundedRect(-112, -103, 224, 214, 34);
+    shadow.setPosition(0, 8);
+
+    const panel = this.scene.add.graphics().setName('presentation-dice-panel-ch1713');
+    panel.fillStyle(CREAM_CH1713, 0.995);
+    panel.fillRoundedRect(-108, -106, 216, 208, 32);
+    panel.fillStyle(0xffffff, 0.50);
+    panel.fillRoundedRect(-94, -92, 188, 13, 7);
+    panel.lineStyle(4, COCOA_CH1713, 0.96);
+    panel.strokeRoundedRect(-108, -106, 216, 208, 32);
+
+    const ribbon = this.scene.add.graphics().setName('presentation-dice-ribbon-ch1713');
+    ribbon.fillStyle(BUTTER_CH1713, 1);
+    ribbon.fillRoundedRect(-78, 69, 156, 43, 17);
+    ribbon.lineStyle(3, COCOA_CH1713, 0.92);
+    ribbon.strokeRoundedRect(-78, 69, 156, 43, 17);
+
+    const dieWell = this.scene.add.graphics().setName('presentation-dice-well-ch1713');
+    dieWell.fillStyle(PAPER_CH1713, 1);
+    dieWell.fillRoundedRect(-67, -70, 134, 134, 30);
+    dieWell.fillStyle(0xffffff, 0.58);
+    dieWell.fillRoundedRect(-54, -57, 108, 13, 7);
+    dieWell.lineStyle(4, COCOA_CH1713, 0.88);
+    dieWell.strokeRoundedRect(-67, -70, 134, 134, 30);
+
+    const die = this.scene.add.text(0, -3, DICE_FACES[(result + 1) % 6], {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '86px',
-      color: '#202020',
+      fontSize: '84px',
+      color: TEXT_CH1713,
     }).setOrigin(0.5);
-    const label = this.scene.add.text(0, 86, `${model.actorName} đổ xúc xắc`, {
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '14px',
+
+    const label = this.scene.add.text(0, 90, `${model.actorName} đổ xúc xắc`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '13px',
       fontStyle: 'bold',
-      color: '#202020',
-      backgroundColor: '#fffaf0',
-      padding: { x: 10, y: 5 },
+      color: TEXT_CH1713,
     }).setOrigin(0.5);
-    container.add([glow, die, label]);
+
+    container.add([shadow, panel, dieWell, ribbon, die, label]);
 
     sfxController.play('dice_roll');
     this.scene.tweens.add({
@@ -216,7 +255,7 @@ export class MatchPresentationLayer {
       if (!die.active) return;
       die.setText(DICE_FACES[result - 1]).setAngle(0).setScale(1.12);
       const settle = diceSettleFeedbackCh09(result);
-      this.spawnBurst(0xffd34d, settle.burstCount, 640, 344);
+      this.spawnBurst(BUTTER_CH1713, settle.burstCount, 640, 344);
       this.scene.cameras.main.shake(settle.cameraShake.durationMs, settle.cameraShake.intensity);
       this.scene.tweens.add({ targets: die, scaleX: 1, scaleY: 1, duration: 160, ease: 'Back.easeOut' });
     });
@@ -235,46 +274,75 @@ export class MatchPresentationLayer {
         ) object.destroy(true);
       }
     }
+
     const panelWidth = isJobCard ? 700 : 560;
     const bodyWidth = isJobCard ? 500 : 410;
     const contentX = isJobCard ? -218 : -178;
     const iconX = isJobCard ? -286 : -226;
-    const container = this.scene.add.container(640, 350).setDepth(900).setAlpha(0).setScale(0.9);
-    if (isJobCard) container.setName('job-presentation-card');
+    const container = this.scene.add.container(640, 350)
+      .setName(isJobCard ? 'job-presentation-card' : 'presentation-landing-card-ch1713')
+      .setDepth(900)
+      .setAlpha(0)
+      .setScale(0.9);
     this.active = container;
 
-    const shadow = this.scene.add.graphics();
-    shadow.fillStyle(0x000000, 0.22);
-    shadow.fillRoundedRect(-(panelWidth / 2 + 6), -80, panelWidth + 12, 170, 22);
-    shadow.setPosition(0, 8);
-    const panel = this.scene.add.graphics();
-    panel.fillStyle(palette.panel, 0.98);
-    panel.fillRoundedRect(-panelWidth / 2, -84, panelWidth, 168, 20);
-    panel.lineStyle(3, palette.accent, 0.95);
-    panel.strokeRoundedRect(-panelWidth / 2, -84, panelWidth, 168, 20);
+    const shadow = this.scene.add.graphics().setName('presentation-landing-shadow-ch1713');
+    shadow.fillStyle(COCOA_CH1713, 0.20);
+    shadow.fillRoundedRect(-(panelWidth / 2), -78, panelWidth, 174, 24);
+    shadow.setPosition(4, 7);
 
-    const icon = this.scene.add.text(iconX, -4, model.impact || '•', {
+    const panel = this.scene.add.graphics().setName('presentation-landing-panel-ch1713');
+    panel.fillStyle(CREAM_CH1713, 0.995);
+    panel.fillRoundedRect(-panelWidth / 2, -84, panelWidth, 168, 22);
+    panel.fillStyle(0xffffff, 0.44);
+    panel.fillRoundedRect(-panelWidth / 2 + 14, -72, panelWidth - 28, 10, 5);
+    panel.fillStyle(palette.accent, 0.98);
+    panel.fillRoundedRect(-panelWidth / 2, -84, 14, 168, { tl: 22, tr: 6, bl: 22, br: 6 });
+    panel.lineStyle(4, COCOA_CH1713, 0.92);
+    panel.strokeRoundedRect(-panelWidth / 2, -84, panelWidth, 168, 22);
+
+    const iconWell = this.scene.add.graphics().setName('presentation-landing-icon-well-ch1713');
+    iconWell.fillStyle(PAPER_CH1713, 1);
+    iconWell.fillRoundedRect(iconX - 42, -44, 84, 84, 23);
+    iconWell.lineStyle(3, palette.accent, 0.88);
+    iconWell.strokeRoundedRect(iconX - 42, -44, 84, 84, 23);
+
+    const icon = this.scene.add.text(iconX, -2, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
-      fontSize: '44px',
+      fontSize: '42px',
     }).setOrigin(0.5);
-    const eyebrow = this.scene.add.text(contentX, -52, model.eyebrow, {
-      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#d9d1c7',
+
+    const eyebrow = this.scene.add.text(contentX, -54, model.eyebrow, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: '#816c61',
     });
-    const title = this.scene.add.text(contentX, -24, model.title, {
-      fontFamily: 'Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#ffffff',
-      fixedWidth: bodyWidth, wordWrap: { width: bodyWidth },
+    const title = this.scene.add.text(contentX, -26, model.title, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '27px',
+      fontStyle: 'bold',
+      color: TEXT_CH1713,
+      fixedWidth: bodyWidth,
+      wordWrap: { width: bodyWidth },
     });
-    const description = this.scene.add.text(contentX, 20, '', {
-      fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#f4ede4',
-      wordWrap: { width: bodyWidth }, fixedWidth: bodyWidth, fixedHeight: 58, lineSpacing: 3,
+    const description = this.scene.add.text(contentX, 19, '', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '14px',
+      color: BODY_CH1713,
+      wordWrap: { width: bodyWidth },
+      fixedWidth: bodyWidth,
+      fixedHeight: 58,
+      lineSpacing: 3,
     });
+
     if (model.tileType === 'character_passive') {
       container.setName('character-passive-presentation-ch05');
       title.setName('character-passive-title-ch05');
       description.setName('character-passive-body-ch05');
     }
 
-    container.add([shadow, panel, icon, eyebrow, title, description]);
+    container.add([shadow, panel, iconWell, icon, eyebrow, title, description]);
     const revealMs = this.revealText(description, model.description);
     const landingFeedback = landingFeedbackCh09(model);
     sfxController.play(landingFeedback.cue);
@@ -286,11 +354,15 @@ export class MatchPresentationLayer {
     if (landingFeedback.floatingMoney) this.showFloatingMoney(model.amount ?? 0, model.actorId);
 
     this.scene.tweens.add({
-      targets: container, alpha: 1, scaleX: 1, scaleY: 1, duration: 190, ease: 'Back.easeOut',
+      targets: container,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 190,
+      ease: 'Back.easeOut',
     });
 
-    // CH-04B: landing surfaces can now carry Character-owned reaction moments
-    // (Job, Mini Game, salary) through the same safe side rails as cinematics.
+    // CH-04B authority/timing remains unchanged; CH-17.13 only refreshes the surface.
     let landingReactionEnd0704 = 0;
     model.reactions.forEach((line, index) => {
       const reactionReveal = Math.min(2200, Math.max(500, line.text.length * 24));
@@ -326,44 +398,77 @@ export class MatchPresentationLayer {
         : 450;
       minAutoCloseMs = Math.max(0, owned.minAutoCloseMs ?? 0);
     } else {
-      container = this.scene.add.container(640, 330).setDepth(900).setAlpha(0).setScale(0.94);
+      container = this.scene.add.container(640, 330)
+        .setName('presentation-cinematic-card-ch1713')
+        .setDepth(900)
+        .setAlpha(0)
+        .setScale(0.94);
       this.active = container;
 
-      const shadow = this.scene.add.graphics();
-      shadow.fillStyle(0x000000, 0.28);
-      shadow.fillRoundedRect(-366, -145, 732, 306, 24);
-      shadow.setPosition(0, 9);
-      const panel = this.scene.add.graphics();
-      panel.fillStyle(palette.panel, 0.985);
-      panel.fillRoundedRect(-360, -150, 720, 300, 22);
-      panel.lineStyle(3, palette.accent, 0.92);
-      panel.strokeRoundedRect(-360, -150, 720, 300, 22);
-      panel.fillStyle(palette.accent, 1);
-      panel.fillRoundedRect(-360, -150, 10, 300, { tl: 22, bl: 22, tr: 0, br: 0 });
+      const shadow = this.scene.add.graphics().setName('presentation-cinematic-shadow-ch1713');
+      shadow.fillStyle(COCOA_CH1713, 0.22);
+      shadow.fillRoundedRect(-360, -143, 720, 300, 26);
+      shadow.setPosition(5, 9);
 
-      const kicker = this.scene.add.text(-322, -118, model.eyebrow, {
-        fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#f8f4ec', letterSpacing: 1.1,
+      const panel = this.scene.add.graphics().setName('presentation-cinematic-panel-ch1713');
+      panel.fillStyle(CREAM_CH1713, 0.995);
+      panel.fillRoundedRect(-360, -150, 720, 300, 24);
+      panel.fillStyle(0xffffff, 0.46);
+      panel.fillRoundedRect(-340, -133, 680, 11, 6);
+      panel.fillStyle(palette.accent, 0.98);
+      panel.fillRoundedRect(-360, -150, 720, 48, { tl: 24, tr: 24, bl: 8, br: 8 });
+      panel.lineStyle(4, COCOA_CH1713, 0.92);
+      panel.strokeRoundedRect(-360, -150, 720, 300, 24);
+
+      const kicker = this.scene.add.text(-322, -126, model.eyebrow, {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '12px',
+        fontStyle: 'bold',
+        color: TEXT_CH1713,
+        letterSpacing: 1.1,
+      }).setOrigin(0, 0.5);
+
+      const title = this.scene.add.text(-322, -82, model.title, {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '30px',
+        fontStyle: 'bold',
+        color: TEXT_CH1713,
+        wordWrap: { width: 540 },
       });
-      const title = this.scene.add.text(-322, -88, model.title, {
-        fontFamily: 'Arial, sans-serif', fontSize: '31px', fontStyle: 'bold', color: '#ffffff', wordWrap: { width: 540 },
-      });
-      const impact = this.scene.add.text(314, -108, model.impact || '•', {
-        fontFamily: 'Arial, sans-serif', fontSize: '19px', color: '#ffffff',
-      }).setOrigin(1, 0);
+
+      const impactWell = this.scene.add.graphics().setName('presentation-cinematic-impact-ch1713');
+      impactWell.fillStyle(PAPER_CH1713, 0.92);
+      impactWell.fillRoundedRect(244, -139, 84, 28, 14);
+      impactWell.lineStyle(2, COCOA_CH1713, 0.72);
+      impactWell.strokeRoundedRect(244, -139, 84, 28, 14);
+
+      const impact = this.scene.add.text(286, -125, model.impact || '•', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '17px',
+        color: TEXT_CH1713,
+      }).setOrigin(0.5);
+
       const bodyText = [model.description, model.summary && model.summary !== model.description ? `→ ${model.summary}` : '']
         .filter(Boolean)
         .join('\n\n');
       const body = this.scene.add.text(-322, -28, '', {
-        fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#f4ede4', wordWrap: { width: 628 }, lineSpacing: 5,
-        fixedWidth: 628, fixedHeight: 128,
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '16px',
+        color: BODY_CH1713,
+        wordWrap: { width: 628 },
+        lineSpacing: 5,
+        fixedWidth: 628,
+        fixedHeight: 128,
       });
       const source = this.scene.add.text(316, 126, `${palette.label} • #${model.eventSeq}`, {
-        fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#d8d0c6',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '9px',
+        color: '#8c776b',
       }).setOrigin(1, 0.5);
 
-      container.add([shadow, panel, kicker, title, impact, body, source]);
+      container.add([shadow, panel, kicker, title, impactWell, impact, body, source]);
       this.addNaturalActionLine(container, model);
-      if (model.rarity) this.addRarityBadge(container, 238, -118, model.rarity);
+      if (model.rarity) this.addRarityBadge(container, 238, -82, model.rarity);
       revealMs = this.revealText(body, bodyText);
     }
 
@@ -449,16 +554,37 @@ export class MatchPresentationLayer {
 
   private showContinueHint(manual: boolean): void {
     this.clearContinueHint();
-    this.continueHint = this.scene.add.text(
-      640,
-      526,
-      manual ? 'SPACE / ENTER / CLICK • TIẾP TỤC' : 'SPACE / ENTER / CLICK • BỎ QUA',
-      {
-        fontFamily: 'Arial, sans-serif', fontSize: '12px', fontStyle: 'bold', color: '#202020',
-        backgroundColor: '#ffd34d', padding: { x: 13, y: 6 },
-      },
-    ).setOrigin(0.5).setDepth(940).setAlpha(0.1);
-    this.scene.tweens.add({ targets: this.continueHint, alpha: 1, duration: 160, ease: 'Sine.easeOut' });
+
+    const container = this.scene.add.container(640, 526)
+      .setName('presentation-continue-chip-ch1713')
+      .setDepth(940)
+      .setAlpha(0.1);
+    const copy = manual
+      ? 'TIẾP TỤC  •  SPACE / ENTER / CLICK'
+      : 'BỎ QUA  •  SPACE / ENTER / CLICK';
+
+    const shadow = this.scene.add.graphics();
+    shadow.fillStyle(COCOA_CH1713, 0.22);
+    shadow.fillRoundedRect(-151, -17, 302, 40, 17);
+
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(BUTTER_CH1713, 1);
+    bg.fillRoundedRect(-151, -21, 302, 40, 17);
+    bg.fillStyle(0xffffff, 0.46);
+    bg.fillRoundedRect(-140, -15, 280, 7, 4);
+    bg.lineStyle(3, COCOA_CH1713, 0.94);
+    bg.strokeRoundedRect(-151, -21, 302, 40, 17);
+
+    const label = this.scene.add.text(0, -1, copy, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: TEXT_CH1713,
+    }).setOrigin(0.5);
+
+    container.add([shadow, bg, label]);
+    this.continueHint = container;
+    this.scene.tweens.add({ targets: container, alpha: 1, duration: 160, ease: 'Sine.easeOut' });
   }
 
   private clearContinueHint(): void {
@@ -512,16 +638,43 @@ export class MatchPresentationLayer {
   private showFloatingMoney(amount: number, playerId?: number): void {
     if (amount === 0) return;
     const positive = amount > 0;
-    const color = positive ? '#1d7b46' : '#c83434';
     const sign = positive ? '+' : '';
     const x = 640 + (playerId === undefined ? 0 : (playerId - 1.5) * 34);
-    const text = this.scene.add.text(x, 438, `${sign}${amount} B$`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif', fontSize: '27px', fontStyle: 'bold', color,
-      stroke: '#fffaf0', strokeThickness: 6,
-    }).setOrigin(0.5).setDepth(925).setScale(0.72);
+
+    const container = this.scene.add.container(x, 438)
+      .setName('presentation-money-chip-ch1713')
+      .setDepth(925)
+      .setScale(0.72);
+
+    const shadow = this.scene.add.graphics();
+    shadow.fillStyle(COCOA_CH1713, 0.18);
+    shadow.fillRoundedRect(-70, -19, 140, 44, 18);
+
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(positive ? MINT_CH1713 : PEACH_CH1713, 1);
+    bg.fillRoundedRect(-70, -23, 140, 44, 18);
+    bg.fillStyle(0xffffff, 0.50);
+    bg.fillRoundedRect(-59, -17, 118, 8, 4);
+    bg.lineStyle(3, COCOA_CH1713, 0.90);
+    bg.strokeRoundedRect(-70, -23, 140, 44, 18);
+
+    const text = this.scene.add.text(0, -1, `${sign}${amount} B$`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '24px',
+      fontStyle: 'bold',
+      color: TEXT_CH1713,
+    }).setOrigin(0.5);
+
+    container.add([shadow, bg, text]);
     this.scene.tweens.add({
-      targets: text, y: 390, scaleX: 1.08, scaleY: 1.08, alpha: 0, duration: 900, ease: 'Cubic.easeOut',
-      onComplete: () => text.destroy(),
+      targets: container,
+      y: 390,
+      scaleX: 1.06,
+      scaleY: 1.06,
+      alpha: 0,
+      duration: 900,
+      ease: 'Cubic.easeOut',
+      onComplete: () => container.destroy(true),
     });
   }
 
@@ -587,14 +740,17 @@ export class MatchPresentationLayer {
 
     const copy = `${model.targetName} đưa ${amount} B$ cho ${model.actorName}`;
 
-    const bg = this.scene.add.graphics();
-    bg.fillStyle(0x4a433c, 0.94);
-    bg.fillRoundedRect(-322, 104, 628, 30, 15);
-    const text = this.scene.add.text(-306, 119, copy, {
-      fontFamily: 'Arial, sans-serif',
+    const bg = this.scene.add.graphics().setName('presentation-action-line-ch1713');
+    bg.fillStyle(MINT_CH1713, 0.96);
+    bg.fillRoundedRect(-322, 104, 628, 31, 15);
+    bg.lineStyle(2, COCOA_CH1713, 0.72);
+    bg.strokeRoundedRect(-322, 104, 628, 31, 15);
+
+    const text = this.scene.add.text(-306, 120, copy, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '11px',
       fontStyle: 'bold',
-      color: '#ffffff',
+      color: TEXT_CH1713,
       fixedWidth: 596,
       align: 'center',
     }).setOrigin(0, 0.5);
@@ -603,11 +759,18 @@ export class MatchPresentationLayer {
 
   private addRarityBadge(container: Phaser.GameObjects.Container, x: number, y: number, rarity: string): void {
     const color = RARITY_COLORS[rarity] ?? 0xe4ded2;
-    const bg = this.scene.add.graphics();
+    const bg = this.scene.add.graphics().setName('presentation-rarity-badge-ch1713');
+    bg.fillStyle(COCOA_CH1713, 0.18);
+    bg.fillRoundedRect(x + 2, y - 8, 74, 22, 11);
     bg.fillStyle(color, 1);
     bg.fillRoundedRect(x, y - 11, 74, 22, 11);
+    bg.lineStyle(2, COCOA_CH1713, 0.82);
+    bg.strokeRoundedRect(x, y - 11, 74, 22, 11);
     const text = this.scene.add.text(x + 37, y, rarity, {
-      fontFamily: 'Arial, sans-serif', fontSize: '11px', fontStyle: 'bold', color: '#24211d',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '11px',
+      fontStyle: 'bold',
+      color: TEXT_CH1713,
     }).setOrigin(0.5);
     container.add([bg, text]);
   }

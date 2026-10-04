@@ -1,3 +1,34 @@
+# CURRENT CHECKPOINT — 2026-10-04 — CH-17.13 PRESENTATION FEEDBACK REFRESH
+
+**SOURCE PUSHED • CI/PAGES VALIDATION FOLLOWS THIS CHECKPOINT • CLOUDFLARE WORKER STILL FROZEN / NOT REDEPLOYED**
+
+Current authority:
+- repo: `RVTGMzz/Mmm-BG`
+- active development branch: `mmm-mvp-0.1-dev`
+- frozen Cloudflare checkpoint branch: `mmm-mvp-0.1-core`
+- build: `0.1.70.4.53`
+- phase: `RELEASE CANDIDATE • CH-17.13 PRESENTATION FEEDBACK REFRESH`
+- prior fully validated checkpoint: `0.1.70.4.52` / CI #3648 **SUCCESS**
+- test URL: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+## CH-17.13 shipped
+- refreshed the in-match dice popup into a cream/butter toy card while preserving dice timing/SFX;
+- refreshed landing / ready-bonus presentation into the CH-17 paper-card language;
+- refreshed the generic cinematic fallback used outside canonical Card/News owned renderers;
+- refreshed manual continue / skip prompt into a toy chip;
+- refreshed floating B$ feedback into mint/peach chips;
+- refreshed direct-money action line and rarity badge chrome;
+- kept reaction lanes, presentation queue, economy, RNG and authoritative event flow unchanged.
+
+## Locked constraints
+- no client gameplay `Math.random()`;
+- no presentation-owned B$ mutation;
+- HOST/replay authority stays authoritative;
+- no Cloudflare Worker deploy/update;
+- PR #1 remains Draft/Open unless Ron explicitly asks to merge.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-04 — CH-17 VISUAL OVERHAUL COMPLETE THROUGH CH-17.10
 
 **GITHUB PLAYTEST LIVE • CLOUDFLARE WORKER STILL FROZEN / NOT REDEPLOYED**
