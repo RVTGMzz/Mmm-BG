@@ -158,6 +158,8 @@
     "test:runtime-polish-ch141": "tsx tests/runtime-polish-ch141.ts",
     "test:minigame-flow-ch142": "tsx tests/minigame-flow-ch142.ts",
     "test:game-mode-minigame-ch161": "tsx tests/game-mode-minigame-ch161.ts",
+    "test:minigame-online-choice-sync-ch16c": "tsx tests/minigame-online-choice-sync-ch16c.ts",
+    "test:minigame-online-overlay-ch16c": "tsx tests/minigame-online-overlay-ch16c.ts",
     "test:visual-refresh-turn-order-ch172": "tsx tests/visual-refresh-turn-order-ch172.ts",
     "test:visual-refresh-board-ch173": "tsx tests/visual-refresh-board-ch173.ts",
     "test:visual-refresh-modals-ch174": "tsx tests/visual-refresh-modals-ch174.ts",
