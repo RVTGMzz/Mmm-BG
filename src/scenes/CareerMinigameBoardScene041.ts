@@ -3,6 +3,10 @@ import { demoMatchResult } from '../core/demoMatch';
 import type { MatchState } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import { withCompetitionRanks, type RankedPodiumEntry } from '../ui/podiumRanking';
+import {
+  CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+  characterProductionPortraitFrameCh182,
+} from '../ui/characterProductionArtCh181';
 import { CareerMinigameBoardScene040 } from './CareerMinigameBoardScene040';
 
 const PLAYER_ACCENTS = [0xef4545, 0x5b8def, 0xf2b84b, 0x61b37b];
@@ -197,16 +201,32 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
           this.add.image(0, faceY, faceAsset.textureKey).setDisplaySize(58, 58),
         ]);
       } else {
-        slot.add([
-          faceShadow,
-          faceFrame,
-          this.add.text(0, faceY, `P${entry.playerId + 1}`, {
-            fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-            fontSize: '16px',
-            fontStyle: 'bold',
-            color: '#4b302a',
-          }).setOrigin(0.5),
-        ]);
+        const characterId = player?.characterId ?? gameSession.getCharacterId(entry.playerId);
+        const productionFrame = characterProductionPortraitFrameCh182(characterId, faceExpression);
+        if (
+          productionFrame !== undefined
+          && this.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)
+        ) {
+          slot.add([
+            faceShadow,
+            faceFrame,
+            this.add
+              .image(0, faceY, CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182, productionFrame)
+              .setDisplaySize(58, 58)
+              .setName('character-production-podium-avatar-ch183'),
+          ]);
+        } else {
+          slot.add([
+            faceShadow,
+            faceFrame,
+            this.add.text(0, faceY, `P${entry.playerId + 1}`, {
+              fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+              fontSize: '16px',
+              fontStyle: 'bold',
+              color: '#4b302a',
+            }).setOrigin(0.5),
+          ]);
+        }
       }
 
       this.decoratePodiumSlot(slot, entry, 0, faceY);

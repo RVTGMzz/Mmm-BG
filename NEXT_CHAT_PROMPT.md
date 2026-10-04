@@ -1,3 +1,12 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.3 PODIUM PORTRAITS
+
+Current build: `0.1.70.4.57`.
+CH-18.2 is green on source CI #3665 and GitHub Pages #107. Final podium now preserves uploaded player faces first, then falls back to the selected Character production portrait using the existing rank-driven expression (happy / neutral / angry). Ranking, B$, tie rules and reveal cadence remain untouched.
+
+Presentation-only. Cloudflare Worker remains frozen.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-05 — CH-18.2 CONTEXT PORTRAITS
 
 Current build: `0.1.70.4.56`.
