@@ -21,7 +21,7 @@ assert(board.includes('CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182'));
 assert(board.includes('CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181'));
 assert(layer.includes("setName('character-production-reaction-avatar-ch182')"));
 assert(layer.includes('gameSession.getFace(playerId, expression)'));
-assert(layer.indexOf('gameSession.getFace(playerId, expression)') < layer.indexOf('characterProductionPortraitFrameCh182'),
+assert(layer.indexOf('gameSession.getFace(playerId, expression)') < layer.indexOf('const productionFrame = characterProductionPortraitFrameCh182'),
   'uploaded player face must stay higher priority than Character portrait fallback');
 assert(sequencer.includes("setName('character-production-reaction-avatar-ch182')"));
 assert(!layer.includes('Math.random()'));
