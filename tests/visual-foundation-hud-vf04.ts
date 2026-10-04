@@ -61,6 +61,7 @@ for (const scale of [0.94, 0.96, 1, 1.18]) {
 }
 const scene65 = readFileSync('src/scenes/CareerMinigameBoardScene065.ts', 'utf8');
 const scene44 = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
+const sceneCh173 = readFileSync('src/scenes/CareerMinigameBoardSceneCh173.ts', 'utf8');
 const helper = readFileSync('src/ui/visualFoundationHudVf04.ts', 'utf8');
 const main = readFileSync('src/main.ts', 'utf8');
 assert.match(scene65, /drawVisualFoundationHudVf04\(/);
@@ -73,7 +74,8 @@ assert.match(scene44, /clampHudCenterVf04\(anchor.x, anchor.y, hud.root.scaleX\)
 assert.match(scene44, /HUD_BASE_WIDTH_07046 = HUD_SKIN_VF04.width/);
 assert.match(scene44, /HUD_BASE_HEIGHT_07046 = HUD_SKIN_VF04.height/);
 assert.match(scene44, /ACTIVE_HUD_SCALE_07046 = 1\.18/);
-assert.match(main, /CareerMinigameBoardScene07044 as ActiveBoardScene/);
+assert.match(sceneCh173, /extends CareerMinigameBoardScene07044/);
+assert.match(main, /CareerMinigameBoardSceneCh173 as ActiveBoardScene/);
 assert.match(helper, /fillRoundedRect/);
 assert.match(helper, /strokeRoundedRect/);
 assert.match(helper, /if \(active\)/);
