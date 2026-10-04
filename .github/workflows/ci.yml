@@ -336,6 +336,7 @@ jobs:
           node tests/runtime/scroll-viewport.mjs
           node tests/runtime/full-scene-ui.mjs
           node tests/runtime/quick-minigame-menu-ui.mjs
+          node tests/runtime/visual-refresh-ch17-ui.mjs
           node tests/runtime/character-select-ui.mjs
           node tests/runtime/match-recap-ui.mjs
           node tests/runtime/settings-space-ui.mjs
@@ -353,11 +354,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.39 CH-16.1 Quick Mini Game + Landing Fix build
+      - name: Upload MMM 0.1.70.4.40 CH-17 Visual Refresh build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.39-ch16-1-quick-minigame-landing-fix
+          name: mmm-playtest-0.1.70.4.40-ch17-visual-refresh
           path: dist
           if-no-files-found: error
           retention-days: 14
