@@ -23,7 +23,7 @@ assert.equal(versionParts[0], 0);
 assert.equal(versionParts[1], 1);
 assert(versionParts[2] >= 69, `canonical runtime regressed below 0.1.69: ${MEMEME_BUILD.version}`);
 assert(MEMEME_BUILD.phase.length > 0, 'canonical build phase must stay visible');
-assert.match(main, /CareerMinigameBoardScene07044 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardSceneCh173 as ActiveBoardScene/);
 assert.match(scene07044, /extends CareerMinigameBoardScene0701/);
 assert(!scene07044.includes('submitIntent(')); assert(!scene07044.includes('Math.random'));
 assert.match(scene0701, /extends CareerMinigameBoardScene069/);
