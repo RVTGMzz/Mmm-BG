@@ -1075,3 +1075,240 @@ canvas {
   align-items:center;
   gap:8px;
 }
+
+
+/* CH-16.1 outer game-mode menu + standalone Mini Game quick play */
+.mememe-mode-menu {
+  width: 860px;
+  box-sizing: border-box;
+  color: #202020;
+  pointer-events: auto;
+}
+.mode-menu-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.mode-menu-head h1 {
+  margin: 3px 0 0;
+  font-size: 38px;
+  line-height: 1;
+}
+.mode-menu-head > span {
+  max-width: 330px;
+  color: #6d655b;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: right;
+}
+.mode-menu-kicker,
+.quick-mini-kicker {
+  color: #795796;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .09em;
+}
+.mode-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.mode-menu-card {
+  display: flex;
+  min-height: 315px;
+  box-sizing: border-box;
+  flex-direction: column;
+  padding: 26px;
+  border: 4px solid #202020;
+  border-radius: 28px;
+  background: #fffaf0;
+  box-shadow: 0 7px 0 rgba(32,32,32,.16);
+}
+.mode-menu-card.board { border-top: 10px solid #ef4545; }
+.mode-menu-card.mini { border-top: 10px solid #61b37b; }
+.mode-menu-icon { font-size: 54px; line-height: 1; }
+.mode-menu-card h2 { margin: 16px 0 8px; font-size: 31px; line-height: 1; }
+.mode-menu-card p {
+  margin: 0 0 22px;
+  color: #655d54;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+.mode-menu-card button { margin-top: auto; min-height: 54px; }
+
+.lobby-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lobby-back-main {
+  min-width: 78px;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  font-size: 11px !important;
+}
+
+.mememe-minigame-quick {
+  width: 1040px;
+  box-sizing: border-box;
+  color: #202020;
+  pointer-events: auto;
+}
+.quick-mini-head {
+  display: grid;
+  grid-template-columns: auto 1fr 250px;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.quick-mini-head h1 {
+  margin: 2px 0 0;
+  font-size: 32px;
+  line-height: 1;
+}
+.quick-mini-head > label {
+  display: grid;
+  gap: 6px;
+  color: #655d54;
+  font-size: 10px;
+  font-weight: 1000;
+  letter-spacing: .06em;
+}
+.quick-mini-head select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 3px solid #202020;
+  border-radius: 13px;
+  padding: 9px 10px;
+  background: #fff;
+  color: #202020;
+  font: 900 14px/1 system-ui, sans-serif;
+}
+.quick-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.quick-mini-card {
+  min-width: 0;
+  min-height: 282px;
+  box-sizing: border-box;
+  padding: 17px 13px !important;
+  border: 3px solid #202020 !important;
+  border-radius: 20px !important;
+  background: #fffaf0 !important;
+  box-shadow: 0 4px 0 rgba(32,32,32,.2) !important;
+  color: #202020 !important;
+  cursor: pointer;
+  text-align: left;
+}
+.quick-mini-card.selected {
+  outline: 5px solid #ffd34d;
+  outline-offset: -8px;
+  background: #fff6d3 !important;
+  transform: translateY(-2px);
+}
+.quick-mini-icon {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 38px;
+  line-height: 1;
+}
+.quick-mini-card strong {
+  display: block;
+  min-height: 52px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.quick-mini-card small {
+  display: block;
+  margin-top: 7px;
+  color: #795796;
+  font-size: 10px;
+  font-weight: 1000;
+}
+.quick-mini-card p {
+  margin: 12px 0 0;
+  color: #6d655b;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+.quick-mini-footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 13px 16px;
+  border: 3px solid #202020;
+  border-radius: 18px;
+  background: #f7eddc;
+}
+.quick-mini-footer span {
+  color: #655d54;
+  font-size: 12px;
+  font-weight: 800;
+}
+.quick-mini-footer button { min-width: 210px; }
+
+.mememe-minigame-quick-result {
+  width: 640px;
+  color: #202020;
+  pointer-events: auto;
+}
+.quick-result-card {
+  box-sizing: border-box;
+  padding: 28px;
+  border: 5px solid #202020;
+  border-radius: 30px;
+  background: #fffaf0;
+  box-shadow: 0 8px 0 rgba(32,32,32,.18);
+  text-align: center;
+}
+.quick-result-icon { font-size: 54px; line-height: 1; }
+.quick-result-card h1 { margin: 8px 0 18px; font-size: 30px; }
+.quick-result-ranking {
+  display: grid;
+  gap: 8px;
+  margin: 0 auto 22px;
+  max-width: 430px;
+}
+.quick-result-ranking > div {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  padding: 9px 12px;
+  border: 2px solid #d7cfc3;
+  border-radius: 13px;
+  background: #fff;
+  text-align: left;
+}
+.quick-result-ranking strong { font-size: 16px; }
+.quick-result-ranking span { font-size: 15px; font-weight: 900; }
+.quick-result-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.quick-result-actions #quick-result-menu { grid-column: 1 / -1; }
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .mememe-mode-menu { width: min(900px, calc(100vw - 36px)); }
+  .mode-menu-card { min-height: 270px; padding: 20px; }
+  .mode-menu-card h2 { font-size: 26px; }
+  .mode-menu-card p { font-size: 14px; }
+
+  .mememe-minigame-quick { width: min(1080px, calc(100vw - 24px)); }
+  .quick-mini-head { grid-template-columns: auto 1fr 220px; margin-bottom: 12px; }
+  .quick-mini-grid { gap: 8px; }
+  .quick-mini-card { min-height: 230px; padding: 12px 10px !important; }
+  .quick-mini-icon { font-size: 32px; }
+  .quick-mini-card strong { min-height: 44px; font-size: 13px; }
+  .quick-mini-card p { font-size: 9px; }
+  .quick-mini-footer { margin-top: 11px; padding: 9px 12px; }
+}
