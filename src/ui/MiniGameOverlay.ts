@@ -410,22 +410,25 @@ export function startMiniGameOverlay(
     }).setOrigin(0.5).setName('vf07-minigame-result-heading');
     stage.add([resultPaper, resultBadge, head]);
 
+    const bodyTop = -66;
     const bodyViewport = createScrollableTextViewport070429(scene, stage, {
       x: -340,
-      y: -62,
+      y: bodyTop,
       width: 680,
-      height: 188,
+      height: manualAdvance ? 176 : 188,
       minHeight: 44,
       text: body,
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: 24,
+      fontSize: manualAdvance ? 22 : 24,
       color: MINI_GAME_VISUAL_VF07.cocoaText,
       align: 'center',
-      lineSpacing: 9,
+      lineSpacing: manualAdvance ? 6 : 9,
       name: 'vf07-minigame-result-scroll',
     });
     bodyViewport.text.setName('vf07-minigame-result-body');
-    const resultBottom = -62 + bodyViewport.height + (bodyViewport.isScrollable ? 54 : 24);
+    const bodyBottom = bodyTop + bodyViewport.height;
+    const footerY = bodyBottom + (bodyViewport.isScrollable ? 42 : 36);
+    const resultBottom = footerY + 30;
     paintRoundedSurfaceCh141(
       resultPaper, 780, resultBottom + 150, MINI_GAME_VISUAL_VF07.resultFill, 1,
       MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
@@ -437,7 +440,7 @@ export function startMiniGameOverlay(
       MINI_GAME_VISUAL_VF07.shellStroke, 1,
     ).setY((shellBottom - 270) / 2);
 
-    const scrollHint = scene.add.text(0, resultBottom - 25, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
+    const scrollHint = scene.add.text(0, footerY, bodyViewport.isScrollable ? '↕ KÉO / CUỘN ĐỂ ĐỌC HẾT' : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '18px',
       fontStyle: 'bold',
