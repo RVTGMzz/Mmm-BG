@@ -159,6 +159,7 @@
     "test:minigame-flow-ch142": "tsx tests/minigame-flow-ch142.ts",
     "test:game-mode-minigame-ch161": "tsx tests/game-mode-minigame-ch161.ts",
     "test:visual-refresh-turn-order-ch172": "tsx tests/visual-refresh-turn-order-ch172.ts",
+    "test:visual-refresh-board-ch173": "tsx tests/visual-refresh-board-ch173.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
