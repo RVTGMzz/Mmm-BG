@@ -17,6 +17,8 @@ import {
   requireMobileLandscapeBeforeGame07035,
 } from './ui/mobileLandscape07031';
 import { SplashScene069 } from './scenes/SplashScene069';
+import { GameModeMenuScene } from './scenes/GameModeMenuScene';
+import { MiniGameQuickScene } from './scenes/MiniGameQuickScene';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { OnlineRoomLobbyScene } from './scenes/OnlineRoomLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
@@ -38,6 +40,8 @@ if (finalMapMode === '3') installPreviewBranchMode054();
 
 const normalScenes = [
   SplashScene069,
+  GameModeMenuScene,
+  MiniGameQuickScene,
   LocalLobbyScene,
   OnlineRoomLobbyScene,
   SetupScene,
