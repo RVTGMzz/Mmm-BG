@@ -20,6 +20,7 @@ import {
   decorateVisualFoundationPanelV01,
 } from '../ui/visualFoundationV01';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
+import { publicAssetUrl } from '../ui/publicAssetUrl';
 import { characterProductionPortraitCh181 } from '../ui/characterProductionArtCh181';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
@@ -141,7 +142,7 @@ export class SetupScene extends Phaser.Scene {
               </span>
               <span
                 class="character-production-portrait-ch181 character-production-portrait-${character.id}"
-                style="background-image:url('${import.meta.env.BASE_URL}assets/characters/ch181/portrait-atlas-starters.webp')"
+                style="background-image:url('${publicAssetUrl('assets/characters/ch181/portrait-atlas-starters.webp')}')"
                 aria-hidden="true"></span>
               <span class="character-emoji-ch02c">${characterEmoji[character.id] ?? '🎭'}</span>
               <strong>${character.archetypeLabel}</strong>

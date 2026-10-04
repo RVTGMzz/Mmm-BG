@@ -3,6 +3,7 @@ import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
+import { publicAssetUrl } from '../ui/publicAssetUrl';
 import { CareerMinigameBoardScene07044 } from './CareerMinigameBoardScene07044';
 
 const COCOA_CH173 = 0x4b302a;
@@ -52,7 +53,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     if (!this.textures.exists('character-walk-atlas-ch181')) {
       this.load.spritesheet(
         'character-walk-atlas-ch181',
-        `${import.meta.env.BASE_URL}assets/characters/ch181/walk-atlas.webp`,
+        publicAssetUrl('assets/characters/ch181/walk-atlas.webp'),
         { frameWidth: 48, frameHeight: 48 },
       );
     }
