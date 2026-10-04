@@ -135,5 +135,4 @@ assert.match(
   'Every inherited compact-HUD redraw must immediately restore presentation-owned B$.',
 );
 
-console.log('[job-continue-landing-sync-0634] PASS movement order + same-stack HUD guard + landing-timed B
-);
+console.log('[job-continue-landing-sync-0634] PASS movement order + same-stack HUD guard + landing-timed money');
