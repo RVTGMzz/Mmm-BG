@@ -365,6 +365,7 @@ jobs:
           node tests/runtime/full-scene-ui.mjs
           node tests/runtime/quick-minigame-menu-ui.mjs
           node tests/runtime/visual-refresh-ch17-ui.mjs
+          node tests/runtime/presentation-feedback-ch1713.mjs
           node tests/runtime/character-select-ui.mjs
           node tests/runtime/match-recap-ui.mjs
           node tests/runtime/settings-space-ui.mjs
