@@ -36,7 +36,7 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
     const runtime = this.runtimeCh17();
 
     const oldFrame = this.children.getByName('roll-order-frame');
-    oldFrame?.setVisible(false);
+    if (oldFrame instanceof Phaser.GameObjects.Graphics) oldFrame.setVisible(false);
 
     paintToyTownBackdropCh17(this, 'butter', {
       x: 75,
