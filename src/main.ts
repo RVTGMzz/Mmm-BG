@@ -8,6 +8,7 @@ import './mobileReadability07044.css';
 import './uiInteraction07046.css';
 import './visualFoundationV01.css';
 import './characterSelectCh02c.css';
+import './visualRefreshCh17.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
