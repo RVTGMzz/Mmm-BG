@@ -1229,24 +1229,47 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       originalRenderShellOverlay();
       if (internals.shell.status !== 'ended' || internals.shellOverlay.length === 0) return;
 
-      const trigger = this.add.text(640, 530, '✨ XEM TỔNG KẾT', {
+      const triggerShadow = this.add.graphics()
+        .setDepth(705)
+        .setName('match-recap-trigger-shadow-ch176');
+      triggerShadow.fillStyle(0xd99b38, 1);
+      triggerShadow.fillRoundedRect(532, 512, 216, 52, 18);
+
+      const triggerFace = this.add.graphics()
+        .setDepth(706)
+        .setName('match-recap-trigger-face-ch176');
+      triggerFace.fillStyle(0xffd76a, 1);
+      triggerFace.fillRoundedRect(532, 506, 216, 52, 18);
+      triggerFace.fillStyle(0xffffff, 0.52);
+      triggerFace.fillRoundedRect(544, 513, 192, 9, 4);
+      triggerFace.lineStyle(3, 0x4b302a, 0.92);
+      triggerFace.strokeRoundedRect(532, 506, 216, 52, 18);
+
+      const trigger = this.add.text(640, 532, '✨ XEM TỔNG KẾT', {
         fontFamily: JOB_UI_FONT_070421,
         fontSize: '16px',
         fontStyle: 'bold',
-        color: '#2f2925',
-        backgroundColor: '#ffd86b',
+        color: '#4b302a',
         padding: { x: 18, y: 11 },
-      }).setOrigin(0.5).setDepth(706).setInteractive({ useHandCursor: true })
+      }).setOrigin(0.5).setDepth(707).setInteractive({ useHandCursor: true })
         .setName('match-recap-trigger-ch14');
-      trigger.on('pointerover', () => trigger.setScale(1.04));
-      trigger.on('pointerout', () => trigger.setScale(1));
+      trigger.on('pointerover', () => {
+        trigger.setScale(1.04);
+        triggerFace.setScale(1.04);
+        triggerShadow.setScale(1.04);
+      });
+      trigger.on('pointerout', () => {
+        trigger.setScale(1);
+        triggerFace.setScale(1);
+        triggerShadow.setScale(1);
+      });
       trigger.on('pointerdown', () => {
         if (this.matchRecapCh14?.root.active) return;
         this.matchRecapCh14 = showMatchRecapCh14(this, internals.match, () => {
           this.matchRecapCh14 = undefined;
         });
       });
-      internals.shellOverlay.push(trigger);
+      internals.shellOverlay.push(triggerShadow, triggerFace, trigger);
     };
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.closeMatchRecapCh14());
