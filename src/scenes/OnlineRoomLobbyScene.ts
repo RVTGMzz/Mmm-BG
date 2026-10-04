@@ -17,6 +17,7 @@ import {
   decorateVisualFoundationButtonV01,
   decorateVisualFoundationButtonsV01,
 } from '../ui/visualFoundationV01';
+import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 
 export class OnlineRoomLobbyScene extends Phaser.Scene {
   private root?: HTMLDivElement;
@@ -31,8 +32,13 @@ export class OnlineRoomLobbyScene extends Phaser.Scene {
 
   create(): void {
     bgmController.playMenu();
-    this.cameras.main.setBackgroundColor('#f4ead7');
-    this.add.rectangle(640, 360, 1130, 630, 0xfffbf3, 1).setStrokeStyle(5, 0x202020, 1);
+    paintToyTownBackdropCh17(this, 'mint', {
+      x: 75,
+      y: 42,
+      width: 1130,
+      height: 630,
+      radius: 34,
+    }).setName('online-room-backdrop-ch178');
 
     const root = document.createElement('div');
     root.className = 'online-room-lobby';
