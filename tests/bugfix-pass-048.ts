@@ -12,6 +12,7 @@ const presentation=await readFile('src/ui/MatchPresentationLayer.ts','utf8');
 const dice=await readFile('src/scenes/TurnOrderScene048.ts','utf8');
 const dice0701=await readFile('src/scenes/TurnOrderScene0701.ts','utf8');
 const dice07044=await readFile('src/scenes/TurnOrderScene07044.ts','utf8');
+const diceCh17=await readFile('src/scenes/TurnOrderSceneCh17.ts','utf8');
 const board048=await readFile('src/scenes/CareerMinigameBoardScene048.ts','utf8');
 const board056=await readFile('src/scenes/CareerMinigameBoardScene056.ts','utf8');
 const board0561=await readFile('src/scenes/CareerMinigameBoardScene0561.ts','utf8');
@@ -62,7 +63,8 @@ assert(board0701.includes('extends CareerMinigameBoardScene069')); assert(!board
 assert(board07044.includes('extends CareerMinigameBoardScene0701')); assert(!board07044.includes('Math.random')); assert(!board07044.includes('submitIntent('));
 const executableSubmitCalls066=board066.match(/internals\.submitIntent\(/g)??[]; assert.equal(executableSubmitCalls066.length,1); assert(board066.includes("internals.submitIntent('roll', {})")); assert(board066.includes('pendingCpuFreshRollAfterRelease066')); assert(!releaseGuard066.includes('Math.random')); assert(!releaseGuard066.includes('submitIntent('));
 assert(picker.includes('CHỌN LÁ BÀI')&&picker.includes('DÙNG LÁ NÀY')); assert(!picker.includes('CHỌN PHÉP THUẬT'));
-assert(main.includes('TurnOrderScene07044 as TurnOrderScene')); assert(main.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
+assert(diceCh17.includes('extends TurnOrderScene07044')); assert(!diceCh17.includes('submitRoll(')); assert(!diceCh17.includes('Math.random'));
+assert(main.includes('TurnOrderSceneCh17 as TurnOrderScene')); assert(main.includes('CareerMinigameBoardScene07044 as ActiveBoardScene'));
 const runtimePatch048=Number(MEMEME_BUILD.version.split('.')[2]??0); assert(Number.isInteger(runtimePatch048)&&runtimePatch048>=69,'0.1.48 retained presentation guard must allow later canonical runtimes');
 assert(lobby.includes('MEMEME_BUILD.lobbyHeader')); assert(setup.includes('MEMEME_BUILD.setupHeader')); assert(handoff.includes('TIN TỨC / LÁ BÀI'));
 console.log('[bugfix-pass-048] PASS authority/audio/dice/stale-token/release guards retained through current canonical runtime');
