@@ -50,26 +50,37 @@ export function showBranchPicker<T extends PlayerState>(
 
   return new Promise((resolve) => {
     const root = scene.add.container(640, 510).setDepth(960).setAlpha(0).setScale(0.96).setName('branch-picker-modal');
-    const panel = scene.add.graphics();
-    panel.fillStyle(0x202633, 0.93);
-    panel.fillRoundedRect(-322, -108, 644, 216, 18);
-    panel.lineStyle(3, 0xffffff, 0.84);
-    panel.strokeRoundedRect(-322, -108, 644, 216, 18);
 
-    const title = scene.add.text(0, -84, `${player.name} • CHỌN HƯỚNG`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+    const shadow = scene.add.graphics().setName('branch-picker-shadow-ch1711');
+    shadow.fillStyle(0x4b302a, 0.24);
+    shadow.fillRoundedRect(-328, -101, 656, 226, 26);
+
+    const panel = scene.add.graphics().setName('branch-picker-panel-ch1711');
+    panel.fillStyle(0xfff7e8, 0.995);
+    panel.fillRoundedRect(-322, -110, 644, 216, 24);
+    panel.lineStyle(4, 0x4b302a, 0.96);
+    panel.strokeRoundedRect(-322, -110, 644, 216, 24);
+
+    const headerBand = scene.add.graphics().setName('branch-picker-header-ch1711');
+    headerBand.fillStyle(0xffd76a, 1);
+    headerBand.fillRoundedRect(-304, -96, 608, 49, { tl: 16, tr: 16, bl: 9, br: 9 });
+    headerBand.fillStyle(0xffffff, 0.50);
+    headerBand.fillRoundedRect(-290, -89, 580, 8, 4);
+
+    const title = scene.add.text(0, -78, `${player.name} • CHỌN HƯỚNG`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '16px',
       fontStyle: 'bold',
-      color: '#ffffff',
+      color: '#4b302a',
     }).setOrigin(0.5);
-    const subtitle = scene.add.text(0, -62, `🎲 ${roll} • hai đường đi cùng số bước đến điểm nhập`, {
-      fontFamily: 'Arial, sans-serif',
+    const subtitle = scene.add.text(0, -56, `🎲 ${roll} • hai đường đi cùng số bước đến điểm nhập`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '10px',
       fontStyle: 'bold',
-      color: '#d8dee5',
+      color: '#765e54',
     }).setOrigin(0.5);
 
-    root.add([panel, title, subtitle]);
+    root.add([shadow, panel, headerBand, title, subtitle]);
 
     const spacing = options.length === 2 ? 280 : 205;
     const startX = -((options.length - 1) * spacing) / 2;
@@ -80,9 +91,23 @@ export function showBranchPicker<T extends PlayerState>(
       const accent = accentFor(option);
       const routeLabel = option.edge.label ?? `ĐƯỜNG ${index + 1}`;
 
-      const button = scene.add.rectangle(x, 26, options.length === 2 ? 252 : 188, 136, 0xfffbf3, 0.98)
-        .setStrokeStyle(4, accent, 1)
-        .setInteractive({ useHandCursor: true });
+      const cardWidth = options.length === 2 ? 252 : 188;
+      const cardSkin = scene.add.graphics().setName(`branch-option-skin-${index}-ch1711`);
+      const paintCard = (hovered = false) => {
+        cardSkin.clear();
+        cardSkin.fillStyle(0x4b302a, hovered ? 0.22 : 0.16);
+        cardSkin.fillRoundedRect(x - cardWidth / 2 + 3, -39 + 5, cardWidth, 136, 17);
+        cardSkin.fillStyle(hovered ? 0xffedc9 : 0xfffdf7, 1);
+        cardSkin.fillRoundedRect(x - cardWidth / 2, -39, cardWidth, 136, 17);
+        cardSkin.fillStyle(0xffffff, hovered ? 0.62 : 0.42);
+        cardSkin.fillRoundedRect(x - cardWidth / 2 + 9, -31, cardWidth - 18, 8, 4);
+        cardSkin.lineStyle(4, accent, 0.96);
+        cardSkin.strokeRoundedRect(x - cardWidth / 2, -39, cardWidth, 136, 17);
+      };
+      paintCard();
+      const button = scene.add.rectangle(x, 29, cardWidth, 136, 0xffffff, 0.001)
+        .setInteractive({ useHandCursor: true })
+        .setName(`branch-option-hit-${index}-ch1711`);
       const route = scene.add.text(x, -26, routeLabel, {
         fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
         fontSize: '14px',
@@ -117,18 +142,18 @@ export function showBranchPicker<T extends PlayerState>(
         fontFamily: 'Arial, sans-serif',
         fontSize: '9px',
         fontStyle: 'bold',
-        color: '#e7edf3',
+        color: '#7a5c51',
       }).setOrigin(0.5);
 
-      root.add([button, route, identity, detail, summary, choose]);
+      root.add([cardSkin, button, route, identity, detail, summary, choose]);
 
       button.on('pointerover', () => {
-        button.setFillStyle(0xffefd4, 1);
-        scene.tweens.add({ targets: button, scaleX: 1.025, scaleY: 1.025, duration: 80, ease: 'Sine.easeOut' });
+        paintCard(true);
+        scene.tweens.add({ targets: [cardSkin, button, route, identity, detail, summary, choose], scaleX: 1.018, scaleY: 1.018, duration: 80, ease: 'Sine.easeOut' });
       });
       button.on('pointerout', () => {
-        button.setFillStyle(0xfffbf3, 0.98);
-        scene.tweens.add({ targets: button, scaleX: 1, scaleY: 1, duration: 80, ease: 'Sine.easeOut' });
+        paintCard(false);
+        scene.tweens.add({ targets: [cardSkin, button, route, identity, detail, summary, choose], scaleX: 1, scaleY: 1, duration: 80, ease: 'Sine.easeOut' });
       });
       button.on('pointerdown', () => {
         sfxController.play('ui_confirm');
