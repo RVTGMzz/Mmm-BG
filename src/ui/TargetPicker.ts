@@ -15,28 +15,42 @@ export function showTargetPicker<T extends PlayerState>(
     const objects: Phaser.GameObjects.GameObject[] = [];
 
     const dim = scene.add
-      .rectangle(0, 0, 1280, 720, 0x1b1713, 0.58)
+      .rectangle(0, 0, 1280, 720, 0x4b302a, 0.60)
       .setInteractive();
-    const panel = scene.add
-      .rectangle(0, 0, 860, 420, 0xfffbf3, 1)
-      .setStrokeStyle(6, 0x202020, 1);
+
+    const shadow = scene.add.graphics().setName('target-picker-shadow-ch1711');
+    shadow.fillStyle(0x4b302a, 0.24);
+    shadow.fillRoundedRect(-438, -196, 876, 438, 32);
+
+    const panel = scene.add.graphics().setName('target-picker-panel-ch1711');
+    panel.fillStyle(0xfff7e8, 1);
+    panel.fillRoundedRect(-430, -210, 860, 420, 30);
+    panel.lineStyle(5, 0x4b302a, 0.96);
+    panel.strokeRoundedRect(-430, -210, 860, 420, 30);
+
+    const headerBand = scene.add.graphics().setName('target-picker-header-ch1711');
+    headerBand.fillStyle(0xbca7dc, 1);
+    headerBand.fillRoundedRect(-406, -190, 812, 82, { tl: 22, tr: 22, bl: 12, br: 12 });
+    headerBand.fillStyle(0xffffff, 0.46);
+    headerBand.fillRoundedRect(-390, -181, 780, 10, 5);
+
     const title = scene.add
       .text(0, -160, `${caster.name}, chọn mục tiêu`, {
-        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
         fontSize: '30px',
         fontStyle: 'bold',
-        color: '#202020',
+        color: '#4b302a',
       })
       .setOrigin(0.5);
     const subtitle = scene.add
       .text(0, -122, 'Chọn nhanh 1 người chơi khác để dùng Lá Bài', {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
         fontSize: '15px',
-        color: '#70665b',
+        color: '#735e55',
       })
       .setOrigin(0.5);
 
-    objects.push(dim, panel, title, subtitle);
+    objects.push(dim, shadow, panel, headerBand, title, subtitle);
 
     const spacing = 240;
     const startX = -((candidates.length - 1) * spacing) / 2;
@@ -49,16 +63,37 @@ export function showTargetPicker<T extends PlayerState>(
 
     candidates.forEach((player, index) => {
       const x = startX + index * spacing;
+      const cardSkin = scene.add.graphics().setName(`target-picker-skin-${player.id}-ch1711`);
+      const accent = [0xef8a77, 0x8fd49f, 0x9fd8e8, 0xbca7dc][player.id % 4] ?? 0xffd76a;
+      const paintCard = (hovered = false) => {
+        cardSkin.clear();
+        cardSkin.fillStyle(0x4b302a, hovered ? 0.22 : 0.15);
+        cardSkin.fillRoundedRect(x - 102, -77, 210, 230, 22);
+        cardSkin.fillStyle(hovered ? 0xffefcf : 0xfffdf7, 1);
+        cardSkin.fillRoundedRect(x - 105, -82, 210, 230, 22);
+        cardSkin.fillStyle(accent, 0.98);
+        cardSkin.fillRoundedRect(x - 105, -82, 210, 18, { tl: 22, tr: 22, bl: 7, br: 7 });
+        cardSkin.fillStyle(0xffffff, 0.48);
+        cardSkin.fillRoundedRect(x - 92, -76, 184, 7, 4);
+        cardSkin.lineStyle(4, 0x4b302a, 0.92);
+        cardSkin.strokeRoundedRect(x - 105, -82, 210, 230, 22);
+      };
+      paintCard();
       const button = scene.add
-        .rectangle(x, 32, 210, 230, 0xfff4de, 1)
-        .setStrokeStyle(4, 0x2a2723, 1)
-        .setInteractive({ useHandCursor: true });
-      objects.push(button);
+        .rectangle(x, 33, 210, 230, 0xffffff, 0.001)
+        .setInteractive({ useHandCursor: true })
+        .setName(`target-picker-hit-${player.id}-ch1711`);
+      objects.push(cardSkin, button);
 
       const face = gameSession.getFace(player.id, 'neutral');
       if (face && scene.textures.exists(face.textureKey)) {
-        const image = scene.add.image(x, -18, face.textureKey).setDisplaySize(112, 112);
-        objects.push(image);
+        const faceFrame = scene.add.graphics().setName(`target-face-frame-${player.id}-ch1711`);
+        faceFrame.fillStyle(0xfff7e8, 1);
+        faceFrame.fillRoundedRect(x - 61, -78, 122, 122, 22);
+        faceFrame.lineStyle(3, accent, 0.96);
+        faceFrame.strokeRoundedRect(x - 61, -78, 122, 122, 22);
+        const image = scene.add.image(x, -18, face.textureKey).setDisplaySize(108, 108);
+        objects.push(faceFrame, image);
       } else {
         const fallback = scene.add
           .text(x, -18, '😐', {
@@ -83,7 +118,7 @@ export function showTargetPicker<T extends PlayerState>(
         .text(x, 96, `${player.money}B$${player.cardBlockTurns > 0 ? '  🔒' : ''}`, {
           fontFamily: 'Arial, sans-serif',
           fontSize: '16px',
-          color: '#635b52',
+          color: '#6b554d',
         })
         .setOrigin(0.5);
       const choose = scene.add
@@ -91,14 +126,14 @@ export function showTargetPicker<T extends PlayerState>(
           fontFamily: 'Arial, sans-serif',
           fontSize: '13px',
           fontStyle: 'bold',
-          color: '#ef4545',
+          color: '#9a5f4f',
         })
         .setOrigin(0.5);
 
       objects.push(name, money, choose);
 
-      button.on('pointerover', () => button.setFillStyle(0xffe3b5, 1));
-      button.on('pointerout', () => button.setFillStyle(0xfff4de, 1));
+      button.on('pointerover', () => paintCard(true));
+      button.on('pointerout', () => paintCard(false));
       button.on('pointerdown', () => finish(player));
     });
 
