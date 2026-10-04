@@ -10,6 +10,7 @@ import {
   probeOnlineService0705,
 } from '../core/onlineLobby0703';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
+import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 
 const PRESERVE_SETUP_REGISTRY_KEY = 'mememe-preserve-setup';
 
@@ -25,10 +26,7 @@ export class LocalLobbyScene extends Phaser.Scene {
 
   create(): void {
     bgmController.playMenu();
-    this.cameras.main.setBackgroundColor('#f4ead7');
-    const frame = this.add.graphics();
-    frame.fillStyle(0xfffbf3, 1).fillRoundedRect(105, 55, 1070, 610, 32);
-    frame.lineStyle(5, 0x202020, 1).strokeRoundedRect(105, 55, 1070, 610, 32);
+    paintToyTownBackdropCh17(this, 'mint', { x: 105, y: 55, width: 1070, height: 610, radius: 32 });
 
     const root = document.createElement('div');
     root.className = 'mememe-lobby mememe-lobby-069';
