@@ -280,10 +280,11 @@ export class MatchPresentationLayer {
     const contentX = isJobCard ? -218 : -178;
     const iconX = isJobCard ? -286 : -226;
     const container = this.scene.add.container(640, 350)
-      .setName(isJobCard ? 'job-presentation-card' : 'presentation-landing-card-ch1713')
       .setDepth(900)
       .setAlpha(0)
       .setScale(0.9);
+    if (isJobCard) container.setName('job-presentation-card');
+    else container.setName('presentation-landing-card-ch1713');
     this.active = container;
 
     const shadow = this.scene.add.graphics().setName('presentation-landing-shadow-ch1713');
