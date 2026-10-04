@@ -83,25 +83,45 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
     ranking: RankedPodiumEntry[],
     hasFirstPlaceTie: boolean,
   ): Phaser.GameObjects.Container {
-    const root = this.add.container(0, 0).setDepth(701);
+    const root = this.add.container(0, 0).setDepth(701).setName('final-podium-ch176');
+
+    const paperShadow = this.add.graphics().setName('final-podium-paper-shadow-ch176');
+    paperShadow.fillStyle(0x4b302a, 0.24);
+    paperShadow.fillRoundedRect(278, 132, 724, 340, 34);
+
+    const paper = this.add.graphics().setName('final-podium-paper-ch176');
+    paper.fillStyle(0xfff7e8, 0.995);
+    paper.fillRoundedRect(282, 124, 716, 340, 32);
+    paper.lineStyle(5, 0x4b302a, 0.96);
+    paper.strokeRoundedRect(282, 124, 716, 340, 32);
+
+    const headerBand = this.add.graphics().setName('final-podium-header-ch176');
+    headerBand.fillStyle(0xffd76a, 1);
+    headerBand.fillRoundedRect(302, 142, 676, 78, { tl: 22, tr: 22, bl: 12, br: 12 });
+    headerBand.fillStyle(0xffffff, 0.48);
+    headerBand.fillRoundedRect(318, 150, 644, 10, 5);
+    headerBand.lineStyle(2, 0x4b302a, 0.24);
+    headerBand.strokeRoundedRect(302, 142, 676, 78, { tl: 22, tr: 22, bl: 12, br: 12 });
+
+    root.add([paperShadow, paper, headerBand]);
 
     root.add(
       this.add.text(640, 171, hasFirstPlaceTie ? '🏆 ĐỒNG HẠNG ĐẦU BẢNG' : '🏆 BẢNG XẾP HẠNG', {
-        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-        fontSize: '27px',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '28px',
         fontStyle: 'bold',
-        color: '#ffd34d',
+        color: '#4b302a',
         align: 'center',
-      }).setOrigin(0.5),
+      }).setOrigin(0.5).setName('final-podium-title-ch176'),
     );
 
     root.add(
-      this.add.text(640, 202, 'B$ AUTHORITATIVE • CÙNG B$ = CÙNG HẠNG', {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '11px',
+      this.add.text(640, 202, 'XẾP THEO B$ • BẰNG TIỀN = CÙNG HẠNG', {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+        fontSize: '12px',
         fontStyle: 'bold',
-        color: '#f4ead7',
-      }).setOrigin(0.5),
+        color: '#6c5146',
+      }).setOrigin(0.5).setName('final-podium-subtitle-ch176'),
     );
 
     const slotXs = [370, 550, 730, 910];
@@ -119,43 +139,72 @@ export class CareerMinigameBoardScene041 extends CareerMinigameBoardScene040 {
       const name = player?.name ?? `P${entry.playerId + 1}`;
       const slot = this.add.container(x, 0);
 
-      const shadow = this.add.rectangle(4, baselineY - height / 2 + 5, 142, height, 0x000000, 0.24);
-      const pedestal = this.add.rectangle(0, baselineY - height / 2, 142, height, accent, 0.94)
-        .setStrokeStyle(rank === 1 ? 4 : 3, rank === 1 ? 0xffd34d : 0xfffaf0, 1);
-      const rankText = this.add.text(0, top + 20, medal, {
-        fontSize: rank === 1 ? '28px' : '24px',
+      const pedestalShadow = this.add.graphics().setName(`final-podium-slot-shadow-${entry.playerId}-ch176`);
+      pedestalShadow.fillStyle(0x4b302a, 0.24);
+      pedestalShadow.fillRoundedRect(-73, baselineY - height + 6, 146, height + 2, 18);
+
+      const pedestal = this.add.graphics().setName(`final-podium-slot-${entry.playerId}-ch176`);
+      pedestal.fillStyle(accent, 0.96);
+      pedestal.fillRoundedRect(-71, baselineY - height, 142, height, 17);
+      pedestal.fillStyle(0xffffff, rank === 1 ? 0.34 : 0.24);
+      pedestal.fillRoundedRect(-61, baselineY - height + 7, 122, 9, 5);
+      pedestal.lineStyle(rank === 1 ? 4 : 3, rank === 1 ? 0xd99b38 : 0x4b302a, rank === 1 ? 1 : 0.72);
+      pedestal.strokeRoundedRect(-71, baselineY - height, 142, height, 17);
+
+      const rankPill = this.add.graphics().setName(`final-podium-rank-pill-${entry.playerId}-ch176`);
+      rankPill.fillStyle(0xfff7e8, 0.98);
+      rankPill.fillCircle(0, top + 19, rank === 1 ? 25 : 22);
+      rankPill.lineStyle(3, rank === 1 ? 0xd99b38 : accent, 0.92);
+      rankPill.strokeCircle(0, top + 19, rank === 1 ? 25 : 22);
+
+      const rankText = this.add.text(0, top + 19, medal, {
+        fontSize: rank === 1 ? '28px' : '23px',
       }).setOrigin(0.5);
-      const nameText = this.add.text(0, top + 50, this.shortPodiumName(name), {
-        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+      const nameText = this.add.text(0, top + 51, this.shortPodiumName(name), {
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
         fontSize: '13px',
         fontStyle: 'bold',
-        color: '#ffffff',
+        color: '#fffaf3',
         align: 'center',
       }).setOrigin(0.5);
       const moneyText = this.add.text(0, top + 76, `${entry.money} B$`, {
-        fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
         fontSize: rank === 1 ? '18px' : '16px',
         fontStyle: 'bold',
-        color: '#ffffff',
+        color: '#fff7de',
       }).setOrigin(0.5);
 
-      slot.add([shadow, pedestal, rankText, nameText, moneyText]);
+      slot.add([pedestalShadow, pedestal, rankPill, rankText, nameText, moneyText]);
 
       const faceExpression = this.podiumFaceExpression(entry);
       const faceAsset = gameSession.getFace(entry.playerId, faceExpression);
+      const faceShadow = this.add.graphics().setName(`final-podium-face-shadow-${entry.playerId}-ch176`);
+      faceShadow.fillStyle(0x4b302a, 0.22);
+      faceShadow.fillRoundedRect(-36, faceY - 31, 72, 72, 22);
+
+      const faceFrame = this.add.graphics().setName(`final-podium-face-frame-${entry.playerId}-ch176`);
+      faceFrame.fillStyle(0xfffdf8, 1);
+      faceFrame.fillRoundedRect(-36, faceY - 36, 72, 72, 22);
+      faceFrame.lineStyle(rank === 1 ? 4 : 3, rank === 1 ? 0xd99b38 : accent, 1);
+      faceFrame.strokeRoundedRect(-36, faceY - 36, 72, 72, 22);
+      faceFrame.fillStyle(0xffffff, 0.52);
+      faceFrame.fillRoundedRect(-27, faceY - 28, 54, 8, 4);
+
       if (faceAsset && this.textures.exists(faceAsset.textureKey)) {
         slot.add([
-          this.add.rectangle(0, faceY, 62, 62, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
-          this.add.image(0, faceY, faceAsset.textureKey).setDisplaySize(54, 54),
+          faceShadow,
+          faceFrame,
+          this.add.image(0, faceY, faceAsset.textureKey).setDisplaySize(58, 58),
         ]);
       } else {
         slot.add([
-          this.add.circle(0, faceY, 29, 0xfffbf3, 1).setStrokeStyle(4, accent, 1),
+          faceShadow,
+          faceFrame,
           this.add.text(0, faceY, `P${entry.playerId + 1}`, {
-            fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
+            fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
             fontSize: '16px',
             fontStyle: 'bold',
-            color: '#202020',
+            color: '#4b302a',
           }).setOrigin(0.5),
         ]);
       }
