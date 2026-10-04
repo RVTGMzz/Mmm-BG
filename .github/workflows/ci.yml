@@ -333,6 +333,8 @@ jobs:
         run: npm run test:visual-refresh-board-recap-ch175
       - name: CH-17.6 final result transition + podium refresh
         run: npm run test:visual-refresh-final-ch176
+      - name: CH-17.7 final controls + lap banner refresh
+        run: npm run test:visual-refresh-end-controls-ch177
       - name: CH-15 public online entry and resume
         run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies
@@ -364,11 +366,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.45 CH-17.6 Final Result Visual Refresh build
+      - name: Upload MMM 0.1.70.4.46 CH-17.7 End Controls Visual Refresh build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.45-ch17-6-final-result-refresh
+          name: mmm-playtest-0.1.70.4.46-ch17-7-end-controls-refresh
           path: dist
           if-no-files-found: error
           retention-days: 14
