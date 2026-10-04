@@ -1,0 +1,525 @@
+/* CH-17 Visual Refresh — cozy toy-town / chibi mobile-game presentation.
+ * Presentation only: no gameplay, RNG, authority, or networking semantics.
+ */
+
+:root {
+  --ch17-cocoa: #4b302a;
+  --ch17-cocoa-soft: #725148;
+  --ch17-cream: #fff7e8;
+  --ch17-paper: #fffdf6;
+  --ch17-peach: #efb08e;
+  --ch17-peach-deep: #ce7358;
+  --ch17-butter: #ffd76a;
+  --ch17-butter-deep: #d99b38;
+  --ch17-mint: #8fd49f;
+  --ch17-mint-deep: #4b9b6b;
+  --ch17-sky: #9fd8e8;
+  --ch17-lavender: #bca7dc;
+  --ch17-panel-shadow: 0 8px 0 rgba(75,48,42,.20), 0 17px 30px rgba(75,48,42,.12);
+  --ch17-sticker-shadow: 0 5px 0 rgba(75,48,42,.22), 0 10px 18px rgba(75,48,42,.12);
+}
+
+html,
+body,
+#app {
+  background:
+    radial-gradient(circle at 12% 7%, rgba(255,241,197,.82), transparent 24%),
+    radial-gradient(circle at 87% 10%, rgba(159,216,232,.35), transparent 25%),
+    linear-gradient(180deg, #f7d9bd, #f4e5c8 52%, #d9d9a8);
+}
+
+.mememe-mode-menu,
+.mememe-lobby-069,
+.mememe-minigame-quick,
+.mememe-minigame-quick-result,
+.mememe-setup-069,
+.mememe-rule-select-069,
+.mememe-character-select-ch02c,
+.online-room-lobby {
+  color: var(--ch17-cocoa);
+  font-family: var(--vf-font-ui);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- Canonical toy buttons ---------- */
+button.vf-button {
+  --vf-button-border: var(--ch17-cocoa);
+  border-color: var(--ch17-cocoa);
+  border-width: 4px;
+  border-radius: 18px;
+  color: var(--ch17-cocoa);
+  box-shadow:
+    inset 0 3px 0 rgba(255,255,255,.78),
+    inset 0 -3px 0 rgba(75,48,42,.10),
+    0 6px 0 var(--vf-button-shadow),
+    0 11px 18px rgba(75,48,42,.15);
+  font-weight: 950;
+  letter-spacing: .01em;
+  text-shadow: 0 1px 0 rgba(255,255,255,.55);
+}
+button.vf-button:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.012);
+  filter: saturate(1.06) brightness(1.02);
+}
+button.vf-button:active:not(:disabled),
+button.vf-button.is-pressed {
+  transform: translateY(4px) scale(.985);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.45),
+    0 1px 0 var(--vf-button-shadow),
+    0 4px 8px rgba(75,48,42,.13);
+}
+button.vf-button.vf-button--primary {
+  --vf-button-bg: var(--ch17-butter);
+  --vf-button-shadow: var(--ch17-butter-deep);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72) 0 22%, transparent 23%),
+    linear-gradient(180deg, #ffe98e 0%, var(--ch17-butter) 58%, #efbb4f 100%);
+}
+button.vf-button.vf-button--success {
+  --vf-button-bg: var(--ch17-mint);
+  --vf-button-shadow: var(--ch17-mint-deep);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.70) 0 22%, transparent 23%),
+    linear-gradient(180deg, #baf0bd 0%, #83d891 58%, #56b96d 100%);
+}
+button.vf-button.vf-button--secondary {
+  --vf-button-shadow: #c6a17e;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.92) 0 24%, transparent 25%),
+    linear-gradient(180deg, #fffdf7, #f7e8d2);
+}
+button.vf-button.vf-button--subtle {
+  --vf-button-shadow: #b99c86;
+  background:
+    linear-gradient(180deg, #fff8ed, #ead7bf);
+}
+
+/* ---------- Shared inputs ---------- */
+.mememe-lobby-069 input,
+.mememe-lobby-069 select,
+.mememe-setup-069 input[type='text'],
+.mememe-minigame-quick select,
+.online-room-lobby input {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(180deg, #fffefb 0%, #fff7e7 100%) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.9),
+    0 3px 0 rgba(75,48,42,.11);
+}
+.mememe-lobby-069 input:focus,
+.mememe-lobby-069 select:focus,
+.mememe-setup-069 input[type='text']:focus,
+.mememe-minigame-quick select:focus,
+.online-room-lobby input:focus {
+  outline: 4px solid rgba(255,215,106,.45);
+  outline-offset: 1px;
+}
+
+/* ---------- Outer mode menu ---------- */
+.mememe-mode-menu {
+  width: 880px;
+}
+.mode-menu-head {
+  align-items: center;
+  margin: 0 6px 25px;
+}
+.mode-menu-head h1,
+.quick-mini-head h1,
+.lobby-head-069 h1,
+.mememe-rule-select-069 h1 {
+  color: var(--ch17-cocoa);
+  font-weight: 1000;
+  letter-spacing: -.035em;
+  text-shadow:
+    0 3px 0 #fff9ee,
+    0 5px 0 rgba(75,48,42,.14);
+}
+.mode-menu-kicker,
+.quick-mini-kicker,
+.online-kicker,
+.rule-select-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  border: 2px solid rgba(75,48,42,.22);
+  border-radius: 999px;
+  padding: 6px 11px;
+  background: rgba(255,255,255,.68);
+  color: #9b6250;
+  box-shadow: 0 2px 0 rgba(75,48,42,.10);
+  font-weight: 1000;
+}
+.mode-menu-head > span {
+  max-width: 350px;
+  border-radius: 15px;
+  padding: 9px 12px;
+  background: rgba(255,255,255,.55);
+  color: #7a6258;
+}
+.mode-menu-grid {
+  gap: 24px;
+}
+.mode-menu-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 320px;
+  border: 4px solid var(--ch17-cocoa);
+  border-top-width: 4px !important;
+  border-radius: 28px;
+  padding: 30px 27px 25px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.65), transparent 24%),
+    linear-gradient(155deg, #fffdf6, #f8ead5);
+  box-shadow: var(--ch17-panel-shadow);
+}
+.mode-menu-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 19px;
+  content: '';
+  border-bottom: 3px solid var(--ch17-cocoa);
+  background: var(--ch17-peach);
+}
+.mode-menu-card.mini::before { background: var(--ch17-mint); }
+.mode-menu-icon,
+.lobby-icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border: 4px solid var(--ch17-cocoa);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 25%, #fff 0 19%, transparent 20%),
+    linear-gradient(145deg, #fffef9, #f2ddc4);
+  box-shadow: var(--ch17-sticker-shadow);
+  filter: saturate(.95);
+}
+.mode-menu-card h2 {
+  color: var(--ch17-cocoa);
+  font-size: 30px;
+  font-weight: 1000;
+  letter-spacing: -.025em;
+}
+.mode-menu-card p {
+  color: #745f56;
+  font-weight: 760;
+}
+
+/* ---------- Board lobby ---------- */
+.mememe-lobby-069 {
+  width: 980px;
+}
+.lobby-head-069 {
+  align-items: center;
+  margin-bottom: 18px;
+}
+.lobby-title-row {
+  gap: 14px;
+}
+.lobby-grid {
+  gap: 16px;
+}
+.mememe-lobby-069 .lobby-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 330px;
+  border: 4px solid var(--ch17-cocoa);
+  border-top-width: 4px !important;
+  border-radius: 24px;
+  padding: 25px 19px 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.63), transparent 22%),
+    linear-gradient(160deg, #fffdf6, #f4e5cf);
+  box-shadow: var(--ch17-panel-shadow);
+}
+.mememe-lobby-069 .lobby-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 13px;
+  content: '';
+  border-bottom: 3px solid var(--ch17-cocoa);
+}
+.mememe-lobby-069 .solo-card::before { background: #ef8a77; }
+.mememe-lobby-069 .host-card::before { background: var(--ch17-lavender); }
+.mememe-lobby-069 .online-card::before { background: var(--ch17-mint); }
+.mememe-lobby-069 .lobby-icon {
+  width: 58px;
+  height: 58px;
+  font-size: 31px;
+}
+.mememe-lobby-069 .lobby-card h2 {
+  color: var(--ch17-cocoa);
+  font-weight: 1000;
+  letter-spacing: -.02em;
+}
+.mememe-lobby-069 .lobby-card p {
+  color: #7c655b;
+}
+.mememe-lobby-069 .lobby-card label {
+  color: #86685a;
+}
+.online-service-row,
+.online-host-options {
+  border-color: #c9ad97;
+  background: rgba(255,253,247,.78);
+  box-shadow: inset 0 2px 0 #fff;
+}
+.lobby-status {
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(255,253,247,.72);
+  color: #7b655b;
+}
+
+/* ---------- Quick Mini Game select ---------- */
+.mememe-minigame-quick {
+  width: 1020px;
+}
+.quick-mini-head {
+  grid-template-columns: auto 1fr 250px;
+}
+.quick-mini-head > label {
+  border: 3px solid var(--ch17-cocoa);
+  border-radius: 17px;
+  padding: 8px 10px 10px;
+  background: #fff8ea;
+  box-shadow: 0 4px 0 rgba(75,48,42,.16);
+}
+.quick-mini-grid {
+  gap: 14px;
+}
+button.quick-mini-card.vf-button {
+  position: relative;
+  overflow: hidden;
+  min-height: 168px;
+  border-color: var(--ch17-cocoa) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.75), transparent 24%),
+    linear-gradient(160deg, #fffdf6, #f5e4cc) !important;
+  box-shadow: var(--ch17-sticker-shadow) !important;
+}
+button.quick-mini-card.vf-button::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  content: '';
+  background: #eab08d;
+  border-bottom: 2px solid rgba(75,48,42,.35);
+}
+button.quick-mini-card.vf-button:nth-child(2)::before { background: #f19a7c; }
+button.quick-mini-card.vf-button:nth-child(3)::before { background: #8fd2bc; }
+button.quick-mini-card.vf-button:nth-child(4)::before { background: #b9a4dc; }
+button.quick-mini-card.vf-button:nth-child(5)::before { background: #85bdd8; }
+button.quick-mini-card.vf-button.selected {
+  outline: 5px solid #ffcf49;
+  outline-offset: -8px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.82), transparent 24%),
+    linear-gradient(160deg, #fffbed, #ffe9ac) !important;
+  box-shadow:
+    0 6px 0 #c89536,
+    0 11px 20px rgba(75,48,42,.15) !important;
+}
+.quick-mini-icon {
+  display: grid;
+  width: 45px;
+  height: 45px;
+  place-items: center;
+  border: 3px solid var(--ch17-cocoa);
+  border-radius: 50%;
+  background: #fffdf7;
+  box-shadow: 0 3px 0 rgba(75,48,42,.14);
+}
+button.quick-mini-card.vf-button strong {
+  color: var(--ch17-cocoa);
+  font-weight: 1000;
+}
+button.quick-mini-card.vf-button small {
+  width: auto;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #f0dfcb;
+  color: #8d5f75;
+}
+.quick-mini-footer {
+  border: 4px solid var(--ch17-cocoa);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, #fff9ed, #ead8bf);
+  box-shadow: 0 5px 0 rgba(75,48,42,.16);
+}
+
+/* ---------- Player setup ---------- */
+.mememe-setup-069 {
+  width: 1120px;
+}
+.mememe-setup-069 .setup-grid {
+  gap: 14px;
+}
+.mememe-setup-069 .player-setup-card {
+  position: relative;
+  overflow: hidden;
+  border: 4px solid var(--ch17-cocoa);
+  border-top-width: 4px;
+  border-radius: 24px;
+  padding: 19px 13px 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 23%),
+    linear-gradient(160deg, #fffdf6, #f5e5cf);
+  box-shadow: var(--ch17-sticker-shadow);
+}
+.mememe-setup-069 .player-setup-card::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 10px;
+  content: '';
+  background: var(--player-accent);
+  border-bottom: 2px solid rgba(75,48,42,.28);
+}
+.mememe-setup-069 .player-number {
+  border: 3px solid var(--ch17-cocoa);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 rgba(75,48,42,.18);
+}
+.mememe-setup-069 .face-slot {
+  border: 3px solid #a88776;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, #fffaf1, #efdfc9);
+  box-shadow: inset 0 2px 0 #fff;
+}
+.mememe-setup-069 .face-slot:hover {
+  border-color: var(--player-accent);
+  background: #fffdf7;
+}
+.mememe-setup-069 .face-emoji {
+  filter: drop-shadow(0 3px 0 rgba(75,48,42,.16));
+}
+.mememe-setup-069 .setup-footer {
+  border: 4px solid var(--ch17-cocoa);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fff7e7, #ead6ba);
+  box-shadow: 0 5px 0 rgba(75,48,42,.17);
+}
+
+/* ---------- Character select ---------- */
+.character-select-panel-ch02c {
+  border-color: var(--ch17-cocoa) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 20%),
+    linear-gradient(160deg, #fffdf7, #f1dfc6) !important;
+  box-shadow: var(--ch17-panel-shadow) !important;
+}
+.character-select-kicker-ch02c,
+.character-select-owner-ch02c {
+  color: #8b5d4d !important;
+}
+button.character-card-ch02c.vf-button {
+  border-color: var(--ch17-cocoa) !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(180deg, #fffdf8, #f3e3cc) !important;
+  box-shadow: 0 5px 0 rgba(75,48,42,.18) !important;
+}
+button.character-card-ch02c.vf-button.selected,
+button.character-card-ch02c.vf-button[aria-pressed='true'] {
+  outline: 5px solid #ffd25d;
+  outline-offset: -7px;
+  background:
+    linear-gradient(180deg, #fffdf4, #ffe8ad) !important;
+}
+
+/* ---------- Rule / match-length select ---------- */
+.mememe-rule-select-069 .rule-select-panel {
+  border: 5px solid var(--ch17-cocoa);
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.75), transparent 22%),
+    linear-gradient(155deg, #fffdf5, #f2dfc4);
+  box-shadow: var(--ch17-panel-shadow);
+}
+.mememe-rule-select-069 .rule-option {
+  border: 4px solid var(--ch17-cocoa) !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(180deg, #fffdf8, #f5e5cf) !important;
+  box-shadow: 0 6px 0 #bb987d !important;
+}
+.mememe-rule-select-069 .rule-option.selected,
+.mememe-rule-select-069 .rule-option[aria-pressed='true'] {
+  outline: 5px solid #ffd25d;
+  outline-offset: -8px;
+  background:
+    linear-gradient(180deg, #fffcef, #ffe7a8) !important;
+}
+.mememe-rule-select-069 .rule-option-number {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 10px;
+  place-items: center;
+  border: 4px solid var(--ch17-cocoa);
+  border-radius: 50%;
+  background: #fff8df;
+  box-shadow: 0 4px 0 rgba(75,48,42,.15);
+  color: #d27c4f;
+  font-weight: 1000;
+}
+
+/* ---------- Online room ---------- */
+.online-room-panel {
+  border-color: var(--ch17-cocoa);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.7), transparent 18%),
+    linear-gradient(160deg, #fffdf6, #f3e3cd);
+  box-shadow: var(--ch17-panel-shadow);
+}
+.online-player-row {
+  border-color: #c9ad97;
+  background: #f5e6d2;
+}
+.online-player-row.occupied {
+  border-color: var(--ch17-cocoa);
+  background: #fffaf0;
+  box-shadow: 0 3px 0 rgba(75,48,42,.12);
+}
+
+/* ---------- Floating audio/settings chrome ---------- */
+.mememe-bgm-hud,
+.mememe-settings {
+  border-color: var(--ch17-cocoa) !important;
+  background: rgba(255,248,234,.95) !important;
+  box-shadow: 0 4px 0 rgba(75,48,42,.18), 0 8px 16px rgba(75,48,42,.10) !important;
+}
+
+/* Compact handheld fit keeps the same visual language. */
+@media (pointer: coarse) and (orientation: landscape) {
+  .mode-menu-card {
+    min-height: 270px;
+    padding: 24px 20px 20px;
+  }
+  .mode-menu-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 34px;
+  }
+  .mememe-lobby-069 .lobby-card {
+    min-height: 275px;
+    padding: 19px 14px 14px;
+  }
+  .mememe-lobby-069 .lobby-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 25px;
+  }
+  button.quick-mini-card.vf-button {
+    min-height: 150px;
+  }
+}
