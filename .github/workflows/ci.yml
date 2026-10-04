@@ -352,11 +352,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.38 CH-16 Mini Game Overhaul build
+      - name: Upload MMM 0.1.70.4.39 CH-16.1 Quick Mini Game + Landing Fix build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.38-ch16-minigame-overhaul
+          name: mmm-playtest-0.1.70.4.39-ch16-1-quick-minigame-landing-fix
           path: dist
           if-no-files-found: error
           retention-days: 14
