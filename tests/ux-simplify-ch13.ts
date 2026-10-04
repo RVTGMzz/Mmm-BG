@@ -9,7 +9,7 @@ const mini=readFileSync('src/ui/MiniGameOverlay.ts','utf8');
 
 assert.match(css,/font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif/);
 assert.doesNotMatch(css,/var\(--vf-font-family, "Arial Rounded MT Bold"/);
-assert.match(setup,/setupHeader, \{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif'/);
+assert.match(setup,/setupHeader,\s*\{[\s\S]*?fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif'/);
 assert.doesNotMatch(css,/font-weight: 950/);
 
 assert.match(scene,/object\.text\.startsWith\('MMM CITY •'\)/);
