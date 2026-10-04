@@ -335,6 +335,8 @@ jobs:
         run: npm run test:visual-refresh-final-ch176
       - name: CH-17.7 final controls + lap banner refresh
         run: npm run test:visual-refresh-end-controls-ch177
+      - name: CH-17.8 Splash Settings BGM Online Room refresh
+        run: npm run test:visual-refresh-shell-ch178
       - name: CH-15 public online entry and resume
         run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies
@@ -366,11 +368,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.46 CH-17.7 End Controls Visual Refresh build
+      - name: Upload MMM 0.1.70.4.47 CH-17.8 Shell Visual Refresh build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.46-ch17-7-end-controls-refresh
+          name: mmm-playtest-0.1.70.4.47-ch17-8-shell-refresh
           path: dist
           if-no-files-found: error
           retention-days: 14
