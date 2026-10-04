@@ -9,6 +9,8 @@ import {
 const setup = await readFile('src/scenes/SetupScene.ts', 'utf8');
 const css = await readFile('src/characterSelectCh02c.css', 'utf8');
 const atlas = await readFile('public/assets/characters/ch181/portraits.webp');
+const encodedChunks = await Promise.all([0,1,2,3,4].map((index) => readFile(`scripts/assets/ch181/portrait-${String(index).padStart(2, '0')}.b64`, 'utf8')));
+assert.equal(encodedChunks.join('').replace(/\\s+/g, '').length, 39_976, 'CH-18.1 encoded portrait source must stay complete');
 
 assert.equal(atlas.subarray(0, 4).toString('ascii'), 'RIFF');
 assert.equal(atlas.subarray(8, 12).toString('ascii'), 'WEBP');

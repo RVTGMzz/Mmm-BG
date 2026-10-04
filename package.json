@@ -6,11 +6,11 @@
   "scripts": {
     "materialize:brand": "node scripts/materialize-brand.mjs",
     "materialize:sfx": "node scripts/materialize-sfx.mjs",
-    "predev": "npm run materialize:sfx",
+    "predev": "npm run materialize:character-art",
     "dev": "vite",
     "predev:playtest": "npm run materialize:sfx",
     "dev:playtest": "vite --host 0.0.0.0",
-    "prebuild": "npm run materialize:sfx",
+    "prebuild": "npm run materialize:sfx && npm run materialize:character-art",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test:replay": "tsx tests/replay-determinism.ts",
@@ -173,7 +173,8 @@
     "test:visual-refresh-special-reactions-ch1712": "tsx tests/visual-refresh-special-reactions-ch1712.ts",
     "test:visual-refresh-presentation-feedback-ch1713": "tsx tests/visual-refresh-presentation-feedback-ch1713.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts",
-    "test:character-production-ch181": "tsx tests/character-production-ch181.ts"
+    "test:character-production-ch181": "tsx tests/character-production-ch181.ts",
+    "materialize:character-art": "node scripts/materialize-character-art-ch181.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"
