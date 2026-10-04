@@ -1,3 +1,68 @@
+# CURRENT CHECKPOINT — 2026-10-04 — CH-17 VISUAL OVERHAUL COMPLETE THROUGH CH-17.10
+
+**GITHUB PLAYTEST LIVE • CLOUDFLARE WORKER STILL FROZEN / NOT REDEPLOYED**
+
+Current authority:
+- repo: `RVTGMzz/Mmm-BG`
+- active development branch: `mmm-mvp-0.1-dev`
+- frozen Cloudflare checkpoint branch: `mmm-mvp-0.1-core`
+- build: `0.1.70.4.49`
+- phase: `RELEASE CANDIDATE • CH-17.10 GROUP MEDIA REFRESH`
+- latest fully validated source/test HEAD: `e5b6e4b6b7afaf892fea7ab7785c5c86bbf5c4ba`
+- full CI #3619 / run `37197127116`: **SUCCESS**
+- compiled GitHub playtest mirror: `6b8bc1f1b6dc6b97da7790dd016004fc0b7e94b2`
+- GitHub Pages #101 / run `37197566079`: **SUCCESS**
+- test URL: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+## CH-17 visual baseline — LOCK THIS DIRECTION
+Ron supplied cozy/chibi mobile-town references. MMM now uses its own original cozy toy-town presentation language rather than the old prototype white/black wireframe look:
+- warm pastel illustrated backdrops;
+- thick cocoa outlines;
+- cream/peach/mint/lavender paper panels;
+- chunky glossy toy buttons;
+- sticker/bubble icon treatments;
+- rounded cards with layered depth/highlights;
+- Vietnamese-safe high-contrast typography;
+- presentation-only unless a later task explicitly changes gameplay.
+
+## Completed CH-17 passes
+- CH-17 pass 1: Main Menu, Board Lobby, Mini Game Select, Setup, Character Select, Rule Select.
+- CH-17.2: Roll For Order — sticker player cards, active highlight, status/ranking preview, toy dice CTA.
+- CH-17.3: in-match 4-corner HUD, money/job lanes, active-turn ribbon, turn/dice chrome.
+- CH-17.4: News, Card, Job Hub/result, Mini Game shell/header.
+- CH-17.5: Board path ribbon/shadow, rounded toy tiles/gloss, Match Recap paper-card.
+- CH-17.6: finish transition, final Podium, XEM TỔNG KẾT trigger.
+- CH-17.7: CHƠI LẠI / VỀ LOBBY controls + lap completion banner.
+- CH-17.8: Splash, Settings, BGM HUD, Online Room.
+- CH-17.9: Face Editor, Setup face-entry buttons, Camera Capture.
+- CH-17.10: Online Group Media video/avatar strip + Camera/Mic controls.
+
+## Validation / CI
+- CH-17.2 through CH-17.10 source gates are registered in CI.
+- Runtime browser suite includes CH-17 menu/settings visual assertions and remains PASS.
+- CI job timeout was raised from 10 to 20 minutes because the full browser regression suite + Playwright install legitimately exceeded 10 minutes; no gameplay behavior was changed.
+- External playtest package, compiled mirror publish, and GitHub Pages deployment are PASS.
+
+## Gameplay/authority contracts still locked
+- No client gameplay `Math.random()`.
+- HOST/replay authority remains authoritative for gameplay RNG and B$.
+- Character passive probability/economy contracts remain unchanged.
+- Mini Game payout/economy pacing remains unchanged unless Ron explicitly asks.
+- Online Worker/reconnect authority was not rewritten for CH-17 visual work.
+- Physical two-real-device acceptance remains human-owned and is not implied by browser CI.
+- PR #1 remains Draft/Open and MUST NOT be merged unless Ron explicitly asks.
+
+## Release policy
+- Continue development on `mmm-mvp-0.1-dev`.
+- GitHub Pages test build may continue updating for Ron's testing.
+- Keep currently deployed Cloudflare Worker available for ONLINE tests.
+- **Do not deploy/update Cloudflare Worker unless Ron explicitly asks.**
+
+## Recommended next action
+Do not blindly redesign more UI. Ask Ron to Ctrl+F5 the GitHub Pages test build and send screenshots of any screen that still feels old, cramped, unclear, or unlike the desired cozy/chibi direction. Refine those screens surgically while preserving the CH-17 baseline above.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-04 — CH-17 VISUAL REFRESH
 
 **PASS 1 LIVE ON GITHUB PAGES. CLOUDFLARE WORKER REMAINS FROZEN / NOT REDEPLOYED.**
