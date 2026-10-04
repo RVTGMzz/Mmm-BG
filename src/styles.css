@@ -992,91 +992,6 @@ canvas {
 }
 
 
-/* 0.1.70.4.28 Steam Deck 16:10 CSS-only presentation bleed */
-/*
- * Steam Deck is 1280x800 (16:10) while MMM's authored Phaser surface remains
- * 1280x720 (16:9). This is deliberately background-only:
- * - no canvas transform;
- * - no Phaser scale-mode override;
- * - no viewport JS;
- * - no pointer/input layer.
- *
- * The spare top/bottom viewport becomes a quiet extension of the board palette
- * instead of looking like blank browser chrome. Phones stay on their existing
- * landscape path because this rule requires a desktop/handheld-sized viewport.
- */
-@media
-  (min-width: 900px)
-  and (min-height: 600px)
-  and (min-aspect-ratio: 3/2)
-  and (max-aspect-ratio: 7/4) {
-  html,
-  body,
-  #app {
-    background:
-      radial-gradient(circle at 8% -8%, rgba(255, 211, 77, .34), transparent 30%),
-      radial-gradient(circle at 92% 108%, rgba(91, 141, 239, .22), transparent 30%),
-      linear-gradient(
-        180deg,
-        #79b793 0%,
-        #9bc8aa 7%,
-        #f4ead7 18%,
-        #f4ead7 82%,
-        #9bc8aa 93%,
-        #79b793 100%
-      );
-  }
-
-  canvas {
-    box-shadow:
-      0 -10px 24px rgba(63, 43, 39, .10),
-      0 10px 24px rgba(63, 43, 39, .10);
-  }
-}
-
-
-/* CH-15 public online entry + reconnect */
-.online-service-row {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  min-height:34px;
-  padding:6px 8px 6px 10px;
-  border:2px solid #d9d0c4;
-  border-radius:14px;
-  background:#fff;
-}
-.online-service-row span {
-  min-width:0;
-  color:#8a6b24;
-  font-size:9px;
-  font-weight:1000;
-  letter-spacing:.04em;
-}
-.online-service-row span.ready { color:#2f7a4b; }
-.online-service-row span.error { color:#b73b3b; }
-.online-service-row button {
-  width:32px;
-  min-width:32px;
-  min-height:28px;
-  margin:0 !important;
-  padding:4px !important;
-}
-.online-resume-button {
-  width:100%;
-  margin-top:8px !important;
-  padding:9px 10px !important;
-  font-size:11px !important;
-}
-.online-resume-button[hidden] { display:none !important; }
-.online-room-head-actions {
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-
 /* CH-16.1 outer game-mode menu + standalone Mini Game quick play */
 .mememe-mode-menu {
   width: 860px;
@@ -1312,3 +1227,88 @@ canvas {
   .quick-mini-card p { font-size: 9px; }
   .quick-mini-footer { margin-top: 11px; padding: 9px 12px; }
 }
+
+/* 0.1.70.4.28 Steam Deck 16:10 CSS-only presentation bleed */
+/*
+ * Steam Deck is 1280x800 (16:10) while MMM's authored Phaser surface remains
+ * 1280x720 (16:9). This is deliberately background-only:
+ * - no canvas transform;
+ * - no Phaser scale-mode override;
+ * - no viewport JS;
+ * - no pointer/input layer.
+ *
+ * The spare top/bottom viewport becomes a quiet extension of the board palette
+ * instead of looking like blank browser chrome. Phones stay on their existing
+ * landscape path because this rule requires a desktop/handheld-sized viewport.
+ */
+@media
+  (min-width: 900px)
+  and (min-height: 600px)
+  and (min-aspect-ratio: 3/2)
+  and (max-aspect-ratio: 7/4) {
+  html,
+  body,
+  #app {
+    background:
+      radial-gradient(circle at 8% -8%, rgba(255, 211, 77, .34), transparent 30%),
+      radial-gradient(circle at 92% 108%, rgba(91, 141, 239, .22), transparent 30%),
+      linear-gradient(
+        180deg,
+        #79b793 0%,
+        #9bc8aa 7%,
+        #f4ead7 18%,
+        #f4ead7 82%,
+        #9bc8aa 93%,
+        #79b793 100%
+      );
+  }
+
+  canvas {
+    box-shadow:
+      0 -10px 24px rgba(63, 43, 39, .10),
+      0 10px 24px rgba(63, 43, 39, .10);
+  }
+}
+
+
+/* CH-15 public online entry + reconnect */
+.online-service-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-height:34px;
+  padding:6px 8px 6px 10px;
+  border:2px solid #d9d0c4;
+  border-radius:14px;
+  background:#fff;
+}
+.online-service-row span {
+  min-width:0;
+  color:#8a6b24;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.04em;
+}
+.online-service-row span.ready { color:#2f7a4b; }
+.online-service-row span.error { color:#b73b3b; }
+.online-service-row button {
+  width:32px;
+  min-width:32px;
+  min-height:28px;
+  margin:0 !important;
+  padding:4px !important;
+}
+.online-resume-button {
+  width:100%;
+  margin-top:8px !important;
+  padding:9px 10px !important;
+  font-size:11px !important;
+}
+.online-resume-button[hidden] { display:none !important; }
+.online-room-head-actions {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
