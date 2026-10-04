@@ -164,6 +164,7 @@
     "test:visual-refresh-board-recap-ch175": "tsx tests/visual-refresh-board-recap-ch175.ts",
     "test:visual-refresh-final-ch176": "tsx tests/visual-refresh-final-ch176.ts",
     "test:visual-refresh-end-controls-ch177": "tsx tests/visual-refresh-end-controls-ch177.ts",
+    "test:visual-refresh-shell-ch178": "tsx tests/visual-refresh-shell-ch178.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
