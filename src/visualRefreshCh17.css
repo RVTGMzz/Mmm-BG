@@ -523,3 +523,265 @@ button.character-card-ch02c.vf-button[aria-pressed='true'] {
     min-height: 150px;
   }
 }
+
+
+/* ---------- CH-17.8 Splash / Settings / BGM / Online Room ---------- */
+.mememe-settings {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.settings-trigger,
+.mobile-fullscreen-shortcut {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 15px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.82) 0 25%, transparent 26%),
+    linear-gradient(180deg, #fffdf7, #f4e2c8) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow:
+    0 4px 0 #b99c86,
+    0 8px 14px rgba(75,48,42,.12) !important;
+}
+.settings-trigger:hover,
+.mobile-fullscreen-shortcut:hover {
+  transform: translateY(-1px) scale(1.03);
+}
+.settings-trigger:active,
+.mobile-fullscreen-shortcut:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #b99c86 !important;
+}
+
+.settings-panel {
+  overflow: hidden auto;
+  border: 4px solid var(--ch17-cocoa) !important;
+  border-radius: 24px !important;
+  padding: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.70), transparent 18%),
+    linear-gradient(160deg, #fffdf6, #f2dfc4) !important;
+  box-shadow:
+    0 7px 0 rgba(75,48,42,.20),
+    0 18px 32px rgba(75,48,42,.16) !important;
+}
+.settings-panel::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 12px;
+  content: '';
+  border-bottom: 2px solid rgba(75,48,42,.28);
+  background: var(--ch17-lavender);
+}
+.settings-head {
+  margin-top: 5px;
+  padding: 5px 4px 10px;
+  border-bottom: 2px dashed rgba(75,48,42,.18);
+}
+.settings-head strong {
+  color: var(--ch17-cocoa);
+  font-size: 20px;
+  letter-spacing: .02em;
+}
+.settings-head span {
+  color: #82695e;
+  font-size: 10px;
+}
+.settings-close {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 12px !important;
+  background: #fffdf8 !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 3px 0 #c6a17e;
+}
+.settings-section {
+  border: 3px solid rgba(75,48,42,.42) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.75), transparent 22%),
+    #fff8eb !important;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.86);
+}
+.settings-section:nth-of-type(2) {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.74), transparent 22%),
+    #eef7e7 !important;
+}
+.settings-section-title {
+  color: #93624f !important;
+  font-size: 10px !important;
+}
+.settings-copy strong {
+  color: var(--ch17-cocoa);
+}
+.settings-copy span,
+.settings-volume-row,
+.settings-controller-guide p {
+  color: #756158 !important;
+}
+.settings-toggle {
+  min-width: 82px;
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.62) 0 26%, transparent 27%),
+    linear-gradient(180deg, #ffe78a, #ffd15e) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 3px 0 var(--ch17-butter-deep);
+}
+.settings-toggle.is-off {
+  background: linear-gradient(180deg, #f3ece3, #d9cabb) !important;
+  box-shadow: 0 3px 0 #ab9483;
+}
+.settings-bgm-volume,
+.bgm-volume {
+  accent-color: var(--ch17-peach-deep) !important;
+}
+
+/* Compact floating audio chrome now reads like a tiny toy-control strip. */
+.mememe-bgm-hud {
+  gap: 8px !important;
+  padding: 7px 10px !important;
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.80) 0 28%, transparent 29%),
+    linear-gradient(180deg, #fffdf6, #f2dfc4) !important;
+  box-shadow:
+    0 4px 0 rgba(75,48,42,.20),
+    0 9px 18px rgba(75,48,42,.12) !important;
+  color: var(--ch17-cocoa) !important;
+}
+.bgm-label {
+  color: #8b6558 !important;
+}
+.bgm-mute,
+.sfx-mute {
+  border: 2px solid var(--ch17-cocoa) !important;
+  border-radius: 10px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.55), transparent 30%),
+    var(--ch17-butter) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 2px 0 var(--ch17-butter-deep);
+}
+
+/* Online room becomes a cooperative "room board", not a flat admin form. */
+.online-room-lobby {
+  color: var(--ch17-cocoa) !important;
+}
+.online-room-head {
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+.online-room-head h1 {
+  color: var(--ch17-cocoa);
+  font-weight: 1000;
+  letter-spacing: -.025em;
+  text-shadow: 0 3px 0 #fff8eb, 0 5px 0 rgba(75,48,42,.12);
+}
+.online-room-head > button,
+.online-room-footer button,
+.online-ready-box button,
+.online-kick {
+  border-color: var(--ch17-cocoa) !important;
+  color: var(--ch17-cocoa) !important;
+}
+.online-room-columns {
+  gap: 16px !important;
+}
+.online-room-panel {
+  position: relative;
+  overflow: hidden;
+  min-height: 390px;
+  border: 4px solid var(--ch17-cocoa) !important;
+  border-radius: 26px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), transparent 20%),
+    linear-gradient(160deg, #fffdf6, #f0e0ca) !important;
+  box-shadow: var(--ch17-panel-shadow) !important;
+}
+.online-room-panel::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 11px;
+  content: '';
+  border-bottom: 2px solid rgba(75,48,42,.26);
+  background: var(--ch17-mint);
+}
+.online-room-panel:nth-child(2)::before {
+  background: var(--ch17-lavender);
+}
+.online-room-panel h2 {
+  color: var(--ch17-cocoa);
+  font-weight: 1000;
+}
+.online-player-row {
+  min-height: 64px;
+  border: 3px solid #c9ad97 !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.66), transparent 24%),
+    #f4e4cf !important;
+  box-shadow: 0 3px 0 rgba(75,48,42,.09);
+}
+.online-player-row.occupied {
+  border-color: var(--ch17-cocoa) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.82), transparent 24%),
+    #fffaf0 !important;
+  box-shadow: 0 4px 0 rgba(75,48,42,.14);
+}
+.online-seat {
+  display: grid;
+  min-width: 38px;
+  min-height: 38px;
+  place-items: center;
+  border: 3px solid var(--ch17-cocoa);
+  border-radius: 50%;
+  background: #fff8df;
+  box-shadow: 0 2px 0 rgba(75,48,42,.15);
+  color: var(--ch17-cocoa);
+}
+.online-ready-state {
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: rgba(255,255,255,.62);
+  color: #6d584f;
+}
+.online-room-note,
+.online-host-options,
+.online-ready-box {
+  border-radius: 16px !important;
+}
+.online-room-note {
+  border: 2px solid rgba(75,48,42,.18);
+  background: #eef7e8 !important;
+  color: #5e695c !important;
+}
+.online-room-footer {
+  border: 3px solid rgba(75,48,42,.28);
+  border-radius: 18px;
+  padding: 9px 11px;
+  background: rgba(255,248,235,.80);
+}
+.online-room-footer p {
+  color: #715d54 !important;
+}
+
+@media (pointer: coarse) and (orientation: landscape) {
+  .settings-panel {
+    max-height: calc(100dvh - 54px);
+    padding: 12px !important;
+  }
+  .settings-section {
+    padding: 9px !important;
+  }
+  .online-room-panel {
+    min-height: 330px;
+    padding: 16px !important;
+  }
+  .online-player-row {
+    min-height: 54px;
+    padding-block: 6px !important;
+  }
+}
