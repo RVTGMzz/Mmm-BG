@@ -23,7 +23,7 @@ import { MiniGameQuickScene } from './scenes/MiniGameQuickScene';
 import { LocalLobbyScene } from './scenes/LocalLobbyScene';
 import { OnlineRoomLobbyScene } from './scenes/OnlineRoomLobbyScene';
 import { SetupScene } from './scenes/SetupScene';
-import { TurnOrderScene07044 as TurnOrderScene } from './scenes/TurnOrderScene07044';
+import { TurnOrderSceneCh17 as TurnOrderScene } from './scenes/TurnOrderSceneCh17';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
 import { CareerMinigameBoardScene07044 as ActiveBoardScene } from './scenes/CareerMinigameBoardScene07044';
