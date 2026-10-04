@@ -789,18 +789,34 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     const isResult = model.title.includes('NHẬN VIỆC');
     const shadow = this.add.graphics();
-    shadow.fillStyle(0x3e2b25, 0.22);
-    shadow.fillRoundedRect(-420, -124, 840, 256, 26);
+    shadow.fillStyle(0x4b302a, 0.24);
+    shadow.fillRoundedRect(-424, -124, 848, 264, 30);
 
     const panel = this.add.graphics();
-    panel.fillStyle(0xfff8ec, 0.995);
-    panel.fillRoundedRect(-420, -132, 840, 256, 26);
-    panel.lineStyle(4, 0x4b332b, 1);
-    panel.strokeRoundedRect(-420, -132, 840, 256, 26);
+    panel.fillStyle(0xfff7e8, 0.998);
+    panel.fillRoundedRect(-420, -132, 840, 256, 28);
+    panel.lineStyle(4, 0x4b302a, 1);
+    panel.strokeRoundedRect(-420, -132, 840, 256, 28);
 
     const header = this.add.graphics();
     header.fillStyle(isResult ? 0xffc94d : 0xffd76c, 1);
-    header.fillRoundedRect(-396, -112, 792, 56, { tl: 17, tr: 17, bl: 10, br: 10 });
+    header.fillRoundedRect(-396, -112, 792, 60, { tl: 18, tr: 18, bl: 11, br: 11 });
+    header.fillStyle(0xffffff, 0.48);
+    header.fillRoundedRect(-382, -105, 764, 10, 5);
+
+    const bodyPaper = this.add.graphics();
+    bodyPaper.fillStyle(0xf7ecda, 1);
+    bodyPaper.fillRoundedRect(-270, -4, 650, 132, 18);
+    bodyPaper.lineStyle(2, 0x4b302a, 0.14);
+    bodyPaper.strokeRoundedRect(-270, -4, 650, 132, 18);
+
+    const iconWell = this.add.graphics();
+    iconWell.fillStyle(0x4b302a, 0.18);
+    iconWell.fillCircle(-316, 32, 49);
+    iconWell.fillStyle(isResult ? 0xffedb8 : 0xe6f3dc, 1);
+    iconWell.fillCircle(-320, 27, 47);
+    iconWell.lineStyle(3, 0x4b302a, 0.72);
+    iconWell.strokeCircle(-320, 27, 47);
 
     const eyebrow = this.add.text(-366, -84, model.eyebrow, {
       fontFamily: JOB_UI_FONT_070421,
@@ -846,13 +862,15 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       fontFamily: JOB_UI_FONT_070421,
       fontSize: '18px',
       fontStyle: 'bold',
-      color: '#71594d',
+      color: '#5f493f',
+      backgroundColor: '#f2e2cf',
+      padding: { x: 12, y: 6 },
     }).setOrigin(1, 0.5).setName('job-result-hint-070432');
 
     const hit = this.add.rectangle(0, -2, 840, 244, 0xffffff, 0.001)
       .setInteractive({ useHandCursor: true });
 
-    root.add([shadow, panel, header, eyebrow, dieChip, icon, title, hint, hit]);
+    root.add([shadow, panel, header, bodyPaper, iconWell, eyebrow, dieChip, icon, title, hint, hit]);
     const jobBodyViewport070429 = createScrollableTextViewport070429(this, root, {
       x: -255,
       y: 8,
@@ -871,9 +889,13 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     jobBodyViewport070429.text.setName('job-scroll-text-070429');
     const jobBottom = 8 + jobBodyViewport070429.height + 56;
     const jobHeight = jobBottom + 132;
-    shadow.clear().fillStyle(0x3e2b25, 0.22).fillRoundedRect(-420, -132, 840, jobHeight, 26);
-    panel.clear().fillStyle(0xfff8ec, 0.995).fillRoundedRect(-420, -124, 840, jobHeight, 26);
-    panel.lineStyle(4, 0x4b332b, 1).strokeRoundedRect(-420, -132, 840, jobHeight, 26);
+    shadow.clear().fillStyle(0x4b302a, 0.24).fillRoundedRect(-424, -124, 848, jobHeight + 8, 30);
+    panel.clear().fillStyle(0xfff7e8, 0.998).fillRoundedRect(-420, -132, 840, jobHeight, 28);
+    panel.lineStyle(4, 0x4b302a, 1).strokeRoundedRect(-420, -132, 840, jobHeight, 28);
+    bodyPaper.clear().fillStyle(0xf7ecda, 1)
+      .fillRoundedRect(-270, -4, 650, jobBodyViewport070429.height + 26, 18);
+    bodyPaper.lineStyle(2, 0x4b302a, 0.14)
+      .strokeRoundedRect(-270, -4, 650, jobBodyViewport070429.height + 26, 18);
     hint.setY(jobBottom - 24);
     hit.setSize(840, jobHeight).setY((jobBottom - 132) / 2);
     // Rectangle.setSize does not resize an existing input hit area.
@@ -883,6 +905,7 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
     }
     root.bringToTop(eyebrow);
     root.bringToTop(dieChip);
+    root.bringToTop(iconWell);
     root.bringToTop(icon);
     root.bringToTop(title);
     root.bringToTop(jobBodyViewport070429.root);
