@@ -13,6 +13,7 @@ import {
   type HostSnapshotPacket,
 } from './hostClient';
 import type { LocalTransportAdapter, LocalTransportMessage } from './localTransport';
+import type { MiniGameChoiceMessage } from './miniGameChoiceProtocol';
 import {
   cloneMatchState,
   deserializeMatchState,
@@ -78,7 +79,8 @@ export type TwoTabMessage =
   | TwoTabReceiptMessage
   | TwoTabStateMessage
   | TwoTabSnapshotMessage
-  | TwoTabResyncRequest;
+  | TwoTabResyncRequest
+  | MiniGameChoiceMessage;
 
 export interface TwoTabStateEvent {
   kind: 'state';
