@@ -24,6 +24,11 @@ CHARACTER PRODUCTION — CH-18.1
 - Token trên Board dùng walk atlas 8 frame của đúng nhân vật đã chọn; khi token di chuyển sẽ cycle frame và lật hướng trái/phải.
 - CH-18.1 chỉ đổi presentation; Host authority, RNG, B$, passive và movement state không đổi.
 
+CHARACTER PRODUCTION — CH-18.1
+- Character Select dùng trực tiếp 4 concept sheet đã duyệt thay cho emoji placeholder; RANDOM vẫn che kín Secret Baby.
+- Board token dùng đúng Character đã reveal và chạy 8-frame walk cycle từ sheet production; hướng ngang tự lật theo hướng di chuyển.
+- Tuổi/giới tính/cá tính giữ nguyên theo 5 concept canon, không teen hóa hoặc nữ hóa lại.
+
 VISUAL REFRESH — CH-17
 - Art direction mới: cozy/chibi town UI, pastel ấm, panel kem–đào, viền cacao dày, icon bubble, nút nổi nhiều lớp.
 - Main Menu, Board Lobby, Mini Game Select, Setup, Character Select, Rule Select và Roll For Order dùng visual language mới.

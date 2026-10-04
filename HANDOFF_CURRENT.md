@@ -1,3 +1,14 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.1 CHARACTER PRODUCTION
+
+Current build: `0.1.70.4.55`.
+Five approved Character concept sheets are now runtime production authority. Character Select renders the four visible starters from those sheets; RANDOM remains Secret-safe. The live board replaces the old central token placeholder with the revealed Character and animates the sheet's 8-frame walk strip while the authoritative token moves. This is presentation-only; gameplay, B$, RNG, Host authority and Worker remain unchanged.
+
+Next Character production batch: context portraits/reactions (money/passive/Jail/Hospital/Mini Game/podium) using the same approved identity sheets.
+
+Cloudflare Worker remains frozen. GitHub Pages dev playtest may update.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-05 — CH-18.1 CHARACTER PRODUCTION RUNTIME
 
 Current build: `0.1.70.4.55`.

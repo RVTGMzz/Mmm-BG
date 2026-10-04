@@ -302,3 +302,34 @@
     border-radius: 17px;
   }
 }
+
+/* CH-18.1 — approved character production sheets replace emoji-only placeholders. */
+.character-production-preview-ch181 {
+  position: relative;
+  display: block;
+  width: 92px;
+  height: 118px;
+  overflow: hidden;
+  flex: 0 0 auto;
+  margin: -6px 0 -4px;
+  border-radius: 22px;
+  background: rgba(255,249,236,.84);
+  filter: drop-shadow(0 5px 4px rgba(75,48,35,.13));
+}
+.character-production-preview-ch181 img {
+  position: absolute;
+  width: 267px;
+  height: auto;
+  left: -7px;
+  top: -43px;
+  max-width: none;
+  pointer-events: none;
+}
+.character-card-ch02c:has(.character-production-preview-ch181) .character-emoji-ch02c { display:none; }
+.character-card-ch02c:has(.character-production-preview-ch181) { min-height: 262px; justify-content:flex-start; }
+.character-card-ch02c:has(.character-production-preview-ch181) strong { margin-top:2px; }
+@media (max-width: 900px), (max-height: 520px) {
+  .character-production-preview-ch181 { width:62px; height:76px; border-radius:16px; margin:-5px 0 -3px; }
+  .character-production-preview-ch181 img { width:181px; left:-5px; top:-29px; }
+  .character-card-ch02c:has(.character-production-preview-ch181) { min-height: 176px; }
+}

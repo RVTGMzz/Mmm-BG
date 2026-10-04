@@ -355,6 +355,8 @@ jobs:
         run: npm run test:visual-refresh-special-reactions-ch1712
       - name: CH-17.13 Dice landing cinematic and feedback refresh
         run: npm run test:visual-refresh-presentation-feedback-ch1713
+      - name: CH-18.1 approved Character art + board walk production integration
+        run: npm run test:character-production-ch181
       - name: CH-15 public online entry and resume
         run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies

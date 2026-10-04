@@ -6,6 +6,7 @@ import { browserSession } from '../core/browserSession';
 import { configureInitialPlayOrder, configureInitialTargetLaps } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import { STARTER_CHARACTERS_V01 } from '../content/core/characters_starter_v01';
+import { characterProductionSheetCh181 } from '../content/core/characterProductionAssetsCh181';
 import { resolveCharacterFaceCompositeCh02d } from '../core/characterFaceCompositeCh02d';
 import { faceTextureKey } from '../systems/faces';
 import { FaceCameraCapture07033 } from '../ui/FaceCameraCapture07033';
