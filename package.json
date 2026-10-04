@@ -170,6 +170,7 @@
     "test:visual-refresh-face-tools-ch179": "tsx tests/visual-refresh-face-tools-ch179.ts",
     "test:visual-refresh-group-media-ch1710": "tsx tests/visual-refresh-group-media-ch1710.ts",
     "test:visual-refresh-decision-ui-ch1711": "tsx tests/visual-refresh-decision-ui-ch1711.ts",
+    "test:visual-refresh-special-reactions-ch1712": "tsx tests/visual-refresh-special-reactions-ch1712.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
