@@ -133,6 +133,7 @@
     "test:character-art-ch02e": "tsx tests/character-art-layer-pipeline-ch02e.ts",
     "test:character-face-fit-ch02f": "tsx tests/character-face-socket-fit-ch02f.ts",
     "test:character-crybaby-ch02g": "tsx tests/character-crybaby-runtime-proof-ch02g.ts",
+    "test:character-production-ch181": "tsx tests/character-production-runtime-ch181.ts",
     "test:character-reactions-ch04": "tsx tests/character-reactions-ch04.ts",
     "test:character-reaction-moments-ch04b": "tsx tests/character-reaction-moments-ch04b.ts",
     "test:character-special-release-ch04c": "tsx tests/character-special-release-ch04c.ts",

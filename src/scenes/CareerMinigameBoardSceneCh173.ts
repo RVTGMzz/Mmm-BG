@@ -23,6 +23,7 @@ type HudCh173 = {
 type RuntimeCh173 = {
   match: MatchState;
   hud: Map<number, HudCh173>;
+  visuals: Map<number, { token: Phaser.GameObjects.Container }>;
   turnStatus?: Phaser.GameObjects.Text;
   overviewButton?: Phaser.GameObjects.Text;
   compactCard?: Phaser.GameObjects.Rectangle;
@@ -42,9 +43,24 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private directDiceTextCh173?: Phaser.GameObjects.Text;
   private boardPathChromeCh175?: Phaser.GameObjects.Graphics;
   private readonly boardTileSkinsCh175 = new Map<Phaser.GameObjects.Rectangle, Phaser.GameObjects.Graphics>();
+  private readonly characterWalkSpritesCh181 = new Map<number, Phaser.GameObjects.Sprite>();
+  private readonly characterWalkRowsCh181 = new Map<number, number>();
+  private readonly characterWalkLastPositionsCh181 = new Map<number, { x: number; y: number }>();
+
+  preload(): void {
+    super.preload();
+    if (!this.textures.exists('character-walk-atlas-ch181')) {
+      this.load.spritesheet(
+        'character-walk-atlas-ch181',
+        `${import.meta.env.BASE_URL}assets/characters/ch181/walk-atlas.webp`,
+        { frameWidth: 48, frameHeight: 48 },
+      );
+    }
+  }
 
   create(): void {
     super.create();
+    this.installCharacterProductionCh181();
     this.installBoardChromeCh173();
     this.installBoardPathChromeCh175();
     this.installBoardTileChromeCh175();
@@ -56,11 +72,78 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
   update(): void {
     super.update();
+    this.syncCharacterProductionCh181();
     this.syncBoardChromeCh173();
   }
 
   private runtimeCh173(): RuntimeCh173 {
     return this as unknown as RuntimeCh173;
+  }
+
+  private characterProductionRowCh181(characterId?: string): number | undefined {
+    if (characterId === 'starter-crybaby') return 0;
+    if (characterId === 'starter-grumpy') return 1;
+    if (characterId === 'starter-anxious') return 2;
+    if (characterId === 'starter-hyper') return 3;
+    if (characterId === 'secret-baby') return 4;
+    return undefined;
+  }
+
+  private installCharacterProductionCh181(): void {
+    const runtime = this.runtimeCh173();
+    for (const player of runtime.match.players) {
+      const visual = runtime.visuals.get(player.id);
+      const row = this.characterProductionRowCh181(player.characterId);
+      if (!visual || row === undefined) continue;
+
+      // Retire only the old center avatar/circle. The P1-P4 seat badge stays readable.
+      for (const child of visual.token.list) {
+        if (
+          (child instanceof Phaser.GameObjects.Image || child instanceof Phaser.GameObjects.Arc)
+          && Math.abs(child.x) < 1
+          && Math.abs(child.y) < 1
+        ) {
+          child.setVisible(false);
+        }
+      }
+
+      const sprite = this.add.sprite(0, -5, 'character-walk-atlas-ch181', row * 8)
+        .setName(`character-walk-token-ch181-p${player.id + 1}`)
+        .setDisplaySize(62, 62)
+        .setOrigin(0.5, 0.58);
+      visual.token.addAt(sprite, 0);
+
+      this.characterWalkSpritesCh181.set(player.id, sprite);
+      this.characterWalkRowsCh181.set(player.id, row);
+      this.characterWalkLastPositionsCh181.set(player.id, { x: visual.token.x, y: visual.token.y });
+    }
+  }
+
+  private syncCharacterProductionCh181(): void {
+    const runtime = this.runtimeCh173();
+    for (const [playerId, sprite] of this.characterWalkSpritesCh181) {
+      const visual = runtime.visuals.get(playerId);
+      const row = this.characterWalkRowsCh181.get(playerId);
+      const previous = this.characterWalkLastPositionsCh181.get(playerId);
+      if (!visual || row === undefined || !previous || !sprite.active) continue;
+
+      const dx = visual.token.x - previous.x;
+      const dy = visual.token.y - previous.y;
+      const moving = Math.hypot(dx, dy) > 0.45;
+
+      if (moving) {
+        const walkFrame = Math.floor(this.time.now / 90) % 8;
+        sprite.setFrame(row * 8 + walkFrame);
+        sprite.setY(-5 - (walkFrame % 2 === 0 ? 0 : 1.5));
+        if (Math.abs(dx) > 0.2) sprite.setFlipX(dx < 0);
+      } else {
+        sprite.setFrame(row * 8);
+        sprite.setY(-5);
+      }
+
+      previous.x = visual.token.x;
+      previous.y = visual.token.y;
+    }
   }
 
   private installBoardChromeCh173(): void {
@@ -330,5 +413,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     this.directDiceSkinCh173 = undefined;
     this.directDiceTextCh173 = undefined;
     this.boardPathChromeCh175 = undefined;
+    for (const sprite of this.characterWalkSpritesCh181.values()) sprite.destroy();
+    this.characterWalkSpritesCh181.clear();
+    this.characterWalkRowsCh181.clear();
+    this.characterWalkLastPositionsCh181.clear();
   }
 }

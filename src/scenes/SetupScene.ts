@@ -106,8 +106,8 @@ export class SetupScene extends Phaser.Scene {
     ]);
     this.statusElement = node.querySelector<HTMLParagraphElement>('#setup-status') ?? undefined;
 
-    // CH-02C: sequential Character Select. Approved concept art remains external
-    // reference for now; this runtime proof locks selection/Random ownership first.
+    // CH-18.1: Character Select now uses the approved production portrait atlas.
+    // Custom face composite proof remains the selected-card override when available.
     const characterRoot = document.createElement('div');
     characterRoot.className = 'mememe-character-select-ch02c';
     const characterEmoji: Record<string, string> = {
@@ -139,6 +139,10 @@ export class SetupScene extends Phaser.Scene {
                 <img class="character-face-source-ch02d" alt="" />
                 <span class="character-face-proof-label-ch02d">MẶT CỦA BẠN</span>
               </span>
+              <span
+                class="character-production-portrait-ch181 character-production-portrait-${character.id}"
+                style="background-image:url('${import.meta.env.BASE_URL}assets/characters/ch181/portrait-atlas-starters.webp')"
+                aria-hidden="true"></span>
               <span class="character-emoji-ch02c">${characterEmoji[character.id] ?? '🎭'}</span>
               <strong>${character.archetypeLabel}</strong>
               <small>${character.genderPresentation === 'female' ? 'NỮ' : 'NAM'} · ${character.ageBand.min}–${character.ageBand.max}</small>

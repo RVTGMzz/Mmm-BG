@@ -45,6 +45,12 @@ Splash → BOARD GAME / MINI GAME.
 - MINI GAME → Chọn 1 trong 5 game + số người/CPU → chơi ngay → Chơi lại / Đổi Mini Game / Menu chính.
 - B$ của ô đến chỉ hiện thay đổi sau khi token đã tới ô và presentation của ô bắt đầu; không hé kết quả tiền giữa lúc đang chạy.
 
+CHARACTER PRODUCTION — CH-18.1
+- Character Select đã thay emoji starter bằng portrait production của đúng 4 thiết kế canon: KHÓC NHÈ, CAU CÓ, LO LẮNG, TĂNG ĐỘNG.
+- SECRET BABY vẫn không lộ ở Character Select; portrait riêng chỉ dành cho flow reveal/context sau khi RANDOM đã được chốt.
+- Token trên Board dùng atlas 8-frame của đúng nhân vật đã chọn; khi token di chuyển sẽ cycle walk frame và lật hướng trái/phải.
+- Đây là presentation-only integration; Host authority, RNG, B$, passive và movement state không đổi.
+
 NHÂN VẬT & NỘI TẠI
 - KHÓC NHÈ / ĐƯỢC DỖ: 40% khi mất ít nhất 20B$, hoàn 10B$.
 - CAU CÓ / ĐỪNG CHỌC TUI: 50% khi bị Card target trực tiếp, giật lại 5B$.
