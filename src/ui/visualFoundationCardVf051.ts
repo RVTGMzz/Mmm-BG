@@ -64,40 +64,46 @@ export function paintVisualFoundationCardVf051(
   const height = 132 + bodyHeight + footerHeight;
 
   shadow.clear();
-  shadow.fillStyle(c.cocoa, 0.2);
-  shadow.fillRoundedRect(left - 4, top + 3, c.width + 8, height + 3, c.radius + 2);
-  shadow.setPosition(0, 7);
+  shadow.fillStyle(c.cocoa, 0.24);
+  shadow.fillRoundedRect(left - 5, top + 6, c.width + 10, height + 4, c.radius + 3);
+  shadow.setPosition(0, 8);
 
   panel.clear();
   panel.fillStyle(c.cream, 0.998);
   panel.fillRoundedRect(left, top, c.width, height, c.radius);
 
-  // Kinetic sticker header.
+  // CH-17.4 collectible-card header with glossy sticker highlight.
   panel.fillStyle(c.lavender, 1);
   panel.fillRoundedRect(
     left + 3,
     top + 3,
     c.width - 6,
-    48,
-    { tl: c.radius - 2, tr: c.radius - 2, bl: 10, br: 10 },
+    54,
+    { tl: c.radius - 2, tr: c.radius - 2, bl: 11, br: 11 },
   );
+  panel.fillStyle(0xffffff, 0.46);
+  panel.fillRoundedRect(left + 15, top + 9, c.width - 30, 10, 5);
 
-  // Quiet body paper so long Vietnamese copy remains readable.
-  panel.fillStyle(c.lavenderSoft, 0.98);
-  panel.fillRoundedRect(left + 17, -33, c.width - 34, bodyHeight + 30, 15);
+  // Quiet inset body paper so long Vietnamese copy stays the visual priority.
+  panel.fillStyle(c.lavenderSoft, 0.995);
+  panel.fillRoundedRect(left + 17, -33, c.width - 34, bodyHeight + 30, 17);
+  panel.lineStyle(2, c.cocoa, 0.12);
+  panel.strokeRoundedRect(left + 17, -33, c.width - 34, bodyHeight + 30, 17);
 
-  // Small sticker tabs, visual only. Keep them inside the canonical frame.
-  panel.fillStyle(c.coral, 0.96);
-  panel.fillRoundedRect(left + 13, -12, 14, Math.min(54, bodyHeight - 6), 7);
-  panel.fillStyle(c.aqua, 0.96);
-  panel.fillRoundedRect(-left - 27, -5, 14, Math.min(48, bodyHeight - 6), 7);
+  // Candy sticker tabs, visual only.
+  panel.fillStyle(c.coral, 0.98);
+  panel.fillRoundedRect(left + 13, -12, 14, Math.min(58, bodyHeight - 6), 7);
+  panel.fillStyle(c.aqua, 0.98);
+  panel.fillRoundedRect(-left - 27, -5, 14, Math.min(52, bodyHeight - 6), 7);
 
-  // Impact/rarity area reads as a collectible sticker well.
+  // Impact/rarity icon becomes a chunky collectible badge.
+  panel.fillStyle(0xd49b32, 0.22);
+  panel.fillCircle(294, -95, 33);
   panel.fillStyle(c.butter, 1);
-  panel.fillCircle(292, -98, 29);
-  panel.lineStyle(2, c.cocoa, 0.58);
-  panel.strokeCircle(292, -98, 29);
+  panel.fillCircle(292, -99, 31);
+  panel.lineStyle(3, c.cocoa, 0.62);
+  panel.strokeCircle(292, -99, 31);
 
-  panel.lineStyle(3, c.cocoa, 1);
+  panel.lineStyle(4, c.cocoa, 1);
   panel.strokeRoundedRect(left + 2, top + 2, c.width - 4, height - 4, c.radius - 2);
 }
