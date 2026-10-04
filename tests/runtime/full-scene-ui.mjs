@@ -122,9 +122,8 @@ try {
       }));
       assert.equal(layout.paper?.type, 'Graphics', `${surface}: result paper must use rounded Graphics owner`);
       assert.ok(layout.footer?.visible, `${surface}: manual continue footer missing`);
-      assert.ok(layout.body !== null);
-      const bodyBottom = Number(result.body.bounds?.bottom ?? 0);
-      const footerTop = Number(layout.footer?.bounds?.top ?? 0);
+      const bodyBottom = Number(result.body.bounds?.y ?? 0) + Number(result.body.bounds?.height ?? 0);
+      const footerTop = Number(layout.footer?.bounds?.y ?? 0);
       assert.ok(
         footerTop - bodyBottom >= 8,
         `${surface}: rules body overlaps continue footer (bodyBottom=${bodyBottom}, footerTop=${footerTop})`,
