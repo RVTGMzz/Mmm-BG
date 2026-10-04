@@ -160,6 +160,7 @@
     "test:game-mode-minigame-ch161": "tsx tests/game-mode-minigame-ch161.ts",
     "test:visual-refresh-turn-order-ch172": "tsx tests/visual-refresh-turn-order-ch172.ts",
     "test:visual-refresh-board-ch173": "tsx tests/visual-refresh-board-ch173.ts",
+    "test:visual-refresh-modals-ch174": "tsx tests/visual-refresh-modals-ch174.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
