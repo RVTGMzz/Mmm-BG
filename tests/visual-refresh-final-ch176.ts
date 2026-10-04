@@ -5,6 +5,12 @@ const transition = readFileSync('src/scenes/CareerMinigameBoardScene039.ts', 'ut
 const podium = readFileSync('src/scenes/CareerMinigameBoardScene041.ts', 'utf8');
 const active = readFileSync('src/scenes/CareerMinigameBoardScene07044.ts', 'utf8');
 const gate = readFileSync('src/scenes/CareerMinigameBoardScene044.ts', 'utf8');
+const stripComments = (source: string) => source
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/\/\/.*$/gm, '');
+const transitionExec = stripComments(transition);
+const podiumExec = stripComments(podium);
+const gateExec = stripComments(gate);
 
 const executable = (source: string): string => source
   .replace(/\/\*[\s\S]*?\*\//g, '')
