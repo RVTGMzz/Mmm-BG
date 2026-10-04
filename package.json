@@ -166,6 +166,7 @@
     "test:visual-refresh-end-controls-ch177": "tsx tests/visual-refresh-end-controls-ch177.ts",
     "test:visual-refresh-shell-ch178": "tsx tests/visual-refresh-shell-ch178.ts",
     "test:visual-refresh-face-tools-ch179": "tsx tests/visual-refresh-face-tools-ch179.ts",
+    "test:visual-refresh-group-media-ch1710": "tsx tests/visual-refresh-group-media-ch1710.ts",
     "test:public-online-ch15": "tsx tests/public-online-ch15.ts"
   },
   "dependencies": {
