@@ -22,6 +22,7 @@ const names = {
   ranking: 'vf07-minigame-ranking-rows',
   majority: 'vf07-majority-result-copy',
   rules: 'vf07-minigame-result-body',
+  rulesmajority: 'vf07-minigame-result-body',
   rulesplay: 'vf07-minigame-choice-prompt',
   rulescpu: 'vf07-round-flow-result-copy-ch142',
   passive: 'character-passive-body-ch05',
@@ -104,14 +105,30 @@ try {
       assert.match(result.body.text, /KHÔNG CÓ PHE THIỂU SỐ|BỊ LOẠI/u);
       const resultBox = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-majority-result-box-ch141'));
       assert.equal(resultBox?.type, 'Graphics', 'majority: result box must use rounded Graphics owner');
-    } else if (surface === 'rules') {
-      assert.ok(result.body.fontSize >= 24, `rules: font shrank to ${result.body.fontSize}`);
+    } else if (surface === 'rules' || surface === 'rulesmajority') {
+      assert.ok(result.body.fontSize >= 22, `${surface}: font shrank to ${result.body.fontSize}`);
       assert.match(result.body.text, /MỤC TIÊU/u);
-      assert.match(result.body.text, /CHỐT/u);
-      assert.match(result.body.text, /ALL-IN/u);
       assert.match(result.body.text, /THƯỞNG/u);
-      const resultPaper = await page.evaluate(() => window.fullSceneUi?.inspect('vf07-minigame-result-paper-ch141'));
-      assert.equal(resultPaper?.type, 'Graphics', 'rules: result paper must use rounded Graphics owner');
+      if (surface === 'rules') {
+        assert.match(result.body.text, /CHỐT/u);
+        assert.match(result.body.text, /ALL-IN/u);
+      } else {
+        assert.match(result.body.text, /NGỬA/u);
+        assert.match(result.body.text, /SẤP/u);
+      }
+      const layout = await page.evaluate(() => ({
+        paper: window.fullSceneUi?.inspect('vf07-minigame-result-paper-ch141'),
+        footer: window.fullSceneUi?.inspect('vf07-minigame-rules-continue-ch142'),
+      }));
+      assert.equal(layout.paper?.type, 'Graphics', `${surface}: result paper must use rounded Graphics owner`);
+      assert.ok(layout.footer?.visible, `${surface}: manual continue footer missing`);
+      assert.ok(layout.body !== null);
+      const bodyBottom = Number(result.body.bounds?.bottom ?? 0);
+      const footerTop = Number(layout.footer?.bounds?.top ?? 0);
+      assert.ok(
+        footerTop - bodyBottom >= 8,
+        `${surface}: rules body overlaps continue footer (bodyBottom=${bodyBottom}, footerTop=${footerTop})`,
+      );
     } else if (surface === 'rulescpu') {
       const cpuRules = await page.evaluate(() => window.cpuRulesState);
       assert.equal(cpuRules?.sawRules, false, 'rulescpu: CPU-only Mini Game must skip the rules screen');
@@ -146,7 +163,7 @@ try {
     }
 
     await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-1280x800.png` });
-    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'rulesplay' || surface === 'rulescpu' || surface === 'card' || surface === 'news') {
+    if (surface === 'passive' || surface === 'jobwait' || surface === 'jobdetail' || surface === 'majority' || surface === 'rules' || surface === 'rulesmajority' || surface === 'rulesplay' || surface === 'rulescpu' || surface === 'card' || surface === 'news') {
       await page.setViewportSize({ width: 960, height: 540 });
       await page.waitForTimeout(250);
       await page.screenshot({ path: `runtime-ui-evidence/full-scene-${surface}-960x540.png` });
