@@ -916,6 +916,42 @@ button.character-card-ch02c.vf-button[aria-pressed='true'] {
   color: #756158 !important;
 }
 
+/* Entry buttons from Setup belong to the same Face Tools family. */
+.face-batch-button {
+  border: 3px solid var(--ch17-cocoa) !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.66) 0 25%, transparent 26%),
+    linear-gradient(180deg, #ffe88b, var(--ch17-butter)) !important;
+  color: var(--ch17-cocoa) !important;
+  box-shadow: 0 4px 0 var(--ch17-butter-deep);
+}
+.face-batch-button.secondary {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.78) 0 25%, transparent 26%),
+    linear-gradient(180deg, #fffdf8, #f1dfc8) !important;
+  box-shadow: 0 4px 0 #b99c86;
+}
+.face-batch-button.camera {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.68) 0 25%, transparent 26%),
+    linear-gradient(180deg, #d9f2df, #a8dcb4) !important;
+  box-shadow: 0 4px 0 #6fa982;
+}
+.face-batch-button.camera.secondary {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.70) 0 25%, transparent 26%),
+    linear-gradient(180deg, #e7efff, #bed1ee) !important;
+  box-shadow: 0 4px 0 #829fc4;
+}
+.face-batch-button small {
+  color: #715c53 !important;
+}
+.face-batch-button:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #b99c86 !important;
+}
+
 /* Camera capture uses the same card language, but keeps the live preview dark. */
 .face-camera-panel {
   position: relative;
