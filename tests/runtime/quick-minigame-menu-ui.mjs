@@ -15,9 +15,18 @@ const browser = await chromium.launch({
 
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
   await page.goto('http://127.0.0.1:5173/');
   await page.waitForFunction(() => document.body.classList.contains('mememe-splash-active'), { timeout: 30000 });
   await page.keyboard.press('Enter');
+  await page.waitForSelector('.mememe-mode-menu', { timeout: 30000 });
+  // CH-17.14: the whole Mini Game card is an entry target, not only its CTA.
+  await page.click('.mode-menu-card.mini', { position: { x: 170, y: 150 } });
+  await page.waitForSelector('.mememe-minigame-quick', { timeout: 30000 });
+
+  // The explicit CTA must still work after returning to the outer mode menu.
+  await page.click('#quick-mini-back');
   await page.waitForSelector('.mememe-mode-menu', { timeout: 30000 });
   await page.click('#mode-mini');
   await page.waitForSelector('.mememe-minigame-quick', { timeout: 30000 });
@@ -73,8 +82,18 @@ try {
   assert(layout.footer, 'Quick Mini Game footer missing');
   assert.ok(layout.footer.y > d.bottom + 8, 'footer must sit below the two-row card grid');
 
+  // Start the selected Mini Game and prove the selector actually hands off to
+  // the canonical Phaser Mini Game overlay instead of becoming a dead entry.
+  await page.click('#quick-mini-start');
+  await page.waitForFunction(
+    () => !document.querySelector('.mememe-minigame-quick'),
+    { timeout: 30000 },
+  );
+  await page.waitForTimeout(250);
+  assert.deepEqual(pageErrors, [], `Quick Mini Game emitted page errors: ${pageErrors.join(' | ')}`);
+
   await page.screenshot({ path: 'runtime-ui-evidence/quick-minigame-menu-3-plus-2.png', fullPage: true });
-  console.log('[quick-minigame-menu-ui] PASS readable 3+2 grid + wrapped copy + footer separation');
+  console.log('[quick-minigame-menu-ui] PASS card + CTA entry, 3+2 grid, and canonical Mini Game handoff');
 } finally {
   await browser.close();
 }

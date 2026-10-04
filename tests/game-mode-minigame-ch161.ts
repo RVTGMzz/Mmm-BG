@@ -14,7 +14,10 @@ assert.match(splash, /scene\.start\(inviteRoom \? 'LocalLobbyScene' : 'GameModeM
 assert.match(modeMenu, />BOARD GAME</);
 assert.match(modeMenu, />MINI GAME</);
 assert.match(modeMenu, /scene\.start\('LocalLobbyScene'\)/);
-assert.match(modeMenu, /scene\.start\('MiniGameQuickScene'\)/);
+assert.match(modeMenu, /MiniGameQuickScene/);
+assert.match(modeMenu, /data-mode-entry="mini"/);
+assert.match(modeMenu, /bindModeEntry\('\.mode-menu-card\.mini', '#mode-mini', 'MiniGameQuickScene'\)/);
+assert.match(modeMenu, /card\.addEventListener\('keydown'/);
 
 assert.match(quick, /MINI_GAME_SLOTS_059\.map/);
 assert.match(quick, /browserSession\.configureSolo\(cpuSeatsForQuickMode\(this\.selectedMode\)\)/);

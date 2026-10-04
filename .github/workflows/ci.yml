@@ -383,11 +383,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.53 CH-17.13 Presentation Feedback Refresh build
+      - name: Upload MMM 0.1.70.4.54 CH-17.14 Mode Entry Hardening build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.53-ch17-13-presentation-feedback-refresh
+          name: mmm-playtest-0.1.70.4.54-ch17-14-mode-entry-hardening
           path: dist
           if-no-files-found: error
           retention-days: 14

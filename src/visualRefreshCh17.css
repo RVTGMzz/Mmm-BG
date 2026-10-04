@@ -166,6 +166,7 @@ button.vf-button.vf-button--subtle {
 }
 .mode-menu-card {
   position: relative;
+  cursor: pointer;
   overflow: hidden;
   min-height: 320px;
   border: 4px solid var(--ch17-cocoa);
@@ -186,6 +187,17 @@ button.vf-button.vf-button--subtle {
   background: var(--ch17-peach);
 }
 .mode-menu-card.mini::before { background: var(--ch17-mint); }
+.mode-menu-card[role='button']:focus-visible {
+  outline: 6px solid rgba(98,191,224,.72);
+  outline-offset: 5px;
+}
+.mode-menu-card[role='button']:hover {
+  transform: translateY(-2px);
+}
+.mode-menu-card[role='button']:active {
+  transform: translateY(2px);
+}
+
 .mode-menu-icon,
 .lobby-icon {
   display: grid;

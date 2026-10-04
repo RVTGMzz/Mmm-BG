@@ -23,13 +23,13 @@ export class GameModeMenuScene extends Phaser.Scene {
         <span>Board dài hơi hay Mini Game vào kèo liền.</span>
       </header>
       <div class="mode-menu-grid">
-        <section class="mode-menu-card board">
+        <section class="mode-menu-card board" data-mode-entry="board">
           <div class="mode-menu-icon">🎲</div>
           <h2>BOARD GAME</h2>
           <p>Vào thành phố, đổ xúc xắc, kiếm B$, nghề nghiệp, lá bài và đủ trò trời ơi đất hỡi.</p>
           <button id="mode-board" type="button">VÀO BOARD GAME →</button>
         </section>
-        <section class="mode-menu-card mini">
+        <section class="mode-menu-card mini" data-mode-entry="mini">
           <div class="mode-menu-icon">🕹️</div>
           <h2>MINI GAME</h2>
           <p>Chọn 1 trong 5 Mini Game rồi chơi ngay. Hợp để quẩy nhanh hoặc test từng game riêng.</p>
@@ -44,13 +44,42 @@ export class GameModeMenuScene extends Phaser.Scene {
       { selector: '#mode-mini', variant: 'success', size: 'lg' },
     ]);
 
-    node.querySelector<HTMLButtonElement>('#mode-board')?.addEventListener('click', () => {
-      sfxController.play('ui_confirm');
-      this.scene.start('LocalLobbyScene');
-    });
-    node.querySelector<HTMLButtonElement>('#mode-mini')?.addEventListener('click', () => {
-      sfxController.play('ui_confirm');
-      this.scene.start('MiniGameQuickScene');
-    });
+    const bindModeEntry = (
+      cardSelector: string,
+      buttonSelector: string,
+      nextScene: 'LocalLobbyScene' | 'MiniGameQuickScene',
+    ) => {
+      const card = node.querySelector<HTMLElement>(cardSelector);
+      const button = node.querySelector<HTMLButtonElement>(buttonSelector);
+      if (!card || !button) return;
+
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+
+      let transitioning = false;
+      const enter = () => {
+        if (transitioning || !this.scene.isActive()) return;
+        transitioning = true;
+        sfxController.play('ui_confirm');
+        this.scene.start(nextScene);
+      };
+
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        enter();
+      });
+      card.addEventListener('click', (event) => {
+        if ((event.target as Element | null)?.closest('button')) return;
+        enter();
+      });
+      card.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        enter();
+      });
+    };
+
+    bindModeEntry('.mode-menu-card.board', '#mode-board', 'LocalLobbyScene');
+    bindModeEntry('.mode-menu-card.mini', '#mode-mini', 'MiniGameQuickScene');
   }
 }

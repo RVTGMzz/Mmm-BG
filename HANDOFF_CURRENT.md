@@ -1,3 +1,14 @@
+# CURRENT CHECKPOINT — 2026-10-04 — CH-17.14 MODE ENTRY HARDENING
+
+Current build: `0.1.70.4.54`.
+Ron reported the outer MINI GAME panel felt non-functional. The entry is now hardened so the whole BOARD GAME / MINI GAME card is clickable and keyboard-confirmable, while the CTA button remains a separate explicit target. Runtime coverage now enters Mini Game through the card, returns, enters through the CTA, then starts the selected canonical Mini Game overlay.
+
+Character art production direction is unchanged and uses the five approved Drive concept sheets referenced by `src/content/core/character_art_manifest_v01.ts`. Do not replace those designs with generic new characters.
+
+Keep Cloudflare Worker frozen; GitHub Pages dev playtest may update.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-04 — CH-17.13 PRESENTATION FEEDBACK REFRESH
 
 **SOURCE PUSHED • CI/PAGES VALIDATION FOLLOWS THIS CHECKPOINT • CLOUDFLARE WORKER STILL FROZEN / NOT REDEPLOYED**
