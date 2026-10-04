@@ -6,6 +6,14 @@ import {
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
+import {
+  MiniGameChoiceClientSync,
+  MiniGameChoiceHostSync,
+} from '../core/miniGameChoiceSync';
+import type {
+  TwoTabClientSession,
+  TwoTabHostSession,
+} from '../core/twoTabSession';
 import { createScrollableTextViewport070429 } from './scrollableTextViewport070429';
 import { characterWinnerVoiceCh04d } from './characterMiniGameWinnerVoiceCh04d';
 import {
@@ -51,6 +59,18 @@ type MiniGameHostSystem = {
     type: 'resolve_minigame',
     data?: Record<string, MatchEventValue>,
   ): { status: 'accepted' | 'duplicate' | 'rejected'; reason?: string };
+};
+
+type MiniGameSceneSessions = {
+  hostSession?: TwoTabHostSession & MiniGameHostSystem;
+  clientSession?: TwoTabClientSession;
+};
+
+type MiniChoiceCard<T extends string> = {
+  value: T;
+  icon: string;
+  label: string;
+  fill: number;
 };
 
 function deterministicBit(eventSeq: number, playerId: number, round: number): number {
@@ -219,7 +239,25 @@ export function startMiniGameOverlay(
   root.add([backdrop, shellShadow, panel, headerBand, headerGloss, headerSticker, stickerIcon, title, subtitle, stake, stage]);
 
   const playerById = (id: number) => players.find((player) => player.id === id);
+  const sceneSessions = scene as unknown as MiniGameSceneSessions;
+  const networkedChoiceMode = browserSession.current.mode !== 'solo';
+  const hostChoiceSync = networkedChoiceMode && sceneSessions.hostSession
+    ? new MiniGameChoiceHostSync(sceneSessions.hostSession)
+    : undefined;
+  const clientChoiceSync = networkedChoiceMode && sceneSessions.clientSession
+    ? new MiniGameChoiceClientSync(sceneSessions.clientSession)
+    : undefined;
   const isInteractiveHuman = (id: number) => browserSession.current.mode === 'solo' && !browserSession.isCpuSeat(id);
+  let choiceSyncClosed = false;
+  const closeChoiceSync = () => {
+    if (choiceSyncClosed) return;
+    choiceSyncClosed = true;
+    hostChoiceSync?.close();
+    clientChoiceSync?.close();
+  };
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, closeChoiceSync);
+  scene.events.once(Phaser.Scenes.Events.DESTROY, closeChoiceSync);
+
   const clearStage = () => {
     stage.removeAll(true);
     paintRoundedSurfaceCh141(
@@ -402,6 +440,136 @@ export function startMiniGameOverlay(
       },
     });
   });
+
+  const showNetworkChoiceWait = (copy: string) => {
+    clearStage();
+    const waitPaper = roundedSurfaceCh141(
+      scene, 0, 18, 700, 250, MINI_GAME_VISUAL_VF07.resultFill, 1,
+      MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
+    ).setName('vf07-minigame-network-wait-paper-ch16c');
+    const lock = scene.add.text(0, -44, '🔒', { fontSize: '52px' })
+      .setOrigin(0.5)
+      .setName('vf07-minigame-network-wait-lock-ch16c');
+    const heading = scene.add.text(0, 10, copy, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '24px',
+      fontStyle: 'bold',
+      color: MINI_GAME_VISUAL_VF07.cocoaText,
+      align: 'center',
+      fixedWidth: 620,
+      wordWrap: { width: 610, useAdvancedWrap: true },
+    }).setOrigin(0.5).setName('vf07-minigame-network-wait-heading-ch16c');
+    const hint = scene.add.text(0, 68, 'Lựa chọn được giữ kín • Host sẽ lật cùng lúc khi mọi người đã chốt', {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px',
+      color: MINI_GAME_VISUAL_VF07.mutedText,
+      align: 'center',
+      fixedWidth: 610,
+      wordWrap: { width: 600, useAdvancedWrap: true },
+    }).setOrigin(0.5).setName('vf07-minigame-network-wait-hint-ch16c');
+    stage.add([waitPaper, lock, heading, hint]);
+  };
+
+  const collectChoices = async <T extends string>(
+    promptKey: string,
+    ids: readonly number[],
+    choicesFor: (player: PlayerState) => MiniChoiceCard<T>[],
+    cpuChoice: (player: PlayerState) => T,
+  ): Promise<Record<number, T>> => {
+    const out: Record<number, T> = {};
+
+    if (!networkedChoiceMode) {
+      for (const id of ids) {
+        const player = playerById(id);
+        if (!player) continue;
+        out[id] = isInteractiveHuman(id)
+          ? await choiceButtons(player, choicesFor(player))
+          : cpuChoice(player);
+      }
+      return out;
+    }
+
+    const allowedChoices = [...new Set(
+      ids.flatMap((id) => {
+        const player = playerById(id);
+        return player ? choicesFor(player).map((choice) => choice.value) : [];
+      }),
+    )];
+
+    if (hostChoiceSync && sceneSessions.hostSession) {
+      hostChoiceSync.openRound(eventSeq, promptKey, ids, allowedChoices);
+
+      for (const id of ids) {
+        const player = playerById(id);
+        if (!player) continue;
+        if (browserSession.isCpuSeat(id)) {
+          const receipt = hostChoiceSync.submitSystemChoice(eventSeq, promptKey, id, cpuChoice(player));
+          if (receipt.status === 'rejected') throw new Error(receipt.reason ?? 'Host rejected CPU Mini Game choice.');
+        }
+      }
+
+      for (const id of ids) {
+        const player = playerById(id);
+        if (!player || browserSession.isCpuSeat(id) || !sceneSessions.hostSession.controlsActor(id)) continue;
+        const state = hostChoiceSync.state(eventSeq, promptKey);
+        if (state?.submittedPlayerIds.includes(id)) continue;
+        const chosen = await choiceButtons(player, choicesFor(player));
+        const receipt = hostChoiceSync.submitHostChoice(eventSeq, promptKey, id, chosen);
+        if (receipt.status === 'rejected') throw new Error(receipt.reason ?? 'Host rejected local Mini Game choice.');
+      }
+
+      const pending = hostChoiceSync.state(eventSeq, promptKey);
+      if (!pending?.complete) {
+        showNetworkChoiceWait('ĐÃ CHỐT • CHỜ NGƯỜI CHƠI CÒN LẠI');
+      }
+      const revealed = await hostChoiceSync.waitForComplete(eventSeq, promptKey);
+      for (const id of ids) {
+        const value = revealed[id];
+        if (!value || !allowedChoices.includes(value as T)) {
+          throw new Error(`Mini Game Host reveal thiếu lựa chọn hợp lệ cho P${id + 1}.`);
+        }
+        out[id] = value as T;
+      }
+      return out;
+    }
+
+    if (clientChoiceSync && sceneSessions.clientSession) {
+      const roundState = await clientChoiceSync.waitForRound(eventSeq, promptKey);
+      const localId = sceneSessions.clientSession.seatId;
+      const participates = ids.includes(localId) && !browserSession.isCpuSeat(localId);
+      if (
+        participates
+        && !roundState.complete
+        && !roundState.submittedPlayerIds.includes(localId)
+      ) {
+        const player = playerById(localId);
+        if (!player) throw new Error(`Mini Game client không tìm thấy P${localId + 1}.`);
+        const chosen = await choiceButtons(player, choicesFor(player));
+        const receipt = await clientChoiceSync.submitChoice(eventSeq, promptKey, localId, chosen);
+        if (receipt.status === 'rejected') throw new Error(receipt.reason ?? 'Host rejected remote Mini Game choice.');
+      }
+
+      const afterSubmit = clientChoiceSync.state(eventSeq, promptKey);
+      if (!afterSubmit?.complete) {
+        showNetworkChoiceWait(
+          participates
+            ? 'LỰA CHỌN ĐÃ KHÓA • CHỜ NHỮNG NGƯỜI CÒN LẠI'
+            : 'ĐANG CHỜ NGƯỜI CHƠI CHỐT KÍN',
+        );
+      }
+      const revealed = await clientChoiceSync.waitForComplete(eventSeq, promptKey);
+      for (const id of ids) {
+        const value = revealed[id];
+        if (!value || !allowedChoices.includes(value as T)) {
+          throw new Error(`Mini Game client reveal thiếu lựa chọn hợp lệ cho P${id + 1}.`);
+        }
+        out[id] = value as T;
+      }
+      return out;
+    }
+
+    throw new Error('Mini Game network choice sync session is missing.');
+  };
 
   const showResult = async (heading: string, body: string, ms = 1700, manualAdvance = false) => {
     clearStage();
@@ -976,16 +1144,18 @@ export function startMiniGameOverlay(
     subtitle.setText(`${slot.title} • CÒN 1 VS 1 • OẲN TÙ XÌ`);
 
     for (let round = 1; round <= 8; round += 1) {
-      const choose = async (player: PlayerState): Promise<RpsChoice> => {
-        if (!isInteractiveHuman(player.id)) return cpuRps(eventSeq, player.id, roundOffset + round);
-        return choiceButtons(player, [
+      const choices = await collectChoices<RpsChoice>(
+        `rps:${roundOffset}:${round}`,
+        [a.id, b.id],
+        () => [
           { value: 'rock', icon: '✊', label: 'BÚA', fill: 0xffd983 },
           { value: 'paper', icon: '🖐️', label: 'BAO', fill: 0x9eddf0 },
           { value: 'scissors', icon: '✌️', label: 'KÉO', fill: 0xd1b0f0 },
-        ]);
-      };
-      const choiceA = await choose(a);
-      const choiceB = await choose(b);
+        ],
+        (player) => cpuRps(eventSeq, player.id, roundOffset + round),
+      );
+      const choiceA = choices[a.id] ?? 'rock';
+      const choiceB = choices[b.id] ?? 'rock';
       const result = resolveRpsRound(a.id, choiceA, b.id, choiceB);
       await showRpsDuel(a, b, choiceA, choiceB, result.tied, result.winnerId);
       if (result.tied) continue;
@@ -1133,16 +1303,24 @@ export function startMiniGameOverlay(
       const choices: Record<number, AllInChoice> = {};
 
       for (const id of activeIds) {
-        const player = playerById(id);
-        if (!player) continue;
-        const first = allInRoll(eventSeq, id, 1);
-        firstRolls[id] = first;
-        choices[id] = isInteractiveHuman(id)
-          ? await choiceButtons(player, [
+        firstRolls[id] = allInRoll(eventSeq, id, 1);
+      }
+      Object.assign(
+        choices,
+        await collectChoices<AllInChoice>(
+          'all_in:1',
+          activeIds,
+          (player) => {
+            const first = firstRolls[player.id] ?? 1;
+            return [
               { value: 'hold', icon: '✋', label: `CHỐT 🎲${first}`, fill: 0x9eddf0 },
               { value: 'all_in', icon: '🔥', label: 'ALL-IN', fill: 0xffd983 },
-            ])
-          : cpuAllIn(first);
+            ];
+          },
+          (player) => cpuAllIn(firstRolls[player.id] ?? 1),
+        ),
+      );
+      for (const id of activeIds) {
         if (choices[id] === 'all_in') secondRolls[id] = allInRoll(eventSeq, id, 2);
       }
 
@@ -1202,18 +1380,16 @@ export function startMiniGameOverlay(
       while (activeIds.length > 2 && safety < 16) {
         safety += 1;
         round += 1;
-        const choices: Record<number, ThreeDoorChoice> = {};
-        for (const id of activeIds) {
-          const player = playerById(id);
-          if (!player) continue;
-          choices[id] = isInteractiveHuman(id)
-            ? await choiceButtons(player, [
-                { value: 'a', icon: '🚪', label: 'CỬA A', fill: 0xffd983 },
-                { value: 'b', icon: '🚪', label: 'CỬA B', fill: 0x9eddf0 },
-                { value: 'c', icon: '🚪', label: 'CỬA C', fill: 0xd1b0f0 },
-              ])
-            : cpuThreeDoor(eventSeq, id, round);
-        }
+        const choices = await collectChoices<ThreeDoorChoice>(
+          `three_doors:${round}`,
+          activeIds,
+          () => [
+            { value: 'a', icon: '🚪', label: 'CỬA A', fill: 0xffd983 },
+            { value: 'b', icon: '🚪', label: 'CỬA B', fill: 0x9eddf0 },
+            { value: 'c', icon: '🚪', label: 'CỬA C', fill: 0xd1b0f0 },
+          ],
+          (player) => cpuThreeDoor(eventSeq, player.id, round),
+        );
 
         const roll = threeDoorRoll(eventSeq, round);
         const result = resolveThreeDoorsRound(activeIds, choices, roll);
@@ -1261,18 +1437,16 @@ export function startMiniGameOverlay(
       while (activeIds.length > 2 && safety < 16) {
         safety += 1;
         round += 1;
-        const choices: Record<number, SoloBuoyChoice> = {};
-        for (const id of activeIds) {
-          const player = playerById(id);
-          if (!player) continue;
-          choices[id] = isInteractiveHuman(id)
-            ? await choiceButtons(player, [
-                { value: '1', icon: '🛟', label: 'PHAO 1', fill: 0xffd983 },
-                { value: '2', icon: '🛟', label: 'PHAO 2', fill: 0x9eddf0 },
-                { value: '3', icon: '🛟', label: 'PHAO 3', fill: 0xd1b0f0 },
-              ])
-            : cpuSoloBuoy(eventSeq, id, round);
-        }
+        const choices = await collectChoices<SoloBuoyChoice>(
+          `solo_buoy:${round}`,
+          activeIds,
+          () => [
+            { value: '1', icon: '🛟', label: 'PHAO 1', fill: 0xffd983 },
+            { value: '2', icon: '🛟', label: 'PHAO 2', fill: 0x9eddf0 },
+            { value: '3', icon: '🛟', label: 'PHAO 3', fill: 0xd1b0f0 },
+          ],
+          (player) => cpuSoloBuoy(eventSeq, player.id, round),
+        );
 
         const result = resolveSoloBuoyRound(activeIds, choices);
         const countCopy = `Phao 1: ${result.counts['1']} • Phao 2: ${result.counts['2']} • Phao 3: ${result.counts['3']}`;
@@ -1330,27 +1504,30 @@ export function startMiniGameOverlay(
         round = leg;
         const rerolledThisLeg = new Set<number>();
 
+        const firstRolls: Record<number, number> = {};
+        for (const id of activeIds) firstRolls[id] = finalSprintRoll(eventSeq, id, leg);
+        const decisionIds = activeIds.filter((id) => !rerollUsed.has(id));
+        const decisions = decisionIds.length > 0
+          ? await collectChoices<'keep' | 'reroll'>(
+              `final_sprint:${leg}`,
+              decisionIds,
+              (player) => [
+                { value: 'keep', icon: '✅', label: `GIỮ 🎲${firstRolls[player.id] ?? 1}`, fill: 0x9eddf0 },
+                { value: 'reroll', icon: '↻', label: 'REROLL', fill: 0xffd983 },
+              ],
+              (player) => (firstRolls[player.id] ?? 1) <= 2 ? 'reroll' : 'keep',
+            )
+          : {};
+
         for (const id of activeIds) {
-          const player = playerById(id);
-          if (!player) continue;
-          const first = finalSprintRoll(eventSeq, id, leg);
+          const first = firstRolls[id] ?? 1;
           let finalRoll = first;
-
-          if (!rerollUsed.has(id)) {
-            const decision = isInteractiveHuman(id)
-              ? await choiceButtons(player, [
-                  { value: 'keep', icon: '✅', label: `GIỮ 🎲${first}`, fill: 0x9eddf0 },
-                  { value: 'reroll', icon: '↻', label: 'REROLL', fill: 0xffd983 },
-                ])
-              : (first <= 2 ? 'reroll' : 'keep');
-
-            if (decision === 'reroll') {
-              finalRoll = finalSprintReroll(eventSeq, id, leg);
-              rerollUsed.add(id);
-              rerolledThisLeg.add(id);
-            }
+          const decision = decisions[id] ?? 'keep';
+          if (!rerollUsed.has(id) && decision === 'reroll') {
+            finalRoll = finalSprintReroll(eventSeq, id, leg);
+            rerollUsed.add(id);
+            rerolledThisLeg.add(id);
           }
-
           legRolls[id]!.push(finalRoll);
         }
 
@@ -1492,17 +1669,15 @@ export function startMiniGameOverlay(
       while (activeIds.length > 2 && safety < 16) {
       safety += 1;
       round += 1;
-      const choices: Record<number, PalmChoice> = {};
-      for (const id of activeIds) {
-        const player = playerById(id);
-        if (!player) continue;
-        choices[id] = isInteractiveHuman(id)
-          ? await choiceButtons(player, [
-              { value: 'up', icon: '🤲', label: 'NGỬA', fill: 0x9eddf0 },
-              { value: 'down', icon: '🖐️', label: 'SẤP', fill: 0xffd983 },
-            ])
-          : cpuPalm(eventSeq, id, round);
-      }
+      const choices = await collectChoices<PalmChoice>(
+        `majority:${round}`,
+        activeIds,
+        () => [
+          { value: 'up', icon: '🤲', label: 'NGỬA', fill: 0x9eddf0 },
+          { value: 'down', icon: '🖐️', label: 'SẤP', fill: 0xffd983 },
+        ],
+        (player) => cpuPalm(eventSeq, player.id, round),
+      );
 
       const result = resolveMajorityMinorityRound(activeIds, choices);
       if (result.tied) {
@@ -1559,20 +1734,22 @@ export function startMiniGameOverlay(
     return { gameType: payoutType, rankingPlayerIds };
   };
 
-  const done = runTournament().then((outcome) => {
-    const hostSession = (scene as unknown as { hostSession?: MiniGameHostSystem }).hostSession;
-    if (hostSession) {
-      const receipt = hostSession.submitSystemIntent('resolve_minigame', {
-        sourceEventSeq: eventSeq,
-        gameType: outcome.gameType,
-        rankingPlayerIds: outcome.rankingPlayerIds.join(','),
-      });
-      if (receipt.status === 'rejected') {
-        console.warn(`[MiniGame] Host rejected payout for event #${eventSeq}: ${receipt.reason ?? 'unknown reason'}`);
+  const done = runTournament()
+    .then((outcome) => {
+      const hostSession = sceneSessions.hostSession;
+      if (hostSession) {
+        const receipt = hostSession.submitSystemIntent('resolve_minigame', {
+          sourceEventSeq: eventSeq,
+          gameType: outcome.gameType,
+          rankingPlayerIds: outcome.rankingPlayerIds.join(','),
+        });
+        if (receipt.status === 'rejected') {
+          console.warn(`[MiniGame] Host rejected payout for event #${eventSeq}: ${receipt.reason ?? 'unknown reason'}`);
+        }
       }
-    }
-    return outcome;
-  });
+      return outcome;
+    })
+    .finally(closeChoiceSync);
 
   return { root, done };
 }
