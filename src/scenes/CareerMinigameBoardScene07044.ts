@@ -1229,6 +1229,8 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
       originalRenderShellOverlay();
       if (internals.shell.status !== 'ended' || internals.shellOverlay.length === 0) return;
 
+      this.styleFinalShellControlsCh177(internals);
+
       const triggerShadow = this.add.graphics()
         .setDepth(705)
         .setName('match-recap-trigger-shadow-ch176');
@@ -1274,6 +1276,106 @@ export class CareerMinigameBoardScene07044 extends CareerMinigameBoardScene0701 
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.closeMatchRecapCh14());
     this.events.once(Phaser.Scenes.Events.DESTROY, () => this.closeMatchRecapCh14());
+  }
+
+  private styleFinalShellControlsCh177(internals: MatchRecapInternalsCh14): void {
+    const backdrop = internals.shellOverlay.find(
+      (object): object is Phaser.GameObjects.Rectangle =>
+        object instanceof Phaser.GameObjects.Rectangle
+        && object.depth === 700
+        && object.width >= 760
+        && object.height >= 400,
+    );
+    if (backdrop) {
+      backdrop
+        .setFillStyle(0x4b302a, 0.58)
+        .setStrokeStyle(4, 0x4b302a, 0.34)
+        .setName('final-shell-backdrop-hit-ch177');
+    }
+
+    const buttons = internals.shellOverlay.filter(
+      (object): object is Phaser.GameObjects.Rectangle =>
+        object instanceof Phaser.GameObjects.Rectangle
+        && object.depth >= 702
+        && object.width >= 150
+        && object.height >= 45,
+    );
+    const labels = internals.shellOverlay.filter(
+      (object): object is Phaser.GameObjects.Text => object instanceof Phaser.GameObjects.Text,
+    );
+
+    const skinButton = (
+      labelCopy: string,
+      fill: number,
+      shadowFill: number,
+      name: string,
+    ): void => {
+      const label = labels.find((object) => object.text.trim() === labelCopy);
+      if (!label) return;
+      const hit = buttons.find(
+        (object) => Math.abs(object.x - label.x) < 4 && Math.abs(object.y - label.y) < 4,
+      );
+      if (!hit) return;
+
+      const y = 482;
+      const width = hit.width;
+      const height = 46;
+      hit
+        .setY(y)
+        .setSize(width, height)
+        .setFillStyle(0xffffff, 0.001)
+        .setStrokeStyle(0, 0x000000, 0)
+        .setDepth(703)
+        .setName(`${name}-hit-ch177`);
+
+      label
+        .setY(y)
+        .setFontFamily(JOB_UI_FONT_070421)
+        .setFontSize(15)
+        .setFontStyle('bold')
+        .setColor('#4b302a')
+        .setBackgroundColor('rgba(0,0,0,0)')
+        .setDepth(704)
+        .setName(`${name}-label-ch177`);
+
+      const skin = this.add.graphics()
+        .setDepth(702)
+        .setName(`${name}-skin-ch177`);
+      skin.fillStyle(shadowFill, 1);
+      skin.fillRoundedRect(hit.x - width / 2, y - height / 2 + 6, width, height, 17);
+      skin.fillStyle(fill, 1);
+      skin.fillRoundedRect(hit.x - width / 2, y - height / 2, width, height, 17);
+      skin.fillStyle(0xffffff, 0.52);
+      skin.fillRoundedRect(hit.x - width / 2 + 10, y - height / 2 + 7, width - 20, 8, 4);
+      skin.lineStyle(3, 0x4b302a, 0.9);
+      skin.strokeRoundedRect(hit.x - width / 2, y - height / 2, width, height, 17);
+      internals.shellOverlay.push(skin);
+    };
+
+    skinButton('CHƠI LẠI 🔁', 0xffd76a, 0xd99b38, 'final-rematch');
+    skinButton('VỀ LOBBY', 0xf0e6ff, 0x8f74b7, 'final-lobby');
+
+    const waiting = labels.find((object) => object.text.includes('CHỜ HOST CHỌN CHƠI LẠI'));
+    if (waiting) {
+      waiting
+        .setY(438)
+        .setFontFamily(JOB_UI_FONT_070421)
+        .setFontSize(15)
+        .setFontStyle('bold')
+        .setColor('#6c5146')
+        .setBackgroundColor('rgba(0,0,0,0)')
+        .setDepth(704)
+        .setName('final-host-wait-label-ch177');
+
+      const waitPill = this.add.graphics()
+        .setDepth(702)
+        .setName('final-host-wait-pill-ch177');
+      waitPill.fillStyle(0xf2e2cf, 0.96);
+      waitPill.fillRoundedRect(455, 416, 370, 44, 16);
+      waitPill.lineStyle(2, 0x4b302a, 0.18);
+      waitPill.strokeRoundedRect(455, 416, 370, 44, 16);
+      internals.shellOverlay.push(waitPill);
+    }
   }
 
   private closeMatchRecapCh14(): void {
