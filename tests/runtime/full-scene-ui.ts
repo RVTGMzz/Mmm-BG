@@ -11,7 +11,7 @@ const mode = new URLSearchParams(location.search).get('surface') ?? 'card';
 browserSession.configureSolo(
   mode === 'ranking' || mode === 'majority' || mode === 'rulescpu'
     ? [0, 1, 2, 3]
-    : mode === 'rules' || mode === 'rulesplay'
+    : mode === 'rules' || mode === 'rulesmajority' || mode === 'rulesplay'
       ? [1, 2, 3]
       : [],
 );
@@ -33,12 +33,12 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
   create(): void {
     // Freeze ranking-mode timers during inherited create so an all-CPU browser
     // fixture cannot start an unrelated board turn before we install the no-op.
-    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay' || mode === 'rulescpu') this.time.timeScale = 0;
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesmajority' || mode === 'rulesplay' || mode === 'rulescpu') this.time.timeScale = 0;
     super.create();
 
     const scene = this;
     const runtime = this as any;
-    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesplay' || mode === 'rulescpu') {
+    if (mode === 'ranking' || mode === 'majority' || mode === 'rules' || mode === 'rulesmajority' || mode === 'rulesplay' || mode === 'rulescpu') {
       runtime.queueCpuActionIfNeeded = () => undefined;
       this.time.timeScale = 1;
     }
@@ -99,10 +99,11 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
       }
 
 
-      if (mode === 'rules') {
+      if (mode === 'rules' || mode === 'rulesmajority') {
         this.time.timeScale = 8;
         this.tweens.timeScale = 8;
-        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8713, 'MINIGAME_SLOT_02');
+        const contentId = mode === 'rulesmajority' ? 'MINIGAME_SLOT_01' : 'MINIGAME_SLOT_02';
+        const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8713, contentId);
         let rulesSettleQueued = false;
         this.events.on('postupdate', () => {
           const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
