@@ -41,7 +41,7 @@ export class SplashScene069 extends Phaser.Scene {
       sfxController.play('ui_confirm');
       bgmController.playMenu();
       this.cameras.main.fadeOut(220, 244, 234, 215);
-      this.time.delayedCall(230, () => this.scene.start('LocalLobbyScene'));
+      this.time.delayedCall(230, () => this.scene.start('GameModeMenuScene'));
     };
 
     this.add.zone(640, 360, 1280, 720).setInteractive({ useHandCursor: true }).once('pointerdown', start);
