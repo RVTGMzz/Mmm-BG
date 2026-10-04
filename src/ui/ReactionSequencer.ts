@@ -64,13 +64,57 @@ function showReactionBubble(
     .setAlpha(0)
     .setScale(0.9);
 
-  const shadow = scene.add.rectangle(5, 6, BUBBLE_WIDTH_0682, BUBBLE_HEIGHT_0682, 0x000000, 0.18);
-  const panel = scene.add
-    .rectangle(0, 0, BUBBLE_WIDTH_0682, BUBBLE_HEIGHT_0682, 0xfffbf3, 0.98)
-    .setStrokeStyle(4, 0x242424, 1);
-  const accentBar = scene.add.rectangle(-132, 0, 8, BUBBLE_HEIGHT_0682 - 6, accent, 1);
+  const shadow = scene.add.graphics().setName('reaction-bubble-shadow-ch1712');
+  shadow.fillStyle(0x4b302a, 0.22);
+  shadow.fillRoundedRect(
+    -BUBBLE_WIDTH_0682 / 2 + 4,
+    -BUBBLE_HEIGHT_0682 / 2 + 6,
+    BUBBLE_WIDTH_0682,
+    BUBBLE_HEIGHT_0682,
+    18,
+  );
 
-  const objects: Phaser.GameObjects.GameObject[] = [shadow, panel, accentBar];
+  const panel = scene.add.graphics().setName('reaction-bubble-panel-ch1712');
+  panel.fillStyle(0xfff7e8, 0.995);
+  panel.fillRoundedRect(
+    -BUBBLE_WIDTH_0682 / 2,
+    -BUBBLE_HEIGHT_0682 / 2,
+    BUBBLE_WIDTH_0682,
+    BUBBLE_HEIGHT_0682,
+    18,
+  );
+  panel.fillStyle(0xffffff, 0.46);
+  panel.fillRoundedRect(
+    -BUBBLE_WIDTH_0682 / 2 + 11,
+    -BUBBLE_HEIGHT_0682 / 2 + 8,
+    BUBBLE_WIDTH_0682 - 22,
+    8,
+    4,
+  );
+  panel.fillStyle(accent, 0.98);
+  panel.fillRoundedRect(
+    -BUBBLE_WIDTH_0682 / 2,
+    -BUBBLE_HEIGHT_0682 / 2,
+    12,
+    BUBBLE_HEIGHT_0682,
+    { tl: 18, tr: 6, bl: 18, br: 6 },
+  );
+  panel.lineStyle(4, 0x4b302a, 0.92);
+  panel.strokeRoundedRect(
+    -BUBBLE_WIDTH_0682 / 2,
+    -BUBBLE_HEIGHT_0682 / 2,
+    BUBBLE_WIDTH_0682,
+    BUBBLE_HEIGHT_0682,
+    18,
+  );
+
+  const faceWell = scene.add.graphics().setName('reaction-bubble-face-well-ch1712');
+  faceWell.fillStyle(0xffffff, 0.42);
+  faceWell.fillRoundedRect(-126, -33, 66, 66, 18);
+  faceWell.lineStyle(3, accent, 0.86);
+  faceWell.strokeRoundedRect(-126, -33, 66, 66, 18);
+
+  const objects: Phaser.GameObjects.GameObject[] = [shadow, panel, faceWell];
   const face = gameSession.getFace(speaker.id, step.expression);
 
   if (face && scene.textures.exists(face.textureKey)) {
@@ -88,19 +132,19 @@ function showReactionBubble(
 
   const name = scene.add
     .text(-58, -25, speaker.name, {
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '14px',
       fontStyle: 'bold',
-      color: '#202020',
+      color: '#4b302a',
       fixedWidth: 174,
     })
     .setOrigin(0, 0.5);
 
   const quote = scene.add
     .text(-58, 10, text, {
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '13px',
-      color: '#36312c',
+      color: '#66534b',
       fixedWidth: 174,
       wordWrap: { width: 174, useAdvancedWrap: true },
       maxLines: 2,
