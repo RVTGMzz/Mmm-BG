@@ -12,10 +12,11 @@ const activeExec = stripComments(active);
 const boardExec = stripComments(board);
 
 assert.match(active, /styleFinalShellControlsCh177\(internals\)/);
-assert.match(active, /final-rematch-skin-ch177/);
-assert.match(active, /final-lobby-skin-ch177/);
-assert.match(active, /final-rematch-hit-ch177/);
-assert.match(active, /final-lobby-hit-ch177/);
+assert.match(active, /setName\(\`\$\{name\}-skin-ch177\`\)/);
+assert.match(active, /setName\(\`\$\{name\}-hit-ch177\`\)/);
+assert.match(active, /setName\(\`\$\{name\}-label-ch177\`\)/);
+assert.match(active, /skinButton\('CHƠI LẠI 🔁',[\s\S]*?'final-rematch'\)/);
+assert.match(active, /skinButton\('VỀ LOBBY',[\s\S]*?'final-lobby'\)/);
 assert.match(active, /final-host-wait-pill-ch177/);
 assert.match(active, /CHƠI LẠI 🔁/);
 assert.match(active, /VỀ LOBBY/);
