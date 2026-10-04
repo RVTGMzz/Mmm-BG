@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
+import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
-import type { PlayerState } from '../core/types';
+import type { BoardDefinition, PlayerState } from '../core/types';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { CareerMinigameBoardScene07044 } from './CareerMinigameBoardScene07044';
 
@@ -10,6 +11,7 @@ const BUTTER_CH173 = 0xffd76a;
 const BUTTER_SHADOW_CH173 = 0xd99b38;
 const LAVENDER_CH173 = 0xbca7dc;
 const LAVENDER_SHADOW_CH173 = 0x8f74b7;
+const BOARD_CH175 = boardJson as BoardDefinition;
 
 type HudCh173 = {
   root: Phaser.GameObjects.Container;
@@ -38,10 +40,14 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private overviewSkinCh173?: Phaser.GameObjects.Graphics;
   private directDiceSkinCh173?: Phaser.GameObjects.Graphics;
   private directDiceTextCh173?: Phaser.GameObjects.Text;
+  private boardPathChromeCh175?: Phaser.GameObjects.Graphics;
+  private readonly boardTileSkinsCh175 = new Map<Phaser.GameObjects.Rectangle, Phaser.GameObjects.Graphics>();
 
   create(): void {
     super.create();
     this.installBoardChromeCh173();
+    this.installBoardPathChromeCh175();
+    this.installBoardTileChromeCh175();
     this.syncBoardChromeCh173();
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.destroyBoardChromeCh173());
@@ -133,6 +139,103 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     this.redrawTopStatusCh173(runtime);
     this.redrawOverviewCh173(runtime);
     this.redrawDirectDiceCh173(runtime);
+    this.syncBoardTileChromeCh175();
+  }
+
+  private installBoardPathChromeCh175(): void {
+    const path = this.add.graphics()
+      .setDepth(0.35)
+      .setName('board-path-chrome-ch175');
+    this.boardPathChromeCh175 = path;
+
+    for (const edge of BOARD_CH175.edges) {
+      const from = BOARD_CH175.nodes.find((node) => node.id === edge.from);
+      const to = BOARD_CH175.nodes.find((node) => node.id === edge.to);
+      if (!from || !to) continue;
+
+      const branch = edge.route === 'branch';
+      path.lineStyle(branch ? 10 : 13, COCOA_CH173, branch ? 0.18 : 0.20);
+      path.lineBetween(from.x + 2, from.y + 3, to.x + 2, to.y + 3);
+
+      path.lineStyle(branch ? 6 : 9, branch ? 0x67cfc4 : 0xf5dfb8, 1);
+      path.lineBetween(from.x, from.y, to.x, to.y);
+
+      path.lineStyle(2, branch ? 0xcff8f0 : 0xffffff, branch ? 0.48 : 0.38);
+      path.lineBetween(from.x - 1, from.y - 1, to.x - 1, to.y - 1);
+    }
+  }
+
+  private installBoardTileChromeCh175(): void {
+    const nodePositions = new Set(
+      BOARD_CH175.nodes.map((node) => `${Math.round(node.x)}:${Math.round(node.y)}`),
+    );
+
+    for (const object of this.children.list) {
+      if (
+        object instanceof Phaser.GameObjects.Rectangle
+        && object.depth === 4
+        && nodePositions.has(`${Math.round(object.x)}:${Math.round(object.y)}`)
+      ) {
+        object.setAlpha(0.001);
+        const skin = this.add.graphics()
+          .setPosition(object.x, object.y)
+          .setDepth(4.2)
+          .setName('board-tile-skin-ch175');
+        this.boardTileSkinsCh175.set(object, skin);
+      }
+
+      if (
+        object instanceof Phaser.GameObjects.Text
+        && object.depth === 5
+        && nodePositions.has(`${Math.round(object.x)}:${Math.round(object.y)}`)
+      ) {
+        object
+          .setFontFamily(MOBILE_UI_FONT_07044)
+          .setColor('#4b302a')
+          .setShadow(0, 1, '#fff7e8', 0, true, false);
+      }
+    }
+
+    this.syncBoardTileChromeCh175();
+  }
+
+  private syncBoardTileChromeCh175(): void {
+    for (const [source, skin] of [...this.boardTileSkinsCh175]) {
+      if (!source.active || !skin.active) {
+        if (skin.active) skin.destroy();
+        this.boardTileSkinsCh175.delete(source);
+        continue;
+      }
+
+      const visible = source.visible;
+      skin.setVisible(visible).setPosition(source.x, source.y);
+      if (!visible) continue;
+
+      const width = source.width;
+      const height = source.height;
+      const radius = Math.max(7, Math.min(14, Math.min(width, height) * 0.32));
+      const fill = source.fillColor;
+      const strong = width >= 42 || height >= 30;
+
+      skin.clear();
+      skin.fillStyle(COCOA_CH173, strong ? 0.24 : 0.19);
+      skin.fillRoundedRect(-width / 2 + 2, -height / 2 + 4, width, height, radius);
+
+      skin.fillStyle(fill, 1);
+      skin.fillRoundedRect(-width / 2, -height / 2, width, height, radius);
+
+      skin.fillStyle(0xffffff, strong ? 0.52 : 0.40);
+      skin.fillRoundedRect(
+        -width / 2 + 4,
+        -height / 2 + 4,
+        Math.max(8, width - 8),
+        Math.max(4, Math.min(7, height * 0.22)),
+        Math.max(3, radius * 0.45),
+      );
+
+      skin.lineStyle(strong ? 3 : 2, COCOA_CH173, 0.92);
+      skin.strokeRoundedRect(-width / 2, -height / 2, width, height, radius);
+    }
   }
 
   private redrawTopStatusCh173(runtime: RuntimeCh173): void {
@@ -219,9 +322,13 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     this.turnStatusSkinCh173?.destroy();
     this.overviewSkinCh173?.destroy();
     this.directDiceSkinCh173?.destroy();
+    this.boardPathChromeCh175?.destroy();
+    for (const skin of this.boardTileSkinsCh175.values()) skin.destroy();
+    this.boardTileSkinsCh175.clear();
     this.turnStatusSkinCh173 = undefined;
     this.overviewSkinCh173 = undefined;
     this.directDiceSkinCh173 = undefined;
     this.directDiceTextCh173 = undefined;
+    this.boardPathChromeCh175 = undefined;
   }
 }
