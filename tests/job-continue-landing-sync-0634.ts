@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   createEmptyHostAuthority,
   hostAuthorityCommandSeq,
@@ -125,4 +126,14 @@ assert.equal(shouldCommitVisibleMoney0634({ kind: 'news' }), true);
 assert.equal(shouldCatchUpVisibleMoney0634(true), false);
 assert.equal(shouldCatchUpVisibleMoney0634(false), true);
 
-console.log('[job-continue-landing-sync-0634] PASS roll 5 -> Job step 2 -> resume 3 pips + parity branch + landing-timed B$');
+const landingSceneSource = readFileSync('src/scenes/CareerMinigameBoardScene0634.ts', 'utf8');
+assert.match(landingSceneSource, /installImmediateVisibleMoneyGuard0634/);
+assert.match(landingSceneSource, /runtime\.updateCompactHud = \(arg: unknown\) =>/);
+assert.match(
+  landingSceneSource,
+  /originalUpdateCompactHud\(arg\);\s*this\.applyVisibleMoneyLabels0634\(\);/,
+  'Every inherited compact-HUD redraw must immediately restore presentation-owned B$.',
+);
+
+console.log('[job-continue-landing-sync-0634] PASS movement order + same-stack HUD guard + landing-timed B
+);
