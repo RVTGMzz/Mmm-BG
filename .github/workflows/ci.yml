@@ -317,6 +317,8 @@ jobs:
         run: npm run test:runtime-polish-ch141
       - name: CH-14.2 Mini Game flow and hidden passive stats
         run: npm run test:minigame-flow-ch142
+      - name: CH-16.1 Board or Mini Game entry + Quick Play
+        run: npm run test:game-mode-minigame-ch161
       - name: CH-15 public online entry and resume
         run: npm run test:public-online-ch15
       - name: Install runtime browser regression dependencies
