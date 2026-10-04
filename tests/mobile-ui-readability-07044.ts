@@ -9,7 +9,7 @@ const helper = readFileSync('src/ui/mobileReadability07044.ts', 'utf8');
 
 assert.match(main, /mobileReadability07044\.css/);
 assert.match(main, /TurnOrderScene07044 as TurnOrderScene/);
-assert.match(main, /CareerMinigameBoardScene07044 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardSceneCh173 as ActiveBoardScene/);
 
 assert.match(board, /extends CareerMinigameBoardScene0701/);
 assert.match(order, /extends TurnOrderScene0701/);
