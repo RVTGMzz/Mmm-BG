@@ -23,7 +23,9 @@ assert.match(active, /showCanonicalJobLanding070411/);
 
 // Job result is a compact centered career card instead of split left/right copy.
 assert.match(active, /const displayTitle = isResult \? 'ĐÃ NHẬN VIỆC' : '3 NGHỀ ĐANG CHỜ'/);
-assert.match(active, /fillStyle\(0xfff8ec/);
+assert.match(active, /fillStyle\(0xfff7e8/);
+assert.match(active, /const bodyPaper = this\.add\.graphics\(\)/);
+assert.match(active, /const iconWell = this\.add\.graphics\(\)/);
 assert.match(active, /fixedWidth: 620/);
 assert.match(active, /chạm để tiếp tục/);
 
