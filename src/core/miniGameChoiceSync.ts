@@ -340,16 +340,17 @@ export class MiniGameChoiceClientSync {
       });
   }
 
-  submitChoice(
+  async submitChoice(
     sourceEventSeq: number,
     promptKey: string,
     playerId: number,
     choice: string,
   ): Promise<MiniGameChoiceReceiptMessage> {
-    if (this.closed) return Promise.reject(new Error('Mini Game choice Client sync đã đóng.'));
-    if (!this.clientSession.controlsActor(playerId)) {
-      return Promise.reject(new Error(`Client không sở hữu P${playerId + 1}.`));
+    if (this.closed) throw new Error('Mini Game choice Client sync đã đóng.');
+    if (playerId !== this.clientSession.seatId) {
+      throw new Error(`Client không sở hữu P${playerId + 1}.`);
     }
+    await this.waitForSeatOwnership(playerId);
 
     const key = roundKey(sourceEventSeq, promptKey);
     const current = this.states.get(key);
@@ -385,6 +386,20 @@ export class MiniGameChoiceClientSync {
         reject(error);
       }
     });
+  }
+
+  private async waitForSeatOwnership(playerId: number): Promise<void> {
+    if (this.clientSession.controlsActor(playerId)) return;
+    this.clientSession.requestJoin07047();
+
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      if (this.closed) throw new Error('Mini Game choice Client sync đã đóng trong lúc reconnect.');
+      if (this.clientSession.controlsActor(playerId)) return;
+      if (attempt > 0 && attempt % 10 === 0) this.clientSession.requestJoin07047();
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+    }
+
+    throw new Error(`P${playerId + 1} chưa reclaim được ghế từ Host để chốt Mini Game.`);
   }
 
   requestSync(sourceEventSeq: number): void {
@@ -443,6 +458,23 @@ export class MiniGameChoiceClientSync {
       const state = cloneState(payload.state);
       const key = roundKey(state.sourceEventSeq, state.promptKey);
       this.states.set(key, state);
+
+      // Reconnect-safe ACK: the explicit receipt may be lost with the socket, but
+      // authoritative Host state proving this seat is already committed is enough.
+      for (const playerId of state.submittedPlayerIds) {
+        const receiptKey = `${key}:${playerId}`;
+        const resolveReceipt = this.receiptWaiters.get(receiptKey);
+        if (!resolveReceipt) continue;
+        this.receiptWaiters.delete(receiptKey);
+        resolveReceipt({
+          kind: 'minigame_choice_receipt',
+          sourceEventSeq: state.sourceEventSeq,
+          promptKey: state.promptKey,
+          playerId,
+          status: 'accepted',
+        });
+      }
+
       this.resolveStateWaiters(key, state);
       return;
     }
