@@ -1,3 +1,60 @@
+# CURRENT CHECKPOINT — 2026-10-04 — CH-17 VISUAL REFRESH
+
+**PASS 1 LIVE ON GITHUB PAGES. CLOUDFLARE WORKER REMAINS FROZEN / NOT REDEPLOYED.**
+
+Current authority:
+- repo: `RVTGMzz/Mmm-BG`
+- active development branch: `mmm-mvp-0.1-dev`
+- frozen Cloudflare production checkpoint branch: `mmm-mvp-0.1-core`
+- build: `0.1.70.4.40`
+- phase: `RELEASE CANDIDATE • CH-17 VISUAL REFRESH`
+- validated source/test HEAD: `95d71bff027db4bbcbcc10e5bf90a72815457bb5`
+- full CI #3510 / run `37177351530`: **SUCCESS**
+- compiled GitHub playtest mirror: `c2058d5caeed4e55612c37d71f558b83a4d992cc`
+- GitHub Pages #93 / run `37177648940`: **SUCCESS**
+- test URL: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+## New locked visual direction
+Reference intent from Ron: cozy/chibi mobile-town UI inspired by the supplied Piggy Town / farming-game references, while using original MMM presentation rather than copying their assets.
+- warm pastel backgrounds and illustrated shape layers;
+- thick cocoa outlines instead of harsh prototype-black;
+- cream/peach/mint paper panels;
+- chunky glossy buttons with layered depth;
+- sticker/bubble icon treatment;
+- playful rounded cards with clear header strips;
+- high contrast Vietnamese-safe typography;
+- presentation-only unless a later task explicitly changes gameplay.
+
+## CH-17 pass 1 now applied
+- GameModeMenuScene
+- LocalLobbyScene / Board lobby
+- MiniGameQuickScene
+- SetupScene shell
+- Character Select surface
+- Rule / match-length select
+- shared Visual Foundation buttons/inputs
+- online-room panels receive the new material language
+- new illustrated-shape Phaser background helper: `paintToyTownBackdropCh17`
+- new CSS layer loaded last: `visualRefreshCh17.css`
+- browser evidence/gate: `tests/runtime/visual-refresh-ch17-ui.mjs`
+- Quick Mini Game 3+2 layout remains locked and readable.
+
+## Next visual targets
+1. In-match HUD/player corners and top bar.
+2. Card / News / Job / Mini Game modal material so they match CH-17.
+3. Board tile chrome, dice/turn controls and floating currency.
+4. Podium / Match Recap visual pass.
+5. Replace temporary emoji/icon bubbles with original MMM illustrated assets once approved/generated.
+
+## Backend/release policy
+- Continue routine work on `mmm-mvp-0.1-dev`.
+- GitHub Pages test build continues to update from dev.
+- Keep the currently deployed Cloudflare Worker online for optional ONLINE testing.
+- Do **not** deploy/update Cloudflare Worker unless Ron explicitly asks.
+- PR #1 remains Draft/Open and must not be merged unless Ron explicitly asks.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-04 — CH-16.1 QUICK MINI GAME + LANDING FIX
 
 **ACTIVE DEV + FULL CI + GITHUB PAGES: PASS. CLOUDFLARE WORKER: FROZEN / NOT REDEPLOYED.**
