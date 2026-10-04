@@ -143,7 +143,7 @@ export class MiniGameQuickScene extends Phaser.Scene {
     });
     this.runCounter += 1;
 
-    const previousTrack: BgmTrackId = bgmController.getState().currentTrackId ?? 'menu';
+    const previousTrack: BgmTrackId = bgmController.getState().currentTrackId ?? 'menu_mememe';
     bgmController.playMiniGame();
     const run = startMiniGameOverlay(
       this,
