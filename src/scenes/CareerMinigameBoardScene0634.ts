@@ -22,6 +22,7 @@ type SceneRuntime0634 = {
   match: MatchState;
   hud: Map<number, HudHandle0634>;
   presentation?: PresentationRuntime0634;
+  updateCompactHud?: (arg: unknown) => void;
 };
 
 /**
@@ -39,6 +40,7 @@ export class CareerMinigameBoardScene0634 extends CareerMinigameBoardScene0633 {
     super.create();
     this.captureAuthoritativeMoney0634();
     this.installLandingMoneyCommit0634();
+    this.installImmediateVisibleMoneyGuard0634();
     this.applyVisibleMoneyLabels0634();
     this.updateBuildLabels0634();
 
@@ -62,6 +64,23 @@ export class CareerMinigameBoardScene0634 extends CareerMinigameBoardScene0633 {
 
   private runtime0634(): SceneRuntime0634 {
     return this as unknown as SceneRuntime0634;
+  }
+
+  /**
+   * Later HUD owners may redraw from authoritative state synchronously inside
+   * applyNetworkState(), before the next scene update has a chance to restore the
+   * presentation-owned money snapshot. Re-apply the snapshot immediately after
+   * every compact HUD refresh so future landing money never flashes early.
+   */
+  private installImmediateVisibleMoneyGuard0634(): void {
+    const runtime = this.runtime0634();
+    const originalUpdateCompactHud = runtime.updateCompactHud?.bind(this);
+    if (!originalUpdateCompactHud) return;
+
+    runtime.updateCompactHud = (arg: unknown) => {
+      originalUpdateCompactHud(arg);
+      this.applyVisibleMoneyLabels0634();
+    };
   }
 
   private installLandingMoneyCommit0634(): void {
