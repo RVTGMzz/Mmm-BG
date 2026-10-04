@@ -19,6 +19,7 @@ import {
   decorateVisualFoundationButtonsV01,
   decorateVisualFoundationPanelV01,
 } from '../ui/visualFoundationV01';
+import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -45,11 +46,16 @@ export class SetupScene extends Phaser.Scene {
       configureInitialPlayOrder(undefined);
       configureInitialTargetLaps(1);
     }
-    this.cameras.main.setBackgroundColor('#f4ead7');
-    const frame = this.add.graphics();
-    frame.fillStyle(0xfffbf3, 1).fillRoundedRect(45, 30, 1190, 660, 32);
-    frame.lineStyle(5, 0x202020, 1).strokeRoundedRect(45, 30, 1190, 660, 32);
-    this.add.text(72, 54, MEMEME_BUILD.setupHeader, { fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif', fontSize: '28px', fontStyle: 'bold', color: '#202020' });
+    paintToyTownBackdropCh17(this, 'sky', { x: 45, y: 30, width: 1190, height: 660, radius: 32 });
+    this.add.text(72, 54, MEMEME_BUILD.setupHeader, {
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
+      fontSize: '28px',
+      fontStyle: 'bold',
+      color: '#4b302a',
+      stroke: '#fff7e8',
+      strokeThickness: 5,
+      shadow: { offsetX: 0, offsetY: 3, color: '#4b302a', blur: 0, fill: true },
+    });
 
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;
@@ -67,7 +73,14 @@ export class SetupScene extends Phaser.Scene {
         : cpuCount > 0
           ? `${4 - cpuCount} người • ${cpuCount} CPU`
           : 'HOTSEAT • 4 người';
-    this.add.text(72, 91, mode, { fontFamily: 'Arial, sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#756c61' });
+    this.add.text(72, 91, mode, {
+      fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
+      fontSize: '16px',
+      fontStyle: 'bold',
+      color: '#7b6257',
+      backgroundColor: '#fff7e8cc',
+      padding: { x: 8, y: 4 },
+    });
 
     const root = document.createElement('div');
     root.className = `mememe-setup mememe-setup-069${onlineOwnSetup ? ' online-own-profile' : ''}`;
