@@ -3,8 +3,8 @@
 **SOURCE + LIVE WORKER + BROWSER RUNTIME + PACKAGE + PUBLIC PAGES: PASS.**
 
 Canonical authority:
-- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-core`
-- build: `0.1.70.4.37`
+- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-dev`
+- build: `0.1.70.4.38`
 - phase: `RELEASE CANDIDATE • CH-15 PUBLIC ONLINE`
 - validated source/test HEAD: `6ec56ccd0cc92ca72131ed5f3a7a275bc9334fcc`
 - full CI #3422 / run `36743533044`: **SUCCESS**
@@ -119,7 +119,7 @@ If Ron sends screenshots/logs, fix only real regression at the shared online/ses
 **SOURCE + AUTHORITY GATES + BROWSER RUNTIME + PACKAGE + PUBLIC PAGES: PASS.**
 
 Canonical authority:
-- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-core`
+- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-dev`
 - build: `0.1.70.4.36`
 - phase: `RELEASE CANDIDATE • CH-14.2 MINI GAME FLOW`
 - validated source/test HEAD: `818e592eaa7092791103997bae637102503c7674`
@@ -209,7 +209,7 @@ Physical Steam Deck acceptance is still human-owned. Recommended quick route:
 **SOURCE + AUTHORITY GATES + BROWSER RUNTIME + PACKAGE + PUBLIC PAGES: PASS.**
 
 Canonical authority:
-- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-core`
+- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-dev`
 - build: `0.1.70.4.35`
 - phase: `RELEASE CANDIDATE • CH-14.1 RUNTIME POLISH`
 - validated production/test HEAD: `93cf43e71fcde4bf4ca287b821ba47853341d300`
@@ -290,7 +290,7 @@ P1 roll/move → confirm spotlight stays P1 through animation/Card/News → pres
 **CH-14 SOURCE + ALL CI GATES + BROWSER RUNTIME + PACKAGE + PUBLIC PAGES: PASS.**
 
 Canonical authority:
-- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-core`
+- repo / branch: `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-dev`
 - build: `0.1.70.4.34`
 - phase: `RELEASE CANDIDATE • CH-14 MATCH RECAP`
 - validated source HEAD: `3e3cbef1002c51376ad661c8a5ebe06a7d835996`
@@ -408,7 +408,7 @@ No production gameplay, economy, Character, online authority, RNG, payout, or pu
 
 Canonical repo / branch:
 - `RVTGMzz/Mmm-BG`
-- `mmm-mvp-0.1-core`
+- `mmm-mvp-0.1-dev`
 
 Current public build:
 - version: `0.1.70.4.33`
@@ -796,7 +796,7 @@ Next roadmap block: Economy & Pacing Pass with Character-enabled match-length au
 
 # MMM — 2026-09-28 CHARACTER GAMEPLAY PASS CH-05
 
-Canonical source branch: `mmm-mvp-0.1-core`
+Canonical source branch: `mmm-mvp-0.1-dev`
 
 **AUTHORITATIVE CHARACTER ID + PERCENT-BASED PASSIVES + REPLAY + RUNTIME VISUAL PROOF: PASS**
 
@@ -889,7 +889,7 @@ Current direction after this checkpoint:
 
 # MMM — NEW CHAT TRANSFER AFTER M44
 
-Canonical source branch: `mmm-mvp-0.1-core`
+Canonical source branch: `mmm-mvp-0.1-dev`
 
 ## M44 ĐUA 3 CHẶNG / NƯỚC RÚT CUỐI VÒNG
 
@@ -1582,7 +1582,7 @@ CH-01 source foundation:
 This is a source/schema milestone, not a visual Runtime PASS. Existing Setup remains intentionally unchanged. Next Character work should preserve the non-circular source needed for future compositing, then design the first actual starter Character + Character Select proof before making selection mandatory. Do not activate passives or mass-reskin TIN TỨC/LÁ BÀI yet.
 
 Repository: `RVTGMzz/Mmm-BG`  
-Branch: `mmm-mvp-0.1-core`  
+Branch: `mmm-mvp-0.1-dev`  
 Legacy PR #1: **Draft/Open**. Do not merge or mark Ready unless Ron explicitly asks.
 
 ## September 24 VF-04.1 + VF-05 first News visual sample
@@ -1867,12 +1867,13 @@ Keep visible game vocabulary:
 
 Do not merge PR #1.
 
-
 ## ACTIVE DEVELOPMENT RELEASE POLICY — 2026-10-04
-- **REPO-ONLY until Ron explicitly says otherwise.**
-- Run source build/tests/CI on `mmm-mvp-0.1-core` normally.
-- Do **NOT** upload playtest build artifacts for routine commits.
-- Do **NOT** checkout/push `ronvotri/MeMeMe-Web-Playtest`.
-- Do **NOT** update public GitHub Pages during active development.
-- Existing public build may remain online but is considered frozen/stale test material.
-- Re-enable public publishing only after Ron explicitly asks to publish a new online test build.
+- **Active development branch:** `mmm-mvp-0.1-dev`.
+- **Cloudflare production branch stays frozen:** `mmm-mvp-0.1-core`.
+- Continue normal build/test/CI on the dev branch.
+- Continue publishing the compiled playtest to `ronvotri/MeMeMe-Web-Playtest` so Ron can always test at the GitHub Pages link.
+- **Do NOT deploy/update the Cloudflare Worker** during routine development.
+- Keep the currently deployed Worker online and usable for optional ONLINE testing.
+- Do not modify/redeploy the Worker unless Ron explicitly asks to update Cloudflare/backend.
+- The Cloudflare Git integration is documented as following `mmm-mvp-0.1-core`, so routine dev commits must stay on `mmm-mvp-0.1-dev`.
+- Public test link remains: https://ronvotri.github.io/MeMeMe-Web-Playtest/
