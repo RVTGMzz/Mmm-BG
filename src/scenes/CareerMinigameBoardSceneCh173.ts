@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
-import { CHARACTER_PRODUCTION_SHEETS_CH181, CHARACTER_WALK_CROP_CH181 } from '../content/core/characterProductionAssetsCh181';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { publicAssetUrl } from '../ui/publicAssetUrl';
 import { CareerMinigameBoardScene07044 } from './CareerMinigameBoardScene07044';
@@ -45,7 +44,6 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private directDiceTextCh173?: Phaser.GameObjects.Text;
   private boardPathChromeCh175?: Phaser.GameObjects.Graphics;
   private readonly boardTileSkinsCh175 = new Map<Phaser.GameObjects.Rectangle, Phaser.GameObjects.Graphics>();
-  private readonly characterWalkSpritesCh181 = new Map<number, { sprite: Phaser.GameObjects.Image; lastX: number; lastY: number }>();
   private readonly characterWalkSpritesCh181 = new Map<number, Phaser.GameObjects.Sprite>();
   private readonly characterWalkRowsCh181 = new Map<number, number>();
   private readonly characterWalkLastPositionsCh181 = new Map<number, { x: number; y: number }>();
@@ -61,17 +59,8 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     }
   }
 
-  preload(): void {
-    super.preload();
-    for (const [characterId, asset] of Object.entries(CHARACTER_PRODUCTION_SHEETS_CH181)) {
-      const key = `character-sheet-ch181-${characterId}`;
-      if (!this.textures.exists(key)) this.load.image(key, asset.dataUrl);
-    }
-  }
-
   create(): void {
     super.create();
-    this.installCharacterProductionTokensCh181();
     this.installCharacterProductionCh181();
     this.installBoardChromeCh173();
     this.installBoardPathChromeCh175();
@@ -86,63 +75,6 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     super.update();
     this.syncCharacterProductionCh181();
     this.syncBoardChromeCh173();
-  }
-
-  private installCharacterProductionTokensCh181(): void {
-    const runtime = this.runtimeCh173() as RuntimeCh173 & {
-      visuals: Map<number, { token: Phaser.GameObjects.Container }>;
-    };
-
-    for (const player of runtime.match.players) {
-      const characterId = player.characterId;
-      if (!characterId || !CHARACTER_PRODUCTION_SHEETS_CH181[characterId]) continue;
-      const visual = runtime.visuals.get(player.id);
-      if (!visual) continue;
-
-      const sheetKey = `character-sheet-ch181-${characterId}`;
-      if (!this.textures.exists(sheetKey)) continue;
-
-      const first = visual.token.list[0] as Phaser.GameObjects.GameObject | undefined;
-      if (first && 'setVisible' in first) (first as Phaser.GameObjects.Image).setVisible(false);
-
-      const walk = CHARACTER_WALK_CROP_CH181;
-      const sprite = this.add.image(0, -15, sheetKey)
-        .setCrop(walk.x, walk.y, walk.frameWidth, walk.frameHeight)
-        .setDisplaySize(46, 82)
-        .setOrigin(0.5, 0.82)
-        .setName(`character-token-ch181-${player.id}`);
-      visual.token.addAt(sprite, 0);
-      this.characterWalkSpritesCh181.set(player.id, {
-        sprite,
-        lastX: visual.token.x,
-        lastY: visual.token.y,
-      });
-    }
-  }
-
-  private syncCharacterProductionTokensCh181(): void {
-    const runtime = this.runtimeCh173() as RuntimeCh173 & {
-      visuals: Map<number, { token: Phaser.GameObjects.Container }>;
-    };
-    const walk = CHARACTER_WALK_CROP_CH181;
-
-    for (const [playerId, state] of this.characterWalkSpritesCh181) {
-      const visual = runtime.visuals.get(playerId);
-      if (!visual || !state.sprite.active) continue;
-
-      const dx = visual.token.x - state.lastX;
-      const dy = visual.token.y - state.lastY;
-      const moving = Math.hypot(dx, dy) > 0.35;
-      if (moving) {
-        const frame = Math.floor(this.time.now / 92) % walk.frames;
-        state.sprite.setCrop(walk.x + frame * walk.stepX, walk.y, walk.frameWidth, walk.frameHeight);
-        if (Math.abs(dx) > 0.25) state.sprite.setFlipX(dx < 0);
-      } else {
-        state.sprite.setCrop(walk.x, walk.y, walk.frameWidth, walk.frameHeight);
-      }
-      state.lastX = visual.token.x;
-      state.lastY = visual.token.y;
-    }
   }
 
   private runtimeCh173(): RuntimeCh173 {

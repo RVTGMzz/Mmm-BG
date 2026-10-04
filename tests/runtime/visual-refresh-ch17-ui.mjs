@@ -87,7 +87,7 @@ try {
       const rect = card.getBoundingClientRect();
       const style = getComputedStyle(card);
       return {
-        x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom,
+        x: rect.x, y: card.offsetTop, right: rect.right, bottom: card.offsetTop + card.offsetHeight,
         width: rect.width, height: rect.height,
         radius: parseFloat(style.borderRadius),
         shadow: style.boxShadow,
