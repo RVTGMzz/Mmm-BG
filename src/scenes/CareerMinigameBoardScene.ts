@@ -178,37 +178,50 @@ export class CareerMinigameBoardScene extends DirectDiceBoardScene {
     const container = this.add.container(640, 90).setDepth(952).setAlpha(0);
     this.lapBanner = container;
 
-    const shadow = this.add.graphics();
-    shadow.fillStyle(0x000000, 0.18);
-    shadow.fillRoundedRect(-252, -34, 504, 72, 18);
-    shadow.setPosition(0, 5);
+    const shadow = this.add.graphics().setName('lap-banner-shadow-ch177');
+    shadow.fillStyle(0x4b302a, 0.22);
+    shadow.fillRoundedRect(-262, -34, 524, 80, 23);
+    shadow.setPosition(0, 6);
 
-    const panel = this.add.graphics();
-    panel.fillStyle(0xfffbf3, 0.98);
-    panel.fillRoundedRect(-248, -36, 496, 70, 17);
-    panel.lineStyle(4, 0xffd34d, 1);
-    panel.strokeRoundedRect(-248, -36, 496, 70, 17);
+    const panel = this.add.graphics().setName('lap-banner-panel-ch177');
+    panel.fillStyle(0xfff7e8, 0.995);
+    panel.fillRoundedRect(-258, -39, 516, 78, 22);
+    panel.fillStyle(0xffffff, 0.46);
+    panel.fillRoundedRect(-244, -31, 488, 9, 4);
+    panel.lineStyle(4, 0x4b302a, 0.92);
+    panel.strokeRoundedRect(-258, -39, 516, 78, 22);
 
-    const title = this.add.text(0, -17, `🏁 ${player.name} HOÀN THÀNH 1 VÒNG!`, {
-      fontFamily: 'Arial Rounded MT Bold, Arial, sans-serif',
-      fontSize: '18px',
+    const flagWell = this.add.graphics().setName('lap-banner-flag-well-ch177');
+    flagWell.fillStyle(0xffd76a, 1);
+    flagWell.fillCircle(-218, 0, 27);
+    flagWell.lineStyle(3, 0xd99b38, 0.9);
+    flagWell.strokeCircle(-218, 0, 27);
+    const flag = this.add.text(-218, 0, '🏁', { fontSize: '28px' }).setOrigin(0.5);
+
+    const title = this.add.text(25, -14, `${player.name} HOÀN THÀNH 1 VÒNG!`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '17px',
       fontStyle: 'bold',
-      color: '#202020',
+      color: '#4b302a',
+      fixedWidth: 410,
+      align: 'center',
     }).setOrigin(0.5);
 
     const detail = this.add.text(
-      0,
-      11,
+      25,
+      13,
       `${completedPlayers}/${totalPlayers} người đã đủ vòng • chốt B$ khi cả bàn hoàn thành`,
       {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
         fontSize: '12px',
         fontStyle: 'bold',
-        color: '#6d655b',
+        color: '#6c5146',
+        fixedWidth: 410,
+        align: 'center',
       },
     ).setOrigin(0.5);
 
-    container.add([shadow, panel, title, detail]);
+    container.add([shadow, panel, flagWell, flag, title, detail]);
 
     this.tweens.add({
       targets: container,
