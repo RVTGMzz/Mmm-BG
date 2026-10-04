@@ -38,7 +38,7 @@ assert(!splash.includes('mememe-logo-official.webp'), 'runtime splash must not u
 assert(!/LOGO_URL_069\s*=\s*['"]assets\/mememe-logo\.webp/.test(splash), 'runtime splash must never use the broken 500x500 export');
 assert(!splash.includes("'Me³'"), 'temporary vector placeholder must not replace the official logo');
 assert.match(splash, /CHẠM ĐỂ BẮT ĐẦU/);
-assert.match(splash, /this\.scene\.start\('LocalLobbyScene'\)/);
+assert.match(splash, /inviteRoom \? 'LocalLobbyScene' : 'GameModeMenuScene'/);
 assert(!splash.includes('Math.random'));
 
 assert.match(board, /extends CareerMinigameBoardScene0682/);
@@ -62,7 +62,8 @@ assert.match(board, /hideLeakText069/);
 assert(!board.includes('Math.random'));
 assert(!board.includes('submitIntent('));
 
-assert.match(lobby, /CHỌN CÁCH CHƠI/);
+assert.match(lobby, /BOARD GAME/);
+assert.match(lobby, /lobby-back-main/);
 assert.match(lobby, /CHƠI NHANH/);
 assert.match(lobby, /PRESERVE_SETUP_REGISTRY_KEY/);
 assert.match(lobby, /consumePreserveSetup/);
