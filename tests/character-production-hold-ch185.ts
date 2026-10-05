@@ -14,7 +14,7 @@ assert(source.includes("'special-hold-production-portrait-ch185'"));
 assert(source.includes("'special-hold-custom-face-ch185'"));
 assert(
   source.indexOf("gameSession.getFace(player.id, 'angry')")
-    < source.indexOf('characterProductionPortraitFrameCh182'),
+    < source.indexOf('frame = characterProductionPortraitFrameCh182'),
   'uploaded player face must stay first priority on the hold banner',
 );
 assert(source.includes("player.specialHold === 'jail'"));
