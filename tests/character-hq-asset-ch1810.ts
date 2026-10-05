@@ -7,8 +7,9 @@ const board = await readFile('src/scenes/CareerMinigameBoardSceneCh173.ts', 'utf
 assert(svg.includes('width="1536" height="960"'));
 assert(svg.includes('8 columns × 5 rows'));
 assert.equal((svg.match(/width="192" height="192"/g) ?? []).length, 40);
-assert.equal((svg.match(/data:image\/webp;base64,/g) ?? []).length, 40);
-assert.equal((svg.match(/<use href="#walk-source"\/>/g) ?? []).length, 40);\nassert(svg.includes('viewBox="0 0 48 48"'));
+assert.equal((svg.match(/data:image\/webp;base64,/g) ?? []).length, 1);
+assert.equal((svg.match(/<use href="#walk-source"\/>/g) ?? []).length, 40);
+assert(svg.includes('viewBox="0 0 48 48"'));
 assert(svg.includes('viewBox="336 192 48 48"'));
 
 assert(board.includes("publicAssetUrl('assets/characters/ch181/walk-atlas-hq-x4.svg')"));
