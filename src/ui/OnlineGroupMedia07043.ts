@@ -54,6 +54,17 @@ class OnlineGroupMedia07043 {
   private announceTimer?: number;
   private status = '';
 
+  getLiveVideoStreamCh188(seatId: number): MediaStream | undefined {
+    const config = browserSession.current;
+    const stream = seatId === config.seatId
+      ? (this.cameraOn ? this.localStream : undefined)
+      : [...this.peers.values()].find((peer) => peer.descriptor.seatId === seatId)?.remoteStream;
+    const hasLiveVideo = Boolean(
+      stream?.getVideoTracks().some((track) => track.readyState === 'live' && !track.muted),
+    );
+    return hasLiveVideo ? stream : undefined;
+  }
+
   start(): void {
     this.stop();
     const config = browserSession.current;

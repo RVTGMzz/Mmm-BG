@@ -305,6 +305,8 @@ jobs:
         run: npm run test:character-board-token-quality-ch186
       - name: CH-18.7 KHOC NHE neutral board face-socket proof
         run: npm run test:character-board-face-socket-ch187
+      - name: CH-18.8 live camera Character face socket
+        run: npm run test:character-live-face-socket-ch188
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -399,11 +401,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.61 CH-18.7 Board Face Socket build
+      - name: Upload MMM 0.1.70.4.62 CH-18.8 Live Face Socket build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.61-ch18-7-board-face-socket
+          name: mmm-playtest-0.1.70.4.62-ch18-8-live-face-socket
           path: dist
           if-no-files-found: error
           retention-days: 14

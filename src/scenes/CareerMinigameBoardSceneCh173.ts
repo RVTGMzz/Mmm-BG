@@ -12,6 +12,7 @@ import {
   CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
 } from '../ui/characterProductionArtCh181';
 import { publicAssetUrl } from '../ui/publicAssetUrl';
+import { onlineGroupMedia07043 } from '../ui/OnlineGroupMedia07043';
 import { CareerMinigameBoardScene07044 } from './CareerMinigameBoardScene07044';
 
 const COCOA_CH173 = 0x4b302a;
@@ -71,6 +72,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private readonly characterWalkRowsCh181 = new Map<number, number>();
   private readonly characterWalkLastPositionsCh181 = new Map<number, { x: number; y: number }>();
   private readonly characterFaceCompositeImagesCh187 = new Map<number, Phaser.GameObjects.Image>();
+  private readonly characterLiveFaceVideosCh188 = new Map<number, HTMLVideoElement>();
+  private readonly characterLiveFaceCanvasesCh188 = new Map<number, HTMLCanvasElement>();
+  private readonly characterLiveFaceLastPaintCh188 = new Map<number, number>();
 
   preload(): void {
     super.preload();
@@ -99,9 +103,8 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       && proof.faceMaskAsset
       && proof.foregroundAsset,
     );
-    const needsCrybabyProof = proofReady && gameSession.players.some((player) =>
-      player.characterId === 'starter-crybaby'
-      && Boolean(player.faces.neutral?.compositeSourceDataUrl),
+    const needsCrybabyProof = proofReady && gameSession.players.some(
+      (player) => player.characterId === 'starter-crybaby',
     );
 
     if (needsCrybabyProof && proof) {
@@ -144,6 +147,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
   update(): void {
     super.update();
+    this.syncCharacterLiveFaceCh188();
     this.syncCharacterProductionCh181();
     this.syncBoardChromeCh173();
   }
@@ -292,6 +296,178 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     }
   }
 
+  private characterLiveTextureKeyCh188(playerId: number): string {
+    return `character-live-face-composite-ch188-p${playerId + 1}`;
+  }
+
+  private ensureLiveFaceVideoCh188(playerId: number, stream: MediaStream): HTMLVideoElement {
+    let video = this.characterLiveFaceVideosCh188.get(playerId);
+    if (!video) {
+      video = document.createElement('video');
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      this.characterLiveFaceVideosCh188.set(playerId, video);
+    }
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+      void video.play().catch(() => undefined);
+    }
+    return video;
+  }
+
+  private paintCrybabyFaceCompositeCh188(
+    canvas: HTMLCanvasElement,
+    source: CanvasImageSource,
+    sourceWidth: number,
+    sourceHeight: number,
+  ): boolean {
+    const proof = CRYBABY_PROOF_CH187;
+    const socket = proof?.runtimeProof?.faceSocket;
+    if (
+      !proof?.runtimeProof
+      || !socket
+      || !this.textures.exists(CRYBABY_PROOF_BODY_KEY_CH187)
+      || !this.textures.exists(CRYBABY_PROOF_MASK_KEY_CH187)
+      || !this.textures.exists(CRYBABY_PROOF_FOREGROUND_KEY_CH187)
+      || sourceWidth <= 0
+      || sourceHeight <= 0
+    ) return false;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    const body = this.textures.get(CRYBABY_PROOF_BODY_KEY_CH187).getSourceImage() as HTMLImageElement;
+    const mask = this.textures.get(CRYBABY_PROOF_MASK_KEY_CH187).getSourceImage() as HTMLImageElement;
+    const foreground = this.textures.get(CRYBABY_PROOF_FOREGROUND_KEY_CH187).getSourceImage() as HTMLImageElement;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(body, 0, 0, canvas.width, canvas.height);
+
+    // Front-camera video is normally 16:9. Crop the center square first so the
+    // face socket receives a head-shaped source instead of a letterboxed landscape frame.
+    const cropSize = Math.min(sourceWidth, sourceHeight);
+    const cropX = (sourceWidth - cropSize) / 2;
+    const cropY = (sourceHeight - cropSize) / 2;
+    const square = document.createElement('canvas');
+    square.width = 256;
+    square.height = 256;
+    const squareCtx = square.getContext('2d');
+    if (!squareCtx) return false;
+    squareCtx.drawImage(
+      source,
+      cropX, cropY, cropSize, cropSize,
+      0, 0, square.width, square.height,
+    );
+
+    const faceCanvas = document.createElement('canvas');
+    faceCanvas.width = canvas.width;
+    faceCanvas.height = canvas.height;
+    const faceCtx = faceCanvas.getContext('2d');
+    if (!faceCtx) return false;
+    const fit = fitFaceSourceToSocketCh02f(
+      { width: square.width, height: square.height },
+      socket,
+      canvas.width,
+      canvas.height,
+    );
+
+    faceCtx.clearRect(0, 0, canvas.width, canvas.height);
+    faceCtx.drawImage(square, fit.x, fit.y, fit.width, fit.height);
+    faceCtx.globalCompositeOperation = 'destination-in';
+    faceCtx.drawImage(mask, 0, 0, canvas.width, canvas.height);
+    faceCtx.globalCompositeOperation = 'source-over';
+
+    ctx.drawImage(faceCanvas, 0, 0);
+    ctx.drawImage(foreground, 0, 0, canvas.width, canvas.height);
+    return true;
+  }
+
+  private ensureLiveFaceCompositeImageCh188(playerId: number): {
+    image: Phaser.GameObjects.Image;
+    canvas: HTMLCanvasElement;
+    textureKey: string;
+  } | undefined {
+    const visual = this.runtimeCh173().visuals.get(playerId);
+    const walk = this.characterWalkSpritesCh181.get(playerId);
+    if (!visual || !walk) return undefined;
+
+    let canvas = this.characterLiveFaceCanvasesCh188.get(playerId);
+    const textureKey = this.characterLiveTextureKeyCh188(playerId);
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.width = CRYBABY_PROOF_WIDTH_CH187;
+      canvas.height = CRYBABY_PROOF_HEIGHT_CH187;
+      this.characterLiveFaceCanvasesCh188.set(playerId, canvas);
+      if (this.textures.exists(textureKey)) this.textures.remove(textureKey);
+      this.textures.addCanvas(textureKey, canvas);
+    }
+
+    let image = this.characterFaceCompositeImagesCh187.get(playerId);
+    if (!image?.active) {
+      image = this.add
+        .image(0, CHARACTER_TOKEN_BASE_Y_CH186, textureKey)
+        .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187, CRYBABY_FACE_DISPLAY_HEIGHT_CH187)
+        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186)
+        .setName(`character-live-face-socket-board-ch188-p${playerId + 1}`);
+      visual.token.addAt(image, 0);
+      this.characterFaceCompositeImagesCh187.set(playerId, image);
+    }
+
+    walk.setVisible(false);
+    image.setVisible(true);
+    return { image, canvas, textureKey };
+  }
+
+  private syncCharacterLiveFaceCh188(): void {
+    const runtime = this.runtimeCh173();
+    for (const player of runtime.match.players) {
+      if (player.characterId !== 'starter-crybaby') continue;
+
+      const walk = this.characterWalkSpritesCh181.get(player.id);
+      if (!walk?.active) continue;
+      const liveStream = onlineGroupMedia07043.getLiveVideoStreamCh188(player.id);
+      const staticTextureKey = this.characterCompositeTextureKeyCh187(player.id);
+      let composite = this.characterFaceCompositeImagesCh187.get(player.id);
+
+      if (!liveStream) {
+        const video = this.characterLiveFaceVideosCh188.get(player.id);
+        if (video?.srcObject) video.srcObject = null;
+
+        if (composite?.active && this.textures.exists(staticTextureKey)) {
+          composite
+            .setTexture(staticTextureKey)
+            .setVisible(true)
+            .setName(`character-face-socket-board-ch187-p${player.id + 1}`);
+          walk.setVisible(false);
+        } else {
+          composite?.setVisible(false);
+          walk.setVisible(true);
+        }
+        continue;
+      }
+
+      const video = this.ensureLiveFaceVideoCh188(player.id, liveStream);
+      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA || video.videoWidth <= 0 || video.videoHeight <= 0) {
+        continue;
+      }
+
+      const live = this.ensureLiveFaceCompositeImageCh188(player.id);
+      if (!live) continue;
+      composite = live.image;
+      composite
+        .setTexture(live.textureKey)
+        .setName(`character-live-face-socket-board-ch188-p${player.id + 1}`);
+
+      const lastPaint = this.characterLiveFaceLastPaintCh188.get(player.id) ?? -Infinity;
+      if (this.time.now - lastPaint < 66) continue;
+      if (!this.paintCrybabyFaceCompositeCh188(live.canvas, video, video.videoWidth, video.videoHeight)) continue;
+
+      const texture = this.textures.get(live.textureKey);
+      if (texture instanceof Phaser.Textures.CanvasTexture) texture.refresh();
+      this.characterLiveFaceLastPaintCh188.set(player.id, this.time.now);
+    }
+  }
+
   private syncCharacterProductionCh181(): void {
     const runtime = this.runtimeCh173();
     for (const [playerId, sprite] of this.characterWalkSpritesCh181) {
@@ -305,7 +481,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       const moving = Math.hypot(dx, dy) > 0.45;
       const faceComposite = this.characterFaceCompositeImagesCh187.get(playerId);
 
-      if (faceComposite?.active) {
+      if (faceComposite?.active && faceComposite.visible) {
         if (moving) {
           const bob = Math.floor(this.time.now / 110) % 2 === 0 ? 0 : 3;
           faceComposite
@@ -603,5 +779,18 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     this.characterWalkSpritesCh181.clear();
     this.characterWalkRowsCh181.clear();
     this.characterWalkLastPositionsCh181.clear();
+    for (const image of this.characterFaceCompositeImagesCh187.values()) image.destroy();
+    this.characterFaceCompositeImagesCh187.clear();
+    for (const video of this.characterLiveFaceVideosCh188.values()) {
+      video.pause();
+      video.srcObject = null;
+    }
+    this.characterLiveFaceVideosCh188.clear();
+    this.characterLiveFaceCanvasesCh188.clear();
+    this.characterLiveFaceLastPaintCh188.clear();
+    for (const player of gameSession.players) {
+      const liveKey = this.characterLiveTextureKeyCh188(player.id);
+      if (this.textures.exists(liveKey)) this.textures.remove(liveKey);
+    }
   }
 }
