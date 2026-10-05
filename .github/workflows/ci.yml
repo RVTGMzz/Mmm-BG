@@ -299,6 +299,8 @@ jobs:
         run: npm run test:character-production-podium-ch183
       - name: CH-18.4 special-context Character portraits
         run: npm run test:character-production-context-ch184
+      - name: CH-18.5 Jail Hospital hold Character portraits
+        run: npm run test:character-production-hold-ch185
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -393,11 +395,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.58 CH-18.4 Special Context Portraits build
+      - name: Upload MMM 0.1.70.4.59 CH-18.5 Hold Portraits build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.58-ch18-4-special-context-portraits
+          name: mmm-playtest-0.1.70.4.59-ch18-5-hold-portraits
           path: dist
           if-no-files-found: error
           retention-days: 14

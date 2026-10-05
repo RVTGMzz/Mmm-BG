@@ -178,7 +178,8 @@
     "test:character-production-runtime-ch181": "tsx tests/character-production-runtime-ch181.ts",
     "test:character-production-reactions-ch182": "tsx tests/character-production-reactions-ch182.ts",
     "test:character-production-podium-ch183": "tsx tests/character-production-podium-ch183.ts",
-    "test:character-production-context-ch184": "tsx tests/character-production-context-ch184.ts"
+    "test:character-production-context-ch184": "tsx tests/character-production-context-ch184.ts",
+    "test:character-production-hold-ch185": "tsx tests/character-production-hold-ch185.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

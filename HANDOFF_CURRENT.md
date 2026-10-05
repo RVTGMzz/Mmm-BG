@@ -1,3 +1,12 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.5 HOLD PORTRAITS
+
+Current build: `0.1.70.4.59`.
+CH-18.4 is green on source CI #3667 and GitHub Pages #109. The persistent Jail/Hospital hold banner now shows the active player's uploaded face first or the selected Character portrait as fallback: Jail=ANGRY, Hospital=PANIC. Existing escape rules and authoritative turn flow are unchanged.
+
+Presentation-only. Cloudflare Worker remains frozen.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-05 — CH-18.4 SPECIAL CONTEXT PORTRAITS
 
 Current build: `0.1.70.4.58`.
