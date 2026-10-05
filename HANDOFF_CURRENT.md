@@ -1,3 +1,14 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.6 BOARD TOKEN QUALITY + FACE-SOCKET RECOVERY
+
+Current build: `0.1.70.4.60`.
+Repo audit confirms the older CH-02D/F/G face contract already exists: no player face keeps the default Character; uploaded/camera captures retain a non-circular composite source; final Character composition is body-back → player head → irregular/soft mask/socket → foreground.
+Only KHÓC NHÈ neutral currently has real layered proof assets in the repo. The other final layered pose exports remain pending. Current camera code captures 1 or 3 still expressions; continuous live-camera expression tracking is not yet shipped.
+
+CH-18.6 fixes the shippable board issue now: Character render is 96px, exact 2x from the current 48px walk atlas, NEAREST-filtered, foot-anchored, and the P badge is moved clear of the silhouette.
+
+Presentation-only. No Host/RNG/B$/movement/passive changes. Cloudflare Worker remains frozen.
+
+---
 # CURRENT CHECKPOINT — 2026-10-05 — CH-18.5 HOLD PORTRAITS
 
 Current build: `0.1.70.4.59`.

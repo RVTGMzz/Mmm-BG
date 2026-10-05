@@ -18,6 +18,11 @@ const BUTTER_SHADOW_CH173 = 0xd99b38;
 const LAVENDER_CH173 = 0xbca7dc;
 const LAVENDER_SHADOW_CH173 = 0x8f74b7;
 const BOARD_CH175 = boardJson as BoardDefinition;
+const CHARACTER_TOKEN_SIZE_CH186 = 96;
+const CHARACTER_TOKEN_BASE_Y_CH186 = 8;
+const CHARACTER_TOKEN_ORIGIN_Y_CH186 = 0.82;
+const CHARACTER_BADGE_X_CH186 = 38;
+const CHARACTER_BADGE_Y_CH186 = 30;
 
 type HudCh173 = {
   root: Phaser.GameObjects.Container;
@@ -76,6 +81,11 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
   create(): void {
     super.create();
+    // CH-18.6: exact 2x presentation of the 48px walk atlas.
+    // NEAREST avoids cross-frame bleed/softening while the token moves.
+    if (this.textures.exists('character-walk-atlas-ch181')) {
+      this.textures.get('character-walk-atlas-ch181').setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
     this.installCharacterProductionCh181();
     this.installBoardChromeCh173();
     this.installBoardPathChromeCh175();
@@ -112,7 +122,8 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       const row = this.characterProductionRowCh181(player.characterId);
       if (!visual || row === undefined) continue;
 
-      // Retire only the old center avatar/circle. The P1-P4 seat badge stays readable.
+      // Retire only the old center avatar/circle. Keep the seat badge, but move
+      // it outside the enlarged Character silhouette so it never covers the art.
       for (const child of visual.token.list) {
         if (
           (child instanceof Phaser.GameObjects.Image || child instanceof Phaser.GameObjects.Arc)
@@ -120,13 +131,30 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
           && Math.abs(child.y) < 1
         ) {
           child.setVisible(false);
+          continue;
+        }
+        if (
+          child instanceof Phaser.GameObjects.Arc
+          && Math.abs(child.x - 21) < 1
+          && Math.abs(child.y - 21) < 1
+        ) {
+          child.setPosition(CHARACTER_BADGE_X_CH186, CHARACTER_BADGE_Y_CH186);
+          continue;
+        }
+        if (
+          child instanceof Phaser.GameObjects.Text
+          && child.text === String(player.id + 1)
+          && Math.abs(child.x - 21) < 1
+          && Math.abs(child.y - 21) < 1
+        ) {
+          child.setPosition(CHARACTER_BADGE_X_CH186, CHARACTER_BADGE_Y_CH186);
         }
       }
 
-      const sprite = this.add.sprite(0, -5, 'character-walk-atlas-ch181', row * 8)
-        .setName(`character-walk-token-ch181-p${player.id + 1}`)
-        .setDisplaySize(62, 62)
-        .setOrigin(0.5, 0.58);
+      const sprite = this.add.sprite(0, CHARACTER_TOKEN_BASE_Y_CH186, 'character-walk-atlas-ch181', row * 8)
+        .setName(`character-walk-token-ch186-p${player.id + 1}`)
+        .setDisplaySize(CHARACTER_TOKEN_SIZE_CH186, CHARACTER_TOKEN_SIZE_CH186)
+        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186);
       visual.token.addAt(sprite, 0);
 
       this.characterWalkSpritesCh181.set(player.id, sprite);
@@ -150,11 +178,11 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       if (moving) {
         const walkFrame = Math.floor(this.time.now / 90) % 8;
         sprite.setFrame(row * 8 + walkFrame);
-        sprite.setY(-5 - (walkFrame % 2 === 0 ? 0 : 1.5));
+        sprite.setY(CHARACTER_TOKEN_BASE_Y_CH186 - (walkFrame % 2 === 0 ? 0 : 2));
         if (Math.abs(dx) > 0.2) sprite.setFlipX(dx < 0);
       } else {
         sprite.setFrame(row * 8);
-        sprite.setY(-5);
+        sprite.setY(CHARACTER_TOKEN_BASE_Y_CH186);
       }
 
       previous.x = visual.token.x;
