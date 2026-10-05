@@ -209,6 +209,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     }
 
     const texture = this.textures.addCanvas(CHARACTER_HQ_ATLAS_KEY_CH189, canvas);
+    if (!texture) return;
     for (let row = 0; row < CHARACTER_HQ_ROWS_CH189; row += 1) {
       for (let column = 0; column < CHARACTER_HQ_COLUMNS_CH189; column += 1) {
         const frame = row * CHARACTER_HQ_COLUMNS_CH189 + column;
