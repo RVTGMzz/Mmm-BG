@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
 import type { BoardDefinition, PlayerState } from '../core/types';
+import { fitFaceSourceToSocketCh02f } from '../core/characterFaceSocketFitCh02f';
+import { characterArtManifestV01 } from '../content/core/character_art_manifest_v01';
+import { gameSession } from '../core/session';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import {
   CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181,
@@ -23,6 +26,16 @@ const CHARACTER_TOKEN_BASE_Y_CH186 = 8;
 const CHARACTER_TOKEN_ORIGIN_Y_CH186 = 0.82;
 const CHARACTER_BADGE_X_CH186 = 38;
 const CHARACTER_BADGE_Y_CH186 = 30;
+
+const CRYBABY_PROOF_CH187 = characterArtManifestV01('starter-crybaby')
+  ?.poses.find((pose) => pose.emotion === 'neutral');
+const CRYBABY_PROOF_BODY_KEY_CH187 = 'character-crybaby-proof-body-ch187';
+const CRYBABY_PROOF_MASK_KEY_CH187 = 'character-crybaby-proof-mask-ch187';
+const CRYBABY_PROOF_FOREGROUND_KEY_CH187 = 'character-crybaby-proof-foreground-ch187';
+const CRYBABY_PROOF_WIDTH_CH187 = CRYBABY_PROOF_CH187?.runtimeProof?.width ?? 128;
+const CRYBABY_PROOF_HEIGHT_CH187 = CRYBABY_PROOF_CH187?.runtimeProof?.height ?? 192;
+const CRYBABY_FACE_DISPLAY_WIDTH_CH187 = 84;
+const CRYBABY_FACE_DISPLAY_HEIGHT_CH187 = 126;
 
 type HudCh173 = {
   root: Phaser.GameObjects.Container;
@@ -57,6 +70,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private readonly characterWalkSpritesCh181 = new Map<number, Phaser.GameObjects.Sprite>();
   private readonly characterWalkRowsCh181 = new Map<number, number>();
   private readonly characterWalkLastPositionsCh181 = new Map<number, { x: number; y: number }>();
+  private readonly characterFaceCompositeImagesCh187 = new Map<number, Phaser.GameObjects.Image>();
 
   preload(): void {
     super.preload();
@@ -77,6 +91,37 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         },
       );
     }
+
+    const proof = CRYBABY_PROOF_CH187;
+    const proofReady = Boolean(
+      proof?.runtimeProof
+      && proof.bodyBackAsset
+      && proof.faceMaskAsset
+      && proof.foregroundAsset,
+    );
+    const needsCrybabyProof = proofReady && gameSession.players.some((player) =>
+      player.characterId === 'starter-crybaby'
+      && Boolean(player.faces.neutral?.compositeSourceDataUrl),
+    );
+
+    if (needsCrybabyProof && proof) {
+      if (!this.textures.exists(CRYBABY_PROOF_BODY_KEY_CH187)) {
+        this.load.image(CRYBABY_PROOF_BODY_KEY_CH187, publicAssetUrl(proof.bodyBackAsset));
+      }
+      if (!this.textures.exists(CRYBABY_PROOF_MASK_KEY_CH187) && proof.faceMaskAsset) {
+        this.load.image(CRYBABY_PROOF_MASK_KEY_CH187, publicAssetUrl(proof.faceMaskAsset));
+      }
+      if (!this.textures.exists(CRYBABY_PROOF_FOREGROUND_KEY_CH187)) {
+        this.load.image(CRYBABY_PROOF_FOREGROUND_KEY_CH187, publicAssetUrl(proof.foregroundAsset));
+      }
+      for (const player of gameSession.players) {
+        if (player.characterId !== 'starter-crybaby') continue;
+        const source = player.faces.neutral?.compositeSourceDataUrl;
+        if (!source) continue;
+        const key = this.characterFaceSourceTextureKeyCh187(player.id);
+        if (!this.textures.exists(key)) this.load.image(key, source);
+      }
+    }
   }
 
   create(): void {
@@ -87,6 +132,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       this.textures.get('character-walk-atlas-ch181').setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
     this.installCharacterProductionCh181();
+    this.installCharacterFaceCompositeCh187();
     this.installBoardChromeCh173();
     this.installBoardPathChromeCh175();
     this.installBoardTileChromeCh175();
@@ -163,6 +209,89 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     }
   }
 
+  private characterFaceSourceTextureKeyCh187(playerId: number): string {
+    return `character-face-source-ch187-p${playerId + 1}`;
+  }
+
+  private characterCompositeTextureKeyCh187(playerId: number): string {
+    return `character-layer-composite-ch187-p${playerId + 1}`;
+  }
+
+  private installCharacterFaceCompositeCh187(): void {
+    const proof = CRYBABY_PROOF_CH187;
+    const socket = proof?.runtimeProof?.faceSocket;
+    if (
+      !proof?.runtimeProof
+      || !socket
+      || !this.textures.exists(CRYBABY_PROOF_BODY_KEY_CH187)
+      || !this.textures.exists(CRYBABY_PROOF_MASK_KEY_CH187)
+      || !this.textures.exists(CRYBABY_PROOF_FOREGROUND_KEY_CH187)
+    ) return;
+
+    const runtime = this.runtimeCh173();
+    for (const player of runtime.match.players) {
+      if (player.characterId !== 'starter-crybaby') continue;
+      const sourceKey = this.characterFaceSourceTextureKeyCh187(player.id);
+      if (!this.textures.exists(sourceKey)) continue;
+      const visual = runtime.visuals.get(player.id);
+      const walk = this.characterWalkSpritesCh181.get(player.id);
+      if (!visual || !walk) continue;
+
+      const textureKey = this.characterCompositeTextureKeyCh187(player.id);
+      if (this.textures.exists(textureKey)) this.textures.remove(textureKey);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = proof.runtimeProof.width;
+      canvas.height = proof.runtimeProof.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) continue;
+
+      const body = this.textures.get(CRYBABY_PROOF_BODY_KEY_CH187).getSourceImage() as HTMLImageElement;
+      const mask = this.textures.get(CRYBABY_PROOF_MASK_KEY_CH187).getSourceImage() as HTMLImageElement;
+      const foreground = this.textures.get(CRYBABY_PROOF_FOREGROUND_KEY_CH187).getSourceImage() as HTMLImageElement;
+      const source = this.textures.get(sourceKey).getSourceImage() as HTMLImageElement;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(body, 0, 0, canvas.width, canvas.height);
+
+      const faceCanvas = document.createElement('canvas');
+      faceCanvas.width = canvas.width;
+      faceCanvas.height = canvas.height;
+      const faceCtx = faceCanvas.getContext('2d');
+      if (!faceCtx) continue;
+
+      const fit = fitFaceSourceToSocketCh02f(
+        {
+          width: Math.max(1, source.naturalWidth || source.width),
+          height: Math.max(1, source.naturalHeight || source.height),
+        },
+        socket,
+        canvas.width,
+        canvas.height,
+      );
+
+      faceCtx.clearRect(0, 0, canvas.width, canvas.height);
+      faceCtx.drawImage(source, fit.x, fit.y, fit.width, fit.height);
+      faceCtx.globalCompositeOperation = 'destination-in';
+      faceCtx.drawImage(mask, 0, 0, canvas.width, canvas.height);
+      faceCtx.globalCompositeOperation = 'source-over';
+
+      ctx.drawImage(faceCanvas, 0, 0);
+      ctx.drawImage(foreground, 0, 0, canvas.width, canvas.height);
+
+      this.textures.addCanvas(textureKey, canvas);
+      const composite = this.add
+        .image(0, CHARACTER_TOKEN_BASE_Y_CH186, textureKey)
+        .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187, CRYBABY_FACE_DISPLAY_HEIGHT_CH187)
+        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186)
+        .setName(`character-face-socket-board-ch187-p${player.id + 1}`);
+
+      visual.token.addAt(composite, 0);
+      walk.setVisible(false);
+      this.characterFaceCompositeImagesCh187.set(player.id, composite);
+    }
+  }
+
   private syncCharacterProductionCh181(): void {
     const runtime = this.runtimeCh173();
     for (const [playerId, sprite] of this.characterWalkSpritesCh181) {
@@ -174,8 +303,21 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       const dx = visual.token.x - previous.x;
       const dy = visual.token.y - previous.y;
       const moving = Math.hypot(dx, dy) > 0.45;
+      const faceComposite = this.characterFaceCompositeImagesCh187.get(playerId);
 
-      if (moving) {
+      if (faceComposite?.active) {
+        if (moving) {
+          const bob = Math.floor(this.time.now / 110) % 2 === 0 ? 0 : 3;
+          faceComposite
+            .setY(CHARACTER_TOKEN_BASE_Y_CH186 - bob)
+            .setAngle(Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? -2.5 : 2.5) : 0);
+          if (Math.abs(dx) > 0.2) faceComposite.setFlipX(dx < 0);
+        } else {
+          faceComposite
+            .setY(CHARACTER_TOKEN_BASE_Y_CH186)
+            .setAngle(0);
+        }
+      } else if (moving) {
         const walkFrame = Math.floor(this.time.now / 90) % 8;
         sprite.setFrame(row * 8 + walkFrame);
         sprite.setY(CHARACTER_TOKEN_BASE_Y_CH186 - (walkFrame % 2 === 0 ? 0 : 2));
