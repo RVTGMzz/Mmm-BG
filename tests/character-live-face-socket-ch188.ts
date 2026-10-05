@@ -16,7 +16,7 @@ assert(board.includes('fitFaceSourceToSocketCh02f('));
 assert(board.includes("faceCtx.globalCompositeOperation = 'destination-in'"));
 assert(board.includes('ctx.drawImage(foreground'));
 assert(board.includes('this.time.now - lastPaint < 66'));
-assert(board.includes('if (this.textures.exists(staticTextureKey))'));
+assert(board.includes('composite?.active && this.textures.exists(staticTextureKey)'));
 assert(board.includes('walk.setVisible(true)'));
 assert(board.includes('video.srcObject = null'));
 assert(!board.includes('Math.random()'));
