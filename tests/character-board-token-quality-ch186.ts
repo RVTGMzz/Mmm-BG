@@ -10,7 +10,8 @@ const camera = await readFile('src/ui/FaceCameraCapture07033.ts', 'utf8');
 assert(board.includes('const CHARACTER_TOKEN_SIZE_CH186 = 96;'));
 assert(board.includes("setFilter(Phaser.Textures.FilterMode.NEAREST)"));
 assert(board.includes('character-walk-token-ch186-p'));
-assert(board.includes('.setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186)'));
+assert(board.includes('const CHARACTER_TOKEN_ORIGIN_Y_CH186 = 0.82;'));
+assert(board.includes('.setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189)'));
 assert(board.includes('const CHARACTER_BADGE_X_CH186 = 38;'));
 assert(board.includes('Math.floor(this.time.now / 90) % 8'));
 assert(board.includes('sprite.setFlipX(dx < 0)'));
@@ -22,4 +23,4 @@ assert(manifest.includes('Prefer a generous irregular head-safe mask over a'));
 assert(camera.includes('navigator.mediaDevices.getUserMedia'));
 assert(camera.includes('frameToFile'));
 
-console.log('[character-board-token-quality-ch186] PASS crisp 96px board token + existing face-socket contract retained');
+console.log('[character-board-token-quality-ch186] PASS CH-18.6 baseline retained and CH-18.9 foot anchor accepted');
