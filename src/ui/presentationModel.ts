@@ -16,6 +16,7 @@ import {
 } from '../core/characterReactionProfilesCh04';
 import { cpuQuirkForTurn, cpuQuirkLine } from '../core/testBot';
 import type { PlayerState } from '../core/types';
+import type { CharacterProductionEmotionCh181 } from './characterProductionArtCh181';
 import { npcChatDurationMs } from './npcChatPolicy';
 import { friendlyVisibleCopy0701 } from './friendlyVisibleCopy0701';
 import { tileIdentityCopy } from './tileIdentity';
@@ -69,6 +70,8 @@ export interface PresentationEventModel {
   amount?: number;
   affectedPlayerIds: number[];
   roll?: number;
+  /** CH-18.4 presentation-only Character portrait emotion for contextual beats. */
+  contextEmotion?: CharacterProductionEmotionCh181;
   step?: number;
   fromNodeId?: number;
   toNodeId?: number;
@@ -343,6 +346,7 @@ function functionTileModel(event: MatchEvent, players: PlayerState[]): Presentat
     ),
     holdMs: event.type === 'job_offer' ? 1800 : 2600,
     tileType: isMiniGame ? 'minigame' : 'job',
+    contextEmotion: isMiniGame ? 'shocked' : undefined,
   };
 }
 
@@ -398,6 +402,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       reactions: characterMomentReactionCh04(event, players, specialContextCh04c),
       holdMs: success ? 1500 : 1700,
       tileType: 'special_release',
+      contextEmotion: success ? 'happy' : (location === 'hospital' ? 'panic' : 'angry'),
       roll,
     };
   }
@@ -451,6 +456,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       reactions: [],
       holdMs: 1500,
       tileType: 'character_passive',
+      contextEmotion: 'passive',
       amount: dataNumber(event, 'amount', true),
       targetId,
       targetName,

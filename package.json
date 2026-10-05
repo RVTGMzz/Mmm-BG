@@ -177,7 +177,8 @@
     "materialize:character-art": "node scripts/materialize-character-art-ch181.mjs",
     "test:character-production-runtime-ch181": "tsx tests/character-production-runtime-ch181.ts",
     "test:character-production-reactions-ch182": "tsx tests/character-production-reactions-ch182.ts",
-    "test:character-production-podium-ch183": "tsx tests/character-production-podium-ch183.ts"
+    "test:character-production-podium-ch183": "tsx tests/character-production-podium-ch183.ts",
+    "test:character-production-context-ch184": "tsx tests/character-production-context-ch184.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

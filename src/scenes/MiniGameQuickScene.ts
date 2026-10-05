@@ -9,6 +9,12 @@ import { startMiniGameOverlay, type MiniGameOutcome } from '../ui/MiniGameOverla
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 import type { PlayerState } from '../core/types';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
+import { publicAssetUrl } from '../ui/publicAssetUrl';
+import {
+  CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181,
+  CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181,
+  CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+} from '../ui/characterProductionArtCh181';
 
 function cpuSeatsForQuickMode(mode: string): number[] {
   if (mode === '1p3cpu') return [1, 2, 3];
@@ -25,6 +31,19 @@ export class MiniGameQuickScene extends Phaser.Scene {
   private resultDom?: Phaser.GameObjects.DOMElement;
 
   constructor() { super('MiniGameQuickScene'); }
+
+  preload(): void {
+    if (!this.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)) {
+      this.load.spritesheet(
+        CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+        publicAssetUrl(CHARACTER_PRODUCTION_PORTRAIT_ATLAS_CH181),
+        {
+          frameWidth: CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181,
+          frameHeight: CHARACTER_PRODUCTION_PORTRAIT_CELL_CH181,
+        },
+      );
+    }
+  }
 
   create(): void {
     bgmController.playMenu();

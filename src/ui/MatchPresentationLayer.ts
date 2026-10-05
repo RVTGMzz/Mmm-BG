@@ -7,6 +7,7 @@ import type { PresentationTimingPolicy } from './presentationFlowPolicy';
 import {
   CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
   characterProductionPortraitFrameCh182,
+  type CharacterProductionEmotionCh181,
 } from './characterProductionArtCh181';
 import { diceSettleFeedbackCh09, landingFeedbackCh09 } from './presentationFeedbackCh09';
 import { reactionPlacement070422 } from './presentationLanes070422';
@@ -312,7 +313,8 @@ export class MatchPresentationLayer {
     iconWell.lineStyle(3, palette.accent, 0.88);
     iconWell.strokeRoundedRect(iconX - 42, -44, 84, 84, 23);
 
-    const icon = this.scene.add.text(iconX, -2, model.impact || '•', {
+    const contextPortraitCh184 = this.buildContextPortraitCh184(model, iconX);
+    const icon = contextPortraitCh184 ?? this.scene.add.text(iconX, -2, model.impact || '•', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '42px',
     }).setOrigin(0.5);
@@ -861,6 +863,41 @@ export class MatchPresentationLayer {
         },
       });
     });
+  }
+
+  private buildContextPortraitCh184(
+    model: PresentationEventModel,
+    x: number,
+  ): Phaser.GameObjects.Image | undefined {
+    const emotion = model.contextEmotion;
+    const playerId = model.actorId;
+    if (!emotion || playerId === undefined) return undefined;
+
+    const uploadedExpression: FaceExpression = emotion === 'happy'
+      ? 'happy'
+      : emotion === 'neutral'
+        ? 'neutral'
+        : 'angry';
+    const uploaded = gameSession.getFace(playerId, uploadedExpression);
+    if (uploaded && this.scene.textures.exists(uploaded.textureKey)) {
+      return this.scene.add
+        .image(x, -2, uploaded.textureKey)
+        .setDisplaySize(70, 70)
+        .setName('character-context-custom-face-ch184');
+    }
+
+    const characterId = gameSession.getCharacterId(playerId)
+      ?? this.getPlayers().find((player) => player.id === playerId)?.characterId;
+    const frame = characterProductionPortraitFrameCh182(characterId, emotion as CharacterProductionEmotionCh181);
+    if (
+      frame === undefined
+      || !this.scene.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)
+    ) return undefined;
+
+    return this.scene.add
+      .image(x, -2, CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182, frame)
+      .setDisplaySize(70, 70)
+      .setName('character-production-context-avatar-ch184');
   }
 
   private buildAvatar(playerId: number | undefined, expression: FaceExpression, color: number): Phaser.GameObjects.Container {

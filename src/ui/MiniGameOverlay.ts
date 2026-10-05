@@ -6,6 +6,7 @@ import {
 import { MINI_GAME_VISUAL_VF07 } from './visualFoundationMiniGameVf07';
 import { sfxController } from '../audio/sfxController';
 import { browserSession } from '../core/browserSession';
+import { gameSession } from '../core/session';
 import {
   MiniGameChoiceClientSync,
   MiniGameChoiceHostSync,
@@ -43,6 +44,10 @@ import {
 } from '../core/minigames';
 import type { MatchEventValue } from '../core/matchState';
 import type { PlayerState } from '../core/types';
+import {
+  CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
+  characterProductionPortraitFrameCh182,
+} from './characterProductionArtCh181';
 
 export interface MiniGameOutcome {
   gameType: MiniGameRewardType;
@@ -1087,14 +1092,40 @@ export function startMiniGameOverlay(
       : '';
 
     const rowsBottom = -90 + rowsViewport.height;
-    const winnerVoiceText = scene.add.text(0, rowsBottom + 38, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
+    let winnerPortraitCh184: Phaser.GameObjects.Image | undefined;
+    if (winner) {
+      const uploaded = gameSession.getFace(winner.id, 'happy');
+      if (uploaded && scene.textures.exists(uploaded.textureKey)) {
+        winnerPortraitCh184 = scene.add
+          .image(-315, rowsBottom + 38, uploaded.textureKey)
+          .setDisplaySize(54, 54)
+          .setName('character-minigame-winner-custom-face-ch184');
+      } else {
+        const frame = characterProductionPortraitFrameCh182(
+          winner.characterId ?? gameSession.getCharacterId(winner.id),
+          'happy',
+        );
+        if (
+          frame !== undefined
+          && scene.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)
+        ) {
+          winnerPortraitCh184 = scene.add
+            .image(-315, rowsBottom + 38, CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182, frame)
+            .setDisplaySize(54, 54)
+            .setName('character-production-minigame-winner-ch184');
+        }
+      }
+    }
+    if (winnerPortraitCh184) stage.add(winnerPortraitCh184);
+
+    const winnerVoiceText = scene.add.text(winnerPortraitCh184 ? 28 : 0, rowsBottom + 38, winnerVoice ? `💬 ${winner?.name ?? 'Winner'}: ${winnerVoice}` : '', {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: '20px',
       fontStyle: 'bold',
       color: '#5d4773',
       align: 'center',
-      fixedWidth: 680,
-      wordWrap: { width: 670, useAdvancedWrap: true },
+      fixedWidth: winnerPortraitCh184 ? 600 : 680,
+      wordWrap: { width: winnerPortraitCh184 ? 590 : 670, useAdvancedWrap: true },
       maxLines: 2,
     }).setOrigin(0.5).setVisible(Boolean(winnerVoice)).setName('vf07-minigame-winner-voice');
 
@@ -1126,7 +1157,7 @@ export function startMiniGameOverlay(
     ).setY(22 + (rankingBottom - 190) / 2);
     stage.add([winnerVoiceText, rewardHint]);
     scene.tweens.add({
-      targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, winnerVoiceText, rewardHint],
+      targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, ...(winnerPortraitCh184 ? [winnerPortraitCh184] : []), winnerVoiceText, rewardHint],
       alpha: { from: 0.25, to: 1 },
       duration: 210,
       ease: 'Sine.easeOut',

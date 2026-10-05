@@ -1,3 +1,12 @@
+# CURRENT CHECKPOINT — 2026-10-05 — CH-18.4 SPECIAL CONTEXT PORTRAITS
+
+Current build: `0.1.70.4.58`.
+CH-18.3 is green on source CI #3666 and GitHub Pages #108. CH-18.4 routes explicit production portrait emotions into contextual landing beats: passive=PASSIVE, hospital fail=PANIC, jail fail=ANGRY, release success=HAPPY, Mini Game entry=SHOCKED. Mini Game ranking also shows the winner's uploaded face first or canonical Character HAPPY portrait as fallback.
+
+Presentation-only. No rule/economy/RNG/Host changes. Cloudflare Worker remains frozen.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-05 — CH-18.3 PODIUM PORTRAITS
 
 Current build: `0.1.70.4.57`.
