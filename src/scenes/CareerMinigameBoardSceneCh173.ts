@@ -27,6 +27,16 @@ const CHARACTER_TOKEN_BASE_Y_CH186 = 8;
 const CHARACTER_TOKEN_ORIGIN_Y_CH186 = 0.82;
 const CHARACTER_BADGE_X_CH186 = 38;
 const CHARACTER_BADGE_Y_CH186 = 30;
+const CHARACTER_HQ_ATLAS_KEY_CH189 = 'character-walk-atlas-hq-ch189';
+const CHARACTER_HQ_SOURCE_FRAME_CH189 = 48;
+const CHARACTER_HQ_FRAME_CH189 = 192;
+const CHARACTER_HQ_COLUMNS_CH189 = 8;
+const CHARACTER_HQ_ROWS_CH189 = 5;
+const CHARACTER_TOKEN_DISPLAY_CH189 = 104;
+const CHARACTER_TOKEN_ORIGIN_Y_CH189 = 0.84;
+const CHARACTER_FOOT_RING_Y_CH189 = 28;
+const CHARACTER_FOOT_RING_WIDTH_CH189 = 84;
+const CHARACTER_FOOT_RING_HEIGHT_CH189 = 24;
 
 const CRYBABY_PROOF_CH187 = characterArtManifestV01('starter-crybaby')
   ?.poses.find((pose) => pose.emotion === 'neutral');
@@ -54,6 +64,8 @@ type RuntimeCh173 = {
   compactCard?: Phaser.GameObjects.Rectangle;
   compactCardText?: Phaser.GameObjects.Text;
   directDice?: Phaser.GameObjects.Container;
+  /** Private ancestor map read presentation-only so CH-18.9 can mirror active halo state below feet. */
+  tokenHalos?: Map<number, Phaser.GameObjects.Arc>;
   currentPlayer(): PlayerState | undefined;
 };
 
@@ -72,6 +84,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private readonly characterWalkRowsCh181 = new Map<number, number>();
   private readonly characterWalkLastPositionsCh181 = new Map<number, { x: number; y: number }>();
   private readonly characterFaceCompositeImagesCh187 = new Map<number, Phaser.GameObjects.Image>();
+  private readonly characterFootRingsCh189 = new Map<number, Phaser.GameObjects.Ellipse>();
   private readonly characterLiveFaceVideosCh188 = new Map<number, HTMLVideoElement>();
   private readonly characterLiveFaceCanvasesCh188 = new Map<number, HTMLCanvasElement>();
   private readonly characterLiveFaceLastPaintCh188 = new Map<number, number>();
@@ -134,6 +147,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     if (this.textures.exists('character-walk-atlas-ch181')) {
       this.textures.get('character-walk-atlas-ch181').setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
+    this.materializeCharacterHqAtlasCh189();
     this.installCharacterProductionCh181();
     this.installCharacterFaceCompositeCh187();
     this.installBoardChromeCh173();
@@ -149,11 +163,95 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     super.update();
     this.syncCharacterLiveFaceCh188();
     this.syncCharacterProductionCh181();
+    this.syncCharacterTokenPresentationCh189();
     this.syncBoardChromeCh173();
   }
 
   private runtimeCh173(): RuntimeCh173 {
     return this as unknown as RuntimeCh173;
+  }
+
+  private materializeCharacterHqAtlasCh189(): void {
+    if (this.textures.exists(CHARACTER_HQ_ATLAS_KEY_CH189)) return;
+    if (!this.textures.exists('character-walk-atlas-ch181')) return;
+
+    const source = this.textures
+      .get('character-walk-atlas-ch181')
+      .getSourceImage() as CanvasImageSource;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = CHARACTER_HQ_FRAME_CH189 * CHARACTER_HQ_COLUMNS_CH189;
+    canvas.height = CHARACTER_HQ_FRAME_CH189 * CHARACTER_HQ_ROWS_CH189;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // CH-18.9 remaster: upscale each frame independently, never the whole sheet.
+    // This prevents neighboring-frame color bleed and gives the browser a 4x
+    // presentation source to downsample instead of magnifying a 48px cell.
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    for (let row = 0; row < CHARACTER_HQ_ROWS_CH189; row += 1) {
+      for (let column = 0; column < CHARACTER_HQ_COLUMNS_CH189; column += 1) {
+        ctx.drawImage(
+          source,
+          column * CHARACTER_HQ_SOURCE_FRAME_CH189,
+          row * CHARACTER_HQ_SOURCE_FRAME_CH189,
+          CHARACTER_HQ_SOURCE_FRAME_CH189,
+          CHARACTER_HQ_SOURCE_FRAME_CH189,
+          column * CHARACTER_HQ_FRAME_CH189,
+          row * CHARACTER_HQ_FRAME_CH189,
+          CHARACTER_HQ_FRAME_CH189,
+          CHARACTER_HQ_FRAME_CH189,
+        );
+      }
+    }
+
+    const texture = this.textures.addCanvas(CHARACTER_HQ_ATLAS_KEY_CH189, canvas);
+    for (let row = 0; row < CHARACTER_HQ_ROWS_CH189; row += 1) {
+      for (let column = 0; column < CHARACTER_HQ_COLUMNS_CH189; column += 1) {
+        const frame = row * CHARACTER_HQ_COLUMNS_CH189 + column;
+        texture.add(
+          frame,
+          0,
+          column * CHARACTER_HQ_FRAME_CH189,
+          row * CHARACTER_HQ_FRAME_CH189,
+          CHARACTER_HQ_FRAME_CH189,
+          CHARACTER_HQ_FRAME_CH189,
+        );
+      }
+    }
+    texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+  }
+
+  private syncCharacterTokenPresentationCh189(): void {
+    const runtime = this.runtimeCh173();
+    const activeId = runtime.currentPlayer()?.id;
+    for (const player of runtime.match.players) {
+      const visual = runtime.visuals.get(player.id);
+      if (!visual) continue;
+
+      // 0.1.63 inherited a global 0.82 token scale. That was useful for the old
+      // placeholder token but makes the new Character art tiny, so normalize the
+      // Character container after inherited presentation code runs.
+      if (this.characterWalkSpritesCh181.has(player.id)) visual.token.setScale(1);
+
+      const legacyHalo = runtime.tokenHalos?.get(player.id);
+      const ring = this.characterFootRingsCh189.get(player.id);
+      if (!ring) continue;
+
+      const inheritedActive = legacyHalo?.visible ?? (player.id === activeId);
+      const inheritedPulse = legacyHalo?.scaleX ?? 1;
+      const inheritedAlpha = legacyHalo?.alpha ?? 0.72;
+
+      // Keep ancestor turn ownership/camera semantics, but never draw its torso ring.
+      legacyHalo?.setVisible(false);
+      ring
+        .setVisible(inheritedActive)
+        .setAlpha(Math.max(0.42, inheritedAlpha))
+        .setScale(Math.max(0.94, inheritedPulse));
+    }
   }
 
   private characterProductionRowCh181(characterId?: string): number | undefined {
@@ -201,11 +299,28 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         }
       }
 
-      const sprite = this.add.sprite(0, CHARACTER_TOKEN_BASE_Y_CH186, 'character-walk-atlas-ch181', row * 8)
+      const footRing = this.add
+        .ellipse(
+          0,
+          CHARACTER_FOOT_RING_Y_CH189,
+          CHARACTER_FOOT_RING_WIDTH_CH189,
+          CHARACTER_FOOT_RING_HEIGHT_CH189,
+          0xffd76a,
+          0.12,
+        )
+        .setStrokeStyle(4, 0xffc84a, 0.94)
+        .setVisible(false)
+        .setName(`character-foot-ring-ch189-p${player.id + 1}`);
+      visual.token.addAt(footRing, 0);
+      this.characterFootRingsCh189.set(player.id, footRing);
+
+      // Retain the historical marker name so old source gates do not mistake this
+      // presentation upgrade for an ownership rewrite.
+      const sprite = this.add.sprite(0, CHARACTER_TOKEN_BASE_Y_CH186, CHARACTER_HQ_ATLAS_KEY_CH189, row * 8)
         .setName(`character-walk-token-ch186-p${player.id + 1}`)
-        .setDisplaySize(CHARACTER_TOKEN_SIZE_CH186, CHARACTER_TOKEN_SIZE_CH186)
-        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186);
-      visual.token.addAt(sprite, 0);
+        .setDisplaySize(CHARACTER_TOKEN_DISPLAY_CH189, CHARACTER_TOKEN_DISPLAY_CH189)
+        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189);
+      visual.token.addAt(sprite, 1);
 
       this.characterWalkSpritesCh181.set(player.id, sprite);
       this.characterWalkRowsCh181.set(player.id, row);
@@ -286,11 +401,11 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       this.textures.addCanvas(textureKey, canvas);
       const composite = this.add
         .image(0, CHARACTER_TOKEN_BASE_Y_CH186, textureKey)
-        .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187, CRYBABY_FACE_DISPLAY_HEIGHT_CH187)
-        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186)
+        .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187 * 1.08, CRYBABY_FACE_DISPLAY_HEIGHT_CH187 * 1.08)
+        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189)
         .setName(`character-face-socket-board-ch187-p${player.id + 1}`);
 
-      visual.token.addAt(composite, 0);
+      visual.token.addAt(composite, 1);
       walk.setVisible(false);
       this.characterFaceCompositeImagesCh187.set(player.id, composite);
     }
@@ -406,8 +521,8 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     if (!image?.active) {
       image = this.add
         .image(0, CHARACTER_TOKEN_BASE_Y_CH186, textureKey)
-        .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187, CRYBABY_FACE_DISPLAY_HEIGHT_CH187)
-        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH186)
+        .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187 * 1.08, CRYBABY_FACE_DISPLAY_HEIGHT_CH187 * 1.08)
+        .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189)
         .setName(`character-live-face-socket-board-ch188-p${playerId + 1}`);
       visual.token.addAt(image, 0);
       this.characterFaceCompositeImagesCh187.set(playerId, image);
@@ -777,6 +892,8 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     this.boardPathChromeCh175 = undefined;
     for (const sprite of this.characterWalkSpritesCh181.values()) sprite.destroy();
     this.characterWalkSpritesCh181.clear();
+    for (const ring of this.characterFootRingsCh189.values()) ring.destroy();
+    this.characterFootRingsCh189.clear();
     this.characterWalkRowsCh181.clear();
     this.characterWalkLastPositionsCh181.clear();
     for (const image of this.characterFaceCompositeImagesCh187.values()) image.destroy();

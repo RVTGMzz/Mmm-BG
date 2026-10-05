@@ -182,7 +182,8 @@
     "test:character-production-hold-ch185": "tsx tests/character-production-hold-ch185.ts",
     "test:character-board-token-quality-ch186": "tsx tests/character-board-token-quality-ch186.ts",
     "test:character-board-face-socket-ch187": "tsx tests/character-board-face-socket-ch187.ts",
-    "test:character-live-face-socket-ch188": "tsx tests/character-live-face-socket-ch188.ts"
+    "test:character-live-face-socket-ch188": "tsx tests/character-live-face-socket-ch188.ts",
+    "test:character-hq-token-ch189": "tsx tests/character-hq-token-ch189.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
