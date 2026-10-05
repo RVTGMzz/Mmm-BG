@@ -309,6 +309,8 @@ jobs:
         run: npm run test:character-live-face-socket-ch188
       - name: CH-18.9 x4 HQ Character tokens + foot ring
         run: npm run test:character-hq-token-ch189
+      - name: CH-18.10 persistent x4 Character atlas asset
+        run: npm run test:character-hq-asset-ch1810
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -403,11 +405,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.63 CH-18.9 HQ Character Tokens build
+      - name: Upload MMM 0.1.70.4.64 CH-18.10 Persistent HQ Atlas build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.63-ch18-9-hq-character-tokens
+          name: mmm-playtest-0.1.70.4.64-ch18-10-persistent-hq-atlas
           path: dist
           if-no-files-found: error
           retention-days: 14

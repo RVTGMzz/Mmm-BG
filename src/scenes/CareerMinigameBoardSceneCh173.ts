@@ -34,9 +34,9 @@ const CHARACTER_HQ_COLUMNS_CH189 = 8;
 const CHARACTER_HQ_ROWS_CH189 = 5;
 const CHARACTER_TOKEN_DISPLAY_CH189 = 104;
 const CHARACTER_TOKEN_ORIGIN_Y_CH189 = 0.84;
-const CHARACTER_FOOT_RING_Y_CH189 = 28;
-const CHARACTER_FOOT_RING_WIDTH_CH189 = 84;
-const CHARACTER_FOOT_RING_HEIGHT_CH189 = 24;
+const CHARACTER_FOOT_RING_Y_CH189 = 31;
+const CHARACTER_FOOT_RING_WIDTH_CH189 = 78;
+const CHARACTER_FOOT_RING_HEIGHT_CH189 = 18;
 
 const CRYBABY_PROOF_CH187 = characterArtManifestV01('starter-crybaby')
   ?.poses.find((pose) => pose.emotion === 'neutral');
@@ -98,6 +98,13 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         { frameWidth: 48, frameHeight: 48 },
       );
     }
+    if (!this.textures.exists(CHARACTER_HQ_ATLAS_KEY_CH189)) {
+      this.load.spritesheet(
+        CHARACTER_HQ_ATLAS_KEY_CH189,
+        publicAssetUrl('assets/characters/ch181/walk-atlas-hq-x4.svg'),
+        { frameWidth: CHARACTER_HQ_FRAME_CH189, frameHeight: CHARACTER_HQ_FRAME_CH189 },
+      );
+    }
     if (!this.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)) {
       this.load.spritesheet(
         CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
@@ -147,7 +154,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     if (this.textures.exists('character-walk-atlas-ch181')) {
       this.textures.get('character-walk-atlas-ch181').setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
-    this.materializeCharacterHqAtlasCh189();
+    if (this.textures.exists(CHARACTER_HQ_ATLAS_KEY_CH189)) {
+      this.textures.get(CHARACTER_HQ_ATLAS_KEY_CH189).setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
     this.installCharacterProductionCh181();
     this.installCharacterFaceCompositeCh187();
     this.installBoardChromeCh173();
@@ -169,61 +178,6 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
   private runtimeCh173(): RuntimeCh173 {
     return this as unknown as RuntimeCh173;
-  }
-
-  private materializeCharacterHqAtlasCh189(): void {
-    if (this.textures.exists(CHARACTER_HQ_ATLAS_KEY_CH189)) return;
-    if (!this.textures.exists('character-walk-atlas-ch181')) return;
-
-    const source = this.textures
-      .get('character-walk-atlas-ch181')
-      .getSourceImage() as CanvasImageSource;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = CHARACTER_HQ_FRAME_CH189 * CHARACTER_HQ_COLUMNS_CH189;
-    canvas.height = CHARACTER_HQ_FRAME_CH189 * CHARACTER_HQ_ROWS_CH189;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // CH-18.9 remaster: upscale each frame independently, never the whole sheet.
-    // This prevents neighboring-frame color bleed and gives the browser a 4x
-    // presentation source to downsample instead of magnifying a 48px cell.
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
-
-    for (let row = 0; row < CHARACTER_HQ_ROWS_CH189; row += 1) {
-      for (let column = 0; column < CHARACTER_HQ_COLUMNS_CH189; column += 1) {
-        ctx.drawImage(
-          source,
-          column * CHARACTER_HQ_SOURCE_FRAME_CH189,
-          row * CHARACTER_HQ_SOURCE_FRAME_CH189,
-          CHARACTER_HQ_SOURCE_FRAME_CH189,
-          CHARACTER_HQ_SOURCE_FRAME_CH189,
-          column * CHARACTER_HQ_FRAME_CH189,
-          row * CHARACTER_HQ_FRAME_CH189,
-          CHARACTER_HQ_FRAME_CH189,
-          CHARACTER_HQ_FRAME_CH189,
-        );
-      }
-    }
-
-    const texture = this.textures.addCanvas(CHARACTER_HQ_ATLAS_KEY_CH189, canvas);
-    if (!texture) return;
-    for (let row = 0; row < CHARACTER_HQ_ROWS_CH189; row += 1) {
-      for (let column = 0; column < CHARACTER_HQ_COLUMNS_CH189; column += 1) {
-        const frame = row * CHARACTER_HQ_COLUMNS_CH189 + column;
-        texture.add(
-          frame,
-          0,
-          column * CHARACTER_HQ_FRAME_CH189,
-          row * CHARACTER_HQ_FRAME_CH189,
-          CHARACTER_HQ_FRAME_CH189,
-          CHARACTER_HQ_FRAME_CH189,
-        );
-      }
-    }
-    texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
   }
 
   private syncCharacterTokenPresentationCh189(): void {
