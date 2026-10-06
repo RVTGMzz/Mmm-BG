@@ -191,7 +191,8 @@
     "test:character-canon-layer-order-ch1814": "tsx tests/character-canon-layer-order-ch1814.ts",
     "test:character-canon-source-ch1815": "tsx tests/character-canon-source-ch1815.ts",
     "test:character-production-walk-ch1816": "tsx tests/character-production-walk-ch1816.ts",
-    "test:character-production-walk-ch1817": "tsx tests/character-production-walk-ch1817.ts"
+    "test:character-production-walk-ch1817": "tsx tests/character-production-walk-ch1817.ts",
+    "test:character-production-walk-ch1818": "tsx tests/character-production-walk-ch1818.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
