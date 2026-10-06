@@ -1,3 +1,62 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.20 CHARACTER ANIMATION REPAIR
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.74 — CH-18.20 CHARACTER ANIMATION REPAIR`
+
+## Trigger
+Runtime screenshot/feedback showed:
+- CAU CÓ visibly broken;
+- LO LẮNG / TĂNG ĐỘNG not fully clean-separated;
+- SECRET BABY not yet reliably testable in the user's runtime at that moment.
+
+## Root cause found
+- CAU CÓ deployed PNG was genuinely corrupt: valid PNG signature + 1536×192 IHDR, but broken IDAT CRC. Permissive decode showed only partial heads plus a horizontal corruption line.
+- Old CH-18.16 gate only checked signature/dimensions/bytes/hash, so stable corrupt bytes could pass.
+- LO LẮNG / TĂNG ĐỘNG were valid but retained weak semi-transparent fringe alpha.
+
+## CH-18.20 changes
+- Rebuilt CAU CÓ from its pinned canon instead of repairing corrupt bytes.
+- New CAU CÓ direct binary asset:
+  `public/assets/characters/ch181/walk-cau-co-production-x4.png`
+  - 1536×192 / 8 frames × 192×192
+  - 239,574 bytes
+  - SHA-256 `a93b1b7b642f9a4da6f32f8ad7e52a80f9cbb9e828f1bebeb0544dd5012a9504`
+- Deleted obsolete `walk-cau-co-production-00..03.b64` source chunks.
+- Removed CAU CÓ chunk materialization from `scripts/materialize-character-art-ch181.mjs`.
+- LO LẮNG alpha-clean:
+  - 85,924 bytes
+  - SHA-256 `dc679a55d7a0e6e28e3923e3023f2129ce43b9eda499bc134b75fd8a5a249566`
+- TĂNG ĐỘNG alpha-clean:
+  - 277,818 bytes
+  - SHA-256 `b5503376f678f6128eeb75f22ec88278a52be72a86b8ebe8fc27fc3ddcf81352`
+- QA at 104×104 board scale: all three maintain readable silhouette and a shared approximate baseline at Y=180.
+- Added `tests/character-animation-cleanup-ch1820.ts`:
+  - validates every PNG chunk CRC;
+  - inflates actual RGBA data;
+  - checks all 8 frame cells remain separated from cell edges;
+  - checks vertical occupancy / baseline;
+  - ensures the corrupt CAU CÓ base64 pipeline does not return.
+
+## Contracts unchanged
+- 8-frame movement cadence and left/right flip unchanged.
+- CH-18.13 idle breathing unchanged.
+- Active ring remains 78×18 at Y=31 beneath Character.
+- Face socket/live camera contract unchanged.
+- SECRET BABY unchanged in CH-18.20.
+- Cloudflare Worker remains frozen / not deployed.
+
+## Next action
+1. Check newest CI on the final CH-18.20 HEAD and fix only real newest-run failures.
+2. Re-test CAU CÓ, LO LẮNG, TĂNG ĐỘNG on public playtest.
+3. Then test corrected SECRET BABY crawl in runtime.
+4. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.19 SECRET BABY REPO-STANDARD PRODUCTION CRAWL
 
 Repo: `RVTGMzz/Mmm-BG`  
