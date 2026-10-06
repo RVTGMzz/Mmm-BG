@@ -6,6 +6,10 @@ export interface CharacterVisualCanonCh1814 {
   conceptAuthority: {
     driveFileName: string;
     driveFileId: string;
+    repoAssetPath: string;
+    sha256: string;
+    width: number;
+    height: number;
   };
   ageGender: string;
   silhouette: string;
