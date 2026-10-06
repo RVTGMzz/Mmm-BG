@@ -17,8 +17,8 @@ const grumpyWalk = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.find(
   (item) => item.characterId === 'starter-grumpy',
 );
 assert(grumpyWalk, 'CAU CÓ walk source contract missing');
-assert.equal(grumpyWalk.status, 'awaiting-genuine-strip');
-assert.equal(grumpyWalk.productionAssetPath, undefined, 'wrong/non-canon CAU CÓ art must not be cut over');
+assert.equal(grumpyWalk.status, 'runtime-production-strip');
+assert.equal(grumpyWalk.productionAssetPath, 'assets/characters/ch181/walk-cau-co-production-x4.png');
 
 assert(board.includes('const CHARACTER_IDLE_BREATH_PERIOD_CH1813 = 2200;'));
 assert(board.includes('const CHARACTER_IDLE_BREATH_RISE_CH1813 = 1.1;'));
@@ -38,4 +38,4 @@ assert(board.includes('visual.token.addAt(footRing, 0)'));
 assert(board.includes('visual.token.addAt(sprite, 1)'));
 assert(!board.includes('Math.random()'));
 
-console.log('[character-idle-breath-ch1813] PASS canon CAU CÓ remains fallback-only + all board Character visuals breathe while idle');
+console.log('[character-idle-breath-ch1813] PASS canon CAU CÓ production walk + all board Character visuals breathe while idle');
