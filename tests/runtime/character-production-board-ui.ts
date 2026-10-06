@@ -95,22 +95,36 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardScene07044 {
 
       const babyVisual = runtime.visuals.get(0);
       if (!babyVisual) throw new Error('SECRET BABY visual missing');
-      babyVisual.token.x += 18;
 
-      this.time.delayedCall(130, () => {
+      const startX = babyVisual.token.x;
+      this.tweens.add({
+        targets: babyVisual.token,
+        x: startX + 84,
+        duration: 620,
+        ease: 'Linear',
+        onComplete: () => {
+          this.tweens.add({
+            targets: babyVisual.token,
+            x: startX - 84,
+            duration: 620,
+            ease: 'Linear',
+          });
+        },
+      });
+
+      this.time.delayedCall(240, () => {
         (window as any).characterProductionQaRight = {
           sprite: inspectSprite(this, 0),
           ring: inspectRing(this, 0),
         };
+      });
 
-        babyVisual.token.x -= 36;
-        this.time.delayedCall(130, () => {
-          (window as any).characterProductionQaLeft = {
-            sprite: inspectSprite(this, 0),
-            ring: inspectRing(this, 0),
-          };
-          (window as any).characterProductionQaReady = true;
-        });
+      this.time.delayedCall(870, () => {
+        (window as any).characterProductionQaLeft = {
+          sprite: inspectSprite(this, 0),
+          ring: inspectRing(this, 0),
+        };
+        (window as any).characterProductionQaReady = true;
       });
     });
   }
