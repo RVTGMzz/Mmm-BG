@@ -511,7 +511,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       image
         .setData('idleBaseScaleXCh1813', image.scaleX)
         .setData('idleBaseScaleYCh1813', image.scaleY);
-      visual.token.addAt(image, 0);
+      // Keep the active foot ring at index 0 so it is always behind every
+      // Character body variant, including live-camera face composites.
+      visual.token.addAt(image, 1);
       this.characterFaceCompositeImagesCh187.set(playerId, image);
     }
 
