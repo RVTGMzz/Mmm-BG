@@ -55,8 +55,9 @@ assert.ok(png.length > 200_000, 'approved production strip unexpectedly small');
 
 const board = await readFile('src/scenes/CareerMinigameBoardSceneCh173.ts', 'utf8');
 assert(board.includes("player.characterId === 'starter-crybaby'"));
-assert(board.includes('? CRYBABY_PRODUCTION_WALK_KEY_CH1811'));
-assert(board.includes(': CHARACTER_HQ_ATLAS_KEY_CH189'));
+assert(board.includes('let walkTextureKeyCh1811 = CHARACTER_HQ_ATLAS_KEY_CH189;'));
+assert(board.includes('walkTextureKeyCh1811 = CRYBABY_PRODUCTION_WALK_KEY_CH1811'));
+assert(board.includes('walkTextureKeyCh1811 = GRUMPY_PRODUCTION_WALK_KEY_CH1816'));
 assert(board.includes('CHARACTER_FOOT_RING_Y_CH189 = 31'));
 assert(board.includes('visual.token.addAt(footRing, 0)'));
 assert(board.includes('visual.token.addAt(sprite, 1)'));
