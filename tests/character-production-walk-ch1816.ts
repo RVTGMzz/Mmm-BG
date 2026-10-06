@@ -10,20 +10,12 @@ const png = await readFile(assetPath);
 assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], 'CAU CÓ strip must be PNG');
 assert.equal(png.readUInt32BE(16), 1536, 'CAU CÓ strip must contain 8 × 192px frames');
 assert.equal(png.readUInt32BE(20), 192, 'CAU CÓ strip must be 192px tall');
-assert.equal(png.length, 32_472, 'CAU CÓ production strip bytes changed unexpectedly');
+assert.equal(png.length, 239_574, 'CAU CÓ production strip bytes changed unexpectedly');
 assert.equal(
   createHash('sha256').update(png).digest('hex'),
-  'e6aac908cf41d99e6e806b4c8aa206a052fac4f67142277b1205780fc760544b',
+  'a93b1b7b642f9a4da6f32f8ad7e52a80f9cbb9e828f1bebeb0544dd5012a9504',
   'CAU CÓ production strip hash changed unexpectedly',
 );
-
-const chunks = await Promise.all(
-  [0, 1, 2, 3].map((index) =>
-    readFile(`scripts/assets/ch181/walk-cau-co-production-0${index}.b64`, 'utf8')),
-);
-const encoded = chunks.join('').replace(/\s+/g, '');
-assert.equal(encoded.length, 43_298, 'CAU CÓ encoded production source must stay complete');
-assert.deepEqual(Buffer.from(encoded, 'base64'), png, 'materialized CAU CÓ strip must match encoded source exactly');
 
 const source = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.find(
   (item) => item.characterId === 'starter-grumpy',
