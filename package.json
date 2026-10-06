@@ -186,7 +186,8 @@
     "test:character-hq-token-ch189": "tsx tests/character-hq-token-ch189.ts",
     "test:character-hq-asset-ch1810": "tsx tests/character-hq-asset-ch1810.ts",
     "test:character-production-walk-ch1811": "tsx tests/character-production-walk-ch1811.ts",
-    "test:character-production-source-ch1812": "tsx tests/character-production-source-ch1812.ts"
+    "test:character-production-source-ch1812": "tsx tests/character-production-source-ch1812.ts",
+    "test:character-idle-breath-ch1813": "tsx tests/character-idle-breath-ch1813.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
