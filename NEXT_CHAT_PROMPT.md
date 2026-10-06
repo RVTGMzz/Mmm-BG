@@ -1,3 +1,39 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.14 CAU CÓ CANON LOCK
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.68 — CH-18.14 CAU CÓ CANON LOCK`
+
+## CI checkpoint before CH-18.14
+- Newest verified failing run before this slice was source CI **#3691**.
+- Exact failure: release-cleanup expected `.65` because `src/buildInfo.ts` was stale while PLAYTEST had already moved to `.66`.
+- That stale build-identity bug was corrected in CH-18.13.
+- On CI **#3700**, CH-18.12 production-source admission **PASS**, CH-18.13 idle-breath/canon guard **PASS**, and the previously failing `CH-09 release-candidate branding and package cleanup` step **PASS**. New CH-18.14 pushes may cancel the remainder of #3700 due workflow concurrency; do not treat that cancellation as a regression.
+
+## CH-18.14 changes
+- Added `src/content/core/character_visual_canon_ch1814.ts` as an authoring/QA canon lock for **CAU CÓ**.
+- CAU CÓ remains male 40–50, sharp-tailored, upright-angular, formal/controlled, matching approved concept authority `cauco.webp`.
+- Required visual anchors include salt-and-pepper swept-back hair, thin gold rectangular glasses, moustache + short chin facial hair, white long-sleeve shirt, brown crown-pattern tie, brown suspenders, dark olive pinstripe jacket draped over shoulders, high-waisted brown trousers, dark loafers with gold hardware, structured brown leather work bag, formal jewelry/watch and green statement ring.
+- Explicitly forbidden drift: tank top, shorts, sandals/flip-flops, casual beach-uncle silhouette, bald/receding redesign, removing glasses/tie/jacket identity, or changing age/gender.
+- CAU CÓ still has `status: awaiting-genuine-strip` and no `productionAssetPath`. Do not cut over until a genuine high-resolution 8-frame strip matches the concept.
+- Drive audit after this lock found no hidden/recent CAU CÓ production strip. Recent Character production files still include KHÓC NHÈ production assets plus legacy/fallback atlases only.
+- Fixed live-face layer order: foot ring stays at container index 0; walk/static/live Character body is inserted above it. The ring must never overlay Character body.
+- CH-18.13 idle breathing remains active and presentation-only.
+- Face socket/live camera ownership remains unchanged; only KHÓC NHÈ neutral has a true layered socket proof.
+- Cloudflare Worker remains frozen.
+
+## Next action
+1. Check newest CI run for HEAD after CH-18.14. Only repair a real failing step from the newest run.
+2. Visually validate idle breathing + ring order on board.
+3. Continue CAU CÓ production only from the approved concept; reject any generated strip that changes outfit/age/gender/silhouette.
+4. Do not promote a 48px remaster/upscale to production.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.13 CHARACTER IDLE BREATH
 
 Repo: `RVTGMzz/Mmm-BG`  
