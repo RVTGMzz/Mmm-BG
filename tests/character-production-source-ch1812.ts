@@ -22,10 +22,10 @@ assert.deepEqual(
 const productionReady = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.filter(
   (item) => item.status === 'runtime-production-strip',
 );
-assert.equal(productionReady.length, 5, 'all five Character slots have approved production movement strips');
+assert.equal(productionReady.length, 4, 'KHÓC NHÈ, CAU CÓ, LO LẮNG and TĂNG ĐỘNG have approved production walk strips');
 assert.deepEqual(
   productionReady.map((item) => item.characterId),
-  ['starter-crybaby', 'starter-grumpy', 'starter-anxious', 'starter-hyper', 'secret-baby'],
+  ['starter-crybaby', 'starter-grumpy', 'starter-anxious', 'starter-hyper'],
 );
 assert.deepEqual(
   productionReady.map((item) => item.productionAssetPath),
@@ -34,15 +34,18 @@ assert.deepEqual(
     'assets/characters/ch181/walk-cau-co-production-x4.png',
     'assets/characters/ch181/walk-lo-lang-production-x4.png',
     'assets/characters/ch181/walk-tang-dong-production-x4.png',
-    'assets/characters/ch181/walk-secret-baby-production-x4.png',
   ],
 );
 
 const pending = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.filter(
   (item) => item.status === 'awaiting-genuine-strip',
 );
-assert.deepEqual(pending.map((item) => item.characterId), []);
-for (const item of productionReady) {
+assert.deepEqual(
+  pending.map((item) => item.characterId),
+  ['secret-baby'],
+);
+for (const item of pending) {
+  assert.equal(item.productionAssetPath, undefined, `${item.canonicalLabel} must stay fallback-only`);
   assert.equal(item.genuineHighResolutionSourceRequired, true);
 }
 
@@ -68,8 +71,7 @@ assert(board.includes("player.characterId === 'starter-anxious'"));
 assert(board.includes('ANXIOUS_PRODUCTION_WALK_KEY_CH1817'));
 assert(board.includes("player.characterId === 'starter-hyper'"));
 assert(board.includes('HYPER_PRODUCTION_WALK_KEY_CH1818'));
-assert(board.includes("player.characterId === 'secret-baby'"));
-assert(board.includes('SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819'));
+assert(!board.includes("player.characterId === 'secret-baby'\n        && this.textures.exists"));
 assert(!board.includes('Math.random()'));
 
-console.log('[character-production-source-ch1812] PASS all Character movement sources are genuine production strips');
+console.log('[character-production-source-ch1812] PASS KHÓC NHÈ + CAU CÓ + LO LẮNG + TĂNG ĐỘNG production strips; SECRET BABY stays fallback-only');

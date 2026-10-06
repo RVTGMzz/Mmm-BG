@@ -327,8 +327,6 @@ jobs:
         run: npm run test:character-production-walk-ch1817
       - name: CH-18.18 TANG DONG production walk strip
         run: npm run test:character-production-walk-ch1818
-      - name: CH-18.19 SECRET BABY production crawl strip
-        run: npm run test:character-production-crawl-ch1819
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -423,11 +421,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.73 CH-18.19 SECRET BABY Production Crawl build
+      - name: Upload MMM 0.1.70.4.72 CH-18.18 TANG DONG Production Walk build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.73-ch18-19-secret-baby-production-crawl
+          name: mmm-playtest-0.1.70.4.72-ch18-18-tang-dong-production-walk
           path: dist
           if-no-files-found: error
           retention-days: 14

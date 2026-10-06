@@ -19,8 +19,6 @@ assert(source.includes("player.characterId === 'starter-anxious'"));
 assert(source.includes('walkTextureKeyCh1811 = ANXIOUS_PRODUCTION_WALK_KEY_CH1817'));
 assert(source.includes("player.characterId === 'starter-hyper'"));
 assert(source.includes('walkTextureKeyCh1811 = HYPER_PRODUCTION_WALK_KEY_CH1818'));
-assert(source.includes("player.characterId === 'secret-baby'"));
-assert(source.includes('walkTextureKeyCh1811 = SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819'));
 assert(source.includes("const walkFrameBaseCh1811 = walkTextureKeyCh1811 === CHARACTER_HQ_ATLAS_KEY_CH189"));
 assert(source.includes('? row * 8'));
 assert(source.includes(': 0;'));
