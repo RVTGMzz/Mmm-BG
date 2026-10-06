@@ -22,11 +22,17 @@ assert.deepEqual(
 const productionReady = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.filter(
   (item) => item.status === 'runtime-production-strip',
 );
-assert.equal(productionReady.length, 1, 'only KHÓC NHÈ has an approved production walk strip');
-assert.equal(productionReady[0]?.characterId, 'starter-crybaby');
-assert.equal(
-  productionReady[0]?.productionAssetPath,
-  'assets/characters/ch181/walk-khoc-nhe-production-x4.png',
+assert.equal(productionReady.length, 2, 'KHÓC NHÈ and CAU CÓ have approved production walk strips');
+assert.deepEqual(
+  productionReady.map((item) => item.characterId),
+  ['starter-crybaby', 'starter-grumpy'],
+);
+assert.deepEqual(
+  productionReady.map((item) => item.productionAssetPath),
+  [
+    'assets/characters/ch181/walk-khoc-nhe-production-x4.png',
+    'assets/characters/ch181/walk-cau-co-production-x4.png',
+  ],
 );
 
 const pending = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.filter(
@@ -34,7 +40,7 @@ const pending = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.filter(
 );
 assert.deepEqual(
   pending.map((item) => item.characterId),
-  ['starter-grumpy', 'starter-anxious', 'starter-hyper', 'secret-baby'],
+  ['starter-anxious', 'starter-hyper', 'secret-baby'],
 );
 for (const item of pending) {
   assert.equal(item.productionAssetPath, undefined, `${item.canonicalLabel} must stay fallback-only`);
@@ -54,10 +60,11 @@ assert(board.includes(': CHARACTER_HQ_ATLAS_KEY_CH189'));
 assert(board.includes('CHARACTER_FOOT_RING_Y_CH189 = 31'));
 assert(board.includes('visual.token.addAt(footRing, 0)'));
 assert(board.includes('visual.token.addAt(sprite, 1)'));
-assert(!board.includes("player.characterId === 'starter-grumpy'\n        && this.textures.exists"));
+assert(board.includes("player.characterId === 'starter-grumpy'"));
+assert(board.includes('GRUMPY_PRODUCTION_WALK_KEY_CH1816'));
 assert(!board.includes("player.characterId === 'starter-anxious'\n        && this.textures.exists"));
 assert(!board.includes("player.characterId === 'starter-hyper'\n        && this.textures.exists"));
 assert(!board.includes("player.characterId === 'secret-baby'\n        && this.textures.exists"));
 assert(!board.includes('Math.random()'));
 
-console.log('[character-production-source-ch1812] PASS only genuine KHÓC NHÈ strip is production; remaining cast stays fallback-only');
+console.log('[character-production-source-ch1812] PASS KHÓC NHÈ + CAU CÓ production strips; remaining cast stays fallback-only');
