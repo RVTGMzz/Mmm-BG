@@ -50,10 +50,10 @@ const png = await readFile(assetPath);
 assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], 'TĂNG ĐỘNG strip must be PNG');
 assert.equal(png.readUInt32BE(16), 1536, 'TĂNG ĐỘNG strip must contain 8 × 192px frames');
 assert.equal(png.readUInt32BE(20), 192, 'TĂNG ĐỘNG strip must be 192px tall');
-assert.equal(png.length, 310_854, 'TĂNG ĐỘNG production strip bytes changed unexpectedly');
+assert.equal(png.length, 277_818, 'TĂNG ĐỘNG production strip bytes changed unexpectedly');
 assert.equal(
   createHash('sha256').update(png).digest('hex'),
-  '98a4ab0c84ff399ed4c846e2adafe80892125ddc7373a03d1414b5de546538c9',
+  'b5503376f678f6128eeb75f22ec88278a52be72a86b8ebe8fc27fc3ddcf81352',
   'TĂNG ĐỘNG production strip fingerprint changed unexpectedly',
 );
 
