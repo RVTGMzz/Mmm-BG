@@ -1,3 +1,55 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.17 LO LẮNG PRODUCTION WALK
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.71 — CH-18.17 LO LẮNG PRODUCTION WALK`
+
+## CI cleanup before CH-18.17
+- CH-18.16 initially exposed three stale/test metadata issues, not runtime regressions:
+  1. materialized CAU CÓ strip is 32,472 bytes, not 32,474;
+  2. correct CAU CÓ strip SHA-256 is `e6aac908cf41d99e6e806b4c8aa206a052fac4f67142277b1205780fc760544b`;
+  3. CH-18.9 / CH-18.12 source tests still asserted the old one-character ternary routing.
+- Those gates were updated to the new production selector.
+- On source CI #3748, CH-18.9 PASS, CH-18.12 PASS, CH-18.16 PASS, and CH-09 release branding PASS before the long runtime-browser stage.
+- Cloudflare Worker was not deployed or modified.
+
+## CH-18.17 changes
+- Pinned approved LO LẮNG concept authority directly in repo:
+  `docs/character-production/canon/lolang.webp`
+- Source authority:
+  - male 28–35;
+  - 1122×1402;
+  - 212,632 bytes;
+  - SHA-256 `e1a6ccd8e7586584949b34fb9a227ba2cdfc4f91bb0c88bcce880a2eb8ada964`.
+- Added `src/content/core/character_visual_canon_ch1817.ts` with the LO LẮNG visual lock.
+- Locked visual identity: messy brown hair, large dark glasses, dark teal/forest-green planner-core top, white collar/cuffs, wide cream-beige trousers, green/cream sneakers, overloaded organizer bags, planners/checklists/pens/phone/water bottle/keychain, worried/constantly-checking body language.
+- Added genuine high-resolution production walk:
+  `public/assets/characters/ch181/walk-lo-lang-production-x4.png`
+  - 1536×192
+  - 8 frames × 192×192
+  - transparent background
+  - 36,742 bytes
+  - SHA-256 `c112d1ced88c11d41bd59a71cb2bd1683655803e827912c5079cd103f3da0497`
+- `starter-anxious / LO LẮNG` is now `runtime-production-strip`.
+- Board routing now selects `ANXIOUS_PRODUCTION_WALK_KEY_CH1817`.
+- Existing 8-frame cadence, left/right flip, CH-18.13 idle breathing, active ring 78×18 at Y=31 and ring-below-body layer contract all remain unchanged.
+- KHÓC NHÈ / CAU CÓ / LO LẮNG are production.
+- TĂNG ĐỘNG / SECRET BABY remain fallback-only.
+- Face socket/live camera contract unchanged.
+- Cloudflare Worker remains frozen.
+
+## Next action
+1. Check newest CI run on final CH-18.17 HEAD; repair only a real newest-run failure.
+2. Visually playtest LO LẮNG at Board scale for foot sliding, bag silhouette readability, idle-to-walk transition and left/right flip.
+3. If clean, continue next genuine production strip: **TĂNG ĐỘNG**, preserving female 18–24 canon exactly.
+4. SECRET BABY remains fallback-only until its own genuine infant strip exists.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.16 CAU CÓ PRODUCTION WALK
 
 Repo: `RVTGMzz/Mmm-BG`  
