@@ -1,3 +1,58 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.16 CAU CÓ PRODUCTION WALK
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.70 — CH-18.16 CAU CÓ PRODUCTION WALK`
+
+## Verified CI before this slice
+- Source CI **#3724** on HEAD `ddf96d21e2503c203c4b32b4dfe3838d461f18ce` completed **SUCCESS**.
+- CH-18.14 canon/layer gate PASS.
+- CH-18.15 exact source pin PASS.
+- CH-09 release branding gate PASS.
+- Runtime browser regression PASS.
+- Artifact upload PASS.
+- Compiled GitHub playtest mirror publish PASS.
+
+## CH-18.16 changes
+- Built an actual CAU CÓ runtime walk strip instead of another presentation/concept sheet.
+- Production output is **1536×192**, exactly 8 frames × 192×192 with transparent background.
+- The source frames were authored from a high-resolution CAU CÓ candidate visually matched against the pinned canon authority; this is not an upscale of the legacy 48px row.
+- Frame normalization keeps the feet on a common baseline and removes the cyan/active ring from the art. Runtime ring remains separate.
+- Encoded source is stored as four repo chunks:
+  - `scripts/assets/ch181/walk-cau-co-production-00.b64`
+  - `...01.b64`
+  - `...02.b64`
+  - `...03.b64`
+- `scripts/materialize-character-art-ch181.mjs` now reconstructs:
+  `public/assets/characters/ch181/walk-cau-co-production-x4.png`
+- Runtime strip metadata:
+  - 1536×192
+  - 32,474 bytes
+  - SHA-256 `6e79eb57e286c8182261abccd5d244d5b498e8ed5f86bfdec682b772f6fcd1df`
+- `starter-grumpy / CAU CÓ` is now `runtime-production-strip` with `productionAssetPath: assets/characters/ch181/walk-cau-co-production-x4.png`.
+- Board preload/runtime routing now selects `GRUMPY_PRODUCTION_WALK_KEY_CH1816` for CAU CÓ.
+- Existing movement cadence remains 8 frames; left/right flip unchanged.
+- CH-18.13 idle breathing remains active while standing.
+- Active ring remains a separate 78×18 object at local Y=31 below Character art.
+- Face socket/live camera contract unchanged.
+- LO LẮNG / TĂNG ĐỘNG / SECRET BABY remain fallback-only.
+- Cloudflare Worker remains frozen.
+
+## Canon source remains authoritative
+`docs/character-production/canon/cauco.webp` is still the visual authority for CAU CÓ. Do not replace the strip with a redesign that changes age, gender, glasses, formal tailored outfit, draped olive jacket, moustache/beard, satchel or upright/angular silhouette.
+
+## Next action
+1. Check the newest CI run on the final CH-18.16 HEAD. Only fix a real failure from that newest run.
+2. Playtest CAU CÓ walk + idle transition at actual Board scale, especially foot sliding, coat/satchel readability, active ring clearance and left/right flip.
+3. If visual QA is acceptable, continue next genuine Character production strip: **LO LẮNG**, preserving male 28–35 canon. Do not upscale fallback 48px.
+4. Keep TĂNG ĐỘNG / SECRET BABY fallback-only until their own genuine strips exist.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.15 CAU CÓ SOURCE PIN
 
 Repo: `RVTGMzz/Mmm-BG`  
