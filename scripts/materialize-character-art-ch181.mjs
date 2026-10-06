@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
@@ -41,6 +42,10 @@ if (cauCoWalkBytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
 }
 if (cauCoWalkBytes.length !== 32_474) {
   throw new Error(`CH-18.16 CAU CO walk strip byte size changed: ${cauCoWalkBytes.length}`);
+}
+const cauCoWalkSha256 = createHash('sha256').update(cauCoWalkBytes).digest('hex');
+if (cauCoWalkSha256 !== '6e79eb57e286c8182261abccd5d244d5b498e8ed5f86bfdec682b772f6fcd1df') {
+  throw new Error(`CH-18.16 CAU CO walk strip hash changed: ${cauCoWalkSha256}`);
 }
 if (cauCoWalkBytes.readUInt32BE(16) !== 1536 || cauCoWalkBytes.readUInt32BE(20) !== 192) {
   throw new Error(
