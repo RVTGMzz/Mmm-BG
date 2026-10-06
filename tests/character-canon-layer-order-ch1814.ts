@@ -37,8 +37,8 @@ for (const forbidden of ['tank top or sleeveless undershirt', 'shorts', 'sandals
 
 const walk = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.find((item) => item.characterId === 'starter-grumpy');
 assert(walk);
-assert.equal(walk.status, 'awaiting-genuine-strip');
-assert.equal(walk.productionAssetPath, undefined);
+assert.equal(walk.status, 'runtime-production-strip');
+assert.equal(walk.productionAssetPath, 'assets/characters/ch181/walk-cau-co-production-x4.png');
 
 assert(board.includes('visual.token.addAt(footRing, 0)'));
 assert(board.includes('visual.token.addAt(sprite, 1)'));
