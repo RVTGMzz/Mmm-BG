@@ -1,3 +1,42 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.12 PRODUCTION SOURCE LOCK
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.66 — CH-18.12 PRODUCTION SOURCE LOCK`
+
+## What changed
+- Re-audited the five approved high-resolution Character concept sheets.
+- Only **KHÓC NHÈ** currently has a genuine high-resolution 8-frame runtime walk strip.
+- No equivalent production walk export was found for **CAU CÓ / LO LẮNG / TĂNG ĐỘNG / SECRET BABY**, so all four deliberately remain on the CH-18.10 fallback.
+- Added `src/content/core/character_walk_production_sources_ch1812.ts` as the production admission list.
+- Added `tests/character-production-source-ch1812.ts` so a fallback/upscaled 48px row cannot silently be labeled production.
+- Added `docs/character-production/CH1812_SOURCE_AUDIT.md` with the source audit and next production rule.
+- No gameplay authority, RNG, B$, movement cadence, face socket or camera behavior changed.
+- Cloudflare Worker remains frozen.
+
+## Locked production rules
+- Runtime production walk target: **8 frames × 192×192 native frame** (or genuinely higher source before export).
+- Never upscale the legacy 48px row and call it production.
+- Active ring remains **78×18 at local Y=31**, below the Character.
+- CAU CÓ stays male 40–50; LO LẮNG male 28–35; TĂNG ĐỘNG female 18–24; SECRET BABY infant/RANDOM-only.
+- Do not invent face sockets. Only KHÓC NHÈ neutral currently has the real layered face-socket proof.
+- Face fallback remains live camera → saved face → default Character.
+
+## CI note
+At the start of CH-18.12 the branch HEAD was the requested handoff commit `dea58d2c139f7d467f3316f2a6fc3bc2120fc905`. The GitHub connector exposed no commit status or PR-triggered workflow run for that push, so there was **no verified current red run to repair**; no speculative CI fix was made. Follow only the newest run after the CH-18.12 commits and fetch its exact failed step/log if it is red.
+
+## Recommended next action
+1. Follow the newest source CI + Pages run for CH-18.12.
+2. Author/recover the next genuine high-resolution 8-frame strip from the approved **CAU CÓ** concept sheet.
+3. Visually validate silhouette, foot anchor, frame isolation and badge/ring clearance before runtime cut-over.
+4. Keep the same movement and face/live-camera contracts.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.11 PRODUCTION WALK HANDOFF
 
 Repo: `RVTGMzz/Mmm-BG`  
