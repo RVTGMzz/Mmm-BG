@@ -40,11 +40,11 @@ const cauCoWalkBytes = Buffer.from(cauCoWalkBase64, 'base64');
 if (cauCoWalkBytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') {
   throw new Error('CH-18.16 CAU CO walk strip missing PNG signature');
 }
-if (cauCoWalkBytes.length !== 32_474) {
+if (cauCoWalkBytes.length !== 32_472) {
   throw new Error(`CH-18.16 CAU CO walk strip byte size changed: ${cauCoWalkBytes.length}`);
 }
 const cauCoWalkSha256 = createHash('sha256').update(cauCoWalkBytes).digest('hex');
-if (cauCoWalkSha256 !== '6e79eb57e286c8182261abccd5d244d5b498e8ed5f86bfdec682b772f6fcd1df') {
+if (cauCoWalkSha256 !== 'e6aac908cf41d99e6e806b4c8aa206a052fac4f67142277b1205780fc760544b') {
   throw new Error(`CH-18.16 CAU CO walk strip hash changed: ${cauCoWalkSha256}`);
 }
 if (cauCoWalkBytes.readUInt32BE(16) !== 1536 || cauCoWalkBytes.readUInt32BE(20) !== 192) {
