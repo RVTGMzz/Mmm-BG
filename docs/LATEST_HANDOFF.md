@@ -1,3 +1,59 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.18 TĂNG ĐỘNG PRODUCTION WALK
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.72 — CH-18.18 TĂNG ĐỘNG PRODUCTION WALK`
+
+## Verified CI before this slice
+- Final CH-18.17 CI #3766 on HEAD `83f1774ab905f8a6dadeb462242c91d2df699cda` completed **SUCCESS**.
+- CH-18.9 production selector PASS.
+- CH-18.12 source admission PASS.
+- CH-18.16 CAU CÓ production walk PASS.
+- CH-18.17 LO LẮNG production walk PASS.
+- CH-09 release branding PASS.
+- Transform-safe browser regression PASS.
+- Artifact upload PASS.
+- Compiled GitHub public playtest mirror publish PASS.
+
+## CH-18.18 changes
+- Pinned approved TĂNG ĐỘNG concept directly in repo:
+  `docs/character-production/canon/tangdong.webp`
+- Source authority:
+  - female 18–24;
+  - 1122×1402;
+  - 240,936 bytes;
+  - SHA-256 `8bd94dc4cb712fe00dceec59ca68deb77069e79b04d6ee4f7d5aeb4c8c84dd5f`.
+- Added `src/content/core/character_visual_canon_ch1818.ts`.
+- Locked visual identity: messy brown twin buns, colorful sunglasses on head, pink/white headphones, oversized yellow/pink/teal sticker-heavy sporty jacket, white crop top, black athletic shorts with white trim, chunky multicolor sneakers, teal sticker-covered backpack, bunny charms/keychains, handheld game device and restless leaning/bouncing body language.
+- Added genuine high-resolution production walk:
+  `public/assets/characters/ch181/walk-tang-dong-production-x4.png`
+  - 1536×192
+  - 8 frames × 192×192
+  - transparent background
+  - 310,854 bytes
+  - SHA-256 `98a4ab0c84ff399ed4c846e2adafe80892125ddc7373a03d1414b5de546538c9`
+  - common foot baseline
+  - no active ring baked into the art
+- `starter-hyper / TĂNG ĐỘNG` is now `runtime-production-strip`.
+- Board runtime route: `HYPER_PRODUCTION_WALK_KEY_CH1818`.
+- Existing 8-frame cadence, left/right flip, CH-18.13 idle breathing, active ring 78×18 at Y=31 and ring-below-body layering remain unchanged.
+- Production roster: KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG.
+- SECRET BABY remains fallback-only.
+- Face socket/live camera contract unchanged.
+- Cloudflare Worker remains frozen.
+
+## Next action
+1. Check newest CI run on final CH-18.18 HEAD. Only fix a real newest-run failure.
+2. Playtest TĂNG ĐỘNG at Board scale for foot sliding, jacket/backpack silhouette readability, left/right flip and idle-to-walk reset.
+3. If clean, continue SECRET BABY only after recovering/confirming the exact infant canon source. Do not invent age/gender/body silhouette or upscale the 48px fallback.
+4. Keep face socket/live camera contract unchanged.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.17 LO LẮNG PRODUCTION WALK
 
 Repo: `RVTGMzz/Mmm-BG`  
