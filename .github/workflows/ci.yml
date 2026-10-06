@@ -323,6 +323,8 @@ jobs:
         run: npm run test:character-canon-source-ch1815
       - name: CH-18.16 CAU CO production walk strip
         run: npm run test:character-production-walk-ch1816
+      - name: CH-18.17 LO LANG production walk strip
+        run: npm run test:character-production-walk-ch1817
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -417,11 +419,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.70 CH-18.16 CAU CO Production Walk build
+      - name: Upload MMM 0.1.70.4.71 CH-18.17 LO LANG Production Walk build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.70-ch18-16-cau-co-production-walk
+          name: mmm-playtest-0.1.70.4.71-ch18-17-lo-lang-production-walk
           path: dist
           if-no-files-found: error
           retention-days: 14
