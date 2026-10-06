@@ -409,6 +409,7 @@ jobs:
           node tests/runtime/visual-refresh-ch17-ui.mjs
           node tests/runtime/presentation-feedback-ch1713.mjs
           node tests/runtime/character-select-ui.mjs
+          node tests/runtime/character-production-board-ui.mjs
           node tests/runtime/match-recap-ui.mjs
           node tests/runtime/settings-space-ui.mjs
           node tests/runtime/online-entry-ui.mjs
@@ -425,11 +426,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.74 CH-18.20 Character Animation Repair build
+      - name: Upload MMM 0.1.70.4.75 CH-18.21 Character Runtime QA build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.74-ch18-20-character-animation-repair
+          name: mmm-playtest-0.1.70.4.75-ch18-21-character-runtime-qa
           path: dist
           if-no-files-found: error
           retention-days: 14
