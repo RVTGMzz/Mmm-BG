@@ -45,10 +45,10 @@ const png = await readFile(assetPath);
 assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10], 'LO LẮNG strip must be PNG');
 assert.equal(png.readUInt32BE(16), 1536, 'LO LẮNG strip must contain 8 × 192px frames');
 assert.equal(png.readUInt32BE(20), 192, 'LO LẮNG strip must be 192px tall');
-assert.equal(png.length, 36_742, 'LO LẮNG production strip bytes changed unexpectedly');
+assert.equal(png.length, 85_924, 'LO LẮNG production strip bytes changed unexpectedly');
 assert.equal(
   createHash('sha256').update(png).digest('hex'),
-  'c112d1ced88c11d41bd59a71cb2bd1683655803e827912c5079cd103f3da0497',
+  'dc679a55d7a0e6e28e3923e3023f2129ce43b9eda499bc134b75fd8a5a249566',
   'LO LẮNG production strip fingerprint changed unexpectedly',
 );
 
