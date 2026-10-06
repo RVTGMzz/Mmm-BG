@@ -1,3 +1,48 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.13 CHARACTER IDLE BREATH
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.67 — CH-18.13 CHARACTER IDLE BREATH`
+
+## What changed
+- Confirmed newest real CI before this slice: source run **#3691 FAILURE** on HEAD `c7ae09b...`.
+- Exact failure was `CH-09 release-candidate branding and package cleanup`: `MEMEME_BUILD.version` was still `.65`, so the dynamic PLAYTEST gate expected `.65` while `public/PLAYTEST.txt` was already `.66`.
+- Build identity is now advanced/synchronized to `.67` for CH-18.13; artifact identity follows the canonical `MEMEME_BUILD.artifactName`.
+- Re-audited CAU CÓ from repo authority. Canon remains **male 40–50**, `sharp-tailored`, `upright-angular`, chỉnh tề/sắc cạnh, with grumpy short/sharp reactions. The repo manifest points to approved concept `cauco.webp`.
+- Several attempted generated CAU CÓ walk concepts visibly changed the outfit/silhouette and were rejected. **None were admitted to repo/runtime.**
+- CAU CÓ remains `awaiting-genuine-strip` with no `productionAssetPath`; CH-18.10 fallback remains until a genuine high-res strip matches the approved concept.
+- Added presentation-only idle breathing to board Characters: ~2.2 s cycle, tiny vertical rise + scale change, then reset before the existing 8-frame movement cadence.
+- Idle breathing also applies to KHÓC NHÈ static/live face composite so personalized Characters do not freeze when standing.
+- Active ring remains fixed below feet: **78×18 at local Y=31**.
+- No gameplay movement authority, RNG, B$, passive, face socket or live-camera ownership changes.
+- Cloudflare Worker remains frozen.
+
+## Locked CAU CÓ canon
+- Male, 40–50.
+- Style: chỉnh tề, sắc cạnh, màu gọn; **sharp-tailored**.
+- Silhouette: **upright-angular**, hơi khó gần.
+- Body language: khoanh tay/chống nạnh, nhíu mày/liếc ngang, chỉ tay/quay phắt khi bị nhắm tới.
+- Do not replace him with tank-top/shorts/casual uncle variants.
+- Do not cut over runtime until a genuine high-resolution 8-frame strip matches the approved concept.
+
+## Idle animation contract
+- Standing Character must not be perfectly static.
+- Breathing is subtle presentation-only motion, not extra gameplay movement.
+- Foot anchor/ring must visually stay planted.
+- Movement always resets idle transform before walk cadence.
+- 8-frame walk + left/right flip remain unchanged.
+
+## Recommended next action
+1. Follow the newest source CI run after CH-18.13; if red, inspect the exact failed step/log only.
+2. Visually test idle breathing on KHÓC NHÈ and fallback Characters for foot sliding or excessive squash/stretch.
+3. Continue CAU CÓ production only from the approved concept authority; reject any strip that changes age/outfit/silhouette.
+4. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.12 PRODUCTION SOURCE LOCK
 
 Repo: `RVTGMzz/Mmm-BG`  
