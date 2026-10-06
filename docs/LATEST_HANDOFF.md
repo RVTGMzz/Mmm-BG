@@ -1,3 +1,44 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.15 CAU CÓ SOURCE PIN
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.69 — CH-18.15 CAU CÓ SOURCE PIN`
+
+## CI checkpoint before this slice
+- CH-18.14 source CI was rerun on the actual HEAD `ca3240328f9bdbd98f28395636ef9d867a1ef923`.
+- Run **#3710 attempt 2 = SUCCESS**.
+- CH-18.14 canon/layer gate passed.
+- Previously failing CH-09 release branding gate passed.
+- Runtime browser regression, artifact upload and compiled GitHub playtest publish all passed.
+
+## CH-18.15 changes
+- Approved CAU CÓ concept source is now pinned directly in the repo at:
+  `docs/character-production/canon/cauco.webp`
+- Source is byte-identical to approved Drive file `cauco.webp` / ID `1dZ6Ruav4nnaDy371hrBwTGR-hNkMnUnf`.
+- Pinned source metadata:
+  - 1122×1402
+  - 168,340 bytes
+  - SHA-256 `f75435579c1647b07b1a88b3ced312c624c761c54a8ec87c335f5f6093db637e`
+- Added CI test `tests/character-canon-source-ch1815.ts` to verify the exact authority bytes and ensure CAU CÓ still has no production runtime route.
+- Refined visual anchors directly from the source image: swept-back salt-and-pepper hair, gold rectangular glasses, moustache + short chin beard, white rolled-cuff shirt, brown leather suspenders, crown-pattern tie, olive pinstripe jacket draped over shoulders, crown lapel pin, red pocket square, high-waisted brown trousers, burgundy-brown loafers with gold chain hardware, crown-pattern shoulder satchel, gold/black watch, green gemstone ring.
+- Forbidden drift remains explicit: tank top, shorts, sandals/flip-flops, casual beach-uncle silhouette, removing glasses/tie/jacket identity, or changing age/gender.
+- CAU CÓ remains `awaiting-genuine-strip`; no `productionAssetPath`.
+- Do not use the pinned concept image as a runtime sprite. It is source authority / QA input only.
+- Idle breathing CH-18.13 and ring/layer contract CH-18.14 remain unchanged.
+- Cloudflare Worker remains frozen.
+
+## Next action
+1. Check newest CI run for final CH-18.15 HEAD. Only fix a real newest-run failure.
+2. Build/recover a genuine high-resolution CAU CÓ 8-frame walk strip using the pinned repo authority image as the visual source.
+3. Reject any candidate that loses the formal outfit/accessories or changes silhouette.
+4. Validate 192×192 frame isolation, foot anchor, ring clearance and idle-to-walk transition before runtime cut-over.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.14 CAU CÓ CANON LOCK
 
 Repo: `RVTGMzz/Mmm-BG`  
