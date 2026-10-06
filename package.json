@@ -193,7 +193,8 @@
     "test:character-production-walk-ch1816": "tsx tests/character-production-walk-ch1816.ts",
     "test:character-production-walk-ch1817": "tsx tests/character-production-walk-ch1817.ts",
     "test:character-production-walk-ch1818": "tsx tests/character-production-walk-ch1818.ts",
-    "test:character-production-crawl-ch1819": "tsx tests/character-production-crawl-ch1819.ts"
+    "test:character-production-crawl-ch1819": "tsx tests/character-production-crawl-ch1819.ts",
+    "test:character-animation-cleanup-ch1820": "tsx tests/character-animation-cleanup-ch1820.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
