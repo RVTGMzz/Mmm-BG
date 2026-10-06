@@ -9,6 +9,14 @@ MMM PLAYTEST 0.1.70.4.66 — CH-18.12 PRODUCTION SOURCE LOCK — GITHUB PLAYTEST
 
 ONLINE LEGACY AUTHORITY
 
+PRODUCTION SOURCE LOCK — CH-18.12
+- Chỉ KHÓC NHÈ hiện được phép dùng production walk strip thật 1536×192 (8 frame × 192×192).
+- CAU CÓ / LO LẮNG / TĂNG ĐỘNG / SECRET BABY vẫn fallback-only cho tới khi có strip high-res thật đúng concept canon; tuyệt đối không nâng 48px rồi gắn nhãn production.
+- Production admission được khóa bằng manifest + CI gate; pending Character không có productionAssetPath.
+- Active ring giữ 78×18 tại Y=31 dưới chân; cadence 8 frame, flip trái/phải và P badge không đổi.
+- Face/live camera contract giữ nguyên; chỉ KHÓC NHÈ neutral có layered socket proof thật.
+- Gameplay/Host/RNG/B$/movement/passive không đổi. Cloudflare Worker không deploy/update.
+
 QUICK START — WINDOWS
 1) Giải nén file ZIP playtest.
 2) DOUBLE-CLICK: START_PLAYTEST.bat
