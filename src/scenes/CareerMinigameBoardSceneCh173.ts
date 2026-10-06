@@ -39,6 +39,10 @@ const CHARACTER_TOKEN_ORIGIN_Y_CH189 = 0.84;
 const CHARACTER_FOOT_RING_Y_CH189 = 31;
 const CHARACTER_FOOT_RING_WIDTH_CH189 = 78;
 const CHARACTER_FOOT_RING_HEIGHT_CH189 = 18;
+const CHARACTER_IDLE_BREATH_PERIOD_CH1813 = 2200;
+const CHARACTER_IDLE_BREATH_RISE_CH1813 = 1.1;
+const CHARACTER_IDLE_BREATH_SCALE_X_CH1813 = 0.003;
+const CHARACTER_IDLE_BREATH_SCALE_Y_CH1813 = 0.012;
 
 const CRYBABY_PROOF_CH187 = characterArtManifestV01('starter-crybaby')
   ?.poses.find((pose) => pose.emotion === 'neutral');
@@ -294,6 +298,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         .setName(`character-walk-token-ch186-p${player.id + 1}`)
         .setDisplaySize(CHARACTER_TOKEN_DISPLAY_CH189, CHARACTER_TOKEN_DISPLAY_CH189)
         .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189);
+      sprite
+        .setData('idleBaseScaleXCh1813', sprite.scaleX)
+        .setData('idleBaseScaleYCh1813', sprite.scaleY);
       visual.token.addAt(sprite, 1);
 
       this.characterWalkSpritesCh181.set(player.id, sprite);
@@ -378,6 +385,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187 * 1.08, CRYBABY_FACE_DISPLAY_HEIGHT_CH187 * 1.08)
         .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189)
         .setName(`character-face-socket-board-ch187-p${player.id + 1}`);
+      composite
+        .setData('idleBaseScaleXCh1813', composite.scaleX)
+        .setData('idleBaseScaleYCh1813', composite.scaleY);
 
       visual.token.addAt(composite, 1);
       walk.setVisible(false);
@@ -498,6 +508,9 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         .setDisplaySize(CRYBABY_FACE_DISPLAY_WIDTH_CH187 * 1.08, CRYBABY_FACE_DISPLAY_HEIGHT_CH187 * 1.08)
         .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189)
         .setName(`character-live-face-socket-board-ch188-p${playerId + 1}`);
+      image
+        .setData('idleBaseScaleXCh1813', image.scaleX)
+        .setData('idleBaseScaleYCh1813', image.scaleY);
       visual.token.addAt(image, 0);
       this.characterFaceCompositeImagesCh187.set(playerId, image);
     }
@@ -557,6 +570,37 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     }
   }
 
+  private applyCharacterIdleBreathCh1813(
+    target: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite,
+    playerId: number,
+  ): void {
+    const baseScaleX = Number(target.getData('idleBaseScaleXCh1813') ?? target.scaleX);
+    const baseScaleY = Number(target.getData('idleBaseScaleYCh1813') ?? target.scaleY);
+    const phase = (
+      (this.time.now + playerId * 173)
+      % CHARACTER_IDLE_BREATH_PERIOD_CH1813
+    ) / CHARACTER_IDLE_BREATH_PERIOD_CH1813 * Math.PI * 2;
+    const breath = (Math.sin(phase - Math.PI / 2) + 1) * 0.5;
+
+    target
+      .setScale(
+        baseScaleX * (1 + CHARACTER_IDLE_BREATH_SCALE_X_CH1813 * breath),
+        baseScaleY * (1 + CHARACTER_IDLE_BREATH_SCALE_Y_CH1813 * breath),
+      )
+      .setY(CHARACTER_TOKEN_BASE_Y_CH186 - CHARACTER_IDLE_BREATH_RISE_CH1813 * breath)
+      .setAngle(0);
+  }
+
+  private resetCharacterIdleBreathCh1813(
+    target: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite,
+  ): void {
+    const baseScaleX = Number(target.getData('idleBaseScaleXCh1813') ?? target.scaleX);
+    const baseScaleY = Number(target.getData('idleBaseScaleYCh1813') ?? target.scaleY);
+    target
+      .setScale(baseScaleX, baseScaleY)
+      .setY(CHARACTER_TOKEN_BASE_Y_CH186);
+  }
+
   private syncCharacterProductionCh181(): void {
     const runtime = this.runtimeCh173();
     for (const [playerId, sprite] of this.characterWalkSpritesCh181) {
@@ -572,17 +616,17 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
       if (faceComposite?.active && faceComposite.visible) {
         if (moving) {
+          this.resetCharacterIdleBreathCh1813(faceComposite);
           const bob = Math.floor(this.time.now / 110) % 2 === 0 ? 0 : 3;
           faceComposite
             .setY(CHARACTER_TOKEN_BASE_Y_CH186 - bob)
             .setAngle(Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? -2.5 : 2.5) : 0);
           if (Math.abs(dx) > 0.2) faceComposite.setFlipX(dx < 0);
         } else {
-          faceComposite
-            .setY(CHARACTER_TOKEN_BASE_Y_CH186)
-            .setAngle(0);
+          this.applyCharacterIdleBreathCh1813(faceComposite, playerId);
         }
       } else if (moving) {
+        this.resetCharacterIdleBreathCh1813(sprite);
         const walkFrame = Math.floor(this.time.now / 90) % 8;
         const frameBaseCh1811 = Number(sprite.getData('walkFrameBaseCh1811') ?? row * 8);
         sprite.setFrame(frameBaseCh1811 + walkFrame);
@@ -591,7 +635,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       } else {
         const frameBaseCh1811 = Number(sprite.getData('walkFrameBaseCh1811') ?? row * 8);
         sprite.setFrame(frameBaseCh1811);
-        sprite.setY(CHARACTER_TOKEN_BASE_Y_CH186);
+        this.applyCharacterIdleBreathCh1813(sprite, playerId);
       }
 
       previous.x = visual.token.x;
