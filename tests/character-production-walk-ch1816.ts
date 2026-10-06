@@ -53,6 +53,6 @@ assert(board.includes('visual.token.addAt(sprite, 1)'));
 const remainingFallback = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812
   .filter((item) => item.status === 'awaiting-genuine-strip')
   .map((item) => item.characterId);
-assert.deepEqual(remainingFallback, ['secret-baby']);
+assert.deepEqual(remainingFallback, []);
 
 console.log('[character-production-walk-ch1816] PASS CAU CÓ 8x192 production strip + runtime cut-over + idle/ring contract');
