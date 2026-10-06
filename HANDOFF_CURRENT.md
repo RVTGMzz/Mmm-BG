@@ -1,3 +1,59 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.19 SECRET BABY REPO-STANDARD PRODUCTION CRAWL
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.73 — CH-18.19 SECRET BABY PRODUCTION CRAWL`
+
+## Verified baseline before this slice
+- CH-18.18 final build `0.1.70.4.72` was fully GREEN.
+- CI #3783 passed Character gates, release branding, browser regression, artifact upload and public playtest publish.
+- Production Characters before this slice: KHÓC NHÈ / CAU CÓ / LO LẮNG / TĂNG ĐỘNG.
+- SECRET BABY was still fallback-only.
+
+## Important correction
+- The first CH-18.19 SECRET BABY attempt drifted away from the actual repo-standard art.
+- Ron caught it before acceptance.
+- That entire attempt was rolled back to the exact green CH-18.18 tree.
+- Corrected CH-18.19 uses the art already present in the repo/build as primary visual authority:
+  - `public/assets/characters/ch181/portrait-atlas-secret-baby.webp`
+  - row 4 of `public/assets/characters/ch181/walk-atlas.webp`
+- Existing concept manifest still maps Secret Baby to Drive `embe.webp`, but movement silhouette must match the repo-standard assets above.
+
+## Corrected CH-18.19 production crawl
+- New runtime asset:
+  `public/assets/characters/ch181/walk-secret-baby-production-x4.png`
+- 1536×192, 8 frames × 192×192, transparent.
+- 363,723 bytes.
+- SHA-256 `5b00136a4077703e9ebe3d7116f243e1330aadba04fd9b4acf94035ca4125a0c`.
+- Occupied frame box is normalized close to the old repo row: roughly 176×164 with bottom baseline.
+- Canon: infant, bald, small crown, gold pacifier, red trailing cape, short limbs, very low crawl body, bossy narrowed-eye expression.
+- Forbidden: toddler/child body, upright starter walk, adult hair, oversized staff/weapon, invented jewelry/harness/accessories, or raising the body so it no longer reads as a crawling infant.
+- Runtime route: `SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819`.
+- `secret-baby` is now `runtime-production-strip`.
+
+## Gameplay/presentation contracts unchanged
+- Secret Baby remains `randomOnly: true`.
+- `directSelectable: false`.
+- 5% HOST-authoritative RANDOM eligibility.
+- Max one Secret Baby per RANDOM batch.
+- Existing 8-frame driver/left-right flip retained; those frames are crawl phases.
+- CH-18.13 idle breathing remains.
+- Active ring remains 78×18 at local Y=31 below the Character.
+- Face socket/live camera contract unchanged.
+- Cloudflare Worker remains frozen / not deployed.
+
+## Next action
+1. Check newest CI on the final CH-18.19 HEAD and only repair real newest-run failures.
+2. Playtest all five Character production sources together at Board scale.
+3. Pay special attention to SECRET BABY crawl height, ring clearance, flip direction, idle-to-crawl reset and whether the low silhouette remains readable at 104×104.
+4. Do not change RANDOM-only rules while doing visual QA.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.18 TĂNG ĐỘNG PRODUCTION WALK
 
 Repo: `RVTGMzz/Mmm-BG`  
