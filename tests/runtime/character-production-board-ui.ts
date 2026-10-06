@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { browserSession } from '../../src/core/browserSession';
 import { gameSession } from '../../src/core/session';
-import { CareerMinigameBoardScene07044 } from '../../src/scenes/CareerMinigameBoardScene07044';
+import { CareerMinigameBoardSceneCh173 } from '../../src/scenes/CareerMinigameBoardSceneCh173';
 
 browserSession.configureSolo([1, 2, 3]);
 gameSession.reset();
@@ -63,7 +63,7 @@ function inspectRing(scene: Phaser.Scene, playerId: number) {
   return undefined;
 }
 
-class CharacterProductionBoardQaScene extends CareerMinigameBoardScene07044 {
+class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
   create(): void {
     this.time.timeScale = 0;
     super.create();
