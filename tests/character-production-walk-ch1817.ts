@@ -77,6 +77,6 @@ assert(!board.includes('Math.random()'));
 const remainingFallback = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812
   .filter((item) => item.status === 'awaiting-genuine-strip')
   .map((item) => item.characterId);
-assert.deepEqual(remainingFallback, ['secret-baby']);
+assert.deepEqual(remainingFallback, []);
 
 console.log('[character-production-walk-ch1817] PASS LO LẮNG 8x192 production strip + canon + runtime + idle/ring contract');
