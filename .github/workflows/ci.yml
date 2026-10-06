@@ -319,6 +319,8 @@ jobs:
         run: npm run test:character-idle-breath-ch1813
       - name: CH-18.14 CAU CO canon + Character layer order
         run: npm run test:character-canon-layer-order-ch1814
+      - name: CH-18.15 exact CAU CO concept source pin
+        run: npm run test:character-canon-source-ch1815
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -413,11 +415,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.68 CH-18.14 CAU CO Canon Lock build
+      - name: Upload MMM 0.1.70.4.69 CH-18.15 CAU CO Source Pin build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.68-ch18-14-cau-co-canon-lock
+          name: mmm-playtest-0.1.70.4.69-ch18-15-cau-co-source-pin
           path: dist
           if-no-files-found: error
           retention-days: 14
