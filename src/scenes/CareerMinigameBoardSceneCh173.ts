@@ -40,6 +40,8 @@ const ANXIOUS_PRODUCTION_WALK_KEY_CH1817 = 'character-walk-anxious-production-ch
 const ANXIOUS_PRODUCTION_WALK_PATH_CH1817 = 'assets/characters/ch181/walk-lo-lang-production-x4.png';
 const HYPER_PRODUCTION_WALK_KEY_CH1818 = 'character-walk-hyper-production-ch1818';
 const HYPER_PRODUCTION_WALK_PATH_CH1818 = 'assets/characters/ch181/walk-tang-dong-production-x4.png';
+const SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819 = 'character-crawl-secret-baby-production-ch1819';
+const SECRET_BABY_PRODUCTION_CRAWL_PATH_CH1819 = 'assets/characters/ch181/walk-secret-baby-production-x4.png';
 const CHARACTER_TOKEN_DISPLAY_CH189 = 104;
 const CHARACTER_TOKEN_ORIGIN_Y_CH189 = 0.84;
 const CHARACTER_FOOT_RING_Y_CH189 = 31;
@@ -142,6 +144,13 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       this.load.spritesheet(
         HYPER_PRODUCTION_WALK_KEY_CH1818,
         publicAssetUrl(HYPER_PRODUCTION_WALK_PATH_CH1818),
+        { frameWidth: CHARACTER_HQ_FRAME_CH189, frameHeight: CHARACTER_HQ_FRAME_CH189 },
+      );
+    }
+    if (!this.textures.exists(SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819)) {
+      this.load.spritesheet(
+        SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819,
+        publicAssetUrl(SECRET_BABY_PRODUCTION_CRAWL_PATH_CH1819),
         { frameWidth: CHARACTER_HQ_FRAME_CH189, frameHeight: CHARACTER_HQ_FRAME_CH189 },
       );
     }
@@ -334,6 +343,12 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         && this.textures.exists(HYPER_PRODUCTION_WALK_KEY_CH1818)
       ) {
         walkTextureKeyCh1811 = HYPER_PRODUCTION_WALK_KEY_CH1818;
+      }
+      else if (
+        player.characterId === 'secret-baby'
+        && this.textures.exists(SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819)
+      ) {
+        walkTextureKeyCh1811 = SECRET_BABY_PRODUCTION_CRAWL_KEY_CH1819;
       }
       const walkFrameBaseCh1811 = walkTextureKeyCh1811 === CHARACTER_HQ_ATLAS_KEY_CH189
         ? row * 8
