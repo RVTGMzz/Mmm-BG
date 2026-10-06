@@ -17,6 +17,12 @@ QUICK START — WINDOWS
 5) Không mở index.html trực tiếp. Nếu thanh địa chỉ bắt đầu bằng file:/// thì hãy đóng tab và chạy START_PLAYTEST.bat.
 6) Chỉ dùng START_PLAYTEST.bat.
 
+PRODUCTION WALK — CH-18.11
+- KHÓC NHÈ không còn dùng row phóng từ source 48px: 8 frame trên board được thay bằng strip production thật 1536×192, mỗi frame 192×192, tách từ sheet high-res đã duyệt.
+- 4 Character còn lại vẫn dùng CH-18.10 x4 remaster cho tới khi có production sheet/strip tương đương; không tự vẽ lại tuổi, giới tính hay silhouette.
+- Walk cadence 8 frame, flip trái/phải, active ring 78×18 dưới chân, P badge và face socket/live face giữ nguyên.
+- Gameplay/Host/RNG/B$/passive không đổi.
+
 HQ CHARACTER ASSET — CH-18.10
 - Atlas x4 giờ là asset thật được ship cùng build: 1536×960, 192×192/frame, 8 frame × 5 Character; scene không còn dựng atlas lớn bằng canvas mỗi lần vào board.
 - Mỗi frame được cô lập trong asset x4 nên không lấy màu từ frame kế bên; runtime chỉ downsample asset lớn xuống token ~104px.

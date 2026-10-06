@@ -1,3 +1,14 @@
+# CURRENT CHECKPOINT — 2026-10-06 — CH-18.11 KHÓC NHÈ PRODUCTION WALK
+
+Current build: `0.1.70.4.65`.
+CH-18.10 is green on source CI #3679 and GitHub Pages #115. Ron correctly flagged that a 4x remaster of a 48px sprite cannot recover real detail. CH-18.11 therefore replaces KHÓC NHÈ's board walk row with a genuine 8-frame 1536×192 transparent strip extracted from the approved high-resolution production sheet `mmm-ch181-khoc-nhe-production.png`.
+
+Only KHÓC NHÈ is cut over because it is the only Character for which the matching production walk sheet is currently available. CAU CÓ / LO LẮNG / TĂNG ĐỘNG / Secret Baby keep the persistent CH-18.10 HQ-remaster fallback until equivalent production strips exist; do not fabricate their silhouettes or demographics.
+
+The under-foot active ring (78×18 at Y=31), badge placement, 8-frame cadence, left/right flip, uploaded/live face socket, gameplay authority, RNG and economy remain unchanged. Cloudflare Worker remains frozen.
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-06 — CH-18.10 PERSISTENT HQ ATLAS
 
 Current build: `0.1.70.4.64`.

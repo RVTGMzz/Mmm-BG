@@ -311,6 +311,8 @@ jobs:
         run: npm run test:character-hq-token-ch189
       - name: CH-18.10 persistent x4 Character atlas asset
         run: npm run test:character-hq-asset-ch1810
+      - name: CH-18.11 KHOC NHE production-source x4 walk strip
+        run: npm run test:character-production-walk-ch1811
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -405,11 +407,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.64 CH-18.10 Persistent HQ Atlas build
+      - name: Upload MMM 0.1.70.4.65 CH-18.11 Crybaby Production Walk build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.64-ch18-10-persistent-hq-atlas
+          name: mmm-playtest-0.1.70.4.65-ch18-11-crybaby-production-walk
           path: dist
           if-no-files-found: error
           retention-days: 14

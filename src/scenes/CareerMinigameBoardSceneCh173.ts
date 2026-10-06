@@ -32,6 +32,8 @@ const CHARACTER_HQ_SOURCE_FRAME_CH189 = 48;
 const CHARACTER_HQ_FRAME_CH189 = 192;
 const CHARACTER_HQ_COLUMNS_CH189 = 8;
 const CHARACTER_HQ_ROWS_CH189 = 5;
+const CRYBABY_PRODUCTION_WALK_KEY_CH1811 = 'character-walk-crybaby-production-ch1811';
+const CRYBABY_PRODUCTION_WALK_PATH_CH1811 = 'assets/characters/ch181/walk-khoc-nhe-production-x4.png';
 const CHARACTER_TOKEN_DISPLAY_CH189 = 104;
 const CHARACTER_TOKEN_ORIGIN_Y_CH189 = 0.84;
 const CHARACTER_FOOT_RING_Y_CH189 = 31;
@@ -102,6 +104,13 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       this.load.spritesheet(
         CHARACTER_HQ_ATLAS_KEY_CH189,
         publicAssetUrl('assets/characters/ch181/walk-atlas-hq-x4.svg'),
+        { frameWidth: CHARACTER_HQ_FRAME_CH189, frameHeight: CHARACTER_HQ_FRAME_CH189 },
+      );
+    }
+    if (!this.textures.exists(CRYBABY_PRODUCTION_WALK_KEY_CH1811)) {
+      this.load.spritesheet(
+        CRYBABY_PRODUCTION_WALK_KEY_CH1811,
+        publicAssetUrl(CRYBABY_PRODUCTION_WALK_PATH_CH1811),
         { frameWidth: CHARACTER_HQ_FRAME_CH189, frameHeight: CHARACTER_HQ_FRAME_CH189 },
       );
     }
@@ -271,7 +280,17 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
       // Retain the historical marker name so old source gates do not mistake this
       // presentation upgrade for an ownership rewrite.
-      const sprite = this.add.sprite(0, CHARACTER_TOKEN_BASE_Y_CH186, CHARACTER_HQ_ATLAS_KEY_CH189, row * 8)
+      const walkTextureKeyCh1811 = player.characterId === 'starter-crybaby'
+        && this.textures.exists(CRYBABY_PRODUCTION_WALK_KEY_CH1811)
+        ? CRYBABY_PRODUCTION_WALK_KEY_CH1811
+        : CHARACTER_HQ_ATLAS_KEY_CH189;
+      const walkFrameBaseCh1811 = walkTextureKeyCh1811 === CRYBABY_PRODUCTION_WALK_KEY_CH1811
+        ? 0
+        : row * 8;
+
+      const sprite = this.add.sprite(0, CHARACTER_TOKEN_BASE_Y_CH186, walkTextureKeyCh1811, walkFrameBaseCh1811)
+        .setData('walkFrameBaseCh1811', walkFrameBaseCh1811)
+        .setData('productionWalkCh1811', walkTextureKeyCh1811 === CRYBABY_PRODUCTION_WALK_KEY_CH1811)
         .setName(`character-walk-token-ch186-p${player.id + 1}`)
         .setDisplaySize(CHARACTER_TOKEN_DISPLAY_CH189, CHARACTER_TOKEN_DISPLAY_CH189)
         .setOrigin(0.5, CHARACTER_TOKEN_ORIGIN_Y_CH189);
@@ -565,11 +584,13 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         }
       } else if (moving) {
         const walkFrame = Math.floor(this.time.now / 90) % 8;
-        sprite.setFrame(row * 8 + walkFrame);
+        const frameBaseCh1811 = Number(sprite.getData('walkFrameBaseCh1811') ?? row * 8);
+        sprite.setFrame(frameBaseCh1811 + walkFrame);
         sprite.setY(CHARACTER_TOKEN_BASE_Y_CH186 - (walkFrame % 2 === 0 ? 0 : 2));
         if (Math.abs(dx) > 0.2) sprite.setFlipX(dx < 0);
       } else {
-        sprite.setFrame(row * 8);
+        const frameBaseCh1811 = Number(sprite.getData('walkFrameBaseCh1811') ?? row * 8);
+        sprite.setFrame(frameBaseCh1811);
         sprite.setY(CHARACTER_TOKEN_BASE_Y_CH186);
       }
 
