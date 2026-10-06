@@ -43,12 +43,12 @@ const grumpyWalk = CHARACTER_WALK_PRODUCTION_SOURCES_CH1812.find(
   (item) => item.characterId === 'starter-grumpy',
 );
 assert(grumpyWalk);
-assert.equal(grumpyWalk.status, 'awaiting-genuine-strip');
-assert.equal(grumpyWalk.productionAssetPath, undefined);
+assert.equal(grumpyWalk.status, 'runtime-production-strip');
+assert.equal(grumpyWalk.productionAssetPath, 'assets/characters/ch181/walk-cau-co-production-x4.png');
 
 const board = await readFile('src/scenes/CareerMinigameBoardSceneCh173.ts', 'utf8');
 assert(!board.includes('docs/character-production/canon/cauco.webp'));
-assert(!board.includes('walk-cau-co-production'));
-assert(!board.includes('character-walk-grumpy-production'));
+assert(board.includes('walk-cau-co-production-x4.png'));
+assert(board.includes('character-walk-grumpy-production-ch1816'));
 
-console.log('[character-canon-source-ch1815] PASS exact CAU CÓ authority pinned; runtime remains fallback-only');
+console.log('[character-canon-source-ch1815] PASS exact CAU CÓ authority pinned and runtime production route matches it');
