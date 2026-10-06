@@ -189,7 +189,8 @@
     "test:character-production-source-ch1812": "tsx tests/character-production-source-ch1812.ts",
     "test:character-idle-breath-ch1813": "tsx tests/character-idle-breath-ch1813.ts",
     "test:character-canon-layer-order-ch1814": "tsx tests/character-canon-layer-order-ch1814.ts",
-    "test:character-canon-source-ch1815": "tsx tests/character-canon-source-ch1815.ts"
+    "test:character-canon-source-ch1815": "tsx tests/character-canon-source-ch1815.ts",
+    "test:character-production-walk-ch1816": "tsx tests/character-production-walk-ch1816.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
