@@ -10,7 +10,11 @@ assert(source.includes('const CHARACTER_HQ_COLUMNS_CH189 = 8;'));
 assert(source.includes('const CHARACTER_HQ_ROWS_CH189 = 5;'));
 assert(source.includes("publicAssetUrl('assets/characters/ch181/walk-atlas-hq-x4.svg')"));
 assert(source.includes('setFilter(Phaser.Textures.FilterMode.LINEAR)'));
-assert(source.includes("CHARACTER_HQ_ATLAS_KEY_CH189, row * 8"));
+assert(source.includes("const walkTextureKeyCh1811 = player.characterId === 'starter-crybaby'"));
+assert(source.includes("? CRYBABY_PRODUCTION_WALK_KEY_CH1811"));
+assert(source.includes(": CHARACTER_HQ_ATLAS_KEY_CH189"));
+assert(source.includes("const walkFrameBaseCh1811 = walkTextureKeyCh1811 === CRYBABY_PRODUCTION_WALK_KEY_CH1811"));
+assert(source.includes(": row * 8"));
 assert(source.includes('setDisplaySize(CHARACTER_TOKEN_DISPLAY_CH189, CHARACTER_TOKEN_DISPLAY_CH189)'));
 
 assert(source.includes('character-foot-ring-ch189-p'));

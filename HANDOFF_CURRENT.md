@@ -1,3 +1,60 @@
+# NEW CHAT START HERE — 2026-10-06 — CH-18.11 PRODUCTION WALK HANDOFF
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Current build: `0.1.70.4.65 — CH-18.11 KHÓC NHÈ PRODUCTION WALK`
+
+## What just happened
+- Ron rejected the visibly broken/upscaled 48px board sprites and asked for animation assets at ~4x native size plus the active ring strictly under the feet.
+- CH-18.9 moved the board token to ~104px display, normalized inherited token scale, hid the torso halo, and added a dedicated under-foot ellipse.
+- CH-18.10 shipped a persistent 1536×960 x4 fallback atlas (192×192 per frame, 8 frames × 5 rows) so runtime no longer rebuilds it every board entry.
+- Ron correctly pointed out that enlarging a 48px source cannot create real detail.
+- CH-18.11 therefore replaces **KHÓC NHÈ** with a genuine production-source 8-frame transparent PNG strip: `public/assets/characters/ch181/walk-khoc-nhe-production-x4.png`, 1536×192, 192×192 per frame.
+- CAU CÓ / LO LẮNG / TĂNG ĐỘNG / SECRET BABY still use the CH-18.10 x4 remaster fallback until equivalent high-resolution production strips exist. **Do not fabricate their silhouettes, demographics or sockets.**
+
+## CI state at handoff
+- Last fully green checkpoint before CH-18.11: source CI **#3679 SUCCESS**, GitHub Pages **#115 SUCCESS**.
+- Source run **#3680** failed only because the older CH-18.9 gate still required the direct expression `CHARACTER_HQ_ATLAS_KEY_CH189, row * 8` after KHÓC NHÈ switched to a dedicated production texture.
+- This handoff commit updates that stale gate and synchronizes `public/PLAYTEST.txt` to build `.65`.
+- In the new chat, **follow only the newest CI run**. Do not call cancelled runs failures. If the newest run is red, fetch the exact failed step/log before changing code.
+
+## Locked Character canon
+- KHÓC NHÈ — female 55–65.
+- CAU CÓ — male 40–50.
+- LO LẮNG — male 28–35.
+- TĂNG ĐỘNG — female 18–24.
+- SECRET BABY — infant, RANDOM-only.
+Use the approved concept sheets referenced by `src/content/core/character_art_manifest_v01.ts`. Do not redesign or teen/female-normalize the cast.
+
+## Board Character visual contract
+- Production target frame: **192×192 native** (or genuinely higher source), then downsample to board display. Never scale a tiny 48px source up and describe it as production quality.
+- Current board display: ~104px Character.
+- Active ring: **78×18 at local Y=31**, layer **below** Character; it must read as a foot ring, never surround/cover the torso.
+- P1–P4 badge stays outside the silhouette.
+- 8-frame walk cadence and left/right flip remain.
+- Gameplay movement authority must not change.
+
+## Face / camera contract already in repo
+- No face supplied → default Character art.
+- Uploaded/captured face → non-circular face source through CH-02F socket/mask.
+- CAMERA ON → reuse opt-in Online Group Media stream; live face in the same socket.
+- Fallback order: live camera → saved face → default Character.
+- Final composition order: body-back → player face → irregular/soft alpha mask → Character foreground/hair/glasses/etc.
+- Do **not** replace this with a generic hard oval/circle.
+- Real layered face-socket proof currently exists only for **KHÓC NHÈ neutral**. Do not invent sockets for the other Characters.
+
+## Recommended next action
+1. Confirm newest CI + Pages are green after this handoff commit.
+2. Test KHÓC NHÈ production strip visually on the live board: sharpness, frame isolation, foot anchor, ring under feet, badge clearance.
+3. For the remaining four Characters, first recover/create genuine high-resolution 8-frame production strips from their approved source art; only then swap each row away from the x4 fallback.
+4. Keep the same runtime contract so face socket/live camera and gameplay authority do not regress.
+5. Do not deploy/update Cloudflare Worker unless Ron explicitly asks.
+
+Public playtest:
+https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+---
+
 # CURRENT CHECKPOINT — 2026-10-06 — CH-18.11 KHÓC NHÈ PRODUCTION WALK
 
 Current build: `0.1.70.4.65`.
