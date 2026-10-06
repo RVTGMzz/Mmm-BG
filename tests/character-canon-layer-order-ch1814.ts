@@ -23,11 +23,11 @@ assert.equal(art.concept.approved, true);
 assert.equal(CAU_CO_VISUAL_CANON_CH1814.characterId, 'starter-grumpy');
 assert.equal(CAU_CO_VISUAL_CANON_CH1814.ageGender, 'male 40-50');
 for (const anchor of [
-  'thin gold rectangular glasses',
+  'gold rectangular glasses',
   'brown crown-pattern tie',
   'dark olive pinstripe jacket draped over the shoulders',
   'high-waisted brown tailored trousers',
-  'structured brown leather work bag',
+  'brown crown-pattern shoulder work bag / satchel',
 ]) {
   assert(CAU_CO_VISUAL_CANON_CH1814.requiredVisualAnchors.includes(anchor), anchor);
 }
