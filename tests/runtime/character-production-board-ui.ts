@@ -45,6 +45,35 @@ function inspectSprite(scene: Phaser.Scene, playerId: number) {
   return undefined;
 }
 
+function inspectRig(scene: Phaser.Scene, playerId: number) {
+  const rigName = 'character-rig-cau-co-ch1822-p' + (playerId + 1);
+  const find = (name: string) => {
+    for(const root of scene.children.list) {
+      const part = findByName(root, name);
+      if (part) return part;
+    }
+    return undefined;
+  };
+  const rig = find(rigName);
+  if (!(rig instanceof Phaser.GameObjects.Container)) return undefined;
+  const hip = find('character-rig-hip-ch1822-left-p' + (playerId + 1));
+  const knee = find('character-rig-knee-ch1822-left-p' + (playerId + 1));
+  const shoulder = find('character-rig-shoulder-ch1822-left-p' + (playerId + 1));
+  const elbow = find('character-rig-elbow-ch1822-left-p' + (playerId + 1));
+  const head = find('character-rig-head-ch1822-p' + (playerId + 1));
+  return {
+    visible: rig.visible,
+    scaleX: rig.scaleX,
+    scaleY: rig.scaleY,
+    imageParts: rig.getAll('type', 'Image').length,
+    hipAngle: hip instanceof Phaser.GameObjects.Container ? hip.angle : null,
+    kneeAngle: knee instanceof Phaser.GameObjects.Container ? knee.angle : null,
+    shoulderAngle: shoulder instanceof Phaser.GameObjects.Container ? shoulder.angle : null,
+    elbowAngle: elbow instanceof Phaser.GameObjects.Container ? elbow.angle : null,
+    headAngle: head instanceof Phaser.GameObjects.Container ? head.angle : null,
+  };
+}
+
 function inspectRing(scene: Phaser.Scene, playerId: number) {
   const name = `character-foot-ring-ch189-p${playerId + 1}`;
   for (const root of scene.children.list) {
@@ -85,16 +114,36 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
 
     this.time.delayedCall(220, () => {
       (window as any).characterProductionQaIdle = {
+        activePlayerId: runtime.currentPlayer()?.id,
         players: runtime.match.players.map((player: any) => ({
           id: player.id,
           characterId: player.characterId,
           sprite: inspectSprite(this, player.id),
           ring: inspectRing(this, player.id),
         })),
+        rig: inspectRig(this, 1),
       };
 
       const babyVisual = runtime.visuals.get(0);
       if (!babyVisual) throw new Error('SECRET BABY visual missing');
+
+      const grumpyVisual = runtime.visuals.get(1);
+      if (grumpyVisual && inspectRig(this, 1)) {
+        this.tweens.add({
+          targets: grumpyVisual.token,
+          x: grumpyVisual.token.x + 70,
+          duration: 620,
+          ease: 'Linear',
+          onComplete: () => {
+            this.tweens.add({
+              targets: grumpyVisual.token,
+              x: grumpyVisual.token.x - 140,
+              duration: 620,
+              ease: 'Linear',
+            });
+          },
+        });
+      }
 
       const startX = babyVisual.token.x;
       this.tweens.add({
@@ -116,6 +165,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
         (window as any).characterProductionQaRight = {
           sprite: inspectSprite(this, 0),
           ring: inspectRing(this, 0),
+          rig: inspectRig(this, 1),
         };
       });
 
@@ -123,6 +173,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
         (window as any).characterProductionQaLeft = {
           sprite: inspectSprite(this, 0),
           ring: inspectRing(this, 0),
+          rig: inspectRig(this, 1),
         };
         (window as any).characterProductionQaReady = true;
       });
