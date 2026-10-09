@@ -51,7 +51,7 @@ try {
   const baby = state.idle.players[0];
   const active = state.idle.players.find(entry => entry.id === state.idle.activePlayerId);
   assert(active, 'board must expose an active turn owner');
-  assert.equal(active.ring?.visible, true, 'current player's foot ring must be visible');
+  assert.equal(active.ring?.visible, true, "current player foot ring must be visible");
   for (const entry of state.idle.players) {
     if (entry.id !== state.idle.activePlayerId) {
       assert.equal(entry.ring?.visible, false, 'non-active ring must stay hidden');
