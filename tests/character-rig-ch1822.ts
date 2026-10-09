@@ -36,7 +36,7 @@ for (const anchor of [
   'linearGradient id="silver"',
   'linearGradient id="gold"',
   'fill="#25855f"',
-  'stop-color="#e8',
+  'stop-color="#eadac3"',
   'fill="#d6a64f"',
 ]) {
   assert(artSource.includes(anchor), 'CAU CÓ rig canon detail missing: ' + anchor);
