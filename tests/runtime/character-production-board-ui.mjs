@@ -49,7 +49,14 @@ try {
   });
 
   const baby = state.idle.players[0];
-  assert.equal(baby.ring?.visible, true, 'active SECRET BABY foot ring must be visible');
+  const active = state.idle.players.find(entry => entry.id === state.idle.activePlayerId);
+  assert(active, 'board must expose an active turn owner');
+  assert.equal(active.ring?.visible, true, 'current player's foot ring must be visible');
+  for (const entry of state.idle.players) {
+    if (entry.id !== state.idle.activePlayerId) {
+      assert.equal(entry.ring?.visible, false, 'non-active ring must stay hidden');
+    }
+  }
   assert.equal(baby.ring?.y, 31, 'SECRET BABY ring local Y changed');
   assert.ok(baby.ring?.width >= 70 && baby.ring?.width <= 86, 'SECRET BABY ring width drifted');
   assert.ok(baby.ring?.height >= 16 && baby.ring?.height <= 24, 'SECRET BABY ring height drifted');
@@ -63,6 +70,34 @@ try {
   await page.screenshot({ path: 'runtime-ui-evidence/character-production-board-qa-1280x720.png' });
   console.log('[character-production-board-ui] PASS 4 production Characters + forced test-only SECRET BABY crawl/ring/flip at runtime');
   await page.close();
+
+  // CH-18.22: separate browser run opts into puppet art. The public route
+  // without the query parameter above continues to use the approved strip.
+  const pilot = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  const rigErrors = [];
+  pilot.on('pageerror', error => rigErrors.push(String(error)));
+  await pilot.goto('http://127.0.0.1:5173/tests/runtime/character-production-board-ui.html?cauCoRigPreview=1');
+  await pilot.waitForFunction(() => window.characterProductionQaReady === true, { timeout: 45000 });
+  const rigState = await pilot.evaluate(() => ({
+    idle: window.characterProductionQaIdle,
+    right: window.characterProductionQaRight,
+    left: window.characterProductionQaLeft,
+  }));
+  assert.deepEqual(rigErrors, []);
+  assert.equal(rigState.idle.players[1].sprite.visible, false,
+    'CAU CÓ strip must be hidden only when all QA rig parts load');
+  assert.equal(rigState.idle.rig?.visible, true, 'CAU CÓ independent-part rig did not load');
+  assert.ok(rigState.idle.rig?.imageParts >= 2, 'rig has no independently rendered parts');
+  assert.ok(Math.abs(rigState.idle.rig.scaleX) > 0, 'rig missing source-to-board transform');
+  assert.notEqual(rigState.right.rig?.hipAngle, rigState.idle.rig.hipAngle,
+    'hip pivot does not move independently');
+  assert.notEqual(rigState.right.rig?.shoulderAngle, rigState.idle.rig.shoulderAngle,
+    'shoulder counter-swing does not animate');
+  assert.ok(rigState.right.rig.scaleX > 0 && rigState.left.rig.scaleX < 0,
+    'rig must preserve right/left facing');
+  await pilot.screenshot({ path: 'runtime-ui-evidence/cau-co-rig-ch1822-qa.png' });
+  await pilot.close();
+  console.log('[character-rig-ch1822-runtime] PASS gated independent-part rig + hip/shoulder motion + facing');
 } finally {
   await browser.close();
 }
