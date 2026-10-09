@@ -125,9 +125,36 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
     }
     runtime.syncCharacterProductionCh181();
     runtime.syncCharacterTokenPresentationCh189();
-    if (baby && Math.abs(motion.babyX - this.lastBabyXCh1824) > 0.45) {
+    const stepDx = motion.babyX - this.lastBabyXCh1824;
+    if (baby && Math.abs(stepDx) > 0.45) {
       const sprite = inspectSprite(this, 0);
-      if (sprite) this.babyCrawlFramesCh1824.add(String(sprite.frame));
+      if (sprite) {
+        this.babyCrawlFramesCh1824.add(String(sprite.frame));
+        const key = stepDx > 0
+          ? 'characterProductionQaRight'
+          : 'characterProductionQaLeft';
+        // Record the state of a REAL movement update, not a delayed timer
+        // that might fire after the tween has already reversed direction.
+        // Never select snapshots based on the expected flipX value.
+        if (!(window as any)[key]) {
+          (window as any)[key] = {
+            sprite,
+            ring: inspectRing(this, 0),
+            rig: inspectRig(this, 1),
+            motionDx: stepDx,
+            sampleFrames: [...this.babyCrawlFramesCh1824],
+          };
+        }
+      }
+    }
+    const qa = window as any;
+    if (qa.characterProductionQaIdle
+      && qa.characterProductionQaRight
+      && qa.characterProductionQaLeft
+      && this.babyCrawlFramesCh1824.size >= 2) {
+      qa.characterProductionQaRight.sampleFrames = [...this.babyCrawlFramesCh1824];
+      qa.characterProductionQaLeft.sampleFrames = [...this.babyCrawlFramesCh1824];
+      qa.characterProductionQaReady = true;
     }
     this.lastBabyXCh1824 = motion.babyX;
     this.lastGrumpyXCh1824 = motion.grumpyX;
@@ -203,24 +230,8 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
         },
       });
 
-      this.time.delayedCall(240, () => {
-        (window as any).characterProductionQaRight = {
-          sprite: inspectSprite(this, 0),
-          ring: inspectRing(this, 0),
-          rig: inspectRig(this, 1),
-          sampleFrames: [...this.babyCrawlFramesCh1824],
-        };
-      });
-
-      this.time.delayedCall(870, () => {
-        (window as any).characterProductionQaLeft = {
-          sprite: inspectSprite(this, 0),
-          ring: inspectRing(this, 0),
-          rig: inspectRig(this, 1),
-          sampleFrames: [...this.babyCrawlFramesCh1824],
-        };
-        (window as any).characterProductionQaReady = true;
-      });
+      // Movement snapshots/ready flag are sampled in update() only while
+      // measured QA velocity actually points right or left. No timer guess.
     });
   }
 }
