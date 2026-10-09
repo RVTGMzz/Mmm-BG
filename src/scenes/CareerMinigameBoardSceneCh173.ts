@@ -245,7 +245,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       const ring = this.characterFootRingsCh189.get(player.id);
       if (!ring) continue;
 
-      const inheritedActive = legacyHalo?.visible ?? (player.id === activeId);
+      const inheritedActive = player.id === activeId;
       const inheritedPulse = legacyHalo?.scaleX ?? 1;
       const inheritedAlpha = legacyHalo?.alpha ?? 0.72;
 
