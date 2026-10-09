@@ -45,9 +45,15 @@ export function createCauCoRigCh1822(
       .setName('character-rig-part-ch1822-' + name + '-p' + (playerId + 1));
 
   // Every top-level bone lives in source coordinates relative to source X = 96.
-  const coat = part('coat-back', 0, 55, 0.5, 0);
-  const bag = part('satchel', 51, 95, 0.5, 0);
-  root.add([coat, bag]);
+  const geometry = CAU_CO_RIG_PILOT_CH1822.geometryLock;
+  const coat = part('coat-back', geometry.coat.x, geometry.coat.y, 0.5, 0)
+    .setScale(geometry.coat.scaleX, geometry.coat.scaleY);
+  const bag = part('satchel', geometry.satchel.x, geometry.satchel.y, 0.5, 0)
+    .setScale(geometry.satchel.scaleX, geometry.satchel.scaleY);
+  // Jacket is a BACK layer. A briefcase resting by the left hip is a
+  // foreground layer; painting both behind the legs made the prop float
+  // through the torso and exaggerated the silhouette.
+  root.add(coat);
 
   function leg(side: 'left' | 'right', x: number) {
     const hip = scene.add.container(x - 96, 110)
@@ -86,6 +92,7 @@ export function createCauCoRigCh1822(
     .setName('character-rig-torso-ch1822-p' + (playerId + 1));
   torso.add(part('torso', 0, 0, 0.5, 0.52));
   root.add(torso);
+  root.add(bag);
   const armRight = arm('right', 129);
 
   const head = scene.add.container(0, 81)
@@ -146,9 +153,9 @@ export function createCauCoRigCh1822(
 
       // Heavy jacket and leather briefcase lag behind the torso, rather than
       // becoming glued to a full-frame sprite.
-      coat.angle = 1.7 * stride * walking + 0.4 * breath * resting;
-      bag.angle = -3.8 * stride * walking + 0.5 * breath * resting;
-      bag.y = 95 + walking * 1.1 * Math.abs(stride);
+      coat.angle = 0.9 * stride * walking + 0.25 * breath * resting;
+      bag.angle = -2.0 * stride * walking + 0.35 * breath * resting;
+      bag.y = geometry.satchel.y + walking * 0.8 * Math.abs(stride);
     },
   };
 }
