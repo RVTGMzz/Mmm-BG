@@ -96,6 +96,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
   private qaMotionCh1824?: { babyX: number; grumpyX: number };
   private readonly babyCrawlFramesCh1824 = new Set<string>();
   private lastBabyXCh1824 = 260;
+  private lastGrumpyXCh1824 = 470;
 
   // The inherited Board update owns authoritative token coordinates. Move our
   // test-only visual overlay AFTER it, then ask the production sprite to sample
@@ -107,8 +108,21 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
     const runtime = this as any;
     const baby = runtime.visuals.get(0);
     const grumpy = runtime.visuals.get(1);
-    if (baby) baby.token.setPosition(motion.babyX, 430);
-    if (grumpy) grumpy.token.setPosition(motion.grumpyX, 430);
+    const lastPositions = runtime.characterWalkLastPositionsCh181 as
+      Map<number, { x: number; y: number }>;
+    // super.update() restores authoritative positions before our overlay.
+    // Seed previous position with LAST QA value so direction and step cadence
+    // are measured against the QA path, not the inherited board tile.
+    if (baby) {
+      const previous = lastPositions.get(0);
+      if (previous) { previous.x = this.lastBabyXCh1824; previous.y = 430; }
+      baby.token.setPosition(motion.babyX, 430);
+    }
+    if (grumpy) {
+      const previous = lastPositions.get(1);
+      if (previous) { previous.x = this.lastGrumpyXCh1824; previous.y = 430; }
+      grumpy.token.setPosition(motion.grumpyX, 430);
+    }
     runtime.syncCharacterProductionCh181();
     runtime.syncCharacterTokenPresentationCh189();
     if (baby && Math.abs(motion.babyX - this.lastBabyXCh1824) > 0.45) {
@@ -116,6 +130,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
       if (sprite) this.babyCrawlFramesCh1824.add(String(sprite.frame));
     }
     this.lastBabyXCh1824 = motion.babyX;
+    this.lastGrumpyXCh1824 = motion.grumpyX;
   }
 
   create(): void {
