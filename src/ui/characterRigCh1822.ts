@@ -98,35 +98,57 @@ export function createCauCoRigCh1822(
   root.add(head);
 
   let facingLeft = false;
+  let walkBlend = 0;
+  let lastPoseMs = 0;
   return {
     root,
     pose(timeMs, moving, dx) {
       if (Math.abs(dx) > 0.2) facingLeft = dx < 0;
       root.setScale(facingLeft ? -SCALE : SCALE, SCALE);
-      const p = timeMs * (Math.PI * 2 / (moving ? 620 : 2200));
-      const stride = Math.sin(p);
-      const soft = (Math.sin(p - Math.PI / 2) + 1) / 2;
-      const movement = moving ? 1 : 0;
 
-      // No full-body squash animation: true independent limb/joint movement.
-      torso.y = 100 - (moving ? Math.abs(stride) * 1.8 : soft * 0.9);
-      torso.setScale(1 + (moving ? 0 : soft * 0.002), 1 + (moving ? 0 : soft * 0.012));
-      head.y = 81 - (moving ? Math.abs(stride) * 0.8 : soft * 0.7);
-      head.angle = moving ? -1.2 * stride : -0.8 + 1.6 * soft;
+      // Give movement a short blend to avoid snapping from CAU CÓ's folded arms
+      // into a full walk swing on the first frame (or freezing mid-stride).
+      const deltaMs = Math.min(50, Math.max(0, lastPoseMs ? timeMs - lastPoseMs : 16));
+      lastPoseMs = timeMs;
+      const approach = 1 - Math.exp(-deltaMs / 145);
+      walkBlend += ((moving ? 1 : 0) - walkBlend) * approach;
+      const walkPhase = timeMs * (Math.PI * 2 / 620);
+      const stride = Math.sin(walkPhase);
+      const idlePhase = timeMs * (Math.PI * 2 / 2200);
+      const breath = (1 + Math.sin(idlePhase - Math.PI / 2)) / 2;
+      const walking = walkBlend;
+      const resting = 1 - walking;
+      const footLiftL = Math.max(0, -stride) * walking;
+      const footLiftR = Math.max(0, stride) * walking;
 
-      legLeft.hip.angle = movement * 14 * stride;
-      legRight.hip.angle = -movement * 14 * stride;
-      legLeft.knee.angle = movement * (-8 + 9 * Math.max(0, -stride));
-      legRight.knee.angle = movement * (-8 + 9 * Math.max(0, stride));
+      // Root stays floor-anchored. Idle breathing comes from the chest/shoulders,
+      // not global scale; eye line and feet therefore do not bounce together.
+      torso.y = 100 - walking * Math.abs(stride) * 1.6 - resting * breath * 0.8;
+      torso.setScale(1 + resting * breath * 0.003, 1 + resting * breath * 0.012);
+      head.y = 81 - walking * Math.abs(stride) * 1.0 - resting * breath * 0.65;
+      head.angle = walking * (-1.2 * stride) + resting * (-1.5 + breath * 1.2);
 
-      armLeft.shoulder.angle = moving ? -11 * stride : -1.3 + soft * 2.5;
-      armRight.shoulder.angle = moving ? 11 * stride : 1.3 - soft * 2.5;
-      armLeft.elbow.angle = moving ? 7 + 4 * Math.max(0, stride) : 5 + soft;
-      armRight.elbow.angle = moving ? -7 - 4 * Math.max(0, -stride) : -5 - soft;
+      legLeft.hip.angle = 14 * stride * walking;
+      legRight.hip.angle = -14 * stride * walking;
+      legLeft.knee.angle = (-5 + 14 * footLiftL) * walking;
+      legRight.knee.angle = (-5 + 14 * footLiftR) * walking;
+      legLeft.knee.y = 30 - footLiftL * 1.8;
+      legRight.knee.y = 30 - footLiftR * 1.8;
 
-      coat.angle = moving ? 1.2 * stride : 0.6 * soft;
-      bag.angle = moving ? -3.2 * stride : 0.7 * soft;
-      bag.y = 95 + (moving ? 1.4 * Math.abs(stride) : 0);
+      // Stern idle pose: arms held across the torso. While walking they unfold
+      // and counter-swing to the legs; both elbows remain independently animated.
+      armLeft.shoulder.angle = -61 * resting - 11 * stride * walking;
+      armRight.shoulder.angle = 61 * resting + 11 * stride * walking;
+      armLeft.elbow.angle = 22 * resting + (7 + 5 * footLiftL) * walking;
+      armRight.elbow.angle = -22 * resting - (7 + 5 * footLiftR) * walking;
+      armLeft.shoulder.y = 77 - resting * breath * 0.55;
+      armRight.shoulder.y = 77 - resting * breath * 0.55;
+
+      // Heavy jacket and leather briefcase lag behind the torso, rather than
+      // becoming glued to a full-frame sprite.
+      coat.angle = 1.7 * stride * walking + 0.4 * breath * resting;
+      bag.angle = -3.8 * stride * walking + 0.5 * breath * resting;
+      bag.y = 95 + walking * 1.1 * Math.abs(stride);
     },
   };
 }
