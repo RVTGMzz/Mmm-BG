@@ -21,6 +21,19 @@ for (const side of ['left','right']) {
   add('arm-lower-'+side,23,36,`<path d="M4 2 H20 L21 28 Q12 37 3 29Z" fill="#fff2e1"/><path d="M3 25 H21" stroke="#bfa183" fill="none"/><rect x="3" y="21" width="18" height="6" rx="2" fill="${left?'#8d6042':'#d4b366'}"/>`);
   add('hand-'+side,19,22,`<path d="M5 2 Q10 -1 16 5 L17 15 10 21 2 16 2 7Z" fill="#e5ad83"/>`);
 }
+
+/* Canon-specific finishing details remain individually painted in their limb assets,
+   not composited out of the old 8-frame sprite. */
+add('hand-left',19,22,`<path d="M3 7 Q2 2 8 2 Q13 0 17 6 L18 15 Q14 22 7 20 L2 15Z" fill="#ebaf84"/><path d="M3 9 Q9 8 14 10" stroke="#bd7f5e" fill="none" stroke-width="1.3"/><ellipse cx="10" cy="7" rx="4.2" ry="3.4" fill="#e6c66b" stroke="#895c27" stroke-width="1.1"/><ellipse cx="10" cy="7" rx="2.8" ry="2.4" fill="#25855f" stroke="#f2dd9e" stroke-width=".8"/><path d="M9 5 L11 8" stroke="#9de1bc" fill="none" stroke-width=".9"/>`);
+add('hand-right',27,25,`<path d="M4 8 Q4 2 10 2 L17 6 19 10 25 8 Q28 9 26 13 L18 15 Q15 23 10 24 L3 18Z" fill="#edb58b"/><path d="M17 10 L25 11" stroke="#c48261" stroke-width="1.4" fill="none"/><path d="M5 4 L16 7" stroke="#cc946e" stroke-width="1.2" fill="none"/>`);
+for (const side of ['left','right']) {
+  const left = side === 'left';
+  add('leg-upper-'+side,30,43,`<defs><linearGradient id="trousers" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#4e332d"/><stop offset=".48" stop-color="${left?'#91694f':'#7b5743'}"/><stop offset="1" stop-color="#5a382f"/></linearGradient></defs><path d="M4 4 Q15 -2 27 6 L26 39 Q15 45 4 39Z" fill="url(#trousers)"/><path d="M11 8 L12 37 M21 7 L21 36" stroke="#d7b49d" stroke-opacity=".45" stroke-width="1.4" fill="none"/><path d="M6 33 Q15 35 24 33" stroke="#573a32" fill="none" stroke-width="1.3"/>`);
+  add('leg-lower-'+side,26,40,`<path d="M4 2 H22 L22 34 Q13 40 3 35Z" fill="${left?'#77513e':'#684635'}"/><path d="M13 7 L14 33" stroke="#be987c" opacity=".55" stroke-width="1.5" fill="none"/><path d="M3 31 Q13 34 23 30 L23 37 Q12 40 3 36Z" fill="#926b54"/>`);
+  add('shoe-'+side,36,22,`<defs><linearGradient id="loaf" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#9f6446"/><stop offset=".6" stop-color="#4b2b28"/><stop offset="1" stop-color="#281d20"/></linearGradient></defs><path d="M3 7 Q13 1 22 7 L32 10 Q38 15 33 19 H5 Q0 17 3 7Z" fill="url(#loaf)"/><path d="M4 17 H34" stroke="#dfb477" stroke-width="1.8" fill="none"/><path d="M13 9 Q19 5 28 11" stroke="#d29f70" stroke-width="1.4" fill="none"/><path d="M18 9 H28 L27 13 H19Z" fill="#d6a64f"/><path d="M21 9 L24 12 26 9" stroke="#63391d" stroke-width="1.3" fill="none"/>`);
+  add('arm-upper-'+side,28,47,`<path d="M9 4 Q23 0 26 17 L23 39 Q13 49 3 39 L2 17Z" fill="#f1e4d0"/><path d="M8 4 Q16 8 13 32" stroke="#fff8e7" stroke-width="2.6" fill="none"/><path d="M4 33 Q16 37 25 32 L24 42 Q13 47 4 39Z" fill="#f8f0e1"/><path d="M8 38 H22" stroke="#c5aa8b" stroke-width="1.2" fill="none"/><circle cx="18" cy="40" r="2.4" fill="#e1b963" stroke="#a57339" stroke-width=".8"/>`);
+  add('arm-lower-'+side,23,36,`<path d="M4 2 H20 L21 29 Q12 37 3 29Z" fill="#fff3df"/><path d="M4 22 H21 L21 29 Q12 34 3 28Z" fill="#e8d8c2"/><path d="M7 4 L8 22" stroke="#fef8eb" stroke-width="2" fill="none"/>${left?'':'<rect x="2" y="23" width="19" height="8" rx="3" fill="#4b392d"/><circle cx="11" cy="27" r="5.1" fill="#cfa758" stroke="#65452e" stroke-width="1.3"/><circle cx="11" cy="27" r="3" fill="#263333" stroke="#e8c675" stroke-width=".7"/><path d="M11 24 V27 L13 28" stroke="#f5e7b2" stroke-width=".9" fill="none"/>'}`);
+}
 const dir='public/assets/characters/ch1822/cau-co';
 await mkdir(dir,{recursive:true});
 for(const [name,p] of parts) {
