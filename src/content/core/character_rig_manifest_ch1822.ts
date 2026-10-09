@@ -5,6 +5,7 @@ export const CAU_CO_RIG_PILOT_CH1822 = {
   canonPath: 'docs/character-production/canon/cauco.webp',
   previewParam: 'cauCoRigPreview',
   productionApproved: false,
+  partsPath: 'assets/characters/ch1822/cau-co/',
   baseResolution: 192,
   displaySize: 104,
   partIds: [
