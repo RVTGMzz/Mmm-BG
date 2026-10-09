@@ -93,6 +93,31 @@ function inspectRing(scene: Phaser.Scene, playerId: number) {
 }
 
 class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
+  private qaMotionCh1824?: { babyX: number; grumpyX: number };
+  private readonly babyCrawlFramesCh1824 = new Set<string>();
+  private lastBabyXCh1824 = 260;
+
+  // The inherited Board update owns authoritative token coordinates. Move our
+  // test-only visual overlay AFTER it, then ask the production sprite to sample
+  // the delta. Never mutate match/player positions or normal game authority.
+  override update(): void {
+    super.update();
+    const motion = this.qaMotionCh1824;
+    if (!motion) return;
+    const runtime = this as any;
+    const baby = runtime.visuals.get(0);
+    const grumpy = runtime.visuals.get(1);
+    if (baby) baby.token.setPosition(motion.babyX, 430);
+    if (grumpy) grumpy.token.setPosition(motion.grumpyX, 430);
+    runtime.syncCharacterProductionCh181();
+    runtime.syncCharacterTokenPresentationCh189();
+    if (baby && Math.abs(motion.babyX - this.lastBabyXCh1824) > 0.45) {
+      const sprite = inspectSprite(this, 0);
+      if (sprite) this.babyCrawlFramesCh1824.add(String(sprite.frame));
+    }
+    this.lastBabyXCh1824 = motion.babyX;
+  }
+
   create(): void {
     this.time.timeScale = 0;
     super.create();
@@ -111,6 +136,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
       const pos = qaPositions[index];
       if (visual && pos) visual.token.setPosition(pos.x, pos.y);
     });
+    this.qaMotionCh1824 = { babyX: 260, grumpyX: 470 };
 
     this.time.delayedCall(220, () => {
       (window as any).characterProductionQaIdle = {
@@ -127,17 +153,18 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
       const babyVisual = runtime.visuals.get(0);
       if (!babyVisual) throw new Error('SECRET BABY visual missing');
 
-      const grumpyVisual = runtime.visuals.get(1);
-      if (grumpyVisual && inspectRig(this, 1)) {
+      const motion = this.qaMotionCh1824;
+      if (!motion) throw new Error('QA motion state missing');
+      if (runtime.visuals.get(1) && inspectRig(this, 1)) {
         this.tweens.add({
-          targets: grumpyVisual.token,
-          x: grumpyVisual.token.x + 70,
+          targets: motion,
+          grumpyX: 540,
           duration: 620,
           ease: 'Linear',
           onComplete: () => {
             this.tweens.add({
-              targets: grumpyVisual.token,
-              x: grumpyVisual.token.x - 140,
+              targets: motion,
+              grumpyX: 400,
               duration: 620,
               ease: 'Linear',
             });
@@ -145,16 +172,16 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
         });
       }
 
-      const startX = babyVisual.token.x;
+      // Tween independent QA state, not the authoritative player token itself.
       this.tweens.add({
-        targets: babyVisual.token,
-        x: startX + 84,
+        targets: motion,
+        babyX: 344,
         duration: 620,
         ease: 'Linear',
         onComplete: () => {
           this.tweens.add({
-            targets: babyVisual.token,
-            x: startX - 84,
+            targets: motion,
+            babyX: 176,
             duration: 620,
             ease: 'Linear',
           });
@@ -166,6 +193,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
           sprite: inspectSprite(this, 0),
           ring: inspectRing(this, 0),
           rig: inspectRig(this, 1),
+          sampleFrames: [...this.babyCrawlFramesCh1824],
         };
       });
 
@@ -174,6 +202,7 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
           sprite: inspectSprite(this, 0),
           ring: inspectRing(this, 0),
           rig: inspectRig(this, 1),
+          sampleFrames: [...this.babyCrawlFramesCh1824],
         };
         (window as any).characterProductionQaReady = true;
       });
