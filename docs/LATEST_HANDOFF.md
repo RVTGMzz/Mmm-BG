@@ -1,3 +1,33 @@
+# NEW CHAT START HERE — 2026-10-09 — CH-18.23 CAU CÓ CANON RIG DETAIL QA
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Build: `0.1.70.4.77 — CH-18.23 CAU CÓ CANON RIG QA`
+
+## Why CH-18.22 CI failed
+Run #3855 reached browser QA and failed on `SECRET BABY ring width drifted`. The previous code borrowed scaleX from an old/hidden large legacy halo, over-scaling the new 78×18 under-foot ring. `syncCharacterTokenPresentationCh189` now clamps the inherited pulse into 0.94–1.08, keeping ring visible for active turn owner below character body. Earlier source build and CH-18.22 rig source test passed. Runtime on new HEAD must be checked, not claimed green in advance.
+
+## CH-18.23 changes
+- Art source `scripts/materialize-cau-co-rig-ch1822.mjs` upgraded with more canon-accurate original vector layers. It still generates 18 **independently editable** transparent SVG layers, not extracted cutouts from the old 48px/192px strips.
+- CAU CÓ canon authority: `docs/character-production/canon/cauco.webp`, male 40–50, stern face, thick brows, salt-and-pepper hair, rectangular gold glasses, moustache/beard, olive pinstripe draped suit with gold crown pin, white shirt/suspenders, crown-pattern tie, brown pleated pants/loafers, crown leather briefcase, emerald ring, gold wristwatch.
+- `src/content/core/character_rig_manifest_ch1822.ts` locks these visual anchors, with `productionApproved: false`.
+- `src/ui/characterRigCh1822.ts` adds smooth idle-to-move blending, stern folded-arm idle, subtle chest breathing over 2200ms, distinct shoulder/elbow and hip/knee rotations, alternating foot lifts and coat/bag lag.
+- `tests/character-rig-ch1822.ts` now checks signature canon graphic details, rig blend/fold animation and bounded active ring pulse.
+- Runtime QA preview stays behind `?cauCoRigPreview=1`, without flag uses prior CAU CÓ production strip. Await visual human approval for revised QA vector art before cutover.
+- SECRET BABY RNG 5%/random-only, face socket/live camera, gameplay authority unchanged.
+- Do not deploy Cloudflare Worker.
+
+## Next
+1. Check CI on final .77 HEAD, fix real new-run failure if any.
+2. Inspect runtime screenshot `runtime-ui-evidence/cau-co-rig-ch1822-qa.png`, evaluate whether clothing proportions, foot plant, animation and ring work at board scale.
+3. Improve/manual redraw layers if they still differ from canon. Do not label pilot vector art as production.
+4. Only after CAU CÓ visuals are approved, migrate the remaining starter characters to separated rigs; SECRET BABY needs distinct crawl rig.
+
+Public mirror (only after passing upload/publish):
+https://ronvotri.github.io/MeMeMe-Web-Playtest/?cauCoRigPreview=1
+
+---
+
 # NEW CHAT START HERE — 2026-10-09 — CH-18.22 CAU CÓ PART-RIG PILOT
 
 Repo: `RVTGMzz/Mmm-BG`  
