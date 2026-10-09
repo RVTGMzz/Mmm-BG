@@ -1,3 +1,38 @@
+# CHECKPOINT — 2026-10-09 — CH-18.23 CAU CÓ RIG QA GREEN
+
+Repository: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Build: `0.1.70.4.77 — CH-18.23 CAU CÓ CANON RIG QA`  
+Last fully verified **code** commit: `c38080462aa9bc737e7f108266a7c460e27f5135`  
+Final full CI: **#3870 SUCCESS** — https://github.com/RVTGMzz/Mmm-BG/actions/runs/37914562321
+
+### Release verification
+- Typecheck/build, CH-18.22 separated-part rig source QA, CH-09 release gate, **full browser regression**, playtest-package validation, artifact upload, and compiled mirror publish all PASS.
+- Build artifact: `mmm-playtest-0.1.70.4.77-ch18-23-cau-co-canon-rig-qa`.
+- Compiled mirror commit: `822ae871eab5c2516b2681b7fdae831d4568ab46` (`Publish compiled playtest c380804`).
+- Mirror GitHub Pages run **#125 SUCCESS**: https://github.com/ronvotri/MeMeMe-Web-Playtest/actions/runs/37915626750
+- Live QA entry: https://ronvotri.github.io/MeMeMe-Web-Playtest/?cauCoRigPreview=1
+- Normal play entry: https://ronvotri.github.io/MeMeMe-Web-Playtest/
+
+### Fixes since previous handoff
+- Previous browser QA failed on SECRET BABY crawl orientation because right/left screenshots came from **fixed timer offsets**, which could capture after motion reversed.
+- `tests/runtime/character-production-board-ui.ts` now records crawl frames and direction only on real movement frames after the inherited Board update; retains independent QA previous positions so the inherited match-state coordinates cannot mask motion.
+- Observed right/left movement of CAU CÓ's puppet rig is recorded separately using its own motion delta. QA waits for real observed directions and 2+ distinct crawl frames.
+- `tests/runtime/character-production-board-ui.mjs` checks measured motion sign and actual sprite flip/pivot behavior.
+- CI runs the Character browser test **first** after Vite starts, ahead of long full-scene screenshots, for faster failure diagnostics.
+- No production art or gameplay changes in this QA-fix slice.
+
+### Production policy / next steps
+- CAU CÓ remains a **preview-only, independently articulated 18-part SVG rig**, with separately authored head/hair/glasses, jacket, torso, arms, legs, shoes and satchel.
+- Motion: folded-arm stern idle with 2200ms breathing; eased idle-to-walk, independent hip/knee/shoulder/elbow pivots; coat/satchel lag.
+- The illustration has improved canon detail but **is not artist-approved / production-admitted**. Must visually review enlarged and at Board 104×104 against `docs/character-production/canon/cauco.webp`; fix proportional/layer errors before default cut-over.
+- `?cauCoRigPreview=1` enables test rig; absent flag keeps old production-strip fallback.
+- After art sign-off, assess migrating KHÓC NHÈ, LO LẮNG, TĂNG ĐỘNG with separate rigs. SECRET BABY needs a distinct crawling-infant rig; never make it a walking toddler.
+- Maintain active ring **under feet**, and preserve face socket/live camera, Secret Baby RANDOM-only/5% HOST authority/max-one constraints.
+- **Do not deploy or modify Cloudflare Worker.**
+
+---
+
 # NEW CHAT START HERE — 2026-10-09 — CH-18.23 CAU CÓ CANON RIG DETAIL QA
 
 Repo: `RVTGMzz/Mmm-BG`  
