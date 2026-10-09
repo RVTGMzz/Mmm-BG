@@ -148,12 +148,26 @@ class CharacterProductionBoardQaScene extends CareerMinigameBoardSceneCh173 {
       }
     }
     const qa = window as any;
+    const grumpyDx = motion.grumpyX - this.lastGrumpyXCh1824;
+    if (grumpy && Math.abs(grumpyDx) > 0.45) {
+      const observedRig = inspectRig(this, 1);
+      if (observedRig) {
+        const rigKey = grumpyDx > 0 ? 'characterRigQaRight' : 'characterRigQaLeft';
+        if (!qa[rigKey]) qa[rigKey] = { ...observedRig, motionDx: grumpyDx };
+      }
+    }
     if (qa.characterProductionQaIdle
       && qa.characterProductionQaRight
       && qa.characterProductionQaLeft
-      && this.babyCrawlFramesCh1824.size >= 2) {
+      && this.babyCrawlFramesCh1824.size >= 2
+      && (!qa.characterProductionQaIdle.rig
+        || (qa.characterRigQaRight && qa.characterRigQaLeft))) {
       qa.characterProductionQaRight.sampleFrames = [...this.babyCrawlFramesCh1824];
       qa.characterProductionQaLeft.sampleFrames = [...this.babyCrawlFramesCh1824];
+      if (qa.characterProductionQaIdle.rig) {
+        qa.characterProductionQaRight.rig = qa.characterRigQaRight;
+        qa.characterProductionQaLeft.rig = qa.characterRigQaLeft;
+      }
       qa.characterProductionQaReady = true;
     }
     this.lastBabyXCh1824 = motion.babyX;
