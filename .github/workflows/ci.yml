@@ -407,13 +407,14 @@ jobs:
         run: |
           npm run dev -- --host 127.0.0.1 > /tmp/mmm-vite.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:5173/ >/dev/null && break; sleep 1; done
+          # Fast-fail Character rig/crawl fixture before long full-scene screenshots.
+          node tests/runtime/character-production-board-ui.mjs
           node tests/runtime/scroll-viewport.mjs
           node tests/runtime/full-scene-ui.mjs
           node tests/runtime/quick-minigame-menu-ui.mjs
           node tests/runtime/visual-refresh-ch17-ui.mjs
           node tests/runtime/presentation-feedback-ch1713.mjs
           node tests/runtime/character-select-ui.mjs
-          node tests/runtime/character-production-board-ui.mjs
           node tests/runtime/match-recap-ui.mjs
           node tests/runtime/settings-space-ui.mjs
           node tests/runtime/online-entry-ui.mjs
