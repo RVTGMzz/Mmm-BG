@@ -1,3 +1,19 @@
+# CHECKPOINT — 2026-10-09 — CH-18.24 CAU CÓ SILHOUETTE CORRECTION
+
+Repo `RVTGMzz/Mmm-BG` / `mmm-mvp-0.1-dev`; build `0.1.70.4.78`.
+Baseline last FULL green: CI #3870 for `c38080462aa9bc737e7f108266a7c460e27f5135` (.77).
+This .78 slice is NOT declared green until latest CI reaches artifact + publish.
+
+User rejected distorted CAU CÓ artwork. Do not claim the old independently invented 18 SVG parts are canon-accurate simply because code/animation CI passes. Use the actual approved source `docs/character-production/canon/cauco.webp`. Specifically: viewer-LEFT low leather bag, shoulder-draped SHORT olive jacket (not full-length), gold glasses, swept salt-pepper hair, stern male age 40–50, formal suit, long pants and loafers.
+
+Changes: `src/content/core/character_rig_manifest_ch1822.ts` now includes explicit `geometryLock`; `src/ui/characterRigCh1822.ts` scales jacket down 0.90×0.82, scales satchel down 0.76×0.55, moves satchel to x=-49/y=110, paints it in front of torso/leg layers, and reduces coat/bag swing. `tests/character-rig-silhouette-ch1824.ts` statically enforces geometry/reference identity; browser QA `tests/runtime/character-production-board-ui.mjs` generates `runtime-ui-evidence/cau-co-rig-vs-canon-ch1824.png` beside original concept.
+
+Critical: current SVGs remain **manually approximated vector illustrations**, NOT professionally separated layers of canon illustration; must review screenshot evidence & improve/redraw source parts further before production cut-over. Default sprite production fallback unchanged; QA mode `?cauCoRigPreview=1` only. Do not change face socket/live camera, SECRET BABY RANDOM rules, active ring position, or Cloudflare Worker.
+
+Next: check final HEAD CI for real failed steps; inspect reference-vs-rig evidence and fix any silhouette mismatches; get human art sign-off before enabling rig by default.
+
+---
+
 # CHECKPOINT — 2026-10-09 — CH-18.23 CAU CÓ RIG QA GREEN
 
 Repository: `RVTGMzz/Mmm-BG`  

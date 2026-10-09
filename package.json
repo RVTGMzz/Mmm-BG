@@ -196,7 +196,8 @@
     "test:character-production-walk-ch1818": "tsx tests/character-production-walk-ch1818.ts",
     "test:character-production-crawl-ch1819": "tsx tests/character-production-crawl-ch1819.ts",
     "test:character-animation-cleanup-ch1820": "tsx tests/character-animation-cleanup-ch1820.ts",
-    "test:character-rig-ch1822": "tsx tests/character-rig-ch1822.ts"
+    "test:character-rig-ch1822": "tsx tests/character-rig-ch1822.ts",
+    "test:character-rig-silhouette-ch1824": "tsx tests/character-rig-silhouette-ch1824.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

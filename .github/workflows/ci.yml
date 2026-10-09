@@ -335,6 +335,8 @@ jobs:
         run: npm run test:character-animation-cleanup-ch1820
       - name: CH-18.22 CAU CO separated-parts rig QA
         run: npm run test:character-rig-ch1822
+      - name: CH-18.24 CAU CO silhouette / proportions gate
+        run: npm run test:character-rig-silhouette-ch1824
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -431,11 +433,11 @@ jobs:
         run: npm run test:package
       - name: Add retained playtest guide to package
         run: cp docs/PLAYTEST_0.1.70.1_RELEASE_FLOW_UI_DENSITY.md dist/PLAYTEST_GUIDE.md
-      - name: Upload MMM 0.1.70.4.77 CH-18.23 CAU CO Canon Rig QA build
+      - name: Upload MMM 0.1.70.4.78 CH-18.24 CAU CO Silhouette QA build
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: mmm-playtest-0.1.70.4.77-ch18-23-cau-co-canon-rig-qa
+          name: mmm-playtest-0.1.70.4.78-ch18-24-cau-co-silhouette-qa
           path: dist
           if-no-files-found: error
           retention-days: 14
