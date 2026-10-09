@@ -61,6 +61,8 @@ try {
   assert.ok(baby.ring?.width >= 70 && baby.ring?.width <= 86, 'SECRET BABY ring width drifted');
   assert.ok(baby.ring?.height >= 16 && baby.ring?.height <= 24, 'SECRET BABY ring height drifted');
 
+  assert.ok(state.right.motionDx > 0, 'right sample must have measured positive QA velocity');
+  assert.ok(state.left.motionDx < 0, 'left sample must have measured negative QA velocity');
   assert.ok(new Set(state.right.sampleFrames ?? []).size >= 2,
     'SECRET BABY crawl must cycle through multiple real sprite frames under test-only motion');
   assert.equal(state.right.sprite?.flipX, false, 'SECRET BABY moving right should not flip');
@@ -90,6 +92,8 @@ try {
   assert.equal(rigState.idle.rig?.visible, true, 'CAU CÓ independent-part rig did not load');
   assert.ok(rigState.idle.rig?.imageParts >= 2, 'rig has no independently rendered parts');
   assert.ok(Math.abs(rigState.idle.rig.scaleX) > 0, 'rig missing source-to-board transform');
+  assert.ok(rigState.right.rig?.motionDx > 0 && rigState.left.rig?.motionDx < 0,
+    'CAU CÓ rig must record directional walk, not a timer-derived pose');
   assert.notEqual(rigState.right.rig?.hipAngle, rigState.idle.rig.hipAngle,
     'hip pivot does not move independently');
   assert.notEqual(rigState.right.rig?.shoulderAngle, rigState.idle.rig.shoulderAngle,
