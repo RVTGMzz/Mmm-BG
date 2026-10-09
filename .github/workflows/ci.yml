@@ -42,6 +42,8 @@ jobs:
           path: build.log
           if-no-files-found: error
           retention-days: 2
+      - name: Preflight parse Character browser QA
+        run: node --check tests/runtime/character-production-board-ui.mjs
       - name: Deterministic replay fixture
         run: npm run test:replay
       - name: Lockstep peer simulator
