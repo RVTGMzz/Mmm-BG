@@ -101,6 +101,30 @@ try {
   assert.ok(rigState.right.rig.scaleX > 0 && rigState.left.rig.scaleX < 0,
     'rig must preserve right/left facing');
   await pilot.screenshot({ path: 'runtime-ui-evidence/cau-co-rig-ch1822-qa.png' });
+
+  // Visual approval is a HUMAN gate. Emit side-by-side evidence from the
+  // real Phaser rig (not another approximate puppet rendering) and the exact
+  // repo canon webp so artistic silhouette drift is immediately obvious.
+  await pilot.evaluate(() => {
+    const panel = document.createElement('aside');
+    panel.id = 'cau-co-canon-review-overlay-ch1824';
+    panel.style.cssText = 'position:fixed;left:8px;top:8px;width:348px;height:652px;'
+      + 'z-index:2147483647;background:#fffaef;border:3px solid #694937;'
+      + 'border-radius:10px;box-shadow:0 8px 28px #35281b88;overflow:hidden;'
+      + 'pointer-events:none';
+    const label = document.createElement('div');
+    label.textContent = 'CANON CAU CÓ (gốc) — so với rig bên phải';
+    label.style.cssText = 'height:36px;padding:9px 8px 0;box-sizing:border-box;'
+      + 'font:bold 13px Arial;color:#543828;background:#ffdf99';
+    const portrait = document.createElement('div');
+    portrait.style.cssText = 'height:615px;width:348px;'
+      + 'background-image:url("/docs/character-production/canon/cauco.webp");'
+      + 'background-size:628px 785px;background-position:-5px -56px;'
+      + 'background-repeat:no-repeat;background-color:#fff1dc';
+    panel.append(label, portrait);
+    document.body.appendChild(panel);
+  });
+  await pilot.screenshot({ path: 'runtime-ui-evidence/cau-co-rig-vs-canon-ch1824.png' });
   await pilot.close();
   console.log('[character-rig-ch1822-runtime] PASS gated independent-part rig + hip/shoulder motion + facing');
 } finally {
