@@ -61,7 +61,8 @@ try {
   assert.ok(baby.ring?.width >= 70 && baby.ring?.width <= 86, 'SECRET BABY ring width drifted');
   assert.ok(baby.ring?.height >= 16 && baby.ring?.height <= 24, 'SECRET BABY ring height drifted');
 
-  assert.notEqual(String(state.right.sprite?.frame), String(baby.sprite?.frame), 'SECRET BABY crawl frame did not advance while moving');
+  assert.ok(new Set(state.right.sampleFrames ?? []).size >= 2,
+    'SECRET BABY crawl must cycle through multiple real sprite frames under test-only motion');
   assert.equal(state.right.sprite?.flipX, false, 'SECRET BABY moving right should not flip');
   assert.equal(state.left.sprite?.flipX, true, 'SECRET BABY moving left should flip');
   assert.equal(state.right.sprite?.textureKey, expectedTextures[0]);
