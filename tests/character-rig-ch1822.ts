@@ -27,6 +27,21 @@ for(const id of CAU_CO_RIG_PILOT_CH1822.partIds) {
     id + ' cannot hide a pre-flattened or scaled sprite inside SVG');
 }
 
+const artSource = await readFile('scripts/materialize-cau-co-rig-ch1822.mjs', 'utf8');
+for (const anchor of [
+  'linearGradient id="coat"',
+  'pattern id="stripe"',
+  'linearGradient id="leather"',
+  'linearGradient id="skin"',
+  'linearGradient id="silver"',
+  'linearGradient id="gold"',
+  'fill="#25855f"',
+  'stop-color="#e8',
+  'fill="#d6a64f"',
+]) {
+  assert(artSource.includes(anchor), 'CAU CÓ rig canon detail missing: ' + anchor);
+}
+
 const runtime = await readFile('src/ui/characterRigCh1822.ts', 'utf8');
 const board = await readFile('src/scenes/CareerMinigameBoardSceneCh173.ts', 'utf8');
 assert(runtime.includes('scene.add.container('));
@@ -34,6 +49,14 @@ assert(runtime.includes('character-rig-knee-ch1822'));
 assert(runtime.includes('character-rig-elbow-ch1822'));
 assert(runtime.includes('character-rig-shoulder-ch1822'));
 assert(runtime.includes('2200'), 'idle breathing cadence missing');
+assert(runtime.includes('walkBlend') && runtime.includes('145'),
+  'idle-to-walk blended movement is required');
+assert(runtime.includes('-61 * resting') && runtime.includes('61 * resting'),
+  'CAU CÓ stern folded-arm idle pose missing');
+assert(runtime.includes('footLiftL') && runtime.includes('footLiftR'),
+  'walk must alternate foot lifts');
+assert(board.includes('footRingPulse') && board.includes('Math.min(1.08'),
+  'under-foot ring scale must be clamped independent of obsolete halo pulse');
 assert(runtime.includes('moving ? 14') || runtime.includes('14 * stride'), 'alternating walk missing');
 assert(board.includes('cauCoRigPreviewEnabledCh1822()'));
 assert(board.includes('cauCoRigPartsReadyCh1822(this)'));
