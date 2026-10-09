@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "materialize:brand": "node scripts/materialize-brand.mjs",
+    "materialize:cau-co-rig-ch1822": "node scripts/materialize-cau-co-rig-ch1822.mjs",
     "materialize:sfx": "node scripts/materialize-sfx.mjs",
-    "predev": "npm run materialize:sfx && npm run materialize:character-art",
+    "predev": "npm run materialize:sfx && npm run materialize:character-art && npm run materialize:cau-co-rig-ch1822",
     "dev": "vite",
-    "predev:playtest": "npm run materialize:sfx && npm run materialize:character-art",
+    "predev:playtest": "npm run materialize:sfx && npm run materialize:character-art && npm run materialize:cau-co-rig-ch1822",
     "dev:playtest": "vite --host 0.0.0.0",
-    "prebuild": "npm run materialize:sfx && npm run materialize:character-art",
+    "prebuild": "npm run materialize:sfx && npm run materialize:character-art && npm run materialize:cau-co-rig-ch1822",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test:replay": "tsx tests/replay-determinism.ts",
@@ -194,7 +195,8 @@
     "test:character-production-walk-ch1817": "tsx tests/character-production-walk-ch1817.ts",
     "test:character-production-walk-ch1818": "tsx tests/character-production-walk-ch1818.ts",
     "test:character-production-crawl-ch1819": "tsx tests/character-production-crawl-ch1819.ts",
-    "test:character-animation-cleanup-ch1820": "tsx tests/character-animation-cleanup-ch1820.ts"
+    "test:character-animation-cleanup-ch1820": "tsx tests/character-animation-cleanup-ch1820.ts",
+    "test:character-rig-ch1822": "tsx tests/character-rig-ch1822.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"
