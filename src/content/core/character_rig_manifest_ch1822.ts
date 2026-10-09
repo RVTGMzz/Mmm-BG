@@ -21,6 +21,21 @@ export const CAU_CO_RIG_PILOT_CH1822 = {
   partsPath: 'assets/characters/ch1822/cau-co/',
   baseResolution: 192,
   displaySize: 104,
+  // Silhouette anchors measured from the CANON character, not guessed by
+  // decoration. Source coordinates are relative to the rig center (x=0).
+  // A compact bag hangs to the viewer's LEFT and the coat ends above the shoes.
+  geometryLock: {
+    coat: { x: 0, y: 55, scaleX: 0.90, scaleY: 0.82 },
+    satchel: { x: -49, y: 110, scaleX: 0.76, scaleY: 0.55 },
+    // Fixed point shared by both shoes and the board token's ground contact.
+    soleY: 188,
+    headTopY: 9,
+    shoulderY: 77,
+    hipY: 110,
+    torsoY: 100,
+    maxHeadToBodyScaleDrift: 0.015,
+    maxWalkBodyBouncePx: 1.6,
+  } as const,
   partIds: [
     'coat-back', 'satchel', 'leg-upper-left', 'leg-upper-right',
     'leg-lower-left', 'leg-lower-right', 'shoe-left', 'shoe-right',
