@@ -1,3 +1,36 @@
+# NEW CHAT START HERE — 2026-10-09 — CH-18.22 CAU CÓ PART-RIG PILOT
+
+Repo: `RVTGMzz/Mmm-BG`  
+Branch: `mmm-mvp-0.1-dev`  
+Build: `0.1.70.4.76 — CH-18.22 CAU CÓ RIG PILOT`
+
+## Objective
+User rejected full-frame cutout strip animation and requested independently articulated character parts. We are migrating carefully; do not declare preview art production-approved or change canon silhouette.
+
+## CH-18.22 implemented
+- Corrected real active foot-ring bug: `syncCharacterTokenPresentationCh189` used hidden legacy halo visibility as source, making ring disappear after first update. Now active state is `player.id === currentPlayer()?.id`. Ring stays below token.
+- Added `src/content/core/character_rig_manifest_ch1822.ts` with 18 independent part identifiers, canon pointer, and `productionApproved: false`.
+- Added `scripts/materialize-cau-co-rig-ch1822.mjs`: hand-authored, editable SVG layers, NOT extraction or upscale of existing walk strip.
+- Added `src/ui/characterRigCh1822.ts`: Phaser container hierarchy with elbow/knee pivots, head/torso, coat/bag, breathing and alternating walk phase.
+- Rig is opt-in via `?cauCoRigPreview=1`. Default CAU CÓ production PNG remains fallback until visual canon review.
+- Integrated into `src/scenes/CareerMinigameBoardSceneCh173.ts` with preload, all-parts-present check, production fallback, update and shutdown cleanup.
+- Materializer now executes in predev, predev:playtest and prebuild.
+- Added `tests/character-rig-ch1822.ts` and extended `tests/runtime/character-production-board-ui.mjs` for rig preview / pivots / flip / foot ring.
+- No changes to face socket, live camera, SECRET BABY random-only/5%, gameplay authority or Cloudflare Worker.
+
+## Honest art status
+These SVG parts are a mechanically functional vector rig illustration, not pixel-perfect extracted/high-res production rig art. Needs visual approval and possibly replacement with manually authored high-quality layers matching `docs/character-production/canon/cauco.webp`. Do not auto cut over other characters.
+
+## Next work
+1. Check latest CI on final HEAD, fix only real failing step.
+2. View QA demo via `https://ronvotri.github.io/MeMeMe-Web-Playtest/?cauCoRigPreview=1` once published.
+3. Verify idle, steps, elbow/knee articulation, cape/bag sway, ring, 104px readability. Collect design feedback.
+4. Improve the authored layer art against the canon before making CAU CÓ rig production.
+5. Then plan LO LẮNG / TĂNG ĐỘNG; SECRET BABY needs separate crawl rig.
+6. Do not deploy Cloudflare Worker.
+
+---
+
 # NEW CHAT START HERE — 2026-10-06 — CH-18.20 CHARACTER ANIMATION REPAIR
 
 Repo: `RVTGMzz/Mmm-BG`  
