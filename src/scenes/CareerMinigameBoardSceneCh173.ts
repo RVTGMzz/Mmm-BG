@@ -12,6 +12,9 @@ import {
   CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
 } from '../ui/characterProductionArtCh181';
 import { publicAssetUrl } from '../ui/publicAssetUrl';
+import { cauCoRigPreviewEnabledCh1822 } from '../content/core/character_rig_manifest_ch1822';
+import { preloadCauCoRigCh1822, cauCoRigPartsReadyCh1822, createCauCoRigCh1822 } from '../ui/characterRigCh1822';
+import type { CauCoRigCh1822 } from '../ui/characterRigCh1822';
 import { onlineGroupMedia07043 } from '../ui/OnlineGroupMedia07043';
 import { CareerMinigameBoardScene07044 } from './CareerMinigameBoardScene07044';
 
@@ -95,6 +98,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
   private boardPathChromeCh175?: Phaser.GameObjects.Graphics;
   private readonly boardTileSkinsCh175 = new Map<Phaser.GameObjects.Rectangle, Phaser.GameObjects.Graphics>();
   private readonly characterWalkSpritesCh181 = new Map<number, Phaser.GameObjects.Sprite>();
+  private readonly cauCoRigPilotCh1822 = new Map<number, CauCoRigCh1822>();
   private readonly characterWalkRowsCh181 = new Map<number, number>();
   private readonly characterWalkLastPositionsCh181 = new Map<number, { x: number; y: number }>();
   private readonly characterFaceCompositeImagesCh187 = new Map<number, Phaser.GameObjects.Image>();
@@ -105,6 +109,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
 
   preload(): void {
     super.preload();
+    if (cauCoRigPreviewEnabledCh1822()) preloadCauCoRigCh1822(this);
     if (!this.textures.exists('character-walk-atlas-ch181')) {
       this.load.spritesheet(
         'character-walk-atlas-ch181',
@@ -364,6 +369,20 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
         .setData('idleBaseScaleXCh1813', sprite.scaleX)
         .setData('idleBaseScaleYCh1813', sprite.scaleY);
       visual.token.addAt(sprite, 1);
+
+      // CH-18.22: opt-in rig pilot only, never override the approved production
+      // strip when QA parts have not all loaded or the preview flag is absent.
+      if (
+        player.characterId === 'starter-grumpy'
+        && cauCoRigPreviewEnabledCh1822()
+        && cauCoRigPartsReadyCh1822(this)
+      ) {
+        const rig = createCauCoRigCh1822(this, player.id, CHARACTER_TOKEN_BASE_Y_CH186);
+        visual.token.addAt(rig.root, 1);
+        sprite.setVisible(false);
+        this.cauCoRigPilotCh1822.set(player.id, rig);
+        rig.pose(this.time.now, false, 0);
+      }
 
       this.characterWalkSpritesCh181.set(player.id, sprite);
       this.characterWalkRowsCh181.set(player.id, row);
@@ -676,6 +695,13 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       const dx = visual.token.x - previous.x;
       const dy = visual.token.y - previous.y;
       const moving = Math.hypot(dx, dy) > 0.45;
+      const rig = this.cauCoRigPilotCh1822.get(playerId);
+      if (rig) {
+        rig.pose(this.time.now, moving, dx);
+        previous.x = visual.token.x;
+        previous.y = visual.token.y;
+        continue;
+      }
       const faceComposite = this.characterFaceCompositeImagesCh187.get(playerId);
 
       if (faceComposite?.active && faceComposite.visible) {
@@ -974,6 +1000,8 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
     this.directDiceSkinCh173 = undefined;
     this.directDiceTextCh173 = undefined;
     this.boardPathChromeCh175 = undefined;
+    for (const rig of this.cauCoRigPilotCh1822.values()) rig.root.destroy();
+    this.cauCoRigPilotCh1822.clear();
     for (const sprite of this.characterWalkSpritesCh181.values()) sprite.destroy();
     this.characterWalkSpritesCh181.clear();
     for (const ring of this.characterFootRingsCh189.values()) ring.destroy();
