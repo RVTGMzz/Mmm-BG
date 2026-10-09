@@ -251,7 +251,12 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       if (!ring) continue;
 
       const inheritedActive = player.id === activeId;
+      // The inherited halo can pulse at scales intended for its old large ring.
+      // Normalize the new 78x18 under-foot ring independently so it cannot
+      // become wider than the character's stance in real runtime.
       const inheritedPulse = legacyHalo?.scaleX ?? 1;
+      const footRingPulse = Math.min(1.08, Math.max(0.94,
+        Number.isFinite(inheritedPulse) ? inheritedPulse : 1));
       const inheritedAlpha = legacyHalo?.alpha ?? 0.72;
 
       // Keep ancestor turn ownership/camera semantics, but never draw its torso ring.
@@ -259,7 +264,7 @@ export class CareerMinigameBoardSceneCh173 extends CareerMinigameBoardScene07044
       ring
         .setVisible(inheritedActive)
         .setAlpha(Math.max(0.42, inheritedAlpha))
-        .setScale(Math.max(0.94, inheritedPulse));
+        .setScale(footRingPulse);
     }
   }
 
