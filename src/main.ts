@@ -26,7 +26,7 @@ import { SetupScene } from './scenes/SetupScene';
 import { TurnOrderSceneCh17 as TurnOrderScene } from './scenes/TurnOrderSceneCh17';
 import { BoardScene } from './scenes/BoardScene';
 import { NetworkBoardScene } from './scenes/NetworkBoardScene';
-import { CareerMinigameBoardSceneCh173 as ActiveBoardScene } from './scenes/CareerMinigameBoardSceneCh173';
+import { CareerMinigameBoardSceneIslandCh19 as ActiveBoardScene } from './scenes/CareerMinigameBoardSceneIslandCh19';
 import { FinalMapPreviewScene050 } from './scenes/FinalMapPreviewScene050';
 import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';

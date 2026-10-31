@@ -38,7 +38,7 @@ assert.equal(BOARD.id, 'city-mvp-graph-01', 'Presentation pass must not fork aut
 assert.equal(BOARD.nodes.filter((node) => node.id >= 0 && node.id < 44).length, 44);
 assert.equal(BOARD.nodes.filter((node) => node.feature === 'minigame' && node.id < 44).length, 5);
 
-assert(mainSource.includes('CareerMinigameBoardSceneCh173 as ActiveBoardScene'), 'Canonical runtime may advance presentation wrappers while preserving the validated chain.');
+assert(mainSource.includes('CareerMinigameBoardSceneIslandCh19 as ActiveBoardScene'), 'Canonical runtime may advance presentation wrappers while preserving the validated chain.');
 assert(sceneCh173Source.includes('extends CareerMinigameBoardScene07044'), 'CH-17.3 must stay presentation-only above the validated 0.1.70.4.4 chain.');
 assert(!sceneCh173Source.includes('Math.random')); assert(!sceneCh173Source.includes('submitIntent('));
 assert(scene07044Source.includes('extends CareerMinigameBoardScene0701'), '0.1.70.4.4 must remain presentation-only above the validated 0.1.70.1 chain.');

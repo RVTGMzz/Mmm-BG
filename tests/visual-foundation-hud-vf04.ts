@@ -75,7 +75,7 @@ assert.match(scene44, /HUD_BASE_WIDTH_07046 = HUD_SKIN_VF04.width/);
 assert.match(scene44, /HUD_BASE_HEIGHT_07046 = HUD_SKIN_VF04.height/);
 assert.match(scene44, /ACTIVE_HUD_SCALE_07046 = 1\.18/);
 assert.match(sceneCh173, /extends CareerMinigameBoardScene07044/);
-assert.match(main, /CareerMinigameBoardSceneCh173 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardSceneIslandCh19 as ActiveBoardScene/);
 assert.match(helper, /fillRoundedRect/);
 assert.match(helper, /strokeRoundedRect/);
 assert.match(helper, /if \(active\)/);

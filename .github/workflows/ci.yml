@@ -337,6 +337,8 @@ jobs:
         run: npm run test:character-rig-ch1822
       - name: CH-18.24 CAU CO silhouette / proportions gate
         run: npm run test:character-rig-silhouette-ch1824
+      - name: CH-19 City Island board presentation
+        run: npm run test:city-island-board-ch19
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle
@@ -470,7 +472,9 @@ jobs:
           # BGM, SFX, manifest and future public assets can never be dropped.
           # Keep the mirror's own GitHub Pages workflow. Removing .github here
           # silently disabled future Pages deploys and caused the public 404.
-          find public-mirror -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' -exec rm -rf {} +
+          # Also keep mirror-only QA (tests/, handoff notes, replay baselines) that the
+          # mirror's own workflows run against; they are not part of dist/.
+          find public-mirror -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '.github' ! -name 'tests' ! -name '*.md' ! -name 'OUTLIER_REPLAY_*.txt' ! -name 'SIMULATION_BASELINE_*.txt' -exec rm -rf {} +
           cp -a dist/. public-mirror/
           sed -i '1i<!-- Compiled playtest build only. Source is not mirrored here. -->' public-mirror/index.html
 

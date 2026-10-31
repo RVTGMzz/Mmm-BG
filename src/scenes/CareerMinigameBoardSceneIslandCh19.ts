@@ -1,0 +1,327 @@
+import Phaser from 'phaser';
+import boardJson from '../content/city/board_city_mvp.json';
+import type { MatchState } from '../core/matchState';
+import type { BoardDefinition, BoardNode } from '../core/types';
+import { effectiveBoardNode071 } from '../core/lapShuffle071';
+import {
+  ISLAND_PALETTE_CH19,
+  buildCityIslandSceneryCh19,
+  rasterizeIslandSceneryCh19,
+  shadeCh19,
+  type IslandLabelCh19,
+} from '../ui/cityIslandSceneryCh19';
+import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
+import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
+
+const BOARD_CH19 = boardJson as BoardDefinition;
+const SCENERY_TEXTURE_CH19 = 'city-island-scenery-ch19';
+const SCENERY_DEPTH_CH19 = -45;
+const LABEL_DEPTH_CH19 = -40;
+const TILE_DEPTH_CH19 = 4.2;
+
+type TileLook = {
+  kind: 'start' | 'plain' | 'disc';
+  color?: number;
+  symbol?: string;
+  big?: boolean;
+  small?: boolean;
+};
+
+const hex = (n: number): string => '#' + n.toString(16).padStart(6, '0');
+const num = (s: string): number => parseInt(s.slice(1), 16);
+
+const TILE_COLORS_CH19 = {
+  purple: 0x8b4fe0,
+  red: 0xe5363f,
+  gold: 0xf7c531,
+  green: 0x3dba5c,
+  blue: 0x2f7fe0,
+  pink: 0xf0509a,
+  orange: 0xf4a23b,
+  slate: 0x6b7488,
+} as const;
+
+/**
+ * CH-19 City Island board (presentation only).
+ *
+ * Replaces the flat green board, thin edge lines and plain round tiles with the
+ * island look from docs/MEMEME_UI_REFERENCE_4PLAYER_HUD_V1.png. Gameplay,
+ * authority, tokens, HUD and camera rig are inherited untouched. Inherited tile
+ * objects stay alive (for any lookup/tween code) but are made invisible; this
+ * layer redraws every tile from the authoritative Lap Shuffle assignment.
+ */
+export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardSceneCh173 {
+  private readonly islandTilesCh19 = new Map<number, Phaser.GameObjects.Container>();
+  private readonly hiddenTileObjectsCh19: { alpha: number; setAlpha(value: number): unknown }[] = [];
+  private readonly hiddenTileTextsCh19: Phaser.GameObjects.Text[] = [];
+  private islandSignatureCh19 = '';
+  private islandSceneryCh19?: Phaser.GameObjects.Image;
+  private islandLabelsCh19: Phaser.GameObjects.Container[] = [];
+  private readonly tileNumbersCh19 = tileNumbersCh19(BOARD_CH19);
+
+  create(): void {
+    super.create();
+    this.cameras.main.setBackgroundColor(ISLAND_PALETTE_CH19.sea);
+    this.hideLegacyBoardCh19();
+    this.syncIslandTilesCh19(false);
+    // Let the first board frame render before the one-off scenery build.
+    this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
+
+    const cleanup = () => {
+      this.islandTilesCh19.clear();
+      this.hiddenTileObjectsCh19.length = 0;
+      this.hiddenTileTextsCh19.length = 0;
+      this.islandLabelsCh19 = [];
+      this.islandSceneryCh19 = undefined;
+      this.islandSignatureCh19 = '';
+    };
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, cleanup);
+    this.events.once(Phaser.Scenes.Events.DESTROY, cleanup);
+  }
+
+  update(): void {
+    super.update();
+    // Ancestor tweens (e.g. Lap Shuffle fade-in) may restore alpha; keep them hidden.
+    for (const object of this.hiddenTileObjectsCh19) if (object.alpha > 0.001) object.setAlpha(0.001);
+    for (const text of this.hiddenTileTextsCh19) if (text.alpha > 0) text.setAlpha(0);
+    this.syncIslandTilesCh19(true);
+  }
+
+  /* ------------------------------------------------------------------ legacy */
+
+  private hideLegacyBoardCh19(): void {
+    const positions = new Set(BOARD_CH19.nodes.map((node) => `${Math.round(node.x)}:${Math.round(node.y)}`));
+    const atNode = (object: { x: number; y: number }) => positions.has(`${Math.round(object.x)}:${Math.round(object.y)}`);
+
+    for (const object of this.children.list) {
+      const depth = (object as Phaser.GameObjects.GameObject & { depth?: number }).depth ?? 0;
+      // Flat green planes / blobs behind the board.
+      if (depth < 0 && depth > SCENERY_DEPTH_CH19 - 10 && 'setAlpha' in object) {
+        (object as unknown as { setAlpha(value: number): unknown }).setAlpha(0);
+        continue;
+      }
+      // Edge lines (0.1.56.1) and the CH-17.5 path chrome.
+      if (object instanceof Phaser.GameObjects.Graphics && depth <= 0.5) {
+        object.setAlpha(0);
+        continue;
+      }
+      // Canonical round tiles + CH-17.5 rectangle skins.
+      if ((object instanceof Phaser.GameObjects.Arc || object instanceof Phaser.GameObjects.Rectangle) && depth === 4 && atNode(object)) {
+        object.setAlpha(0.001);
+        this.hiddenTileObjectsCh19.push(object);
+        continue;
+      }
+      if (object instanceof Phaser.GameObjects.Graphics && object.name === 'board-tile-skin-ch175') {
+        object.setAlpha(0);
+        continue;
+      }
+      if (
+        object instanceof Phaser.GameObjects.Text && depth === 5
+        && BOARD_CH19.nodes.some((n) => Math.abs(n.x - object.x) < 4 && Math.abs(n.y - object.y) < 4)
+      ) {
+        object.setAlpha(0);
+        this.hiddenTileTextsCh19.push(object);
+        continue;
+      }
+      // 0.1.59 arena identity badges sit just under a tile at 7px: make them readable pills.
+      if (
+        object instanceof Phaser.GameObjects.Text && depth === 5
+        && BOARD_CH19.nodes.some((n) => Math.abs(n.x - object.x) < 1 && object.y > n.y && object.y - n.y <= 60)
+      ) {
+        object
+          .setFontFamily(MOBILE_UI_FONT_07044)
+          .setFontSize(15)
+          .setColor(ISLAND_PALETTE_CH19.navy)
+          .setBackgroundColor('#ffffff')
+          .setPadding(8, 3, 8, 3)
+          .setY(object.y + 18)
+          .setDepth(TILE_DEPTH_CH19 + 0.1);
+      }
+    }
+  }
+
+  /* ------------------------------------------------------------------ scenery */
+
+  private async installIslandSceneryCh19(): Promise<void> {
+    try {
+      const scenery = buildCityIslandSceneryCh19(BOARD_CH19);
+      if (!this.textures.exists(SCENERY_TEXTURE_CH19)) {
+        const canvas = await rasterizeIslandSceneryCh19(scenery.svg, scenery.bounds);
+        if (!this.sys.isActive() && !this.sys.isPaused()) return;
+        if (!this.textures.exists(SCENERY_TEXTURE_CH19)) this.textures.addCanvas(SCENERY_TEXTURE_CH19, canvas);
+      }
+      if (!this.sys.isActive() && !this.sys.isPaused()) return;
+      const b = scenery.bounds;
+      this.islandSceneryCh19 = this.add.image(b.x, b.y, SCENERY_TEXTURE_CH19)
+        .setOrigin(0, 0)
+        .setDisplaySize(b.w, b.h)
+        .setDepth(SCENERY_DEPTH_CH19)
+        .setName('city-island-scenery-ch19')
+        .setAlpha(0);
+      this.tweens.add({ targets: this.islandSceneryCh19, alpha: 1, duration: 280, ease: 'Sine.easeOut' });
+      this.installDistrictLabelsCh19(scenery.labels);
+    } catch (error) {
+      // Scenery is decorative: the board stays fully playable on the sea colour.
+      console.warn('[CH-19] island scenery unavailable', error);
+    }
+  }
+
+  private installDistrictLabelsCh19(labels: IslandLabelCh19[]): void {
+    const placed: { x: number; y: number; w: number }[] = [];
+    for (const label of labels) {
+      const w = Math.max(label.title.length * 15 + 40, label.subtitle.length * 8.6 + 30);
+      const clear = (y: number) =>
+        BOARD_CH19.nodes.every((n) => Math.abs(n.x - label.x) > w / 2 + 50 || Math.abs(n.y - y) > 85)
+        && placed.every((o) => Math.abs(o.x - label.x) > (o.w + w) / 2 + 20 || Math.abs(o.y - y) > 80);
+      let y = label.y;
+      for (let k = 0; k < 30 && !clear(y); k++) y = label.y + (k % 2 ? 1 : -1) * 24 * Math.ceil((k + 1) / 2);
+      placed.push({ x: label.x, y, w });
+
+      const root = this.add.container(label.x, y).setDepth(LABEL_DEPTH_CH19).setName('city-island-label-ch19');
+      const plate = this.add.graphics();
+      plate.fillStyle(0x14243f, 0.35).fillRoundedRect(-w / 2, -26, w, 62, 14);
+      plate.fillStyle(num(ISLAND_PALETTE_CH19.navy), 1).fillRoundedRect(-w / 2, -31, w, 62, 14);
+      plate.lineStyle(3, 0xffffff, 1).strokeRoundedRect(-w / 2, -31, w, 62, 14);
+      const title = this.add.text(0, -9, label.title, {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: '24px', fontStyle: 'bold', color: '#ffffff',
+      }).setOrigin(0.5);
+      const subtitle = this.add.text(0, 16, label.subtitle, {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: '14px', color: '#c9e4ff',
+      }).setOrigin(0.5);
+      root.add([plate, title, subtitle]);
+      this.islandLabelsCh19.push(root);
+    }
+  }
+
+  /* ------------------------------------------------------------------ tiles */
+
+  private matchCh19(): MatchState | undefined {
+    return (this as unknown as { match?: MatchState }).match;
+  }
+
+  private syncIslandTilesCh19(animate: boolean): void {
+    const assignments = this.matchCh19()?.boardContentAssignments;
+    const signature = (assignments ?? []).map((a) => `${a.nodeId}>${a.sourceNodeId}`).join(',');
+    if (signature === this.islandSignatureCh19 && this.islandTilesCh19.size > 0) return;
+    const firstDraw = this.islandTilesCh19.size === 0;
+    this.islandSignatureCh19 = signature;
+
+    BOARD_CH19.nodes.forEach((target, index) => {
+      const node = effectiveBoardNode071(BOARD_CH19, target.id, assignments);
+      const look = this.tileLookCh19(target, node);
+      const key = JSON.stringify(look);
+      const existing = this.islandTilesCh19.get(target.id);
+      if (existing?.getData('look') === key) return;
+      existing?.destroy(true);
+
+      const tile = this.drawTileCh19(target, look).setData('look', key);
+      this.islandTilesCh19.set(target.id, tile);
+      if (animate && !firstDraw) {
+        tile.setScale(0.6).setAlpha(0);
+        this.tweens.add({
+          targets: tile, scale: 1, alpha: 1, duration: 260, delay: (index % 12) * 28, ease: 'Back.easeOut',
+        });
+      }
+    });
+  }
+
+  private tileLookCh19(position: BoardNode, node: BoardNode): TileLook {
+    const c = node.contentId ?? '';
+    const C = TILE_COLORS_CH19;
+    if (node.type === 'ready') return { kind: 'start' };
+    if (c === 'SPECIAL_JAIL_HOLD') return { kind: 'disc', color: C.orange, symbol: 'TÙ', big: true };
+    if (c === 'SPECIAL_HOSPITAL_HOLD') return { kind: 'disc', color: C.pink, symbol: '✚', big: true };
+    if (c === 'SPECIAL_JAIL_GATE') return { kind: 'disc', color: C.orange, symbol: 'J' };
+    if (c === 'SPECIAL_HOSPITAL_GATE') return { kind: 'disc', color: C.pink, symbol: 'H' };
+    if (c === 'SPECIAL_LOTTERY') return { kind: 'disc', color: C.pink, symbol: '♥' };
+    if (c.startsWith('JAIL_EXIT_') || c.startsWith('HOSPITAL_EXIT_')) {
+      const v = node.value ?? 0;
+      return { kind: 'disc', color: c.startsWith('JAIL') ? C.orange : C.pink, symbol: `${v >= 0 ? '+' : '−'}${Math.abs(v)}`, small: true };
+    }
+    if (node.feature === 'job') return { kind: 'disc', color: C.blue, symbol: '💼' };
+    if (node.feature === 'minigame') return { kind: 'disc', color: C.green, symbol: '★' };
+    if (node.type === 'card') return { kind: 'disc', color: C.purple, symbol: '?' };
+    if (node.type === 'news') return { kind: 'disc', color: C.red, symbol: '!' };
+    if (node.type === 'money') {
+      const v = node.value ?? 0;
+      return v >= 0
+        ? { kind: 'disc', color: C.gold, symbol: `+${v}`, small: true }
+        : { kind: 'disc', color: C.slate, symbol: `−${Math.abs(v)}`, small: true };
+    }
+    return { kind: 'plain', symbol: this.tileNumbersCh19.get(position.id) ?? '' };
+  }
+
+  private drawTileCh19(node: BoardNode, look: TileLook): Phaser.GameObjects.Container {
+    const root = this.add.container(node.x, node.y).setDepth(TILE_DEPTH_CH19).setName('city-island-tile-ch19');
+    const g = this.add.graphics();
+    root.add(g);
+
+    if (look.kind === 'start') {
+      g.fillStyle(0x14243f, 0.32).fillEllipse(0, 8, 190, 132);
+      g.fillStyle(0xffffff, 1).fillEllipse(0, 0, 184, 128);
+      g.fillStyle(TILE_COLORS_CH19.green, 1).fillEllipse(0, 0, 168, 112);
+      root.add(this.add.text(0, -6, 'START', {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: '42px', fontStyle: 'bold', color: '#ffffff',
+        stroke: '#1f6b33', strokeThickness: 8,
+      }).setOrigin(0.5));
+      root.add(this.add.text(0, 30, 'Bắt đầu hành trình!', {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: '16px', fontStyle: 'bold', color: '#ffffff',
+        stroke: '#1f6b33', strokeThickness: 5,
+      }).setOrigin(0.5));
+      return root;
+    }
+
+    if (look.kind === 'plain') {
+      g.fillStyle(0x14243f, 0.3).fillEllipse(0, 7, 92, 80);
+      g.fillStyle(0xd5dbe6, 1).fillEllipse(0, 0, 94, 82);
+      g.fillStyle(0xffffff, 1).fillEllipse(0, 0, 88, 76);
+      g.fillStyle(0xe9edf4, 1).fillEllipse(0, 8, 80, 58);
+      g.fillStyle(0xffffff, 1).fillEllipse(0, 2, 80, 64);
+      const symbol = look.symbol ?? '';
+      root.add(this.add.text(0, 1, symbol, {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: symbol.length > 2 ? '24px' : '30px', fontStyle: 'bold', color: '#3b4560',
+      }).setOrigin(0.5));
+      return root;
+    }
+
+    const r = look.big ? 58 : 44;
+    const color = look.color ?? TILE_COLORS_CH19.slate;
+    g.fillStyle(0x14243f, 0.32).fillCircle(0, 7, r + 5);
+    g.fillStyle(0xffffff, 1).fillCircle(0, 0, r + 5);
+    g.fillStyle(color, 1).fillCircle(0, 0, r);
+    g.fillStyle(num(shadeCh19(hex(color), 0.14)), 1).fillCircle(0, 0, r - 7);
+    g.lineStyle(5, 0xffffff, 0.55);
+    g.beginPath();
+    g.arc(0, 0, r * 0.68, Phaser.Math.DegToRad(200), Phaser.Math.DegToRad(265));
+    g.strokePath();
+
+    const symbol = look.symbol ?? '';
+    const emoji = /\p{Extended_Pictographic}/u.test(symbol);
+    const size = look.big ? (symbol.length > 1 ? 30 : 54) : look.small ? 27 : 46;
+    root.add(this.add.text(0, 1, symbol, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: `${emoji ? 38 : size}px`,
+      fontStyle: 'bold',
+      color: '#ffffff',
+      stroke: shadeCh19(hex(color), -0.45),
+      strokeThickness: emoji ? 0 : look.small ? 5 : 6,
+    }).setOrigin(0.5));
+    return root;
+  }
+}
+
+/** Main loop numbered 1..n from START; branch tiles keep their A1/B2/C3 ids. */
+function tileNumbersCh19(board: BoardDefinition): Map<number, string> {
+  const next = new Map<number, number>();
+  for (const e of board.edges) if (e.route === 'main') next.set(e.from, e.to);
+  const labels = new Map<number, string>();
+  let index = 0;
+  for (let id = next.get(board.startNodeId); id !== undefined && id !== board.startNodeId; id = next.get(id)) {
+    labels.set(id, String(++index));
+  }
+  for (const node of board.nodes) {
+    const c = node.contentId ?? '';
+    if (/^[A-Z]\d$/.test(c)) labels.set(node.id, c);
+  }
+  return labels;
+}

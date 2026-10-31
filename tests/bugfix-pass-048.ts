@@ -67,7 +67,7 @@ assert(picker.includes('CHỌN LÁ BÀI')&&picker.includes('DÙNG LÁ NÀY')); a
 assert(diceCh17.includes('extends TurnOrderScene07044')); assert(!diceCh17.includes('submitRoll(')); assert(!diceCh17.includes('Math.random'));
 assert(main.includes('TurnOrderSceneCh17 as TurnOrderScene'));
 assert(boardCh173.includes('extends CareerMinigameBoardScene07044')); assert(!boardCh173.includes('submitIntent(')); assert(!boardCh173.includes('Math.random'));
-assert(main.includes('CareerMinigameBoardSceneCh173 as ActiveBoardScene'));
+assert(main.includes('CareerMinigameBoardSceneIslandCh19 as ActiveBoardScene'));
 const runtimePatch048=Number(MEMEME_BUILD.version.split('.')[2]??0); assert(Number.isInteger(runtimePatch048)&&runtimePatch048>=69,'0.1.48 retained presentation guard must allow later canonical runtimes');
 assert(lobby.includes('MEMEME_BUILD.lobbyHeader')); assert(setup.includes('MEMEME_BUILD.setupHeader')); assert(handoff.includes('TIN TỨC / LÁ BÀI'));
 console.log('[bugfix-pass-048] PASS authority/audio/dice/stale-token/release guards retained through current canonical runtime');

@@ -5,7 +5,7 @@ const main = readFileSync('src/main.ts', 'utf8');
 const scene = readFileSync('src/scenes/CareerMinigameBoardSceneCh173.ts', 'utf8');
 const hud = readFileSync('src/ui/visualFoundationHudVf04.ts', 'utf8');
 
-assert.match(main, /CareerMinigameBoardSceneCh173 as ActiveBoardScene/);
+assert.match(main, /CareerMinigameBoardSceneIslandCh19 as ActiveBoardScene/);
 assert.match(scene, /extends CareerMinigameBoardScene07044/);
 assert.match(scene, /board-turn-status-skin-ch173/);
 assert.match(scene, /board-overview-skin-ch173/);
