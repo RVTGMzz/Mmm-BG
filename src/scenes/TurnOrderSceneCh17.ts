@@ -80,7 +80,7 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
       fontFamily: MOBILE_UI_FONT_07044,
       fontSize: '15px',
       fontStyle: 'bold',
-      color: '#8c6250',
+      color: '#6b4a3d',
     }).setOrigin(0.5).setDepth(4).setName('roll-order-preview-label-ch17');
 
     this.orderPreviewCh17 = this.add.text(930, 510, 'Đang chờ kết quả...', {
@@ -119,7 +119,7 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
           .setY(116)
           .setFontFamily(MOBILE_UI_FONT_07044)
           .setFontSize(18)
-          .setColor('#7a6257')
+          .setColor('#5b463d')
           .setDepth(4);
       } else if (copy === '← QUAY LẠI') {
         object
@@ -168,8 +168,8 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
       text
         .setY(416)
         .setFontFamily(MOBILE_UI_FONT_07044)
-        .setFontSize(16)
-        .setColor('#9b6250')
+        .setFontSize(17)
+        .setColor('#5a3d0a')
         .setDepth(5);
     }
 
@@ -189,8 +189,8 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
       .setWordWrapWidth(500, true)
       .setMaxLines(2)
       .setFontFamily(MOBILE_UI_FONT_07044)
-      .setFontSize(17)
-      .setColor('#7a6257')
+      .setFontSize(18)
+      .setColor('#5b463d')
       .setDepth(5);
 
     runtime.rollButton?.setY(622);
@@ -294,22 +294,29 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
     skin.setVisible(button.visible);
     if (!button.visible) return;
 
+    // CH-19 readability: saturated fill + white label with a dark outline.
     const entering = /VÀO TRẬN/.test(text.text);
-    const fill = entering ? 0x8fd49f : 0xffd76a;
-    const shadow = entering ? 0x4b9b6b : 0xd99b38;
+    const fill = entering ? 0x3dba5c : 0xf2554a;
+    const shadow = entering ? 0x1f7a3a : 0xb8342c;
+    const outline = entering ? '#14532a' : '#8f2620';
 
     skin.clear();
+    skin.fillStyle(COCOA_CH17, 0.22);
+    skin.fillRoundedRect(484, 598, 320, 72, 30);
     skin.fillStyle(shadow, 1);
-    skin.fillRoundedRect(480, 592, 320, 72, 23);
+    skin.fillRoundedRect(480, 592, 320, 72, 30);
     skin.fillStyle(fill, 1);
-    skin.fillRoundedRect(480, 585, 320, 72, 23);
-    skin.fillStyle(0xffffff, 0.5);
-    skin.fillRoundedRect(488, 592, 304, 15, 10);
-    skin.lineStyle(4, COCOA_CH17, 1);
-    skin.strokeRoundedRect(480, 585, 320, 72, 23);
+    skin.fillRoundedRect(480, 585, 320, 72, 30);
+    skin.fillStyle(0xffffff, 0.28);
+    skin.fillRoundedRect(496, 591, 288, 14, 7);
+    skin.lineStyle(4, 0xffffff, 1);
+    skin.strokeRoundedRect(480, 585, 320, 72, 30);
 
-    button.setY(621);
-    text.setY(621).setColor('#4b302a');
+    // Keep the inherited hit rectangle but stop its flat fill peeking above the skin.
+    button.setY(621).setAlpha(0.001);
+    // 0.1.70.1 painted its own (smaller, lighter) roll skin; only the CH-19 skin should show.
+    (this as unknown as { rollSkin0701?: Phaser.GameObjects.Graphics }).rollSkin0701?.setAlpha(0);
+    text.setY(621).setColor('#ffffff').setStroke(outline, 6).setFontSize(26);
   }
 
   private activePlayerIdCh17(runtime: TurnOrderRuntimeCh17): number | null {

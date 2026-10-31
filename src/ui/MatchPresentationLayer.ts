@@ -11,6 +11,7 @@ import {
 } from './characterProductionArtCh181';
 import { diceSettleFeedbackCh09, landingFeedbackCh09 } from './presentationFeedbackCh09';
 import { reactionPlacement070422 } from './presentationLanes070422';
+import { MOBILE_UI_FONT_07044 } from './mobileReadability07044';
 import {
   buildPresentationModel,
   type PresentationEventModel,
@@ -27,7 +28,8 @@ const BUTTER_CH1713 = 0xffd76a;
 const MINT_CH1713 = 0xa9e0b1;
 const PEACH_CH1713 = 0xffb69f;
 const TEXT_CH1713 = '#4b302a';
-const BODY_CH1713 = '#66534b';
+// CH-19 readability: body copy darker for contrast on cream panels.
+const BODY_CH1713 = '#47362f';
 
 // 0.1.70.4.22: reaction geometry is owned by presentationLanes070422.
 // Do not put a 328px bubble in the ~240px side rail again.
@@ -231,8 +233,8 @@ export class MatchPresentationLayer {
     }).setOrigin(0.5);
 
     const label = this.scene.add.text(0, 90, `${model.actorName} đổ xúc xắc`, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '13px',
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '17px',
       fontStyle: 'bold',
       color: TEXT_CH1713,
     }).setOrigin(0.5);
@@ -319,28 +321,28 @@ export class MatchPresentationLayer {
       fontSize: '42px',
     }).setOrigin(0.5);
 
-    const eyebrow = this.scene.add.text(contentX, -54, model.eyebrow, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '11px',
+    const eyebrow = this.scene.add.text(contentX, -58, model.eyebrow.toUpperCase(), {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '15px',
       fontStyle: 'bold',
-      color: '#816c61',
+      color: '#6b5249',
     });
-    const title = this.scene.add.text(contentX, -26, model.title, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '27px',
+    const title = this.scene.add.text(contentX, -32, model.title, {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '30px',
       fontStyle: 'bold',
       color: TEXT_CH1713,
       fixedWidth: bodyWidth,
       wordWrap: { width: bodyWidth },
     });
-    const description = this.scene.add.text(contentX, 19, '', {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '14px',
+    const description = this.scene.add.text(contentX, 16, '', {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '19px',
       color: BODY_CH1713,
       wordWrap: { width: bodyWidth },
       fixedWidth: bodyWidth,
       fixedHeight: 58,
-      lineSpacing: 3,
+      lineSpacing: 2,
     });
 
     if (model.tileType === 'character_passive') {
@@ -428,8 +430,8 @@ export class MatchPresentationLayer {
       panel.strokeRoundedRect(-360, -150, 720, 300, 24);
 
       const kicker = this.scene.add.text(-322, -126, model.eyebrow, {
-        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '12px',
+        fontFamily: MOBILE_UI_FONT_07044,
+        fontSize: '15px',
         fontStyle: 'bold',
         color: TEXT_CH1713,
         letterSpacing: 1.1,
@@ -459,8 +461,8 @@ export class MatchPresentationLayer {
         .filter(Boolean)
         .join('\n\n');
       const body = this.scene.add.text(-322, -28, '', {
-        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '16px',
+        fontFamily: MOBILE_UI_FONT_07044,
+        fontSize: '19px',
         color: BODY_CH1713,
         wordWrap: { width: 628 },
         lineSpacing: 5,
@@ -468,9 +470,9 @@ export class MatchPresentationLayer {
         fixedHeight: 128,
       });
       const source = this.scene.add.text(316, 126, `${palette.label} • #${model.eventSeq}`, {
-        fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-        fontSize: '9px',
-        color: '#8c776b',
+        fontFamily: MOBILE_UI_FONT_07044,
+        fontSize: '12px',
+        color: '#6b5249',
       }).setOrigin(1, 0.5);
 
       container.add([shadow, panel, kicker, title, impactWell, impact, body, source]);
@@ -566,30 +568,43 @@ export class MatchPresentationLayer {
       .setName('presentation-continue-chip-ch1713')
       .setDepth(940)
       .setAlpha(0.1);
-    const copy = manual
-      ? 'TIẾP TỤC  •  SPACE / ENTER / CLICK'
-      : 'BỎ QUA  •  SPACE / ENTER / CLICK';
+    // CH-19: one big, high-contrast action with a small key hint underneath.
+    const copy = manual ? 'TIẾP TỤC  ▶' : 'BỎ QUA  ▶';
+    const fill = manual ? 0xf2554a : 0x6b7488;
+    const fillDark = manual ? 0xb8342c : 0x454c5c;
 
     const shadow = this.scene.add.graphics();
-    shadow.fillStyle(COCOA_CH1713, 0.22);
-    shadow.fillRoundedRect(-151, -17, 302, 40, 17);
+    shadow.fillStyle(COCOA_CH1713, 0.24);
+    shadow.fillRoundedRect(-120, -14, 240, 50, 25);
 
     const bg = this.scene.add.graphics();
-    bg.fillStyle(BUTTER_CH1713, 1);
-    bg.fillRoundedRect(-151, -21, 302, 40, 17);
-    bg.fillStyle(0xffffff, 0.46);
-    bg.fillRoundedRect(-140, -15, 280, 7, 4);
-    bg.lineStyle(3, COCOA_CH1713, 0.94);
-    bg.strokeRoundedRect(-151, -21, 302, 40, 17);
+    bg.fillStyle(fillDark, 1);
+    bg.fillRoundedRect(-120, -20, 240, 50, 25);
+    bg.fillStyle(fill, 1);
+    bg.fillRoundedRect(-120, -26, 240, 50, 25);
+    bg.fillStyle(0xffffff, 0.28);
+    bg.fillRoundedRect(-104, -21, 208, 10, 5);
+    bg.lineStyle(3, 0xffffff, 1);
+    bg.strokeRoundedRect(-120, -26, 240, 50, 25);
 
     const label = this.scene.add.text(0, -1, copy, {
-      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
-      fontSize: '12px',
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '21px',
       fontStyle: 'bold',
-      color: TEXT_CH1713,
+      color: '#ffffff',
+      stroke: manual ? '#8f2620' : '#2f3542',
+      strokeThickness: 4,
+    }).setOrigin(0.5);
+    const keys = this.scene.add.text(0, 40, 'Space · Enter · chạm màn hình', {
+      fontFamily: MOBILE_UI_FONT_07044,
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#ffffff',
+      stroke: '#3b2b27',
+      strokeThickness: 4,
     }).setOrigin(0.5);
 
-    container.add([shadow, bg, label]);
+    container.add([shadow, bg, label, keys]);
     this.continueHint = container;
     this.scene.tweens.add({ targets: container, alpha: 1, duration: 160, ease: 'Sine.easeOut' });
   }

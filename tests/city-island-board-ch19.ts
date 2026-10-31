@@ -66,4 +66,15 @@ assert.match(scene, /player-ground-ch19/);
 assert.match(scene, /IDLE_WALK_FRAME_CH19/);
 assert.match(scene, /BREATH_PERIOD_MS_CH19/);
 
+// CH-19 action buttons: inherited hit areas/handlers kept, dice anchored bottom-centre.
+assert.match(scene, /syncActionButtonsCh19/);
+assert.match(scene, /dice\.setX\(640\)\.setY\(720 - 12 - 146\)/);
+assert.match(scene, /TUNG XÚC XẮC/);
+assert.match(scene, /card-action-ch19/);
+const layer = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
+assert.match(layer, /fontSize: '19px'/);
+assert.match(layer, /TIẾP TỤC  ▶/);
+const turnOrder = readFileSync('src/scenes/TurnOrderSceneCh17.ts', 'utf8');
+assert.match(turnOrder, /rollSkin0701\?\.setAlpha\(0\)/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');

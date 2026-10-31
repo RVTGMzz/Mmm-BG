@@ -147,6 +147,108 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.syncIslandTilesCh19(true);
     this.syncPlayerCardsCh19();
     this.syncCharacterTokensCh19();
+    this.syncActionButtonsCh19();
+  }
+
+  /* ------------------------------------------------------------------ action buttons */
+
+  /**
+   * The direct-turn dice sat at screen centre, i.e. on top of the active
+   * Character the camera follows. Keep the inherited container (its hit area,
+   * keyboard and gamepad paths stay intact) but anchor it bottom-centre and
+   * replace its tiny label with a big, high-contrast action pill. The card
+   * button keeps its inherited hit rectangle and gets a readable skin.
+   */
+  private syncActionButtonsCh19(): void {
+    const runtime = this as unknown as {
+      match?: MatchState;
+      currentPlayer?: () => PlayerState | undefined;
+      directDice?: Phaser.GameObjects.Container;
+      compactCard?: Phaser.GameObjects.Rectangle;
+      compactCardText?: Phaser.GameObjects.Text;
+      compactCardSkin0701?: Phaser.GameObjects.Graphics;
+    };
+
+    const dice = runtime.directDice;
+    if (dice?.active) {
+      if (!dice.getData('ch19')) {
+        dice.setData('ch19', true);
+        const pill = this.add.graphics().setName('dice-action-pill-ch19');
+        pill.fillStyle(0x14243f, 0.28).fillRoundedRect(-118, 60, 236, 54, 27);
+        pill.fillStyle(0xb8342c, 1).fillRoundedRect(-118, 56, 236, 54, 27);
+        pill.fillStyle(0xf2554a, 1).fillRoundedRect(-118, 50, 236, 54, 27);
+        pill.fillStyle(0xffffff, 0.28).fillRoundedRect(-102, 55, 204, 11, 6);
+        pill.lineStyle(3.5, 0xffffff, 1).strokeRoundedRect(-118, 50, 236, 54, 27);
+        const label = this.add.text(0, 74, 'TUNG XÚC XẮC', {
+          fontFamily: MOBILE_UI_FONT_07044, fontSize: '23px', fontStyle: 'bold', color: '#ffffff',
+          stroke: '#8f2620', strokeThickness: 5,
+        }).setOrigin(0.5).setName('dice-action-label-ch19');
+        const keys = this.add.text(0, 124, 'Space · chạm', {
+          fontFamily: MOBILE_UI_FONT_07044, fontSize: '13px', fontStyle: 'bold', color: '#ffffff',
+          stroke: '#3b2b27', strokeThickness: 4,
+        }).setOrigin(0.5).setName('dice-action-keys-ch19');
+        dice.add([pill, label, keys]);
+      }
+      for (const child of dice.list) {
+        if (child instanceof Phaser.GameObjects.Text && child.text.trim() === 'BẤM XÚC XẮC' && child.alpha > 0) child.setAlpha(0);
+        if (child instanceof Phaser.GameObjects.Rectangle && child.input?.enabled) {
+          // Cover die + pill so the whole button is tappable.
+          if (child.width !== 250) {
+            child.setSize(250, 230).setPosition(0, 40);
+            (child.input.hitArea as Phaser.Geom.Rectangle).setTo(0, 0, 250, 230);
+          }
+        }
+      }
+      dice.setX(640).setY(720 - 12 - 146);
+    }
+
+    const card = runtime.compactCard;
+    const cardText = runtime.compactCardText;
+    if (card?.active && cardText?.active) {
+      const x = 900, y = 664;
+      card.setPosition(x, y).setDisplaySize(170, 60).setAlpha(0.001);
+      cardText.setPosition(x, y).setAlpha(0);
+      runtime.compactCardSkin0701?.setAlpha(0);
+      const visible = card.visible && cardText.visible;
+      const player = runtime.currentPlayer?.();
+      const hand = player?.handCardIds.length ?? 0;
+      const canUse = runtime.match?.turn.phase === 'PRE_ROLL_ACTION' && hand > 0;
+      const key = `${visible}|${canUse}|${hand}|${player?.cardBlockTurns ?? 0}`;
+      let skin = this.children.getByName('card-action-ch19') as Phaser.GameObjects.Container | null;
+      if (!skin || skin.getData('key') !== key) {
+        skin?.destroy(true);
+        skin = this.drawCardButtonCh19(x, y, canUse, hand, player?.cardBlockTurns ?? 0)
+          .setDepth(card.depth + 0.5).setData('key', key).setVisible(visible);
+      }
+    }
+  }
+
+  private drawCardButtonCh19(x: number, y: number, canUse: boolean, hand: number, lock: number): Phaser.GameObjects.Container {
+    const root = this.add.container(x, y).setName('card-action-ch19');
+    const fill = canUse ? 0x8b4fe0 : 0xb9b2c6;
+    const dark = canUse ? 0x5a2fa8 : 0x857d93;
+    const g = this.add.graphics();
+    g.fillStyle(0x14243f, 0.25).fillRoundedRect(-85, -22, 170, 60, 26);
+    g.fillStyle(dark, 1).fillRoundedRect(-85, -26, 170, 60, 26);
+    g.fillStyle(fill, 1).fillRoundedRect(-85, -32, 170, 60, 26);
+    g.fillStyle(0xffffff, 0.25).fillRoundedRect(-70, -27, 140, 10, 5);
+    g.lineStyle(3, 0xffffff, 1).strokeRoundedRect(-85, -32, 170, 60, 26);
+    // little card stack icon
+    g.fillStyle(0xffffff, 0.55).fillRoundedRect(-70, -20, 24, 32, 5);
+    g.fillStyle(0xffffff, 1).fillRoundedRect(-64, -24, 24, 32, 5);
+    g.lineStyle(2, dark, 1).strokeRoundedRect(-64, -24, 24, 32, 5);
+    root.add(g);
+    root.add(this.add.text(-52, -9, '?', {
+      fontFamily: MOBILE_UI_FONT_07044, fontSize: '20px', fontStyle: 'bold', color: canUse ? '#8b4fe0' : '#857d93',
+    }).setOrigin(0.5));
+    root.add(this.add.text(-28, -12, 'LÁ BÀI', {
+      fontFamily: MOBILE_UI_FONT_07044, fontSize: '20px', fontStyle: 'bold', color: '#ffffff',
+      stroke: canUse ? '#3f1d80' : '#5b5466', strokeThickness: 4,
+    }).setOrigin(0, 0.5));
+    root.add(this.add.text(-28, 12, lock > 0 ? `🔒 khóa ${lock} lượt` : `${hand}/${MVP_CARD_HAND_LIMIT}${canUse ? ' · dùng' : ''}`, {
+      fontFamily: MOBILE_UI_FONT_07044, fontSize: '14px', fontStyle: 'bold', color: '#ffffff',
+    }).setOrigin(0, 0.5));
+    return root;
   }
 
   /* ------------------------------------------------------------------ board tokens */
