@@ -29,6 +29,7 @@ import {
   type IslandLabelCh19,
 } from '../ui/cityIslandSceneryCh19';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
+import { HUD_PLAYER_ACCENTS_VF04 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
@@ -37,6 +38,23 @@ const SCENERY_TEXTURE_CH19 = 'city-island-scenery-ch19';
 const SCENERY_DEPTH_CH19 = -45;
 const LABEL_DEPTH_CH19 = -40;
 const TILE_DEPTH_CH19 = 4.2;
+
+/**
+ * Walk strips have no standing pose; when a Character is still we hold the
+ * frame with the narrowest stance (measured from the strips) and breathe.
+ * Optional true standing art: drop a 192x192 PNG at
+ * public/assets/characters/idle/<characterId>.png and list the id here.
+ */
+const IDLE_WALK_FRAME_CH19: Readonly<Record<string, number>> = {
+  'starter-crybaby': 4,
+  'starter-grumpy': 1,
+  'starter-anxious': 7,
+  'starter-hyper': 3,
+  'secret-baby': 2,
+};
+const IDLE_STANDING_ART_CH19: readonly string[] = [];
+const IDLE_SETTLE_MS_CH19 = 140;
+const BREATH_PERIOD_MS_CH19 = 2600;
 
 type TileLook = {
   kind: 'start' | 'plain' | 'disc';
@@ -78,6 +96,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private islandLabelsCh19: Phaser.GameObjects.Container[] = [];
   private readonly tileNumbersCh19 = tileNumbersCh19(BOARD_CH19);
   private readonly playerCardsCh19 = new Map<number, { card: Phaser.GameObjects.Container; signature: string; money: number; active: boolean }>();
+  private readonly tokenStillCh19 = new Map<number, { x: number; y: number; stillMs: number }>();
 
   preload(): void {
     super.preload();
@@ -85,6 +104,10 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       this.load.spritesheet(PORTRAIT_STARTERS_KEY_CH19, publicAssetUrl(PORTRAIT_STARTERS_PATH_CH19), {
         frameWidth: PORTRAIT_CELL_CH19, frameHeight: PORTRAIT_CELL_CH19,
       });
+    }
+    for (const id of IDLE_STANDING_ART_CH19) {
+      const key = `character-idle-ch19-${id}`;
+      if (!this.textures.exists(key)) this.load.image(key, publicAssetUrl(`assets/characters/idle/${id}.png`));
     }
     if (!this.textures.exists(PORTRAIT_BABY_KEY_CH19)) {
       this.load.spritesheet(PORTRAIT_BABY_KEY_CH19, publicAssetUrl(PORTRAIT_BABY_PATH_CH19), {
@@ -123,6 +146,83 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     for (const text of this.hiddenTileTextsCh19) if (text.alpha > 0) text.setAlpha(0);
     this.syncIslandTilesCh19(true);
     this.syncPlayerCardsCh19();
+    this.syncCharacterTokensCh19();
+  }
+
+  /* ------------------------------------------------------------------ board tokens */
+
+  /**
+   * Seat-number badges floated beside each Character and read as belonging to
+   * whoever stood next to them; replace them with a player-colour ground
+   * shadow, and swap the mid-stride idle for a still stance that breathes.
+   */
+  private syncCharacterTokensCh19(): void {
+    const runtime = this as unknown as {
+      match?: MatchState;
+      visuals?: Map<number, { token: Phaser.GameObjects.Container }>;
+      characterWalkSpritesCh181?: Map<number, Phaser.GameObjects.Sprite>;
+      cauCoRigPilotCh1822?: Map<number, unknown>;
+      characterFaceCompositeImagesCh187?: Map<number, Phaser.GameObjects.Image>;
+    };
+    if (!runtime.match || !runtime.visuals) return;
+    const delta = this.game.loop.delta;
+
+    for (const player of runtime.match.players) {
+      const token = runtime.visuals.get(player.id)?.token;
+      if (!token?.active) continue;
+
+      for (const child of token.list) {
+        const c = child as Phaser.GameObjects.GameObject & { x: number; y: number; visible: boolean; setVisible(v: boolean): unknown };
+        if (!c.visible) continue;
+        const badge = (Math.abs(c.x - 38) < 1 && Math.abs(c.y - 30) < 1) || (Math.abs(c.x - 21) < 1 && Math.abs(c.y - 21) < 1);
+        const oldCentre = child instanceof Phaser.GameObjects.Arc && Math.abs(c.x) < 1 && Math.abs(c.y) < 1;
+        if ((badge && (child instanceof Phaser.GameObjects.Arc || child instanceof Phaser.GameObjects.Text)) || oldCentre) c.setVisible(false);
+      }
+      if (!token.getByName('player-ground-ch19')) {
+        const colour = HUD_PLAYER_ACCENTS_VF04[player.id] ?? 0x765047;
+        token.addAt(
+          this.add.ellipse(0, 30, 66, 18, colour, 0.55).setStrokeStyle(2.5, 0xffffff, 0.85).setName('player-ground-ch19'),
+          0,
+        );
+      }
+
+      const sprite = runtime.characterWalkSpritesCh181?.get(player.id);
+      if (!sprite?.active || runtime.cauCoRigPilotCh1822?.has(player.id)) continue;
+      if (runtime.characterFaceCompositeImagesCh187?.get(player.id)?.visible) continue;
+
+      const last = this.tokenStillCh19.get(player.id) ?? { x: token.x, y: token.y, stillMs: 0 };
+      const moved = Math.hypot(token.x - last.x, token.y - last.y) > 0.45;
+      last.stillMs = moved ? 0 : last.stillMs + delta;
+      last.x = token.x;
+      last.y = token.y;
+      this.tokenStillCh19.set(player.id, last);
+
+      const idleKey = `character-idle-ch19-${player.characterId ?? ''}`;
+      const standing = this.textures.exists(idleKey);
+      if (last.stillMs < IDLE_SETTLE_MS_CH19) {
+        if (sprite.getData('idleArtCh19')) {
+          sprite.setTexture(String(sprite.getData('walkTextureCh19')), Number(sprite.getData('walkFrameBaseCh1811') ?? 0));
+          sprite.setData('idleArtCh19', false);
+        }
+        continue;
+      }
+
+      if (standing && !sprite.getData('idleArtCh19')) {
+        sprite.setData('walkTextureCh19', sprite.texture.key).setData('idleArtCh19', true).setTexture(idleKey);
+      } else if (!standing) {
+        const base = Number(sprite.getData('walkFrameBaseCh1811') ?? 0);
+        sprite.setFrame(base + (IDLE_WALK_FRAME_CH19[player.characterId ?? ''] ?? 0));
+      }
+
+      const sx = Number(sprite.getData('idleBaseScaleXCh1813') ?? sprite.scaleX);
+      const sy = Number(sprite.getData('idleBaseScaleYCh1813') ?? sprite.scaleY);
+      const t = (this.time.now + player.id * 410) / BREATH_PERIOD_MS_CH19 * Math.PI * 2;
+      const breath = (Math.sin(t) + 1) / 2; // 0 = exhale, 1 = inhale
+      sprite
+        .setScale(sx * (1 - 0.012 * breath), sy * (1 + 0.032 * breath))
+        .setY(8)
+        .setAngle(Math.sin(t * 0.5) * 0.9);
+    }
   }
 
   /* ------------------------------------------------------------------ player cards */

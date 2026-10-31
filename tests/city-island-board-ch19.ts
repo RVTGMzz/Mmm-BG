@@ -60,4 +60,10 @@ assert.match(card, /passiveConcept\?\.label/);
 assert.match(card, /topRightGearClearance: 44/);
 assert.doesNotMatch(card, /submitIntent\s*\(|Math\.random\s*\(/);
 
+// Board tokens: seat badges replaced by a player-colour ground shadow; still Characters breathe.
+assert.match(scene, /syncCharacterTokensCh19/);
+assert.match(scene, /player-ground-ch19/);
+assert.match(scene, /IDLE_WALK_FRAME_CH19/);
+assert.match(scene, /BREATH_PERIOD_MS_CH19/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');
