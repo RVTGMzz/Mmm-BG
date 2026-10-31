@@ -1,8 +1,26 @@
 import Phaser from 'phaser';
 import boardJson from '../content/city/board_city_mvp.json';
 import type { MatchState } from '../core/matchState';
-import type { BoardDefinition, BoardNode } from '../core/types';
+import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
+import type { JobDefinition } from '../core/jobs';
 import { effectiveBoardNode071 } from '../core/lapShuffle071';
+import { MVP_CARD_HAND_LIMIT } from '../core/rules';
+import { gameSession } from '../core/session';
+import jobsJson from '../content/core/jobs_mvp.json';
+import { playerHudCareer065 } from '../ui/playerHud065';
+import { publicAssetUrl } from '../ui/publicAssetUrl';
+import {
+  PLAYER_CARD_CH19,
+  PORTRAIT_BABY_KEY_CH19,
+  PORTRAIT_BABY_PATH_CH19,
+  PORTRAIT_CELL_CH19,
+  PORTRAIT_STARTERS_KEY_CH19,
+  PORTRAIT_STARTERS_PATH_CH19,
+  buildPlayerCardCh19,
+  playerCardPositionCh19,
+  playerCardSignatureCh19,
+  type PlayerCardModelCh19,
+} from '../ui/playerCardCh19';
 import {
   ISLAND_PALETTE_CH19,
   buildCityIslandSceneryCh19,
@@ -14,6 +32,7 @@ import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
+const JOBS_CH19 = jobsJson as JobDefinition[];
 const SCENERY_TEXTURE_CH19 = 'city-island-scenery-ch19';
 const SCENERY_DEPTH_CH19 = -45;
 const LABEL_DEPTH_CH19 = -40;
@@ -58,6 +77,21 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private islandSceneryCh19?: Phaser.GameObjects.Image;
   private islandLabelsCh19: Phaser.GameObjects.Container[] = [];
   private readonly tileNumbersCh19 = tileNumbersCh19(BOARD_CH19);
+  private readonly playerCardsCh19 = new Map<number, { card: Phaser.GameObjects.Container; signature: string; money: number; active: boolean }>();
+
+  preload(): void {
+    super.preload();
+    if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
+      this.load.spritesheet(PORTRAIT_STARTERS_KEY_CH19, publicAssetUrl(PORTRAIT_STARTERS_PATH_CH19), {
+        frameWidth: PORTRAIT_CELL_CH19, frameHeight: PORTRAIT_CELL_CH19,
+      });
+    }
+    if (!this.textures.exists(PORTRAIT_BABY_KEY_CH19)) {
+      this.load.spritesheet(PORTRAIT_BABY_KEY_CH19, publicAssetUrl(PORTRAIT_BABY_PATH_CH19), {
+        frameWidth: PORTRAIT_CELL_CH19, frameHeight: PORTRAIT_CELL_CH19,
+      });
+    }
+  }
 
   create(): void {
     super.create();
@@ -67,7 +101,10 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
+    this.syncPlayerCardsCh19();
+
     const cleanup = () => {
+      this.playerCardsCh19.clear();
       this.islandTilesCh19.clear();
       this.hiddenTileObjectsCh19.length = 0;
       this.hiddenTileTextsCh19.length = 0;
@@ -85,6 +122,77 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     for (const object of this.hiddenTileObjectsCh19) if (object.alpha > 0.001) object.setAlpha(0.001);
     for (const text of this.hiddenTileTextsCh19) if (text.alpha > 0) text.setAlpha(0);
     this.syncIslandTilesCh19(true);
+    this.syncPlayerCardsCh19();
+  }
+
+  /* ------------------------------------------------------------------ player cards */
+
+  private syncPlayerCardsCh19(): void {
+    const runtime = this as unknown as {
+      match?: MatchState;
+      hud?: Map<number, { root: Phaser.GameObjects.Container }>;
+      uiRoot?: Phaser.GameObjects.Container;
+      currentPlayer?: () => PlayerState | undefined;
+    };
+    const match = runtime.match;
+    if (!match) return;
+    // Inherited corner HUDs keep updating underneath (their logic stays intact) but are not painted.
+    for (const legacy of runtime.hud?.values() ?? []) if (legacy.root.alpha > 0) legacy.root.setAlpha(0);
+
+    const current = runtime.currentPlayer?.();
+    const top = Math.max(...match.players.map((p) => p.money));
+    const leaders = match.players.filter((p) => p.money === top);
+
+    for (const player of match.players) {
+      const career = playerHudCareer065(player, JOBS_CH19);
+      const active = player.id === current?.id;
+      const model: PlayerCardModelCh19 = {
+        playerId: player.id,
+        name: player.name,
+        money: player.money,
+        handCount: player.handCardIds.length,
+        handLimit: MVP_CARD_HAND_LIMIT,
+        lockTurns: player.cardBlockTurns,
+        laps: player.lapsCompleted ?? 0,
+        jobLine: career.employed ? `${career.icon} ${career.title} Lv.${career.level} · ${career.salary}/vòng` : '💼 Chưa có nghề',
+        characterId: player.characterId,
+        faceTextureKey: gameSession.players[player.id]?.faces.neutral?.textureKey,
+        active,
+        leader: match.players.length > 1 && leaders.length === 1 && leaders[0].id === player.id,
+      };
+      const signature = playerCardSignatureCh19(model);
+      const existing = this.playerCardsCh19.get(player.id);
+      if (existing?.signature === signature) continue;
+
+      const scale = active ? PLAYER_CARD_CH19.activeScale : PLAYER_CARD_CH19.idleScale;
+      const pos = playerCardPositionCh19(player.id, scale);
+      const card = buildPlayerCardCh19(this, model).setPosition(pos.x, pos.y).setScale(scale);
+      if (runtime.uiRoot?.active) runtime.uiRoot.add(card);
+      else card.setDepth(1000);
+      existing?.card.destroy(true);
+      this.playerCardsCh19.set(player.id, { card, signature, money: player.money, active });
+
+      if (!existing) continue;
+      if (existing.money !== player.money) this.popMoneyCh19(card, player.money - existing.money);
+      if (active && !existing.active) {
+        card.setScale(PLAYER_CARD_CH19.idleScale);
+        this.tweens.add({ targets: card, scale, duration: 220, ease: 'Back.easeOut' });
+      }
+    }
+  }
+
+  private popMoneyCh19(card: Phaser.GameObjects.Container, delta: number): void {
+    const money = card.getByName('player-card-money-ch19') as Phaser.GameObjects.Text | null;
+    if (!money) return;
+    money.setColor(delta >= 0 ? '#1f8a3d' : '#c62f2f');
+    this.tweens.add({ targets: money, scale: { from: 1.35, to: 1 }, duration: 360, ease: 'Back.easeOut' });
+    const float = this.add.text(money.x + 36, money.y - 6, `${delta >= 0 ? '+' : '−'}${Math.abs(delta)}`, {
+      fontFamily: MOBILE_UI_FONT_07044, fontSize: '18px', fontStyle: 'bold',
+      color: delta >= 0 ? '#1f8a3d' : '#c62f2f', stroke: '#ffffff', strokeThickness: 4,
+    }).setOrigin(0, 0.5);
+    card.add(float);
+    this.tweens.add({ targets: float, y: float.y - 26, alpha: 0, duration: 900, ease: 'Sine.easeOut', onComplete: () => float.destroy() });
+    this.time.delayedCall(700, () => { if (money.active) money.setColor('#3b2b27'); });
   }
 
   /* ------------------------------------------------------------------ legacy */

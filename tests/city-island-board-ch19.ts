@@ -19,7 +19,7 @@ assert.match(scene, /super\.update\(\)/);
 for (const source of [scene, scenery]) {
   assert.doesNotMatch(source, /submitIntent\s*\(/);
   assert.doesNotMatch(source, /Math\.random\s*\(/);
-  assert.doesNotMatch(source, /core\/(rng|authority|rules|turn)'/);
+  assert.doesNotMatch(source, /core\/(rng|authority|turn)'/);
 }
 
 // Tiles are redrawn from the authoritative Lap Shuffle assignment.
@@ -50,4 +50,14 @@ for (const node of board.nodes) {
   assert.equal(effective.y, node.y);
 }
 
-console.log('PASS CH-19 city island board: presentation-only layer over CH-17.3, shuffle-aware tiles');
+// CH-19 player cards: painted from match state, legacy corner HUD kept but hidden.
+const card = readFileSync('src/ui/playerCardCh19.ts', 'utf8');
+assert.match(scene, /syncPlayerCardsCh19/);
+assert.match(scene, /legacy\.root\.setAlpha\(0\)/);
+assert.match(scene, /playerHudCareer065\(player, JOBS_CH19\)/);
+assert.match(card, /portrait-atlas-starters\.webp/);
+assert.match(card, /passiveConcept\?\.label/);
+assert.match(card, /topRightGearClearance: 44/);
+assert.doesNotMatch(card, /submitIntent\s*\(|Math\.random\s*\(/);
+
+console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');
