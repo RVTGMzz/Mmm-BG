@@ -87,4 +87,17 @@ assert.match(scene, /WALK_STRIP_CH19/);
 assert.match(scene, /IDLE_STRIP_CH19/);
 assert.match(scene, /idleActionDelayCh19/);
 
+// CH-19 live scenery: concept-styled sprites placed clear of every tile, gently animated.
+const propsSrc = readFileSync('src/ui/islandPropsCh19.ts', 'utf8');
+assert.match(scenery, /PROP_CATALOG_CH19/);
+assert.match(scenery, /TILE_CLEAR = 66/);
+assert.match(scenery, /Headlands for the Jail and Hospital/);
+for (const key of ['tree-oak', 'tree-blossom', 'tree-palm', 'tree-pine', 'tree-autumn', 'house-red', 'cafe', 'tower-glass', 'ferris-wheel', 'ferris-base', 'hospital', 'jail', 'jobs', 'fountain']) {
+  assert.ok(existsSync(`public/assets/scenery/ch19/${key}.png`), `${key} sprite missing`);
+}
+assert.match(propsSrc, /installIslandPropsCh19/);
+assert.match(propsSrc, /island-ferris-wheel-ch19/);
+assert.doesNotMatch(propsSrc, /Math\.random\s*\(|submitIntent\s*\(/);
+assert.match(scene, /installIslandPropsCh19\(this, scenery\.props, scenery\.bounds\)/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');

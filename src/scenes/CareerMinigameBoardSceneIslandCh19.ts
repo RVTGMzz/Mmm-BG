@@ -29,6 +29,7 @@ import {
   type IslandLabelCh19,
 } from '../ui/cityIslandSceneryCh19';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
+import { installIslandPropsCh19, preloadIslandPropsCh19 } from '../ui/islandPropsCh19';
 import { HUD_PLAYER_ACCENTS_VF04 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
 
@@ -36,7 +37,8 @@ const BOARD_CH19 = boardJson as BoardDefinition;
 const JOBS_CH19 = jobsJson as JobDefinition[];
 const SCENERY_TEXTURE_CH19 = 'city-island-scenery-ch19';
 const SCENERY_DEPTH_CH19 = -45;
-const LABEL_DEPTH_CH19 = -40;
+// Above the live trees/buildings (-39..-2), below tiles (4.2).
+const LABEL_DEPTH_CH19 = -1;
 const TILE_DEPTH_CH19 = 4.2;
 
 /**
@@ -130,6 +132,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
 
   preload(): void {
     super.preload();
+    preloadIslandPropsCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
       this.load.spritesheet(PORTRAIT_STARTERS_KEY_CH19, publicAssetUrl(PORTRAIT_STARTERS_PATH_CH19), {
         frameWidth: PORTRAIT_CELL_CH19, frameHeight: PORTRAIT_CELL_CH19,
@@ -535,6 +538,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         .setName('city-island-scenery-ch19')
         .setAlpha(0);
       this.tweens.add({ targets: this.islandSceneryCh19, alpha: 1, duration: 280, ease: 'Sine.easeOut' });
+      installIslandPropsCh19(this, scenery.props, scenery.bounds);
       this.installDistrictLabelsCh19(scenery.labels);
     } catch (error) {
       // Scenery is decorative: the board stays fully playable on the sea colour.

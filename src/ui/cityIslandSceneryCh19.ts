@@ -16,11 +16,38 @@ import type { BoardDefinition, BoardNode } from '../core/types';
 
 export interface IslandBoundsCh19 { x: number; y: number; w: number; h: number }
 export interface IslandLabelCh19 { x: number; y: number; title: string; subtitle: string }
+export interface IslandPropCh19 {
+  key: string;
+  kind: 'tree' | 'bush' | 'building' | 'landmark' | 'wheel';
+  /** base (bottom-centre) in world coordinates; for 'wheel' the hub centre */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  flip: boolean;
+  /** deterministic 0..1 used to desynchronise animations */
+  seed: number;
+}
 export interface IslandSceneryCh19 {
   svg: string;
   bounds: IslandBoundsCh19;
   labels: IslandLabelCh19[];
+  /** trees, buildings and landmarks placed as live (animated) sprites */
+  props: IslandPropCh19[];
 }
+
+/** Native pixel sizes of public/assets/scenery/ch19/<key>.png (from scripts/split-scenery-ch19.py). */
+export const PROP_CATALOG_CH19: Readonly<Record<string, { w: number; h: number }>> = {
+  'tree-oak': { w: 239, h: 300 }, 'tree-blossom': { w: 234, h: 300 }, 'tree-palm': { w: 213, h: 300 },
+  'tree-pine': { w: 201, h: 300 }, 'tree-autumn': { w: 248, h: 300 }, 'tree-oak-small': { w: 198, h: 215 },
+  'tree-blossom-small': { w: 193, h: 201 }, 'tree-palm-small': { w: 205, h: 203 }, 'bush-flower': { w: 207, h: 160 },
+  'bush-green': { w: 187, h: 144 },
+  'house-red': { w: 317, h: 360 }, 'house-blue': { w: 335, h: 336 }, 'cafe': { w: 317, h: 360 },
+  'shop-pink': { w: 353, h: 344 }, 'tower-glass': { w: 259, h: 360 }, 'apartment': { w: 319, h: 360 },
+  'bakery': { w: 338, h: 360 }, 'store': { w: 360, h: 341 },
+  'ferris-wheel': { w: 428, h: 428 }, 'ferris-base': { w: 433, h: 356 }, 'hospital': { w: 440, h: 352 },
+  'jail': { w: 440, h: 342 }, 'jobs': { w: 434, h: 407 }, 'fountain': { w: 440, h: 366 },
+};
 
 interface Pt { x: number; y: number }
 interface Rect { x: number; y: number; w: number; h: number }
@@ -66,6 +93,9 @@ function catmull(pts: Pt[], closed: boolean, pre?: Pt, post?: Pt): string {
   }
   return d + (closed ? 'Z' : '');
 }
+
+const xsMid = (b: BoardDefinition): number => (Math.min(...b.nodes.map((n) => n.x)) + Math.max(...b.nodes.map((n) => n.x))) / 2;
+const ysMid = (b: BoardDefinition): number => (Math.min(...b.nodes.map((n) => n.y)) + Math.max(...b.nodes.map((n) => n.y))) / 2;
 
 const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
@@ -138,89 +168,161 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
   /* ---------------- island + lakes */
   const landBlobs = samples.filter((_, i) => i % 3 === 0)
     .map((s) => ({ x: s.x + (rand() - .5) * 40, y: s.y + (rand() - .5) * 40, r: 215 + rand() * 70 }));
+  // Headlands for the Jail and Hospital so their buildings stand on land beside the hold tile.
+  {
+    const cx = xsMid(board), cy = ysMid(board);
+    for (const id of ['SPECIAL_JAIL_HOLD', 'SPECIAL_HOSPITAL_HOLD']) {
+      const n = board.nodes.find((node) => node.contentId === id);
+      if (!n) continue;
+      const len = Math.hypot(n.x - cx, n.y - cy) || 1;
+      for (const k of [120, 230]) landBlobs.push({ x: n.x + (n.x - cx) / len * k, y: n.y + (n.y - cy) / len * k, r: 300 });
+    }
+  }
   const onIsland = (x: number, y: number, m = 0) => landBlobs.some((b) => Math.hypot(b.x - x, b.y - y) < b.r - 55 - m);
+  const holds = board.nodes.filter((n) => n.contentId === 'SPECIAL_JAIL_HOLD' || n.contentId === 'SPECIAL_HOSPITAL_HOLD');
   const lakes: { x: number; y: number; r: number }[] = [];
   for (let y = W.y; y < W.y + W.h; y += 34) for (let x = W.x; x < W.x + W.w; x += 34) {
     if (!onIsland(x, y, 60)) continue;
     const d = roadDist(x, y);
-    if (d > 118) lakes.push({ x, y, r: Math.min(d - 80, 115) });
+    // ponds only in the gaps between paths, never out on a headland
+    if (d > 118 && d < 200 && !holds.some((h) => Math.hypot(h.x - x, h.y - y) < 400)) lakes.push({ x, y, r: Math.min(d - 80, 115) });
   }
   const inWater = (x: number, y: number, m = 0) => lakes.some((l) => Math.hypot(l.x - x, l.y - y) < l.r + 22 + m);
   const insideLand = (x: number, y: number, m = 0) => onIsland(x, y, m) && !inWater(x, y, m);
 
-  /* ---------------- layout: landmarks, buildings, trees */
+  /* ---------------- layout: landmarks, buildings, trees (live sprites) */
   const reserved: Rect[] = [];
   const items: { y: number; svg: () => string }[] = [];
   const labels: IslandLabelCh19[] = [];
+  const props: IslandPropCh19[] = [];
   const overlaps = (r: Rect, m = 18) => reserved.some((p) => r.x < p.x + p.w + m && r.x + r.w + m > p.x && r.y < p.y + p.h + m && r.y + r.h + m > p.y);
+  /**
+   * Footprint (lower 45%) must be on land and clear of the paths; the crown /
+   * roof may overhang a path edge a little, but nothing may ever touch a tile.
+   */
+  const TILE_CLEAR = 66;
+  const clearRect = (r: Rect, footGap: number, topGap = -18, footWidth = 1) => {
+    for (const n of board.nodes) {
+      const cx = Math.max(r.x, Math.min(n.x, r.x + r.w)), cy = Math.max(r.y, Math.min(n.y, r.y + r.h));
+      if (Math.hypot(n.x - cx, n.y - cy) < TILE_CLEAR) return false;
+    }
+    const nx = Math.max(2, Math.ceil(r.w / 24)), ny = Math.max(3, Math.ceil(r.h / 24));
+    for (let i = 0; i <= nx; i++) for (let j = 0; j <= ny; j++) {
+      const px = r.x + r.w * i / nx, py = r.y + r.h * j / ny;
+      // for trees only the trunk (a narrow central band) counts as footprint
+      const foot = j >= ny * 0.55 && Math.abs(i / nx - 0.5) <= footWidth / 2;
+      if (roadDist(px, py) < (foot ? footGap : topGap)) return false;
+      // footprints may stand on grass or the sandy rim, never in water
+      if (foot && !(onIsland(px, py, -28) && !inWater(px, py))) return false;
+    }
+    return true;
+  };
+  const sized = (key: string, displayW: number) => {
+    const c = PROP_CATALOG_CH19[key];
+    return { w: displayW, h: displayW * c.h / c.w };
+  };
+  const place = (key: string, kind: IslandPropCh19['kind'], x: number, y: number, w: number, h: number, flip = false) => {
+    const rect = { x: x - w / 2, y: y - h, w, h };
+    reserved.push(rect);
+    props.push({ key, kind, x, y, w, h, flip, seed: rand() });
+    return rect;
+  };
   const findSpot = (cx: number, cy: number, w: number, h: number) => {
-    let best: { x: number; y: number; d: number; rect: Rect } | undefined;
-    for (const r of [150, 200, 250, 300, 350]) for (let a = 0; a < 24; a++) {
-      const x = cx + Math.cos(a / 24 * Math.PI * 2) * r, y = cy + Math.sin(a / 24 * Math.PI * 2) * r;
-      const pts = [[-w / 2, 0], [w / 2, 0], [-w / 2, -h], [w / 2, -h], [0, -h / 2], [0, 0], [-w / 2, -h / 2], [w / 2, -h / 2]];
-      if (!pts.every(([dx, dy]) => insideLand(x + dx, y + dy))) continue;
+    let best: { x: number; y: number; d: number } | undefined;
+    for (const r of [140, 180, 220, 260, 300, 350, 400, 460, 520]) for (let a = 0; a < 32; a++) {
+      const x = cx + Math.cos(a / 32 * Math.PI * 2) * r, y = cy + Math.sin(a / 32 * Math.PI * 2) * r;
       const rect = { x: x - w / 2, y: y - h, w, h };
-      if (overlaps(rect, 10)) continue;
-      const d = Math.min(...pts.map(([dx, dy]) => roadDist(x + dx, y + dy))) - r * .1;
-      if (!best || d > best.d) best = { x, y, d, rect };
+      if (overlaps(rect, 8) || !clearRect(rect, 6, -10)) continue;
+      const d = -r * .5 + Math.min(roadDist(x, y), 120);
+      if (!best || d > best.d) best = { x, y, d };
     }
     return best;
   };
   const byContent = (c: string) => board.nodes.find((n) => n.contentId === c);
-  const landmark = (node: BoardNode | undefined, w: number, h: number, draw: (x: number, y: number) => string, title: string, subtitle: string) => {
+  const landmark = (node: BoardNode | undefined, key: string, displayW: number, title: string, subtitle: string) => {
     if (!node) return;
-    const s = findSpot(node.x, node.y, w, h);
+    const { w, h } = sized(key, displayW);
+    const extraH = key === 'ferris-base' ? w * 0.55 : 0; // the wheel rises above its support
+    const s = findSpot(node.x, node.y, w, h + extraH);
     if (!s) return;
-    reserved.push(s.rect);
-    items.push({ y: s.y, svg: () => draw(s.x, s.y) });
-    labels.push({ x: s.x, y: s.y - h - 34, title, subtitle });
+    place(key, 'landmark', s.x, s.y, w, h);
+    if (key === 'ferris-base') {
+      reserved[reserved.length - 1] = { x: s.x - w / 2, y: s.y - h - extraH, w, h: h + extraH };
+      const wheel = w * 0.98;
+      props.push({ key: 'ferris-wheel', kind: 'wheel', x: s.x, y: s.y - h + w * 0.035, w: wheel, h: wheel, flip: false, seed: rand() });
+    }
+    // plate sits just below the landmark's base so it never hides the building
+    labels.push({ x: s.x, y: s.y + 38, title, subtitle });
   };
-  landmark(byContent('SPECIAL_HOSPITAL_HOLD'), 260, 230, hospital, 'NHÁNH BỆNH VIỆN', 'Chữa lành · Nghỉ ngơi · Quay lại');
-  landmark(byContent('SPECIAL_JAIL_HOLD'), 270, 230, jail, 'NHÁNH NHÀ TÙ', 'Sai lầm · Trả giá · Làm lại');
-  landmark(byContent('SPECIAL_LOTTERY'), 230, 250, ferris, 'KHU GIẢI TRÍ', 'Vui chơi · Xổ số · Drama');
-  landmark(board.nodes.find((n) => n.feature === 'job'), 260, 260, offices, 'KHU NGHỀ NGHIỆP', 'Làm việc · Kiếm tiền · Thăng tiến');
+  landmark(byContent('SPECIAL_HOSPITAL_HOLD'), 'hospital', 215, 'NHÁNH BỆNH VIỆN', 'Chữa lành · Nghỉ ngơi · Quay lại');
+  landmark(byContent('SPECIAL_JAIL_HOLD'), 'jail', 215, 'NHÁNH NHÀ TÙ', 'Sai lầm · Trả giá · Làm lại');
+  landmark(byContent('SPECIAL_LOTTERY'), 'ferris-base', 175, 'KHU GIẢI TRÍ', 'Vui chơi · Xổ số · Drama');
+  landmark(board.nodes.find((n) => n.feature === 'job'), 'jobs', 200, 'KHU NGHỀ NGHIỆP', 'Làm việc · Kiếm tiền · Thăng tiến');
   {
+    const { w, h } = sized('fountain', 190);
     let best: { x: number; y: number; d: number } | undefined;
     const mx = W.x + W.w / 2, my = W.y + W.h / 2;
-    for (let y = W.y; y < W.y + W.h; y += 30) for (let x = W.x; x < W.x + W.w; x += 30) {
-      if (!insideLand(x, y, 40) || overlaps({ x: x - 130, y: y - 130, w: 260, h: 260 }, 0)) continue;
-      const d = roadDist(x, y) - Math.hypot(x - mx, y - my) * .12;
+    for (let y = W.y; y < W.y + W.h; y += 24) for (let x = W.x; x < W.x + W.w; x += 24) {
+      const rect = { x: x - w / 2, y: y - h, w, h };
+      if (overlaps(rect, 10) || !clearRect(rect, 8, -10)) continue;
+      const d = -Math.hypot(x - mx, y - my);
       if (!best || d > best.d) best = { x, y, d };
     }
     if (best) {
-      const b = best;
-      reserved.push({ x: b.x - 130, y: b.y - 120, w: 260, h: 220 });
-      items.push({ y: b.y - 60, svg: () => fountain(b.x, b.y) });
-      labels.push({ x: b.x, y: b.y + 150, title: 'TRUNG TÂM THÀNH PHỐ', subtitle: 'Kết nối · Cơ hội · Tất cả đều có thể' });
+      place('fountain', 'landmark', best.x, best.y, w, h);
+      labels.push({ x: best.x, y: best.y + 40, title: 'TRUNG TÂM THÀNH PHỐ', subtitle: 'Kết nối · Cơ hội · Tất cả đều có thể' });
     }
   }
 
-  const CITY = ['#F2E2C4', '#9EC9F0', '#F4B3C2', '#C2B2EE', '#F7C08A', '#7FD3C6', '#FFE08A', '#E8EEF6'];
-  const trees: { x: number; y: number; kind: 'palm' | 'blossom' | 'tree'; s: number }[] = [];
-  for (let y = W.y + 30; y < W.y + W.h; y += 52)
-    for (let x = W.x + 30; x < W.x + W.w; x += 52) {
-      const jx = x + (rand() - .5) * 28, jy = y + (rand() - .5) * 28;
-      if (!insideLand(jx, jy, 10)) continue;
+  // Buildings first (they need the most room), then trees fill the gaps.
+  const BUILDINGS = ['house-red', 'house-blue', 'cafe', 'shop-pink', 'tower-glass', 'apartment', 'bakery', 'store'];
+  const used = new Map<string, number>();
+  for (let y = W.y + 40; y < W.y + W.h; y += 56)
+    for (let x = W.x + 40; x < W.x + W.w; x += 56) {
+      const jx = x + (rand() - .5) * 26, jy = y + (rand() - .5) * 26;
       const d = roadDist(jx, jy);
-      if (d < 18) continue;
-      if (d < 260 && rand() < .8) {
-        const tall = d > 110 && rand() < .45;
-        const w = 80 + Math.round(rand() * 50), h = tall ? 150 + Math.round(rand() * 110) : 70 + Math.round(rand() * 50);
-        const dep = 26 + rand() * 14, r = { x: jx - w / 2, y: jy - h - dep * .4, w: w + dep * .7, h: h + dep * .4 };
-        const pts = [[r.x, r.y], [r.x + r.w, r.y], [r.x, jy], [r.x + r.w, jy], [jx, r.y], [jx, jy], [r.x, r.y + r.h / 2], [r.x + r.w, r.y + r.h / 2]];
-        if (pts.every(([px, py]) => roadDist(px, py) > 16 && insideLand(px, py)) && !overlaps(r)) {
-          reserved.push(r);
-          const col = pick(CITY), kind = tall ? 'tower' : pick(['house', 'house', 'shop', 'block'] as const), sd = Math.floor(rand() * 9);
-          items.push({ y: jy, svg: () => building(jx - w / 2, jy, w, h, dep, col, kind, sd) });
-          continue;
-        }
-      }
-      if (rand() < (d > 200 ? .55 : .35) && !trees.some((t) => Math.hypot(t.x - jx, t.y - jy) < 46) && !overlaps({ x: jx - 26, y: jy - 70, w: 52, h: 72 }, 0)) {
-        const near = !onIsland(jx, jy, 70);
-        trees.push({ x: jx, y: jy, kind: near && rand() < .7 ? 'palm' : rand() < .13 ? 'blossom' : 'tree', s: .8 + rand() * .45 });
+      if (d < 14 || d > 240 || rand() > .7) continue;
+      // least-used design first so the city never looks copy-pasted
+      const key = BUILDINGS.slice().sort((a, b) => (used.get(a) ?? 0) - (used.get(b) ?? 0) + (rand() - .5) * .9)[0];
+      const { w, h } = sized(key, (key === 'tower-glass' ? 120 : 150) * (0.92 + rand() * 0.16));
+      const rect = { x: jx - w / 2, y: jy - h, w, h };
+      if (overlaps(rect, 10) || !clearRect(rect, 4)) continue;
+      used.set(key, (used.get(key) ?? 0) + 1);
+      place(key, 'building', jx, jy, w, h, rand() < .5);
+    }
+  const TREES = [
+    { key: 'tree-oak', w: 120, weight: 3 }, { key: 'tree-blossom', w: 118, weight: 2 }, { key: 'tree-autumn', w: 118, weight: 1.3 },
+    { key: 'tree-pine', w: 92, weight: 1.6 }, { key: 'tree-palm', w: 110, weight: 1 },
+    { key: 'tree-oak-small', w: 84, weight: 2.4 }, { key: 'tree-blossom-small', w: 80, weight: 1.6 }, { key: 'tree-palm-small', w: 84, weight: .8 },
+    { key: 'bush-flower', w: 70, weight: .9 }, { key: 'bush-green', w: 64, weight: .9 },
+  ];
+  const pickTree = (beach: boolean) => {
+    const pool = beach ? TREES.filter((t) => t.key.includes('palm') || t.key.startsWith('bush')) : TREES;
+    let r = rand() * pool.reduce((a, t) => a + t.weight, 0);
+    for (const t of pool) { r -= t.weight; if (r <= 0) return t; }
+    return pool[0];
+  };
+  for (let y = W.y + 30; y < W.y + W.h; y += 46)
+    for (let x = W.x + 30; x < W.x + W.w; x += 46) {
+      const jx = x + (rand() - .5) * 30, jy = y + (rand() - .5) * 30;
+      if (!insideLand(jx, jy, 4)) continue;
+      const d = roadDist(jx, jy);
+      if (d < 10 || rand() > (d > 160 ? .8 : .62)) continue;
+      const first = pickTree(!onIsland(jx, jy, 70));
+      // big tree first; if it does not fit, its smaller sibling, then a bush
+      const family = [first, ...TREES.filter((t) => t.key === `${first.key}-small`),
+        ...(rand() < .25 ? TREES.filter((t) => t.key.startsWith('bush')) : [])];
+      const sizeJitter = 0.78 + rand() * 0.42; // per-tree size so no two look copy-pasted
+      const flip = rand() < .5;
+      for (const t of family) {
+        const { w, h } = sized(t.key, t.w * sizeJitter);
+        const rect = { x: jx - w * .42, y: jy - h, w: w * .84, h };
+        const bush = t.key.startsWith('bush');
+        if (overlaps(rect, 0) || !clearRect(rect, 4, -18, bush ? 1 : 0.34)) continue;
+        place(t.key, bush ? 'bush' : 'tree', jx, jy, w, h, flip);
+        break;
       }
     }
-  for (const t of trees) items.push({ y: t.y, svg: () => tree(t.x, t.y, t.s, t.kind) });
   let umbrellas = 0;
   for (let i = 0; i < 40 && umbrellas < 9; i++) {
     const b = pick(landBlobs), a = rand() * Math.PI * 2, x = b.x + Math.cos(a) * (b.r - 30), y = b.y + Math.sin(a) * (b.r - 30);
@@ -295,7 +397,7 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
   out.push(items.sort((a, b) => a.y - b.y).map((i) => i.svg()).join(''));
   out.push('</svg>');
 
-  return { svg: out.join('\n'), bounds: W, labels };
+  return { svg: out.join('\n'), bounds: W, labels, props };
 
   /* ================= drawing helpers (return SVG markup) ================= */
   function groundShadow(x: number, y: number, w: number): string {
