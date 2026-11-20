@@ -53,6 +53,20 @@ const IDLE_WALK_FRAME_CH19: Readonly<Record<string, number>> = {
   'secret-baby': 2,
 };
 const IDLE_STANDING_ART_CH19: readonly string[] = [];
+
+/**
+ * CH-19 walk strips generated from the approved concept sheets (8 x 192px,
+ * same format as the CH-18 production strips). A Character listed here swaps
+ * to the new strip; everyone else keeps the CH-18 art.
+ */
+const WALK_STRIP_CH19: Readonly<Record<string, { path: string; idleFrame: number }>> = {
+  'starter-grumpy': { path: 'assets/characters/ch19/walk-cau-co-ch19.png', idleFrame: 2 },
+  'starter-crybaby': { path: 'assets/characters/ch19/walk-khoc-nhe-ch19.png', idleFrame: 6 },
+  'starter-anxious': { path: 'assets/characters/ch19/walk-lo-lang-ch19.png', idleFrame: 2 },
+  'starter-hyper': { path: 'assets/characters/ch19/walk-tang-dong-ch19.png', idleFrame: 2 },
+  'secret-baby': { path: 'assets/characters/ch19/crawl-secret-baby-ch19.png', idleFrame: 0 },
+};
+const walkKeyCh19 = (characterId: string): string => `character-walk-ch19-${characterId}`;
 const IDLE_SETTLE_MS_CH19 = 140;
 const BREATH_PERIOD_MS_CH19 = 2600;
 
@@ -104,6 +118,11 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       this.load.spritesheet(PORTRAIT_STARTERS_KEY_CH19, publicAssetUrl(PORTRAIT_STARTERS_PATH_CH19), {
         frameWidth: PORTRAIT_CELL_CH19, frameHeight: PORTRAIT_CELL_CH19,
       });
+    }
+    for (const [id, strip] of Object.entries(WALK_STRIP_CH19)) {
+      if (!this.textures.exists(walkKeyCh19(id))) {
+        this.load.spritesheet(walkKeyCh19(id), publicAssetUrl(strip.path), { frameWidth: 192, frameHeight: 192 });
+      }
     }
     for (const id of IDLE_STANDING_ART_CH19) {
       const key = `character-idle-ch19-${id}`;
@@ -292,6 +311,12 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       if (!sprite?.active || runtime.cauCoRigPilotCh1822?.has(player.id)) continue;
       if (runtime.characterFaceCompositeImagesCh187?.get(player.id)?.visible) continue;
 
+      const strip = WALK_STRIP_CH19[player.characterId ?? ''];
+      if (strip && !sprite.getData('walkCh19') && this.textures.exists(walkKeyCh19(player.characterId ?? ''))) {
+        sprite.setData('walkCh19', true).setData('walkFrameBaseCh1811', 0);
+        sprite.setTexture(walkKeyCh19(player.characterId ?? ''), 0);
+      }
+
       const last = this.tokenStillCh19.get(player.id) ?? { x: token.x, y: token.y, stillMs: 0 };
       const moved = Math.hypot(token.x - last.x, token.y - last.y) > 0.45;
       last.stillMs = moved ? 0 : last.stillMs + delta;
@@ -313,7 +338,8 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         sprite.setData('walkTextureCh19', sprite.texture.key).setData('idleArtCh19', true).setTexture(idleKey);
       } else if (!standing) {
         const base = Number(sprite.getData('walkFrameBaseCh1811') ?? 0);
-        sprite.setFrame(base + (IDLE_WALK_FRAME_CH19[player.characterId ?? ''] ?? 0));
+        const idleFrame = sprite.getData('walkCh19') ? (strip?.idleFrame ?? 0) : (IDLE_WALK_FRAME_CH19[player.characterId ?? ''] ?? 0);
+        sprite.setFrame(base + idleFrame);
       }
 
       const sx = Number(sprite.getData('idleBaseScaleXCh1813') ?? sprite.scaleX);

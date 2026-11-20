@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import boardJson from '../src/content/city/board_city_mvp.json' with { type: 'json' };
 import type { BoardDefinition } from '../src/core/types';
 import { effectiveBoardNode071 } from '../src/core/lapShuffle071';
@@ -76,5 +76,12 @@ assert.match(layer, /fontSize: '19px'/);
 assert.match(layer, /TIẾP TỤC  ▶/);
 const turnOrder = readFileSync('src/scenes/TurnOrderSceneCh17.ts', 'utf8');
 assert.match(turnOrder, /rollSkin0701\?\.setAlpha\(0\)/);
+
+// CH-19 walk strips generated from the concept sheets (8 x 192px, same format as CH-18 strips).
+for (const file of ['walk-cau-co-ch19', 'walk-khoc-nhe-ch19', 'walk-lo-lang-ch19', 'walk-tang-dong-ch19', 'crawl-secret-baby-ch19']) {
+  assert.ok(existsSync(`public/assets/characters/ch19/${file}.png`), `${file} missing`);
+  assert.match(scene, new RegExp(`assets/characters/ch19/${file}\.png`));
+}
+assert.match(scene, /WALK_STRIP_CH19/);
 
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');
