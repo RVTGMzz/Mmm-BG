@@ -30,6 +30,7 @@ import {
 } from '../ui/cityIslandSceneryCh19';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { installIslandPropsCh19, preloadIslandPropsCh19 } from '../ui/islandPropsCh19';
+import { RescueVehiclesCh19, preloadRescueVehiclesCh19 } from '../ui/rescueVehiclesCh19';
 import { HUD_PLAYER_ACCENTS_VF04 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
 
@@ -129,10 +130,14 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private readonly tileNumbersCh19 = tileNumbersCh19(BOARD_CH19);
   private readonly playerCardsCh19 = new Map<number, { card: Phaser.GameObjects.Container; signature: string; money: number; active: boolean }>();
   private readonly tokenStillCh19 = new Map<number, { x: number; y: number; stillMs: number }>();
+  private rescueCh19?: RescueVehiclesCh19;
+  private readonly holdStateCh19 = new Map<number, string>();
+  private readonly lastTokenPosCh19 = new Map<number, { x: number; y: number }>();
 
   preload(): void {
     super.preload();
     preloadIslandPropsCh19(this);
+    preloadRescueVehiclesCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
       this.load.spritesheet(PORTRAIT_STARTERS_KEY_CH19, publicAssetUrl(PORTRAIT_STARTERS_PATH_CH19), {
         frameWidth: PORTRAIT_CELL_CH19, frameHeight: PORTRAIT_CELL_CH19,
@@ -160,6 +165,9 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.cameras.main.setBackgroundColor(ISLAND_PALETTE_CH19.sea);
     this.hideLegacyBoardCh19();
     this.syncIslandTilesCh19(false);
+    this.rescueCh19 = new RescueVehiclesCh19(this);
+    // a player who is already held when the board opens (resume) gets no cutscene
+    for (const p of (this as unknown as { match?: MatchState }).match?.players ?? []) this.holdStateCh19.set(p.id, p.specialHold ?? '');
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
@@ -167,6 +175,9 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
 
     const cleanup = () => {
       this.playerCardsCh19.clear();
+      this.rescueCh19 = undefined;
+      this.holdStateCh19.clear();
+      this.lastTokenPosCh19.clear();
       this.islandTilesCh19.clear();
       this.hiddenTileObjectsCh19.length = 0;
       this.hiddenTileTextsCh19.length = 0;
@@ -187,6 +198,45 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.syncPlayerCardsCh19();
     this.syncCharacterTokensCh19();
     this.syncActionButtonsCh19();
+    this.syncRescueRidesCh19();
+  }
+
+  /* ------------------------------------------------------------------ jail / hospital rides */
+
+  /** Police car / ambulance pick-up when a player is newly sent to the Jail or Hospital. */
+  private syncRescueRidesCh19(): void {
+    const runtime = this as unknown as {
+      match?: MatchState;
+      visuals?: Map<number, { token: Phaser.GameObjects.Container }>;
+      characterWalkSpritesCh181?: Map<number, Phaser.GameObjects.Sprite>;
+      overviewMode?: boolean;
+      currentPlayer?: () => PlayerState | undefined;
+    };
+    if (!runtime.match || !runtime.visuals || !this.rescueCh19) return;
+    this.rescueCh19.update();
+    for (const player of runtime.match.players) {
+      const token = runtime.visuals.get(player.id)?.token;
+      if (!token?.active) continue;
+      const hold = player.specialHold ?? '';
+      const before = this.holdStateCh19.get(player.id) ?? '';
+      this.holdStateCh19.set(player.id, hold);
+      const from = this.lastTokenPosCh19.get(player.id);
+      if (hold && !before && from) {
+        const node = BOARD_CH19.nodes.find((n) => n.id === player.nodeId);
+        const sprite = runtime.characterWalkSpritesCh181?.get(player.id);
+        if (node) {
+          this.rescueCh19.play({
+            kind: hold === 'jail' ? 'jail' : 'hospital',
+            from,
+            to: { x: node.x, y: node.y },
+            token,
+            rider: sprite ? { texture: sprite.texture.key, frame: sprite.frame.name, scale: sprite.scaleX } : undefined,
+            followCamera: !runtime.overviewMode,
+          });
+        }
+      }
+      if (!hold) this.lastTokenPosCh19.set(player.id, { x: token.x, y: token.y });
+    }
   }
 
   /* ------------------------------------------------------------------ action buttons */

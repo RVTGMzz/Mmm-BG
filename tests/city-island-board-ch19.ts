@@ -100,4 +100,15 @@ assert.match(propsSrc, /island-ferris-wheel-ch19/);
 assert.doesNotMatch(propsSrc, /Math\.random\s*\(|submitIntent\s*\(/);
 assert.match(scene, /installIslandPropsCh19\(this, scenery\.props, scenery\.bounds\)/);
 
+// CH-19 jail / hospital ride: police car or ambulance picks the Character up (presentation only).
+const rescue = readFileSync('src/ui/rescueVehiclesCh19.ts', 'utf8');
+for (const key of ['police-car', 'police-car-open', 'ambulance', 'ambulance-open']) {
+  assert.ok(existsSync(`public/assets/scenery/ch19/${key}.png`), `${key} sprite missing`);
+}
+assert.match(scene, /syncRescueRidesCh19/);
+assert.match(scene, /hold && !before && from/);
+assert.match(rescue, /startSirenCh19/);
+assert.match(rescue, /sfxController\.getState\(\)\.muted/);
+assert.doesNotMatch(rescue, /Math\.random\s*\(|submitIntent\s*\(|specialHold\s*=/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');
