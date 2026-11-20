@@ -4,6 +4,7 @@ import type { MatchState } from '../core/matchState';
 import type { BoardDefinition, BoardNode, PlayerState } from '../core/types';
 import type { JobDefinition } from '../core/jobs';
 import { effectiveBoardNode071 } from '../core/lapShuffle071';
+import { specialHoldNodeId057 } from '../core/specialLocations057';
 import { MVP_CARD_HAND_LIMIT } from '../core/rules';
 import { gameSession } from '../core/session';
 import jobsJson from '../content/core/jobs_mvp.json';
@@ -32,6 +33,7 @@ import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { installIslandPropsCh19, preloadIslandPropsCh19 } from '../ui/islandPropsCh19';
 import { RescueVehiclesCh19, preloadRescueVehiclesCh19 } from '../ui/rescueVehiclesCh19';
 import { diceSpritesReadyCh19, playDiceRollCh19 } from '../ui/diceRollCh19';
+import { graphicsBoundsCh19, preloadUiKitCh19, reskinGraphicsCh19, trackGraphicsBoundsCh19, uiIconCh19, uiPanelCh19, uiPillCh19, uiReadyCh19 } from '../ui/uiKitCh19';
 import { diceSettleFeedbackCh09 } from '../ui/presentationFeedbackCh09';
 import { sfxController } from '../audio/sfxController';
 import type { PresentationEventModel } from '../ui/presentationModel';
@@ -39,6 +41,8 @@ import { HUD_PLAYER_ACCENTS_VF04 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
+/** Jail / Hospital hold tiles (specialHoldNodeId057). */
+const HOLD_NODE_CH19 = { jail: specialHoldNodeId057('jail'), hospital: specialHoldNodeId057('hospital') } as const;
 const JOBS_CH19 = jobsJson as JobDefinition[];
 const SCENERY_TEXTURE_CH19 = 'city-island-scenery-ch19';
 const SCENERY_DEPTH_CH19 = -45;
@@ -135,12 +139,12 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private readonly playerCardsCh19 = new Map<number, { card: Phaser.GameObjects.Container; signature: string; money: number; active: boolean }>();
   private readonly tokenStillCh19 = new Map<number, { x: number; y: number; stillMs: number }>();
   private rescueCh19?: RescueVehiclesCh19;
-  private readonly holdStateCh19 = new Map<number, string>();
-  private readonly lastTokenPosCh19 = new Map<number, { x: number; y: number }>();
 
   preload(): void {
     super.preload();
     preloadIslandPropsCh19(this);
+    preloadUiKitCh19(this);
+    trackGraphicsBoundsCh19();
     preloadRescueVehiclesCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
       this.load.spritesheet(PORTRAIT_STARTERS_KEY_CH19, publicAssetUrl(PORTRAIT_STARTERS_PATH_CH19), {
@@ -171,8 +175,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.syncIslandTilesCh19(false);
     this.rescueCh19 = new RescueVehiclesCh19(this);
     this.installDiceRollCh19();
-    // a player who is already held when the board opens (resume) gets no cutscene
-    for (const p of (this as unknown as { match?: MatchState }).match?.players ?? []) this.holdStateCh19.set(p.id, p.specialHold ?? '');
+    this.installRescueMoveCh19();
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
@@ -181,8 +184,6 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     const cleanup = () => {
       this.playerCardsCh19.clear();
       this.rescueCh19 = undefined;
-      this.holdStateCh19.clear();
-      this.lastTokenPosCh19.clear();
       this.islandTilesCh19.clear();
       this.hiddenTileObjectsCh19.length = 0;
       this.hiddenTileTextsCh19.length = 0;
@@ -203,45 +204,107 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.syncPlayerCardsCh19();
     this.syncCharacterTokensCh19();
     this.syncActionButtonsCh19();
+    this.syncPopupSkinsCh19();
     this.syncRescueRidesCh19();
+  }
+
+  /* ------------------------------------------------------------------ painted popups (UI kit) */
+
+  /**
+   * Older popup layers draw flat cream panels and pill buttons with Graphics.
+   * Swap them for the painted, concept-matched UI kit at exactly the same box.
+   */
+  private syncPopupSkinsCh19(): void {
+    if (!uiReadyCh19(this, 'panel-coral') || !uiReadyCh19(this, 'btn-coral')) return;
+    const PANELS: Record<string, 'panel-coral' | 'panel-lilac'> = {
+      'presentation-landing-card-ch1713': 'panel-coral',
+      'job-presentation-card': 'panel-coral',
+      'character-passive-presentation-ch05': 'panel-coral',
+      'presentation-cinematic-card-ch1713': 'panel-coral',
+      'card-presentation-card': 'panel-lilac',
+    };
+    const visit = (list: Phaser.GameObjects.GameObject[]) => {
+      for (const o of list) {
+        if (!(o instanceof Phaser.GameObjects.Container) || !o.active) continue;
+        const graphics = o.list.filter((c): c is Phaser.GameObjects.Graphics => c instanceof Phaser.GameObjects.Graphics);
+        const panelKey = PANELS[o.name];
+        if (panelKey) {
+          // the panel is the biggest flat box the older layers drew; every other
+          // box of about that size (drop shadows, re-laid duplicates) goes too
+          const sized = graphics
+            .map((g) => ({ g, b: graphicsBoundsCh19(g) }))
+            .filter((e): e is { g: Phaser.GameObjects.Graphics; b: NonNullable<typeof e.b> } => Boolean(e.b))
+            .map((e) => ({ ...e, area: e.b.w * e.b.h }));
+          const biggest = sized.reduce<typeof sized[number] | undefined>((m, e) => (!m || e.area > m.area ? e : m), undefined);
+          if (biggest) {
+            const big = sized.filter((e) => e.area >= biggest.area * 0.6);
+            // the panel is the top-most of those (the ones under it are its drop shadows)
+            const panel = big[big.length - 1];
+            for (const e of big) if (e !== panel && e.g.alpha > 0) e.g.setAlpha(0);
+            reskinGraphicsCh19(this, o, panel.g, (w, h) => uiPanelCh19(this, panelKey, w + 12, h + 14));
+          }
+        } else if (o.name === 'presentation-continue-chip-ch1713') {
+          const label = o.list.find((c): c is Phaser.GameObjects.Text => c instanceof Phaser.GameObjects.Text);
+          const skip = /BỎ QUA/.test(label?.text ?? '');
+          const button = graphics[1] ?? graphics[0];
+          if (button) reskinGraphicsCh19(this, o, button, (w, h) => uiPillCh19(this, skip ? 'btn-slate' : 'btn-coral', w + 8, h + 10));
+          if (graphics.length > 1 && graphics[0].alpha > 0) graphics[0].setAlpha(0); // the old flat drop shadow
+        }
+        visit(o.list);
+      }
+    };
+    visit(this.children.list);
   }
 
   /* ------------------------------------------------------------------ jail / hospital rides */
 
-  /** Police car / ambulance pick-up when a player is newly sent to the Jail or Hospital. */
+  /** Keeps riders hidden and the camera on the vehicle while a ride is on screen. */
   private syncRescueRidesCh19(): void {
-    const runtime = this as unknown as {
-      match?: MatchState;
+    this.rescueCh19?.update();
+  }
+
+  /**
+   * The capture itself: replay sends the player to the Jail / Hospital with one
+   * special move_step (gate -> hold node). Instead of walking that step, the
+   * police car / ambulance picks the Character up where it stands and drops it
+   * at the hold tile; the step only finishes once the Character is inside, so
+   * it never reappears at the gate or walks there by itself.
+   */
+  private installRescueMoveCh19(): void {
+    type Runtime = {
       visuals?: Map<number, { token: Phaser.GameObjects.Container }>;
       characterWalkSpritesCh181?: Map<number, Phaser.GameObjects.Sprite>;
       overviewMode?: boolean;
-      currentPlayer?: () => PlayerState | undefined;
+      animateMoveStep(internals: { visuals: Map<number, { token: Phaser.GameObjects.Container }> }, model: PresentationEventModel): Promise<void>;
     };
-    if (!runtime.match || !runtime.visuals || !this.rescueCh19) return;
-    this.rescueCh19.update();
-    for (const player of runtime.match.players) {
-      const token = runtime.visuals.get(player.id)?.token;
-      if (!token?.active) continue;
-      const hold = player.specialHold ?? '';
-      const before = this.holdStateCh19.get(player.id) ?? '';
-      this.holdStateCh19.set(player.id, hold);
-      const from = this.lastTokenPosCh19.get(player.id);
-      if (hold && !before && from) {
-        const node = BOARD_CH19.nodes.find((n) => n.id === player.nodeId);
-        const sprite = runtime.characterWalkSpritesCh181?.get(player.id);
-        if (node) {
-          this.rescueCh19.play({
-            kind: hold === 'jail' ? 'jail' : 'hospital',
-            from,
-            to: { x: node.x, y: node.y },
-            token,
-            rider: sprite ? { texture: sprite.texture.key, frame: sprite.frame.name, scale: sprite.scaleX } : undefined,
-            followCamera: !runtime.overviewMode,
-          });
-        }
-      }
-      if (!hold) this.lastTokenPosCh19.set(player.id, { x: token.x, y: token.y });
-    }
+    const runtime = this as unknown as Runtime;
+    const inherited = runtime.animateMoveStep.bind(this);
+    runtime.animateMoveStep = (internals, model) => {
+      const from = model.fromNodeId, to = model.toNodeId, playerId = model.actorId;
+      const kind = to === HOLD_NODE_CH19.jail ? 'jail' : to === HOLD_NODE_CH19.hospital ? 'hospital' : undefined;
+      const fromHold = from === HOLD_NODE_CH19.jail || from === HOLD_NODE_CH19.hospital;
+      const token = playerId === undefined ? undefined : internals.visuals.get(playerId)?.token;
+      if (!kind || fromHold || from === undefined || !token?.active || !this.rescueCh19?.canPlay(kind)) return inherited(internals, model);
+      const fromNode = BOARD_CH19.nodes.find((n) => n.id === from);
+      const toNode = BOARD_CH19.nodes.find((n) => n.id === to);
+      if (!fromNode || !toNode) return inherited(internals, model);
+      // keep the token's little per-player offset on the destination tile
+      const off = Math.hypot(token.x - fromNode.x, token.y - fromNode.y) < 70 ? { x: token.x - fromNode.x, y: token.y - fromNode.y } : { x: 0, y: 0 };
+      const dest = { x: toNode.x + off.x, y: toNode.y + off.y };
+      const sprite = playerId === undefined ? undefined : runtime.characterWalkSpritesCh181?.get(playerId);
+      this.tweens.killTweensOf(token);
+      return new Promise<void>((resolve) => {
+        this.rescueCh19!.play({
+          kind,
+          from: { x: token.x, y: token.y },
+          to: dest,
+          token,
+          rider: sprite ? { texture: sprite.texture.key, frame: sprite.frame.name, scale: sprite.scaleX } : undefined,
+          followCamera: !runtime.overviewMode,
+          onArrive: () => { this.tweens.killTweensOf(token); token.setPosition(dest.x, dest.y); resolve(); },
+        });
+      });
+    };
   }
 
   /* ------------------------------------------------------------------ action buttons */
@@ -267,12 +330,18 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     if (dice?.active) {
       if (!dice.getData('ch19')) {
         dice.setData('ch19', true);
-        const pill = this.add.graphics().setName('dice-action-pill-ch19');
-        pill.fillStyle(0x14243f, 0.28).fillRoundedRect(-118, 60, 236, 54, 27);
-        pill.fillStyle(0xb8342c, 1).fillRoundedRect(-118, 56, 236, 54, 27);
-        pill.fillStyle(0xf2554a, 1).fillRoundedRect(-118, 50, 236, 54, 27);
-        pill.fillStyle(0xffffff, 0.28).fillRoundedRect(-102, 55, 204, 11, 6);
-        pill.lineStyle(3.5, 0xffffff, 1).strokeRoundedRect(-118, 50, 236, 54, 27);
+        let pill: Phaser.GameObjects.GameObject;
+        if (uiReadyCh19(this, 'btn-coral')) {
+          pill = uiPillCh19(this, 'btn-coral', 250, 62).setPosition(0, 77).setName('dice-action-pill-ch19');
+        } else {
+          const g = this.add.graphics().setName('dice-action-pill-ch19');
+          g.fillStyle(0x14243f, 0.28).fillRoundedRect(-118, 60, 236, 54, 27);
+          g.fillStyle(0xb8342c, 1).fillRoundedRect(-118, 56, 236, 54, 27);
+          g.fillStyle(0xf2554a, 1).fillRoundedRect(-118, 50, 236, 54, 27);
+          g.fillStyle(0xffffff, 0.28).fillRoundedRect(-102, 55, 204, 11, 6);
+          g.lineStyle(3.5, 0xffffff, 1).strokeRoundedRect(-118, 50, 236, 54, 27);
+          pill = g;
+        }
         const label = this.add.text(0, 74, 'TUNG XÚC XẮC', {
           fontFamily: MOBILE_UI_FONT_07044, fontSize: '23px', fontStyle: 'bold', color: '#ffffff',
           stroke: '#8f2620', strokeThickness: 5,
@@ -282,6 +351,22 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
           stroke: '#3b2b27', strokeThickness: 4,
         }).setOrigin(0.5).setName('dice-action-keys-ch19');
         dice.add([pill, label, keys]);
+        // painted die in place of the flat vector one, with an inviting little hop
+        if (this.textures.exists('dice-ch19-dice-top-5')) {
+          const die = this.add.image(0, -6, 'dice-ch19-dice-top-5').setName('dice-action-die-ch19');
+          die.setScale(104 / Math.max(die.width, die.height));
+          dice.add(die);
+          this.tweens.add({ targets: die, y: -14, angle: { from: -4, to: 4 }, duration: 640, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        }
+      }
+      // keep the older die art hidden (it is redrawn by older layers)
+      if (dice.getByName('dice-action-die-ch19')) {
+        for (const child of dice.list) {
+          const go = child as Phaser.GameObjects.GameObject & { alpha?: number; setAlpha?: (a: number) => unknown; name: string };
+          if (/-ch19$/.test(go.name) || child instanceof Phaser.GameObjects.Rectangle) continue;
+          if (child instanceof Phaser.GameObjects.Text && /TUNG|Space/.test(child.text)) continue;
+          if (go.alpha !== undefined && go.alpha > 0) go.setAlpha?.(0);
+        }
       }
       for (const child of dice.list) {
         if (child instanceof Phaser.GameObjects.Text && child.text.trim() === 'BẤM XÚC XẮC' && child.alpha > 0) child.setAlpha(0);
@@ -319,6 +404,19 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
 
   private drawCardButtonCh19(x: number, y: number, canUse: boolean, hand: number, lock: number): Phaser.GameObjects.Container {
     const root = this.add.container(x, y).setName('card-action-ch19');
+    if (uiReadyCh19(this, 'btn-blue') && uiReadyCh19(this, 'icon-card')) {
+      root.add(uiPillCh19(this, canUse ? 'btn-blue' : 'btn-slate', 182, 66).setPosition(0, -2));
+      root.add(uiIconCh19(this, 'icon-card', -60, -3, 42).setAngle(-8));
+      root.add(this.add.text(-32, -13, 'LÁ BÀI', {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: '20px', fontStyle: 'bold', color: '#ffffff',
+        stroke: canUse ? '#123f86' : '#4a4f5c', strokeThickness: 5,
+      }).setOrigin(0, 0.5));
+      root.add(this.add.text(-32, 11, lock > 0 ? `🔒 khóa ${lock} lượt` : `${hand}/${MVP_CARD_HAND_LIMIT}${canUse ? ' · dùng' : ''}`, {
+        fontFamily: MOBILE_UI_FONT_07044, fontSize: '14px', fontStyle: 'bold', color: '#ffffff',
+        stroke: canUse ? '#123f86' : '#4a4f5c', strokeThickness: 3,
+      }).setOrigin(0, 0.5));
+      return root;
+    }
     const fill = canUse ? 0x8b4fe0 : 0xb9b2c6;
     const dark = canUse ? 0x5a2fa8 : 0x857d93;
     const g = this.add.graphics();
@@ -594,14 +692,14 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     runtime.showDiceRoll = (model: PresentationEventModel) => {
       if (!diceSpritesReadyCh19(this)) { previous(model); return; }
       const result = Math.max(1, Math.min(6, model.roll ?? 1));
-      const container = this.add.container(640, 330).setDepth(920).setName('presentation-dice-card-ch19');
+      const container = this.add.container(640, 320).setDepth(920).setName('presentation-dice-card-ch19');
       runtime.active = container;
       sfxController.play('dice_roll');
       playDiceRollCh19(this, container, result, `${model.actorName} đổ ra ${result}`, () => {
         const settle = diceSettleFeedbackCh09(result);
         this.cameras.main.shake(settle.cameraShake.durationMs, settle.cameraShake.intensity);
       });
-      this.time.delayedCall(Math.max(1600, model.holdMs + 800), () => {
+      this.time.delayedCall(Math.max(2200, model.holdMs + 1400), () => {
         if (runtime.currentModel === model) runtime.finishCurrent(false);
       });
     };

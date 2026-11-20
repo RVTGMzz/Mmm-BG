@@ -47,6 +47,8 @@ export interface RescueRideCh19 {
   /** the Character art shown hopping in/out (texture + frame of the token's sprite) */
   rider?: { texture: string; frame: string | number; scale: number };
   followCamera: boolean;
+  /** called once the Character is dropped at the hold tile (token shown there) */
+  onArrive?: () => void;
 }
 
 export class RescueVehiclesCh19 {
@@ -58,6 +60,10 @@ export class RescueVehiclesCh19 {
   constructor(private readonly scene: Phaser.Scene) {}
 
   get busy(): boolean { return this.active > 0; }
+
+  canPlay(kind: RescueKindCh19): boolean {
+    return this.scene.textures.exists(keyCh19(VEHICLE_CH19[kind].closed));
+  }
 
   /** Call every frame: keeps riders' tokens hidden even if older code tweens their alpha. */
   update(): void {
@@ -76,7 +82,7 @@ export class RescueVehiclesCh19 {
   play(ride: RescueRideCh19): void {
     const scene = this.scene;
     const spec = VEHICLE_CH19[ride.kind];
-    if (!scene.textures.exists(keyCh19(spec.closed))) return;
+    if (!scene.textures.exists(keyCh19(spec.closed))) { ride.onArrive?.(); return; }
     this.active++;
 
     const tex = scene.textures.get(keyCh19(spec.closed)).getSourceImage() as HTMLImageElement;
@@ -161,6 +167,7 @@ export class RescueVehiclesCh19 {
           const hopOut = rider(out.x, out.y + 18);
           const finishDrop = () => {
             this.hidden.delete(ride.token);
+            ride.onArrive?.();
             if (ride.token.active) {
               ride.token.setAlpha(1);
               scene.tweens.add({ targets: ride.token, scale: { from: ride.token.scale * 0.8, to: ride.token.scale }, duration: 220, ease: 'Back.easeOut' });

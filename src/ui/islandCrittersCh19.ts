@@ -80,11 +80,17 @@ export function installIslandCrittersCh19(
   const fly = () => {
     flight++;
     const kind = kinds[Math.floor(hashCh19(flight * 4.3) * kinds.length) % kinds.length];
-    const count = 1 + Math.floor(hashCh19(flight * 9.1) * 3);
+    // mostly a lone bird or a pair, now and then a bigger flock of 3-5
+    const c = hashCh19(flight * 9.1);
+    const count = c < 0.5 ? 1 : c < 0.78 ? 2 : 3 + Math.floor(hashCh19(flight * 5.7) * 3);
     flock(scene, kind, count, flight);
-    scene.time.delayedCall(11000 + hashCh19(flight * 2.7) * 13000, fly);
+    // uneven sky: usually long quiet gaps (15-65 s), sometimes a busy spell
+    // where another flock follows within a few seconds
+    const g = hashCh19(flight * 2.7);
+    const busy = hashCh19(flight * 7.3) < 0.18;
+    scene.time.delayedCall(busy ? 3000 + g * 4000 : 15000 + g * g * 50000, fly);
   };
-  scene.time.delayedCall(5000, fly);
+  scene.time.delayedCall(9000 + hashCh19(3.3) * 9000, fly);
 }
 
 /* ------------------------------------------------------------------ bush critters */

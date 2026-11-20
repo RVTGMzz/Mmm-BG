@@ -3,6 +3,7 @@ import { STARTER_CHARACTERS_V01 } from '../content/core/characters_starter_v01';
 import { HUD_PLAYER_ACCENTS_VF04 } from './visualFoundationHudVf04';
 import { MOBILE_UI_FONT_07044 } from './mobileReadability07044';
 import { shadeCh19 } from './cityIslandSceneryCh19';
+import { uiIconCh19, uiReadyCh19, type UiKitKeyCh19 } from './uiKitCh19';
 
 /**
  * CH-19 player card (presentation only), styled after the corner cards in
@@ -127,7 +128,9 @@ export function buildPlayerCardCh19(scene: Phaser.Scene, model: PlayerCardModelC
   }).setOrigin(0.5));
 
   /* ---------- crown for the leader */
-  if (model.leader) {
+  if (model.leader && uiReadyCh19(scene, 'icon-crown')) {
+    root.add(uiIconCh19(scene, 'icon-crown', 140, -52, 34).setAngle(14));
+  } else if (model.leader) {
     const crown = scene.add.graphics().setPosition(140, -50).setAngle(14);
     crown.fillStyle(0x9a6e10, 1).fillPoints(crownPoints(1, 3), true);
     crown.fillStyle(0xffd45c, 1).fillPoints(crownPoints(1, 0), true);
@@ -136,12 +139,17 @@ export function buildPlayerCardCh19(scene: Phaser.Scene, model: PlayerCardModelC
   }
 
   /* ---------- stat chips: B$ · cards · laps */
-  const chip = (x: number, w: number, icon: (g: Phaser.GameObjects.Graphics) => void, value: string, name: string) => {
+  const chip = (x: number, w: number, icon: (g: Phaser.GameObjects.Graphics) => void, value: string, name: string, painted?: UiKitKeyCh19) => {
     const g = scene.add.graphics().setPosition(x, 4);
     g.fillStyle(0xffffff, 1).fillRoundedRect(0, -14, w, 28, 14);
     g.lineStyle(2, hexNum(shadeCh19(accentHex, 0.4)), 1).strokeRoundedRect(0, -14, w, 28, 14);
-    icon(g);
-    root.add(g);
+    if (painted && uiReadyCh19(scene, painted)) {
+      root.add(g);
+      root.add(uiIconCh19(scene, painted, x + 13, 4, 30));
+    } else {
+      icon(g);
+      root.add(g);
+    }
     root.add(scene.add.text(x + 30, 4, value, {
       fontFamily: font, fontSize: '17px', fontStyle: 'bold', color: '#3b2b27',
     }).setOrigin(0, 0.5).setName(name));
@@ -150,12 +158,12 @@ export function buildPlayerCardCh19(scene: Phaser.Scene, model: PlayerCardModelC
     g.fillStyle(0x9a6e10, 1).fillCircle(13, 1, 13);
     g.fillStyle(0xf7c531, 1).fillCircle(13, 0, 12);
     g.lineStyle(2, 0xffe38a, 1).strokeCircle(13, 0, 8);
-  }, `${model.money}`, 'player-card-money-ch19');
+  }, `${model.money}`, 'player-card-money-ch19', 'icon-coin');
   chip(34, 64, (g) => {
     g.fillStyle(0x5a2fa8, 1).fillRoundedRect(4, -11, 18, 23, 4);
     g.fillStyle(0x8b4fe0, 1).fillRoundedRect(4, -12, 18, 22, 4);
     g.fillStyle(0xffffff, 0.85).fillRoundedRect(8, -8, 10, 14, 2);
-  }, model.lockTurns > 0 ? `🔒${model.lockTurns}` : `${model.handCount}/${model.handLimit}`, 'player-card-hand-ch19');
+  }, model.lockTurns > 0 ? `🔒${model.lockTurns}` : `${model.handCount}/${model.handLimit}`, 'player-card-hand-ch19', 'icon-card');
   chip(102, 46, (g) => {
     g.fillStyle(0x1f8a3d, 1).fillCircle(13, 1, 13);
     g.fillStyle(0x3dba5c, 1).fillCircle(13, 0, 12);

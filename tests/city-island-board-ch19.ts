@@ -106,19 +106,20 @@ for (const key of ['police-car', 'police-car-open', 'ambulance', 'ambulance-open
   assert.ok(existsSync(`public/assets/scenery/ch19/${key}.png`), `${key} sprite missing`);
 }
 assert.match(scene, /syncRescueRidesCh19/);
-assert.match(scene, /hold && !before && from/);
+assert.match(scene, /installRescueMoveCh19/);
+assert.match(scene, /onArrive/);
 assert.match(rescue, /startSirenCh19/);
 assert.match(rescue, /sfxController\.getState\(\)\.muted/);
 assert.doesNotMatch(rescue, /Math\.random\s*\(|submitIntent\s*\(|specialHold\s*=/);
 
 // CH-19 painted dice roll: tumbles through all six faces, lands on the event result.
 const diceSrc = readFileSync('src/ui/diceRollCh19.ts', 'utf8');
-for (const key of ['dice-1', 'dice-2', 'dice-3', 'dice-4', 'dice-5', 'dice-6', 'dice-tumble-1', 'dice-tumble-4', 'dice-dust', 'dice-burst']) {
+for (const key of ['dice-top-1', 'dice-top-6', 'dice-1', 'dice-2', 'dice-3', 'dice-4', 'dice-5', 'dice-6', 'dice-tumble-1', 'dice-tumble-4', 'dice-dust', 'dice-burst']) {
   assert.ok(existsSync(`public/assets/scenery/ch19/${key}.png`), `${key} sprite missing`);
 }
 assert.match(scene, /installDiceRollCh19/);
 assert.match(scene, /model\.roll/);
-assert.match(diceSrc, /DICE_FACE_KEYS_CH19\[face - 1\]/);
+assert.match(diceSrc, /DICE_TOP_KEYS_CH19\[face - 1\]/);
 assert.doesNotMatch(diceSrc, /Math\.random\s*\(|submitIntent\s*\(/);
 
 // CH-19 wildlife + beach: rabbits / butterflies at bushes, bird flocks with soft chirps, sprite beach props.
@@ -134,5 +135,17 @@ assert.match(critters, /sfxController\.getState\(\)\.muted/);
 assert.doesNotMatch(critters, /Math\.random\s*\(|submitIntent\s*\(/);
 assert.match(scenery, /place\(key, 'beach'/);
 assert.doesNotMatch(scenery, /function umbrella\(/);
+
+// CH-19 painted UI kit (concept-matched frames / buttons / icons) over the older flat panels.
+const uiKit = readFileSync('src/ui/uiKitCh19.ts', 'utf8');
+for (const key of ['panel-coral', 'panel-lilac', 'btn-coral', 'btn-blue', 'btn-slate', 'icon-coin', 'icon-card', 'icon-crown']) {
+  assert.ok(existsSync(`public/assets/ui/ch19/${key}.png`), `${key} UI art missing`);
+}
+assert.match(uiKit, /nineslice/);
+assert.match(scene, /syncPopupSkinsCh19/);
+assert.match(scene, /presentation-continue-chip-ch1713/);
+assert.match(scene, /uiPillCh19\(this, 'btn-coral'/);
+assert.doesNotMatch(uiKit, /Math\.random\s*\(|submitIntent\s*\(/);
+assert.match(critters, /busy \?/);
 
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');
