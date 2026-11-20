@@ -45,6 +45,27 @@ import { stageRectCh19 } from '../ui/responsiveStageCh19';
 import { browserSession } from '../core/browserSession';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
+
+/** Soft dark contact shadow (radial falloff), drawn once into a texture. */
+function contactShadowKeyCh19(scene: Phaser.Scene): string {
+  const key = 'character-contact-shadow-ch19';
+  if (scene.textures.exists(key)) return key;
+  const w = 84, h = 26;
+  const tex = scene.textures.createCanvas(key, w, h);
+  const ctx = tex?.getContext();
+  if (!tex || !ctx) return key;
+  ctx.save();
+  ctx.scale(1, h / w);
+  const g = ctx.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  g.addColorStop(0, 'rgba(20,40,20,0.42)');
+  g.addColorStop(0.55, 'rgba(20,40,20,0.26)');
+  g.addColorStop(1, 'rgba(20,40,20,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, w);
+  ctx.restore();
+  tex.refresh();
+  return key;
+}
 /** Jail / Hospital hold tiles (specialHoldNodeId057). */
 const HOLD_NODE_CH19 = { jail: specialHoldNodeId057('jail'), hospital: specialHoldNodeId057('hospital') } as const;
 const JOBS_CH19 = jobsJson as JobDefinition[];
@@ -498,12 +519,15 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         const oldCentre = child instanceof Phaser.GameObjects.Arc && Math.abs(c.x) < 1 && Math.abs(c.y) < 1;
         if ((badge && (child instanceof Phaser.GameObjects.Arc || child instanceof Phaser.GameObjects.Text)) || oldCentre) c.setVisible(false);
       }
+      // a soft contact shadow reads as standing on the tile; outlined rings looked like stickers
       if (!token.getByName('player-ground-ch19')) {
-        const colour = HUD_PLAYER_ACCENTS_VF04[player.id] ?? 0x765047;
-        token.addAt(
-          this.add.ellipse(0, 30, 66, 18, colour, 0.55).setStrokeStyle(2.5, 0xffffff, 0.85).setName('player-ground-ch19'),
-          0,
-        );
+        token.addAt(this.add.image(0, 31, contactShadowKeyCh19(this)).setName('player-ground-ch19'), 0);
+      }
+      for (const child of token.list) {
+        if (/^character-foot-ring-ch189/.test(child.name)) {
+          const ring = child as Phaser.GameObjects.Ellipse;
+          if (ring.alpha > 0) ring.setAlpha(0);
+        }
       }
 
       const sprite = runtime.characterWalkSpritesCh181?.get(player.id);

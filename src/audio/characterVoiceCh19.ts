@@ -34,15 +34,15 @@ const VOWELS = {
 
 const PROFILES: Record<string, VoiceProfile> = {
   // dramatic, teary auntie: warbling, sliding down, ends on a little sob
-  'starter-crybaby': { pitch: 330, syllables: [3, 4], syl: 0.15, gap: 0.03, jump: 1.18, vibrato: 0.05, wave: 'triangle', formants: [VOWELS.o, VOWELS.a, VOWELS.u], tail: 'sob', gain: 0.11 },
+  'starter-crybaby': { pitch: 330, syllables: [3, 4], syl: 0.15, gap: 0.03, jump: 1.18, vibrato: 0.05, wave: 'triangle', formants: [VOWELS.o, VOWELS.a, VOWELS.u], tail: 'sob', gain: 0.5 },
   // gruff boss: low, clipped, falling "hmph"
-  'starter-grumpy': { pitch: 118, syllables: [2, 3], syl: 0.1, gap: 0.04, jump: 1.08, vibrato: 0.0, wave: 'sawtooth', formants: [VOWELS.o, VOWELS.u, VOWELS.a], tail: 'hmph', gain: 0.08 },
+  'starter-grumpy': { pitch: 118, syllables: [2, 3], syl: 0.1, gap: 0.04, jump: 1.08, vibrato: 0.0, wave: 'sawtooth', formants: [VOWELS.o, VOWELS.u, VOWELS.a], tail: 'hmph', gain: 0.75 },
   // nervous young guy: quick shaky chatter, rising like a question
-  'starter-anxious': { pitch: 205, syllables: [5, 7], syl: 0.06, gap: 0.018, jump: 1.12, vibrato: 0.03, wave: 'sawtooth', formants: [VOWELS.e, VOWELS.i, VOWELS.a], tail: 'gulp', gain: 0.07 },
+  'starter-anxious': { pitch: 205, syllables: [5, 7], syl: 0.06, gap: 0.018, jump: 1.12, vibrato: 0.03, wave: 'sawtooth', formants: [VOWELS.e, VOWELS.i, VOWELS.a], tail: 'gulp', gain: 0.78 },
   // hyper teen: high, bouncy big jumps, ends with a "yay!"
-  'starter-hyper': { pitch: 360, syllables: [4, 6], syl: 0.075, gap: 0.02, jump: 1.45, vibrato: 0.0, wave: 'square', formants: [VOWELS.a, VOWELS.i, VOWELS.e], tail: 'yay', gain: 0.055 },
+  'starter-hyper': { pitch: 360, syllables: [4, 6], syl: 0.075, gap: 0.02, jump: 1.45, vibrato: 0.0, wave: 'square', formants: [VOWELS.a, VOWELS.i, VOWELS.e], tail: 'yay', gain: 0.36 },
   // the royal baby: cooing "goo-gaa" and a giggle
-  'secret-baby': { pitch: 470, syllables: [2, 3], syl: 0.13, gap: 0.05, jump: 1.25, vibrato: 0.02, wave: 'triangle', formants: [VOWELS.u, VOWELS.a, VOWELS.o], tail: 'giggle', gain: 0.1 },
+  'secret-baby': { pitch: 470, syllables: [2, 3], syl: 0.13, gap: 0.05, jump: 1.25, vibrato: 0.02, wave: 'triangle', formants: [VOWELS.u, VOWELS.a, VOWELS.o], tail: 'giggle', gain: 0.62 },
 };
 
 const hash = (n: number): number => {
@@ -51,7 +51,7 @@ const hash = (n: number): number => {
 };
 
 let context: AudioContext | undefined;
-let lastAt = 0;
+let lastAt = -1;
 
 function audio(): AudioContext | undefined {
   if (typeof window === 'undefined' || sfxController.getState().muted) return undefined;
@@ -73,9 +73,16 @@ export function playCharacterVoiceCh19(characterId: string | undefined, expressi
   if (ctx.currentTime - lastAt < 0.25) return true;
   lastAt = ctx.currentTime;
 
+  // gains are levelled so every Character peaks near half scale (about the
+  // level of the other cues); a gentle compressor keeps the babble even
   const out = ctx.createGain();
   out.gain.value = profile.gain;
-  out.connect(ctx.destination);
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -14;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.12;
+  out.connect(comp).connect(ctx.destination);
   const contour = expression === 'happy' ? 1.12 : expression === 'angry' ? 0.86 : 1;
   const count = profile.syllables[0] + Math.floor(hash(seed) * (profile.syllables[1] - profile.syllables[0] + 1));
   let at = ctx.currentTime + 0.02;
