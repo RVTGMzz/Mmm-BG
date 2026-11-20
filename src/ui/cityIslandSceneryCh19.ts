@@ -252,10 +252,11 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
       props.push({ key: 'ferris-wheel', kind: 'wheel', x: s.x, y: s.y - h + w * 0.035, w: wheel, h: wheel, flip: false, seed: rand() });
     }
     // plate sits just below the landmark's base so it never hides the building
-    labels.push({ x: s.x, y: s.y + 38, title, subtitle });
+    if (title) labels.push({ x: s.x, y: s.y + 38, title, subtitle });
   };
-  landmark(byContent('SPECIAL_HOSPITAL_HOLD'), 'hospital', 215, 'NHÁNH BỆNH VIỆN', 'Chữa lành · Nghỉ ngơi · Quay lại');
-  landmark(byContent('SPECIAL_JAIL_HOLD'), 'jail', 215, 'NHÁNH NHÀ TÙ', 'Sai lầm · Trả giá · Làm lại');
+  // Jail and Hospital read clearly from their buildings: no district plate.
+  landmark(byContent('SPECIAL_HOSPITAL_HOLD'), 'hospital', 215, '', '');
+  landmark(byContent('SPECIAL_JAIL_HOLD'), 'jail', 215, '', '');
   landmark(byContent('SPECIAL_LOTTERY'), 'ferris-base', 175, 'KHU GIẢI TRÍ', 'Vui chơi · Xổ số · Drama');
   landmark(board.nodes.find((n) => n.feature === 'job'), 'jobs', 200, 'KHU NGHỀ NGHIỆP', 'Làm việc · Kiếm tiền · Thăng tiến');
   {
