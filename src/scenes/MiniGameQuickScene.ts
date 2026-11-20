@@ -101,6 +101,8 @@ export class MiniGameQuickScene extends Phaser.Scene {
       </footer>`;
 
     this.selectorDom = this.add.dom(640, 360, root).setOrigin(0.5);
+    // CH-19: re-measure once styles/fonts settle so the centred block stays on screen
+    for (const ms of [30, 250, 800]) this.time.delayedCall(ms, () => this.selectorDom?.updateSize());
     const node = this.selectorDom.node as HTMLDivElement;
     const mode = node.querySelector<HTMLSelectElement>('#quick-mini-mode');
     if (mode) mode.value = this.selectedMode;
@@ -203,6 +205,8 @@ export class MiniGameQuickScene extends Phaser.Scene {
       </section>`;
 
     this.resultDom = this.add.dom(640, 360, root).setOrigin(0.5);
+    // CH-19: re-measure once styles/fonts settle so the centred block stays on screen
+    for (const ms of [30, 250, 800]) this.time.delayedCall(ms, () => this.resultDom?.updateSize());
     const node = this.resultDom.node as HTMLDivElement;
     decorateVisualFoundationButtonsV01(node, [
       { selector: '#quick-result-again', variant: 'primary', size: 'lg' },

@@ -3,14 +3,21 @@ import { bgmController } from '../audio/bgmController';
 import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
-import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
+import {
+  paintPartyBackdropCh19, partyBoxCh19, partyCardCh19, partyBustKeyCh19, partyPillButtonCh19, partyTextCh19,
+  preloadPartyKitCh19, pressDomCh19, veilDomCh19, PARTY_CHARACTER_COLOUR_CH19,
+} from '../ui/partyKitCh19';
 
 export class GameModeMenuScene extends Phaser.Scene {
   constructor() { super('GameModeMenuScene'); }
 
+  preload(): void {
+    preloadPartyKitCh19(this);
+  }
+
   create(): void {
     bgmController.playMenu();
-    paintToyTownBackdropCh17(this, 'peach', { x: 150, y: 90, width: 980, height: 540, radius: 34 });
+    paintPartyBackdropCh19(this, 'sun');
 
     const root = document.createElement('div');
     root.className = 'mememe-mode-menu';
@@ -82,5 +89,41 @@ export class GameModeMenuScene extends Phaser.Scene {
 
     bindModeEntry('.mode-menu-card.board', '#mode-board', 'LocalLobbyScene');
     bindModeEntry('.mode-menu-card.mini', '#mode-mini', 'MiniGameQuickScene');
+    this.paintPartyMenuCh19(dom);
+  }
+
+  /** CH-19 party skin: two big chunky choices drawn in Phaser over the (veiled) DOM menu. */
+  private paintPartyMenuCh19(dom: Phaser.GameObjects.DOMElement): void {
+    const node = veilDomCh19(dom);
+    partyTextCh19(this, 92, 92, 'Chơi gì nè?', { size: 64, gradient: ['#ffffff', '#ffe3f0'], stroke: '#e0337a', strokeWidth: 13, align: 'left' })
+      .setShadow(0, 7, 'rgba(110,20,60,.55)', 0, true, true);
+    partyTextCh19(this, 96, 152, `MMM • ${MEMEME_BUILD.version}`, { size: 16, fill: '#ffffff', stroke: '#e0337a', strokeWidth: 4, align: 'left', shadow: false });
+
+    const choice = (x: number, colour: number, title: string, desc: string, button: string, buttonColour: number, selector: string, art: (c: Phaser.GameObjects.Container) => void) => {
+      const c = this.add.container(x, 405).setSize(500, 440).setName('party-mode-choice-ch19');
+      c.add(partyBoxCh19(this, 0, 0, 500, 440, colour, { radius: 34, ring: 8 }));
+      art(c);
+      c.add(partyTextCh19(this, 0, 52, title, { size: 44, gradient: ['#ffffff', '#ffe9a8'], strokeWidth: 9 }));
+      c.add(partyTextCh19(this, 0, 104, desc, { size: 18, fill: '#ffffff', strokeWidth: 4, wrap: 430, shadow: false }));
+      const press = () => { pressDomCh19(node, selector); };
+      c.add(partyPillButtonCh19(this, 0, 168, 300, 64, buttonColour, button, press, 26));
+      c.setInteractive({ useHandCursor: true }).on('pointerdown', press);
+      c.on('pointerover', () => this.tweens.add({ targets: c, scale: 1.03, duration: 120 }));
+      c.on('pointerout', () => this.tweens.add({ targets: c, scale: 1, duration: 120 }));
+      c.setScale(0.85).setAlpha(0);
+      this.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 420, ease: 'Back.easeOut', delay: x < 640 ? 60 : 180 });
+    };
+    choice(375, 0x3f8cf0, 'BOARD GAME', 'Đổ xúc xắc quanh đảo, kiếm B$, nghề nghiệp, lá bài và đủ trò trời ơi đất hỡi.', 'VÀO CHƠI →', 0xf0524a, '#mode-board', (c) => {
+      const ids = ['starter-crybaby', 'starter-grumpy', 'starter-anxious', 'starter-hyper'];
+      ids.forEach((id, i) => {
+        const card = partyCardCh19(this, -159 + i * 106, -88, { w: 100, h: 150, colour: PARTY_CHARACTER_COLOUR_CH19[id], bust: partyBustKeyCh19(id) });
+        card.setAngle((i - 1.5) * 4);
+        c.add(card);
+      });
+    });
+    choice(905, 0xf2549c, 'MINI GAME', 'Chọn 1 trong 5 Mini Game rồi quẩy liền. Hợp để chơi nhanh cùng bạn bè.', 'CHƠI NGAY →', 0x3cbf6b, '#mode-mini', (c) => {
+      c.add(partyCardCh19(this, -64, -92, { w: 120, h: 160, colour: PARTY_CHARACTER_COLOUR_CH19['secret-baby'], bust: partyBustKeyCh19('secret-baby') }).setAngle(-7));
+      c.add(partyCardCh19(this, 66, -92, { w: 120, h: 160, colour: 0x7a6cf0, mystery: true }).setAngle(6));
+    });
   }
 }

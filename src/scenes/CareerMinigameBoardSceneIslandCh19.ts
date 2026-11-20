@@ -39,6 +39,10 @@ import { sfxController } from '../audio/sfxController';
 import type { PresentationEventModel } from '../ui/presentationModel';
 import { HUD_PLAYER_ACCENTS_VF04 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
+import { TurnSpotlightCh19, type SpotlightPlayerCh19 } from '../ui/turnSpotlightCh19';
+import { partyBoxCh19, partyPillShapeCh19, preloadPartyKitCh19 } from '../ui/partyKitCh19';
+import { stageRectCh19 } from '../ui/responsiveStageCh19';
+import { browserSession } from '../core/browserSession';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
 /** Jail / Hospital hold tiles (specialHoldNodeId057). */
@@ -139,11 +143,15 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private readonly playerCardsCh19 = new Map<number, { card: Phaser.GameObjects.Container; signature: string; money: number; active: boolean }>();
   private readonly tokenStillCh19 = new Map<number, { x: number; y: number; stillMs: number }>();
   private rescueCh19?: RescueVehiclesCh19;
+  private spotlightCh19?: TurnSpotlightCh19;
+  /** Whose turn is being shown (presentation lags the state, which may already be on the next player). */
+  private actorCh19?: number;
 
   preload(): void {
     super.preload();
     preloadIslandPropsCh19(this);
     preloadUiKitCh19(this);
+    preloadPartyKitCh19(this);
     trackGraphicsBoundsCh19();
     preloadRescueVehiclesCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
@@ -179,9 +187,19 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
+    this.spotlightCh19 = new TurnSpotlightCh19(this, {
+      players: () => this.spotlightPlayersCh19(),
+      roll: () => this.pressDirectDiceCh19(),
+      useCard: () => (this as unknown as { compactCard?: Phaser.GameObjects.Rectangle }).compactCard?.emit('pointerdown'),
+      // a fresh page is the cleanest way out of every transport / session
+      leave: () => { window.location.href = window.location.pathname; },
+    });
     this.syncPlayerCardsCh19();
 
     const cleanup = () => {
+      this.spotlightCh19?.destroy();
+      this.spotlightCh19 = undefined;
+      this.actorCh19 = undefined;
       this.playerCardsCh19.clear();
       this.rescueCh19 = undefined;
       this.islandTilesCh19.clear();
@@ -201,6 +219,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     for (const object of this.hiddenTileObjectsCh19) if (object.alpha > 0.001) object.setAlpha(0.001);
     for (const text of this.hiddenTileTextsCh19) if (text.alpha > 0) text.setAlpha(0);
     this.syncIslandTilesCh19(true);
+    this.syncTurnSpotlightCh19();
     this.syncPlayerCardsCh19();
     this.syncCharacterTokensCh19();
     this.syncActionButtonsCh19();
@@ -226,7 +245,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     const visit = (list: Phaser.GameObjects.GameObject[]) => {
       for (const o of list) {
         if (!(o instanceof Phaser.GameObjects.Container) || !o.active) continue;
-        const graphics = o.list.filter((c): c is Phaser.GameObjects.Graphics => c instanceof Phaser.GameObjects.Graphics);
+        const graphics = o.list.filter((c): c is Phaser.GameObjects.Graphics => c instanceof Phaser.GameObjects.Graphics && !c.getData('ch19-skin'));
         const panelKey = PANELS[o.name];
         if (panelKey) {
           // the panel is the biggest flat box the older layers drew; every other
@@ -234,6 +253,8 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
           const sized = graphics
             .map((g) => ({ g, b: graphicsBoundsCh19(g) }))
             .filter((e): e is { g: Phaser.GameObjects.Graphics; b: NonNullable<typeof e.b> } => Boolean(e.b))
+            // full-screen dimmers are not panels (they grow with the stage on 4:3)
+            .filter((e) => !(e.b.w * (e.g.scaleX || 1) >= 1000 || e.b.h * (e.g.scaleY || 1) >= 600))
             .map((e) => ({ ...e, area: e.b.w * e.b.h }));
           const biggest = sized.reduce<typeof sized[number] | undefined>((m, e) => (!m || e.area > m.area ? e : m), undefined);
           if (biggest) {
@@ -241,13 +262,13 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
             // the panel is the top-most of those (the ones under it are its drop shadows)
             const panel = big[big.length - 1];
             for (const e of big) if (e !== panel && e.g.alpha > 0) e.g.setAlpha(0);
-            reskinGraphicsCh19(this, o, panel.g, (w, h) => uiPanelCh19(this, panelKey, w + 12, h + 14));
+            reskinGraphicsCh19(this, o, panel.g, (w, h) => partyBoxCh19(this, 0, 0, w + 4, h + 4, panelKey === 'panel-lilac' ? 0xf1e6ff : 0xfff6e0, { radius: 26, ring: 7, gloss: false, fillBottom: panelKey === 'panel-lilac' ? 0xe2d0ff : 0xffe7bd }));
           }
         } else if (o.name === 'presentation-continue-chip-ch1713') {
           const label = o.list.find((c): c is Phaser.GameObjects.Text => c instanceof Phaser.GameObjects.Text);
           const skip = /BỎ QUA/.test(label?.text ?? '');
           const button = graphics[1] ?? graphics[0];
-          if (button) reskinGraphicsCh19(this, o, button, (w, h) => uiPillCh19(this, skip ? 'btn-slate' : 'btn-coral', w + 8, h + 10));
+          if (button) reskinGraphicsCh19(this, o, button, (w, h) => partyPillShapeCh19(this, w + 8, h + 6, skip ? 0x5b7fa8 : 0xf2549c));
           if (graphics.length > 1 && graphics[0].alpha > 0) graphics[0].setAlpha(0); // the old flat drop shadow
         }
         visit(o.list);
@@ -281,6 +302,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     const inherited = runtime.animateMoveStep.bind(this);
     runtime.animateMoveStep = (internals, model) => {
       const from = model.fromNodeId, to = model.toNodeId, playerId = model.actorId;
+      if (playerId !== undefined) this.actorCh19 = playerId;
       const kind = to === HOLD_NODE_CH19.jail ? 'jail' : to === HOLD_NODE_CH19.hospital ? 'hospital' : undefined;
       const fromHold = from === HOLD_NODE_CH19.jail || from === HOLD_NODE_CH19.hospital;
       const token = playerId === undefined ? undefined : internals.visuals.get(playerId)?.token;
@@ -378,21 +400,25 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
           }
         }
       }
-      dice.setX(640).setY(720 - 12 - 146);
+      const stage = stageRectCh19(this);
+      dice.setX(640).setY(stage.y + stage.h - 12 - 146);
+      if (this.spotlightCh19?.visible && dice.alpha > 0) dice.setAlpha(0);
     }
 
     const card = runtime.compactCard;
     const cardText = runtime.compactCardText;
     if (card?.active && cardText?.active) {
-      const x = 900, y = 664;
+      const stage = stageRectCh19(this);
+      const spot = Boolean(this.spotlightCh19?.visible);
+      const x = spot ? -9999 : 900, y = stage.y + stage.h - 56;
       card.setPosition(x, y).setDisplaySize(170, 60).setAlpha(0.001);
       cardText.setPosition(x, y).setAlpha(0);
       runtime.compactCardSkin0701?.setAlpha(0);
-      const visible = card.visible && cardText.visible;
+      const visible = card.visible && cardText.visible && !spot;
       const player = runtime.currentPlayer?.();
       const hand = player?.handCardIds.length ?? 0;
       const canUse = runtime.match?.turn.phase === 'PRE_ROLL_ACTION' && hand > 0;
-      const key = `${visible}|${canUse}|${hand}|${player?.cardBlockTurns ?? 0}`;
+      const key = `${visible}|${canUse}|${hand}|${player?.cardBlockTurns ?? 0}|${y}`;
       let skin = this.children.getByName('card-action-ch19') as Phaser.GameObjects.Container | null;
       if (!skin || skin.getData('key') !== key) {
         skin?.destroy(true);
@@ -564,12 +590,23 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     for (const legacy of runtime.hud?.values() ?? []) if (legacy.root.alpha > 0) legacy.root.setAlpha(0);
 
     const current = runtime.currentPlayer?.();
+    const actorId = this.actorCh19 ?? current?.id;
+    const stage = stageRectCh19(this);
+    const spot = Boolean(this.spotlightCh19?.visible);
+    for (const entry of this.playerCardsCh19.values()) {
+      const want = spot ? 0 : 1;
+      if (entry.card.getData('fade') !== want) {
+        entry.card.setData('fade', want);
+        this.tweens.killTweensOf(entry.card);
+        this.tweens.add({ targets: entry.card, alpha: want, duration: want ? 260 : 160 });
+      }
+    }
     const top = Math.max(...match.players.map((p) => p.money));
     const leaders = match.players.filter((p) => p.money === top);
 
     for (const player of match.players) {
       const career = playerHudCareer065(player, JOBS_CH19);
-      const active = player.id === current?.id;
+      const active = player.id === actorId;
       const model: PlayerCardModelCh19 = {
         playerId: player.id,
         name: player.name,
@@ -584,13 +621,17 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         active,
         leader: match.players.length > 1 && leaders.length === 1 && leaders[0].id === player.id,
       };
-      const signature = playerCardSignatureCh19(model);
+      const signature = `${playerCardSignatureCh19(model)}|${stage.w}x${stage.h}`;
       const existing = this.playerCardsCh19.get(player.id);
       if (existing?.signature === signature) continue;
 
       const scale = active ? PLAYER_CARD_CH19.activeScale : PLAYER_CARD_CH19.idleScale;
       const pos = playerCardPositionCh19(player.id, scale);
+      // corners follow the real screen edges on any aspect ratio
+      pos.x += pos.x < 640 ? stage.x : stage.x + stage.w - 1280;
+      pos.y += pos.y < 360 ? stage.y : stage.y + stage.h - 720;
       const card = buildPlayerCardCh19(this, model).setPosition(pos.x, pos.y).setScale(scale);
+      card.setData('fade', spot ? 0 : 1).setAlpha(spot ? 0 : 1);
       if (runtime.uiRoot?.active) runtime.uiRoot.add(card);
       else card.setDepth(1000);
       existing?.card.destroy(true);
@@ -603,6 +644,63 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         this.tweens.add({ targets: card, scale, duration: 220, ease: 'Back.easeOut' });
       }
     }
+  }
+
+  /* ------------------------------------------------------------------ turn spotlight */
+
+  private spotlightPlayersCh19(): SpotlightPlayerCh19[] {
+    const match = this.matchCh19();
+    if (!match) return [];
+    return match.players.map((player) => {
+      const career = playerHudCareer065(player, JOBS_CH19);
+      return {
+        id: player.id,
+        name: player.name,
+        money: player.money,
+        handCount: player.handCardIds.length,
+        handLimit: MVP_CARD_HAND_LIMIT,
+        lockTurns: player.cardBlockTurns,
+        laps: player.lapsCompleted ?? 0,
+        characterId: player.characterId,
+        jobLine: career.employed ? `${career.icon} ${career.title} Lv.${career.level} · ${career.salary}/vòng` : '💼 Chưa có nghề',
+        isCpu: browserSession.isCpuSeat(player.id),
+      };
+    });
+  }
+
+  private pressDirectDiceCh19(): void {
+    const dice = (this as unknown as { directDice?: Phaser.GameObjects.Container }).directDice;
+    const hit = dice?.list.find((c) => c instanceof Phaser.GameObjects.Rectangle && c.input?.enabled);
+    hit?.emit('pointerdown');
+  }
+
+  /**
+   * When a turn opens (before the roll), the turn owner gets the big portrait
+   * and, if this screen controls them, the action menu; other cards step aside.
+   */
+  private syncTurnSpotlightCh19(): void {
+    const runtime = this as unknown as {
+      match?: MatchState;
+      currentPlayer?: () => PlayerState | undefined;
+      directDice?: Phaser.GameObjects.Container;
+      presentation?: { isBlocking(): boolean };
+      cardPickerOpen?: boolean;
+    };
+    const match = runtime.match;
+    const spot = this.spotlightCh19;
+    if (!match || !spot) return;
+    const current = runtime.currentPlayer?.();
+    const canAct = Boolean(runtime.directDice?.visible);
+    const blocking = runtime.presentation?.isBlocking() ?? false;
+    const show = Boolean(current) && !runtime.cardPickerOpen
+      && (canAct || (match.turn.phase === 'PRE_ROLL_ACTION' && !blocking));
+    if (show && current) this.actorCh19 = current.id;
+    spot.update({
+      show,
+      playerId: current?.id,
+      canAct,
+      canUseCard: match.turn.phase === 'PRE_ROLL_ACTION' && (current?.handCardIds.length ?? 0) > 0 && (current?.cardBlockTurns ?? 0) === 0,
+    });
   }
 
   private popMoneyCh19(card: Phaser.GameObjects.Container, delta: number): void {
@@ -692,6 +790,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     runtime.showDiceRoll = (model: PresentationEventModel) => {
       if (!diceSpritesReadyCh19(this)) { previous(model); return; }
       const result = Math.max(1, Math.min(6, model.roll ?? 1));
+      if (model.actorId !== undefined) this.actorCh19 = model.actorId;
       const container = this.add.container(640, 320).setDepth(920).setName('presentation-dice-card-ch19');
       runtime.active = container;
       sfxController.play('dice_roll');

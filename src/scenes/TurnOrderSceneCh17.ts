@@ -3,6 +3,9 @@ import { gameSession } from '../core/session';
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 import { TurnOrderScene07044 } from './TurnOrderScene07044';
+import { preloadDiceCh19 } from '../ui/diceRollCh19';
+import { preloadPartyKitCh19 } from '../ui/partyKitCh19';
+import { installTurnOrderPartyCh19 } from '../ui/turnOrderPartyCh19';
 
 const PLAYER_COLORS_CH17 = [0xef6a63, 0x6f9df2, 0xf1bd55, 0x6fc08b] as const;
 const COCOA_CH17 = 0x4b302a;
@@ -31,6 +34,11 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
   private orderLabelCh17?: Phaser.GameObjects.Text;
   private orderPreviewCh17?: Phaser.GameObjects.Text;
 
+  preload(): void {
+    preloadPartyKitCh19(this);
+    preloadDiceCh19(this);
+  }
+
   create(): void {
     super.create();
     const runtime = this.runtimeCh17();
@@ -51,6 +59,8 @@ export class TurnOrderSceneCh17 extends TurnOrderScene07044 {
     this.createRollButtonSkinCh17();
     this.applyTypographyCh17(runtime);
     this.redrawCh17();
+    // CH-19: party-style presentation over the same ceremony state
+    installTurnOrderPartyCh19(this);
   }
 
   update(): void {

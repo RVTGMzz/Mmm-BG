@@ -9,6 +9,7 @@ import './uiInteraction07046.css';
 import './visualFoundationV01.css';
 import './characterSelectCh02c.css';
 import './visualRefreshCh17.css';
+import './partyDomCh19.css';
 import { bgmController } from './audio/bgmController';
 import { sfxController } from './audio/sfxController';
 import { installSettingsPanel } from './ui/SettingsPanel';
@@ -32,6 +33,7 @@ import { FinalMapPreviewScene051 } from './scenes/FinalMapPreviewScene051';
 import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
 import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
 import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode054';
+import { installResponsiveStageCh19 } from './ui/responsiveStageCh19';
 
 // Current presentation chain: 07044 -> 0701 -> 069 -> 0682 -> validated authority chain.
 // 0.1.70.4.4 is presentation-only: mobile readability without changing HOST RNG/authority.
@@ -89,6 +91,8 @@ async function bootMeMeMe07035(): Promise<void> {
 
   installSettingsPanel();
   const game = new Phaser.Game(config);
+  // CH-19: the canvas follows the window's aspect ratio (4:3 ... 21:9) instead of letterboxing
+  installResponsiveStageCh19(game);
   // Single native Gamepad owner for Steam Deck; modal owners keep authority.
   const disposeSteamDeckController = installSteamDeckController070424(game);
   game.events.once(Phaser.Core.Events.DESTROY, disposeSteamDeckController);

@@ -1,0 +1,169 @@
+/* CH-19 party skin for the DOM form screens (lobby, player setup, quick mini
+ * game). Bright polka-dot cards, thick navy outline with a white inner ring,
+ * chunky outlined headings and glossy capsule buttons, matching the Phaser
+ * party kit (src/ui/partyKitCh19.ts). Presentation only.
+ */
+
+:root {
+  --party-ink: #1f2340;
+  --party-ring: inset 0 0 0 5px #fff, 0 7px 0 rgba(16, 20, 58, .28), 0 14px 22px rgba(16, 20, 58, .18);
+  --party-dots: radial-gradient(circle, rgba(255, 255, 255, .26) 17%, transparent 19%);
+  --party-stroke: 0 2px 0 var(--party-ink), 0 -2px 0 var(--party-ink), 2px 0 0 var(--party-ink), -2px 0 0 var(--party-ink),
+    2px 2px 0 var(--party-ink), -2px 2px 0 var(--party-ink), 2px -2px 0 var(--party-ink), -2px -2px 0 var(--party-ink), 0 4px 0 rgba(16, 20, 58, .45);
+}
+
+html,
+body,
+#app {
+  background: #46c9b0;
+}
+
+/* ---------- cards ---------- */
+.mememe-lobby-069 .lobby-card,
+.mememe-setup-069 .player-setup-card,
+.mememe-minigame-quick .quick-mini-card,
+.online-room-lobby .online-room-card {
+  border: 4px solid var(--party-ink) !important;
+  border-radius: 28px !important;
+  box-shadow: var(--party-ring) !important;
+  color: #fff !important;
+}
+.mememe-lobby-069 .lobby-card::before,
+.mememe-setup-069 .player-setup-card::before {
+  display: none !important;
+}
+.mememe-lobby-069 .solo-card { background: var(--party-dots) 0 0 / 30px 30px, linear-gradient(180deg, #ff8a7a, #ec4a43) !important; }
+.mememe-lobby-069 .host-card { background: var(--party-dots) 0 0 / 30px 30px, linear-gradient(180deg, #a98bff, #7a5cf0) !important; }
+.mememe-lobby-069 .online-card { background: var(--party-dots) 0 0 / 30px 30px, linear-gradient(180deg, #6cc4ff, #2f86e0) !important; }
+.mememe-setup-069 .player-setup-card {
+  background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, color-mix(in srgb, var(--player-accent) 78%, #fff), var(--player-accent)) !important;
+}
+
+.mememe-lobby-069 .lobby-card h2,
+.mememe-setup-069 .player-setup-card h2,
+.mememe-setup-069 .player-setup-card strong,
+.lobby-head-069 h1,
+.mode-menu-head h1 {
+  color: #fff !important;
+  text-shadow: var(--party-stroke) !important;
+  letter-spacing: .01em;
+}
+.lobby-head-069 h1 {
+  font-size: 44px !important;
+  color: #ffd36b !important;
+}
+.mememe-lobby-069 .lobby-card p,
+.mememe-lobby-069 .lobby-card label,
+.mememe-setup-069 .player-setup-card label,
+.mememe-setup-069 .player-setup-card small,
+.mememe-setup-069 .face-label,
+.lobby-head-069 > span {
+  color: #fff !important;
+  text-shadow: 0 2px 0 rgba(16, 20, 58, .55) !important;
+  font-weight: 900 !important;
+}
+.mememe-lobby-069 .lobby-icon {
+  border: 4px solid var(--party-ink) !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  box-shadow: 0 4px 0 rgba(16, 20, 58, .3) !important;
+}
+
+/* inputs read as white chips */
+.mememe-lobby-069 input,
+.mememe-lobby-069 select,
+.mememe-setup-069 input[type='text'] {
+  border: 3px solid var(--party-ink) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  color: var(--party-ink) !important;
+  box-shadow: 0 3px 0 rgba(16, 20, 58, .25) !important;
+}
+.online-service-row,
+.online-host-options {
+  border: 3px solid rgba(255, 255, 255, .8) !important;
+  background: rgba(16, 20, 58, .18) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.mememe-setup-069 .face-slot {
+  border: 3px solid var(--party-ink) !important;
+  background: #fff !important;
+  box-shadow: 0 3px 0 rgba(16, 20, 58, .25) !important;
+}
+.mememe-setup-069 .setup-footer {
+  border: 4px solid var(--party-ink) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #fff, #d8f5ec) !important;
+  box-shadow: inset 0 0 0 5px #fff, 0 6px 0 rgba(16, 20, 58, .25) !important;
+}
+.lobby-status,
+.setup-status {
+  background: rgba(255, 255, 255, .85) !important;
+  color: var(--party-ink) !important;
+}
+
+/* ---------- buttons ---------- */
+button.vf-button {
+  border: 4px solid var(--party-ink) !important;
+  border-radius: 999px;
+  color: #fff !important;
+  font-weight: 1000 !important;
+  text-shadow: 0 2px 0 rgba(16, 20, 58, .7), 0 -1px 0 rgba(16, 20, 58, .5), 1px 0 0 rgba(16, 20, 58, .5), -1px 0 0 rgba(16, 20, 58, .5) !important;
+  box-shadow: inset 0 0 0 3px #fff, inset 0 -6px 0 rgba(0, 0, 0, .18), inset 0 10px 0 rgba(255, 255, 255, .28), 0 6px 0 rgba(16, 20, 58, .35) !important;
+}
+button.vf-button.vf-button--primary { background: #f2549c !important; }
+button.vf-button.vf-button--success { background: #3cbf6b !important; }
+button.vf-button.vf-button--secondary { background: #3f8cf0 !important; }
+button.vf-button.vf-button--subtle { background: #5b7fa8 !important; }
+button.vf-button.vf-button--danger { background: #f0524a !important; }
+button.vf-button:disabled { background: #a4abbd !important; }
+
+/* card-like buttons keep card corners; their text reads white on colour */
+button.vf-button.quick-mini-card,
+button.vf-button.quick-result-card,
+button.vf-button.character-card-ch02c {
+  border-radius: 26px !important;
+}
+.mememe-minigame-quick .quick-mini-card {
+  background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, #6cc4ff, #2f86e0) !important;
+}
+.mememe-minigame-quick .quick-mini-card:nth-child(5n + 2) { background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, #ff9a8a, #ec4a43) !important; }
+.mememe-minigame-quick .quick-mini-card:nth-child(5n + 3) { background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, #6fe0a0, #2fae6a) !important; }
+.mememe-minigame-quick .quick-mini-card:nth-child(5n + 4) { background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, #b79bff, #7a5cf0) !important; }
+.mememe-minigame-quick .quick-mini-card:nth-child(5n + 5) { background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, #ffb26b, #f08a2c) !important; }
+.mememe-minigame-quick .quick-mini-card.selected {
+  outline: 6px solid #ffe066 !important;
+  outline-offset: 3px;
+  transform: translateY(-4px);
+}
+.mememe-minigame-quick .quick-mini-card,
+.mememe-minigame-quick .quick-mini-card * {
+  color: #fff !important;
+}
+.mememe-minigame-quick .quick-mini-card strong,
+.mememe-minigame-quick .quick-mini-card h2,
+.mememe-minigame-quick .quick-mini-card h3 {
+  text-shadow: var(--party-stroke) !important;
+}
+.mememe-minigame-quick .quick-mini-card .quick-mini-icon {
+  background: #fff !important;
+  border: 3px solid var(--party-ink) !important;
+}
+.mememe-minigame-quick .quick-mini-card span:not(.quick-mini-icon),
+.mememe-minigame-quick .quick-mini-card small {
+  text-shadow: 0 2px 0 rgba(16, 20, 58, .6) !important;
+}
+.mememe-minigame-quick .quick-mini-grid button.quick-mini-card.vf-button {
+  min-height: 132px;
+  padding: 12px 16px !important;
+}
+.mememe-minigame-quick .quick-mini-grid button.quick-mini-card.vf-button.selected {
+  background: var(--party-dots) 0 0 / 28px 28px, linear-gradient(180deg, #ffd34d, #f59a00) !important;
+  outline: 6px solid #fff !important;
+  outline-offset: -10px;
+}
+.mememe-minigame-quick .quick-mini-card span:not(.quick-mini-icon) {
+  background: rgba(16, 20, 58, .32) !important;
+  border-color: transparent !important;
+}

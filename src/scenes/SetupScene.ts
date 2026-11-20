@@ -21,6 +21,8 @@ import {
 } from '../ui/visualFoundationV01';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 import { characterProductionPortraitCh181 } from '../ui/characterProductionArtCh181';
+import { preloadPartyKitCh19 } from '../ui/partyKitCh19';
+import { installCharacterSelectPartyCh19, installMatchInfoPartyCh19 } from '../ui/setupPartyCh19';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
   { id: 'neutral', emoji: '😐', label: 'Bình thường' },
@@ -40,6 +42,10 @@ export class SetupScene extends Phaser.Scene {
     this.preserveSetup = Boolean(data?.preserve);
   }
 
+  preload(): void {
+    preloadPartyKitCh19(this);
+  }
+
   create(): void {
     bgmController.playMenu();
     if (!this.preserveSetup) {
@@ -47,7 +53,7 @@ export class SetupScene extends Phaser.Scene {
       configureInitialPlayOrder(undefined);
       configureInitialTargetLaps(1);
     }
-    paintToyTownBackdropCh17(this, 'sky', { x: 45, y: 30, width: 1190, height: 660, radius: 32 });
+    paintToyTownBackdropCh17(this, 'mint', { x: 45, y: 30, width: 1190, height: 660, radius: 32 });
     this.add.text(72, 54, MEMEME_BUILD.setupHeader, {
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
       fontSize: '28px',
@@ -159,6 +165,7 @@ export class SetupScene extends Phaser.Scene {
         </div>
       </section>`;
     const characterDom = this.add.dom(640, 370, characterRoot).setOrigin(0.5).setVisible(false);
+    installCharacterSelectPartyCh19(this, characterDom);
     decorateVisualFoundationButtonsV01(characterRoot, [
       { selector: '.character-card-ch02c', variant: 'secondary', size: 'md' },
       { selector: '.character-back-ch02c', variant: 'subtle', size: 'md' },
@@ -309,6 +316,7 @@ export class SetupScene extends Phaser.Scene {
       { selector: '.rule-confirm', variant: 'primary', size: 'lg' },
     ]);
     const rulesDom = this.add.dom(640, 360, rulesRoot).setOrigin(0.5).setVisible(false);
+    installMatchInfoPartyCh19(this, rulesDom, cpuCount > 0 && !onlineOwnSetup && config.mode !== 'host' ? `${4 - cpuCount} người + ${cpuCount} CPU` : config.transport === 'online' ? 'Online' : '4 người');
 
     for (const playerId of setupPlayerIds) {
       const player = gameSession.players[playerId];

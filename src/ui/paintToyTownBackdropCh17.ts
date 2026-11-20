@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { paintPartyBackdropCh19, PARTY_INK_CH19, type PartyBackdropCh19 } from './partyKitCh19';
 
 export type ToyTownBackdropVariantCh17 = 'peach' | 'mint' | 'butter' | 'sky';
 
@@ -18,63 +19,22 @@ export function paintToyTownBackdropCh17(
   variant: ToyTownBackdropVariantCh17,
   panel: { x: number; y: number; width: number; height: number; radius?: number },
 ): Phaser.GameObjects.Graphics {
-  const palette = VARIANTS[variant];
-  scene.cameras.main.setBackgroundColor(palette.sky);
-
-  const g = scene.add.graphics().setName('toy-town-backdrop-ch17').setDepth(-1000);
-  g.fillStyle(palette.sky, 1).fillRect(0, 0, 1280, 720);
-
-  // Soft sunrise / paper rays.
-  g.fillStyle(palette.glow, 0.58);
-  g.fillTriangle(640, 35, 355, 0, 510, 720);
-  g.fillTriangle(640, 35, 765, 0, 870, 720);
-  g.fillTriangle(640, 35, 980, 0, 1110, 720);
-
-  // Simplified foliage/hills to make the menu feel illustrated without art assets.
-  g.fillStyle(palette.hill, 0.7);
-  g.fillEllipse(160, 675, 500, 220);
-  g.fillEllipse(1120, 670, 540, 245);
-  g.fillStyle(palette.leaf, 0.78);
-  for (const [x, y, r] of [
-    [62, 95, 78], [148, 70, 98], [1190, 92, 100], [1250, 160, 82],
-    [70, 642, 95], [1195, 640, 112],
-  ] as const) {
-    g.fillCircle(x, y, r);
-  }
-
-  // Tiny decorative dots/stars.
-  g.fillStyle(0xffffff, 0.72);
-  for (const [x, y, r] of [
-    [255, 78, 7], [316, 132, 4], [1000, 92, 6], [1080, 152, 4], [905, 54, 3],
-  ] as const) {
-    g.fillCircle(x, y, r);
-  }
-
+  // CH-19: bright starry party backdrop that fills every aspect ratio, and a
+  // light glass panel with a chunky outline instead of the flat paper card.
+  void VARIANTS;
+  paintPartyBackdropCh19(scene, PARTY_VARIANT[variant]);
+  const g = scene.add.graphics().setName('toy-town-backdrop-ch17').setDepth(-999);
   const radius = panel.radius ?? 34;
-  // Chunky shadow + warm paper panel.
-  g.fillStyle(0x4b302a, 0.18).fillRoundedRect(
-    panel.x + 8, panel.y + 10, panel.width, panel.height, radius,
-  );
-  g.fillStyle(0xfff7e8, 0.985).fillRoundedRect(
-    panel.x, panel.y, panel.width, panel.height, radius,
-  );
-  g.lineStyle(5, 0x4b302a, 1).strokeRoundedRect(
-    panel.x, panel.y, panel.width, panel.height, radius,
-  );
-
-  // Inner highlight, like a printed sticker/card edge.
-  g.lineStyle(3, 0xffffff, 0.72).strokeRoundedRect(
-    panel.x + 8, panel.y + 8, panel.width - 16, panel.height - 16, Math.max(12, radius - 8),
-  );
-
-  // Small top tab accent.
-  const tabW = Math.min(250, panel.width * 0.28);
-  g.fillStyle(palette.accent, 1).fillRoundedRect(
-    panel.x + 34, panel.y - 8, tabW, 24, 12,
-  );
-  g.lineStyle(3, 0x4b302a, 1).strokeRoundedRect(
-    panel.x + 34, panel.y - 8, tabW, 24, 12,
-  );
-
+  g.fillStyle(0x10143a, 0.22).fillRoundedRect(panel.x + 6, panel.y + 10, panel.width, panel.height, radius);
+  g.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(panel.x - 5, panel.y - 5, panel.width + 10, panel.height + 10, radius + 5);
+  g.fillStyle(0xffffff, 1).fillRoundedRect(panel.x, panel.y, panel.width, panel.height, radius);
+  g.fillStyle(0xfffaf0, 1).fillRoundedRect(panel.x + 8, panel.y + 8, panel.width - 16, panel.height - 16, Math.max(12, radius - 8));
   return g;
 }
+
+const PARTY_VARIANT: Record<ToyTownBackdropVariantCh17, PartyBackdropCh19> = {
+  peach: 'sun',
+  mint: 'sea',
+  butter: 'berry',
+  sky: 'sky',
+};

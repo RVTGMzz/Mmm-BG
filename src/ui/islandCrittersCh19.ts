@@ -18,7 +18,12 @@ const CRITTER_KEYS_CH19 = [
   'rabbit-peek', 'rabbit-peek-blink', 'rabbit-sit', 'rabbit-hop',
 ];
 const critterKeyCh19 = (name: string): string => `island-critter-ch19-${name}`;
-const BIRD_DEPTH_CH19 = 60;
+// Board tiles sit at depth ~4.2 and the UI starts at 600: rabbits stand on top
+// of the path tiles, butterflies above the rabbits, birds above everything
+// that is not UI.
+const RABBIT_DEPTH_CH19 = 4.6;
+const BUTTERFLY_DEPTH_CH19 = 4.8;
+const BIRD_DEPTH_CH19 = 590;
 
 type BirdKind = 'blue' | 'yellow' | 'seagull';
 /** 4-frame wing cycle (up, level, down, level) per species. */
@@ -103,8 +108,12 @@ function bushAnchor(bush: IslandPropCh19, n: number) {
 function rabbitPeek(scene: Phaser.Scene, bush: IslandPropCh19, depth: number, n: number): void {
   const a = bushAnchor(bush, n);
   const rabbit = scene.add.image(a.x, a.y, critterKeyCh19('rabbit-peek')).setOrigin(0.5, 1)
-    .setDepth(depth - 0.005).setFlipX(hashCh19(n + bush.seed) < 0.5).setName('island-rabbit-ch19');
+    .setDepth(RABBIT_DEPTH_CH19 + depth * 1e-4).setFlipX(hashCh19(n + bush.seed) < 0.5).setName('island-rabbit-ch19');
   const s = sized(scene, rabbit, Math.max(30, bush.h * 0.55));
+  // only the part above the bush line shows, so it still pops out of the bush
+  const clip = scene.make.graphics({}, false).fillRect(a.x - 400, a.y - 800, 800, 800);
+  rabbit.setMask(clip.createGeometryMask());
+  rabbit.once(Phaser.GameObjects.Events.DESTROY, () => clip.destroy());
   const rise = rabbit.displayHeight * 0.72;
   rabbit.setY(a.y + rise);
   scene.tweens.chain({
@@ -130,8 +139,9 @@ function rabbitHop(scene: Phaser.Scene, bush: IslandPropCh19, depth: number, n: 
   const start = { x: bush.x + dir * bush.w * 0.15, y: bush.y - 2 };
   const out = { x: bush.x + dir * (bush.w * 0.5 + 26), y: bush.y + 6 };
   const rabbit = scene.add.image(start.x, start.y, critterKeyCh19('rabbit-sit')).setOrigin(0.5, 1)
-    .setDepth(depth - 0.005).setFlipX(dir < 0).setName('island-rabbit-ch19');
+    .setDepth(RABBIT_DEPTH_CH19 + depth * 1e-4).setFlipX(dir < 0).setAlpha(0).setName('island-rabbit-ch19');
   const s = sized(scene, rabbit, Math.max(26, bush.h * 0.42));
+  scene.tweens.add({ targets: rabbit, alpha: 1, duration: 220 });
   const hop = (to: { x: number; y: number }, onDone: () => void) => {
     scene.tweens.add({ targets: rabbit, x: to.x, duration: 300, ease: 'Linear' });
     rabbit.setTexture(critterKeyCh19('rabbit-hop'));
@@ -145,14 +155,11 @@ function rabbitHop(scene: Phaser.Scene, bush: IslandPropCh19, depth: number, n: 
   };
   const mid = { x: (start.x + out.x) / 2, y: (start.y + out.y) / 2 };
   hop(mid, () => {
-    // in front of the bush once clear of it
-    rabbit.setDepth(depth + 0.005);
     hop(out, () => {
       scene.time.delayedCall(1600 + hashCh19(n * 5 + bush.seed) * 1600, () => {
         if (!rabbit.active) return;
         rabbit.setFlipX(dir > 0);
         hop(mid, () => {
-          rabbit.setDepth(depth - 0.005);
           hop(start, () => scene.tweens.add({ targets: rabbit, alpha: 0, duration: 160, onComplete: () => rabbit.destroy() }));
         });
       });
@@ -164,7 +171,7 @@ function butterfly(scene: Phaser.Scene, bush: IslandPropCh19, depth: number, n: 
   const colour = hashCh19(bush.seed * 11 + n) < 0.5 ? 'orange' : 'blue';
   const a = bushAnchor(bush, n);
   const fly = scene.add.image(a.x, a.y - bush.h * 0.3, critterKeyCh19(`butterfly-${colour}-1`))
-    .setDepth(depth + 0.5).setAlpha(0).setName('island-butterfly-ch19');
+    .setDepth(BUTTERFLY_DEPTH_CH19 + depth * 1e-4).setAlpha(0).setName('island-butterfly-ch19');
   sized(scene, fly, 22);
   let flap = 0;
   const flapper = scene.time.addEvent({

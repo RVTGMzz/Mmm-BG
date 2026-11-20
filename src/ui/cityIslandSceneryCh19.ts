@@ -1,3 +1,4 @@
+import { publicAssetUrl } from './publicAssetUrl';
 import type { BoardDefinition, BoardNode } from '../core/types';
 
 /**
@@ -398,18 +399,27 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
       <circle cx="12" cy="14" r="10" fill="#8ED168" opacity=".55"/><circle cx="48" cy="42" r="13" fill="#6CB64C" opacity=".35"/>
       <path d="M30 18q3-7 6 0M58 10q3-7 6 0M8 48q3-7 6 0" stroke="#5DA845" stroke-width="2.5" fill="none" stroke-linecap="round"/>
     </pattern>
+    <pattern id="texGrass" width="430" height="430" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.grass}" width="430" height="430" preserveAspectRatio="none"/></pattern>
+    <pattern id="texWater" width="560" height="560" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.water}" width="560" height="560" preserveAspectRatio="none"/></pattern>
+    <pattern id="texSand" width="380" height="380" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.sand}" width="380" height="380" preserveAspectRatio="none"/></pattern>
+    <radialGradient id="seaDepth" cx=".5" cy=".5" r=".72"><stop offset=".45" stop-color="#0B4F8A" stop-opacity="0"/><stop offset="1" stop-color="#0B4F8A" stop-opacity=".45"/></radialGradient>
     <pattern id="pave" width="36" height="36" patternUnits="userSpaceOnUse">
       <rect width="36" height="36" fill="${C.path}"/><path d="M0 18h36M18 0v18" stroke="#EADBBB" stroke-width="2"/>
     </pattern>
   </defs>`);
   out.push(`<rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" fill="url(#seaGrad)"/>`);
-  out.push(`<rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" fill="url(#waves)"/>`);
+  // painted, tiling textures (public/assets/scenery/ch19/tex) over the flat colours;
+  // if they fail to load the flat colours underneath still read fine
+  out.push(`<rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" fill="url(#texWater)"/>`);
+  out.push(`<rect x="${W.x}" y="${W.y}" width="${W.w}" height="${W.h}" fill="url(#seaDepth)"/>`);
   out.push(`<g filter="url(#shore)">${landBlobs.map((b) => `<circle cx="${b.x}" cy="${b.y}" r="${b.r}" fill="${C.sand}"/>`).join('')}</g>`);
+  out.push(`<g>${landBlobs.map((b) => `<circle cx="${b.x}" cy="${b.y}" r="${b.r}" fill="url(#texSand)"/>`).join('')}</g>`);
   out.push(`<g filter="url(#grassEdge)">${landBlobs.map((b) => `<circle cx="${b.x}" cy="${b.y}" r="${b.r - 55}" fill="${C.grass}"/>`).join('')}</g>`);
-  out.push(`<g>${landBlobs.map((b) => `<circle cx="${b.x}" cy="${b.y}" r="${b.r - 62}" fill="url(#grassTex)"/>`).join('')}</g>`);
+  out.push(`<g>${landBlobs.map((b) => `<circle cx="${b.x}" cy="${b.y}" r="${b.r - 55}" fill="url(#texGrass)"/>`).join('')}</g>`);
   out.push(`<g filter="url(#grassEdge)">${lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r + 22}" fill="${C.sand}"/>`).join('')}</g>`);
+  out.push(`<g>${lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r + 22}" fill="url(#texSand)"/>`).join('')}</g>`);
   out.push(`<g>${lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r + 6}" fill="${C.seaLight}"/>`).join('')}`
-    + lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r - 4}" fill="#3AA6DA"/><circle cx="${l.x}" cy="${l.y}" r="${l.r - 4}" fill="url(#waves)"/>`).join('') + '</g>');
+    + lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r - 4}" fill="#3AA6DA"/><circle cx="${l.x}" cy="${l.y}" r="${l.r - 4}" fill="url(#texWater)"/>`).join('') + '</g>');
   const sorted = roads.slice().sort((a, b) => (a.kind === 'main' ? 1 : 0) - (b.kind === 'main' ? 1 : 0));
   const edgeCol = (r: Road) => r.kind === 'jail' ? '#E3A05A' : r.kind === 'hospital' ? '#E58FB0' : C.pathEdge;
   const fillCol = (r: Road) => r.kind === 'jail' ? '#FBE3C2' : r.kind === 'hospital' ? '#FCE1EA' : C.path;
@@ -551,8 +561,37 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
 }
 
 /** Rasterises the scenery SVG to a canvas (max side clamps to GPU-safe size). */
-export async function rasterizeIslandSceneryCh19(svg: string, bounds: IslandBoundsCh19, maxSide = 4096): Promise<HTMLCanvasElement> {
+const TEX_TOKEN_CH19 = { grass: '__TEX_GRASS_CH19__', water: '__TEX_WATER_CH19__', sand: '__TEX_SAND_CH19__' } as const;
+
+async function textureDataUrlCh19(name: keyof typeof TEX_TOKEN_CH19): Promise<string> {
+  try {
+    const res = await fetch(publicAssetUrl(`assets/scenery/ch19/tex/${name}.jpg`));
+    if (!res.ok) return '';
+    const blob = await res.blob();
+    return await new Promise<string>((resolve) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => resolve('');
+      r.readAsDataURL(blob);
+    });
+  } catch {
+    return '';
+  }
+}
+
+/** Inline the painted ground textures (an SVG drawn through <img> may not fetch URLs). */
+export async function inlineIslandTexturesCh19(svg: string): Promise<string> {
+  let out = svg;
+  for (const name of Object.keys(TEX_TOKEN_CH19) as (keyof typeof TEX_TOKEN_CH19)[]) {
+    if (!out.includes(TEX_TOKEN_CH19[name])) continue;
+    out = out.split(TEX_TOKEN_CH19[name]).join(await textureDataUrlCh19(name));
+  }
+  return out;
+}
+
+export async function rasterizeIslandSceneryCh19(svgSource: string, bounds: IslandBoundsCh19, maxSide = 4096): Promise<HTMLCanvasElement> {
   const scale = Math.min(1.25, maxSide / Math.max(bounds.w, bounds.h));
+  const svg = await inlineIslandTexturesCh19(svgSource);
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
   try {
     const img = await new Promise<HTMLImageElement>((resolve, reject) => {

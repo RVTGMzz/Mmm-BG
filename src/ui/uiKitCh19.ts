@@ -112,6 +112,8 @@ export function reskinGraphicsCh19(
   const sx = old.scaleX || 1, sy = old.scaleY || 1;
   const w = box.w * sx + pad * 2, h = box.h * sy + pad * 2;
   const obj = make(w, h);
+  // a skin may itself be a Graphics: mark it so it is never taken for an old panel
+  obj.setData('ch19-skin', true);
   obj.setPosition(old.x + (box.x + box.w / 2) * sx, old.y + (box.y + box.h / 2) * sy);
   container.addAt(obj, container.getIndex(old) + 1);
   container.setData(skinKey, { sig, obj });

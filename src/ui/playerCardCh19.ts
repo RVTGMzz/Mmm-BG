@@ -219,7 +219,7 @@ export function buildPlayerCardCh19(scene: Phaser.Scene, model: PlayerCardModelC
     tag.fillStyle(0x9a6e10, 1).fillRoundedRect(-44, -10, 88, 24, 12);
     tag.fillStyle(0xffd45c, 1).fillRoundedRect(-44, -12, 88, 24, 12);
     root.add(tag);
-    root.add(scene.add.text(102, 54, '▶ ĐẾN LƯỢT', {
+    root.add(scene.add.text(102, 54, '▶ ĐANG ĐI', {
       fontFamily: font, fontSize: '12px', fontStyle: 'bold', color: '#5a3d0a',
     }).setOrigin(0.5));
   }

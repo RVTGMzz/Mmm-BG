@@ -68,7 +68,7 @@ assert.match(scene, /BREATH_PERIOD_MS_CH19/);
 
 // CH-19 action buttons: inherited hit areas/handlers kept, dice anchored bottom-centre.
 assert.match(scene, /syncActionButtonsCh19/);
-assert.match(scene, /dice\.setX\(640\)\.setY\(720 - 12 - 146\)/);
+assert.match(scene, /dice\.setX\(640\)\.setY\(stage\.y \+ stage\.h - 12 - 146\)/);
 assert.match(scene, /TUNG XÚC XẮC/);
 assert.match(scene, /card-action-ch19/);
 const layer = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
@@ -147,5 +147,32 @@ assert.match(scene, /presentation-continue-chip-ch1713/);
 assert.match(scene, /uiPillCh19\(this, 'btn-coral'/);
 assert.doesNotMatch(uiKit, /Math\.random\s*\(|submitIntent\s*\(/);
 assert.match(critters, /busy \?/);
+
+// CH-19 party UI: painted busts, starry backdrops, portrait-card select / match info / roll order,
+// turn spotlight with menu, responsive stage (any aspect ratio, no letterbox), painted ground textures.
+const party = readFileSync('src/ui/partyKitCh19.ts', 'utf8');
+const stage = readFileSync('src/ui/responsiveStageCh19.ts', 'utf8');
+const setupParty = readFileSync('src/ui/setupPartyCh19.ts', 'utf8');
+const orderParty = readFileSync('src/ui/turnOrderPartyCh19.ts', 'utf8');
+const spotlight = readFileSync('src/ui/turnSpotlightCh19.ts', 'utf8');
+const splash = readFileSync('src/scenes/SplashScene069.ts', 'utf8');
+for (const key of ['khoc-nhe', 'cau-co', 'lo-lang', 'tang-dong', 'secret-baby']) {
+  assert.ok(existsSync(`public/assets/ui/ch19/bust-${key}.webp`), `${key} bust missing`);
+}
+for (const key of ['grass', 'water', 'sand']) assert.ok(existsSync(`public/assets/scenery/ch19/tex/${key}.jpg`), `${key} texture missing`);
+assert.match(scenery, /inlineIslandTexturesCh19/);
+assert.match(main, /installResponsiveStageCh19\(game\)/);
+assert.match(stage, /stageSizeForCh19/);
+assert.match(splash, /Một tựa game của Votri Valley/);
+assert.match(setupParty, /installCharacterSelectPartyCh19/);
+assert.match(setupParty, /Thông tin ván/);
+assert.match(orderParty, /handlePrimaryButton\(\)/);
+assert.match(spotlight, /openRanking/);
+assert.match(spotlight, /openLeave/);
+assert.match(scene, /syncTurnSpotlightCh19/);
+assert.match(scene, /this\.actorCh19 = model\.actorId/);
+assert.match(critters, /RABBIT_DEPTH_CH19 = 4\.6/);
+assert.match(critters, /BIRD_DEPTH_CH19 = 590/);
+for (const src of [party, stage, setupParty, orderParty, spotlight]) assert.doesNotMatch(src, /Math\.random\s*\(|submitIntent\s*\(/);
 
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');
