@@ -42,8 +42,6 @@ const TILE_DEPTH_CH19 = 4.2;
 /**
  * Walk strips have no standing pose; when a Character is still we hold the
  * frame with the narrowest stance (measured from the strips) and breathe.
- * Optional true standing art: drop a 192x192 PNG at
- * public/assets/characters/idle/<characterId>.png and list the id here.
  */
 const IDLE_WALK_FRAME_CH19: Readonly<Record<string, number>> = {
   'starter-crybaby': 4,
@@ -52,7 +50,25 @@ const IDLE_WALK_FRAME_CH19: Readonly<Record<string, number>> = {
   'starter-hyper': 3,
   'secret-baby': 2,
 };
-const IDLE_STANDING_ART_CH19: readonly string[] = [];
+/**
+ * CH-19 idle strips (8 x 192px, front view): frame 0 is the calm pose used for
+ * breathing, frames 1..7 are a short personality action played every so often.
+ */
+const IDLE_STRIP_CH19: Readonly<Record<string, string>> = {
+  'starter-grumpy': 'assets/characters/ch19/idle-cau-co-ch19.png',
+  'starter-crybaby': 'assets/characters/ch19/idle-khoc-nhe-ch19.png',
+  'starter-anxious': 'assets/characters/ch19/idle-lo-lang-ch19.png',
+  'starter-hyper': 'assets/characters/ch19/idle-tang-dong-ch19.png',
+  'secret-baby': 'assets/characters/ch19/idle-secret-baby-ch19.png',
+};
+const IDLE_ACTION_FRAMES_CH19 = 7;
+const IDLE_ACTION_FRAME_MS_CH19 = 150;
+const idleKeyCh19 = (characterId: string): string => `character-idle-ch19-${characterId}`;
+/** Deterministic 6–12 s pause between idle actions (presentation only, no gameplay RNG). */
+function idleActionDelayCh19(playerId: number, count: number): number {
+  const h = Math.sin((playerId + 1) * 12.9898 + (count + 1) * 78.233) * 43758.5453;
+  return 6000 + (h - Math.floor(h)) * 6000;
+}
 
 /**
  * CH-19 walk strips generated from the approved concept sheets (8 x 192px,
@@ -124,9 +140,10 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         this.load.spritesheet(walkKeyCh19(id), publicAssetUrl(strip.path), { frameWidth: 192, frameHeight: 192 });
       }
     }
-    for (const id of IDLE_STANDING_ART_CH19) {
-      const key = `character-idle-ch19-${id}`;
-      if (!this.textures.exists(key)) this.load.image(key, publicAssetUrl(`assets/characters/idle/${id}.png`));
+    for (const [id, path] of Object.entries(IDLE_STRIP_CH19)) {
+      if (!this.textures.exists(idleKeyCh19(id))) {
+        this.load.spritesheet(idleKeyCh19(id), publicAssetUrl(path), { frameWidth: 192, frameHeight: 192 });
+      }
     }
     if (!this.textures.exists(PORTRAIT_BABY_KEY_CH19)) {
       this.load.spritesheet(PORTRAIT_BABY_KEY_CH19, publicAssetUrl(PORTRAIT_BABY_PATH_CH19), {
@@ -324,32 +341,55 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       last.y = token.y;
       this.tokenStillCh19.set(player.id, last);
 
-      const idleKey = `character-idle-ch19-${player.characterId ?? ''}`;
-      const standing = this.textures.exists(idleKey);
+      const idleKey = idleKeyCh19(player.characterId ?? '');
+      const hasIdleStrip = this.textures.exists(idleKey);
       if (last.stillMs < IDLE_SETTLE_MS_CH19) {
         if (sprite.getData('idleArtCh19')) {
           sprite.setTexture(String(sprite.getData('walkTextureCh19')), Number(sprite.getData('walkFrameBaseCh1811') ?? 0));
           sprite.setData('idleArtCh19', false);
         }
+        sprite.setData('idleActionStartCh19', undefined);
         continue;
       }
 
-      if (standing && !sprite.getData('idleArtCh19')) {
-        sprite.setData('walkTextureCh19', sprite.texture.key).setData('idleArtCh19', true).setTexture(idleKey);
-      } else if (!standing) {
+      const sx = Number(sprite.getData('idleBaseScaleXCh1813') ?? sprite.scaleX);
+      const sy = Number(sprite.getData('idleBaseScaleYCh1813') ?? sprite.scaleY);
+      const now = this.time.now;
+
+      if (hasIdleStrip) {
+        if (!sprite.getData('idleArtCh19')) {
+          sprite.setData('walkTextureCh19', sprite.texture.key).setData('idleArtCh19', true).setTexture(idleKey, 0).setFlipX(false);
+          sprite.setData('idleActionCountCh19', 0).setData('idleNextActionCh19', now + idleActionDelayCh19(player.id, 0));
+        }
+        // Once in a while: play the personality action (frames 1..7), then back to breathing.
+        const start = sprite.getData('idleActionStartCh19') as number | undefined;
+        if (start === undefined && now >= Number(sprite.getData('idleNextActionCh19'))) {
+          sprite.setData('idleActionStartCh19', now);
+        }
+        const actionStart = sprite.getData('idleActionStartCh19') as number | undefined;
+        if (actionStart !== undefined) {
+          const step = Math.floor((now - actionStart) / IDLE_ACTION_FRAME_MS_CH19);
+          if (step < IDLE_ACTION_FRAMES_CH19) {
+            sprite.setFrame(1 + step).setScale(sx, sy).setY(8).setAngle(0);
+            continue;
+          }
+          const count = Number(sprite.getData('idleActionCountCh19') ?? 0) + 1;
+          sprite.setData('idleActionStartCh19', undefined).setData('idleActionCountCh19', count)
+            .setData('idleNextActionCh19', now + idleActionDelayCh19(player.id, count));
+        }
+        sprite.setFrame(0);
+      } else {
         const base = Number(sprite.getData('walkFrameBaseCh1811') ?? 0);
         const idleFrame = sprite.getData('walkCh19') ? (strip?.idleFrame ?? 0) : (IDLE_WALK_FRAME_CH19[player.characterId ?? ''] ?? 0);
         sprite.setFrame(base + idleFrame);
       }
 
-      const sx = Number(sprite.getData('idleBaseScaleXCh1813') ?? sprite.scaleX);
-      const sy = Number(sprite.getData('idleBaseScaleYCh1813') ?? sprite.scaleY);
-      const t = (this.time.now + player.id * 410) / BREATH_PERIOD_MS_CH19 * Math.PI * 2;
+      const t = (now + player.id * 410) / BREATH_PERIOD_MS_CH19 * Math.PI * 2;
       const breath = (Math.sin(t) + 1) / 2; // 0 = exhale, 1 = inhale
       sprite
         .setScale(sx * (1 - 0.012 * breath), sy * (1 + 0.032 * breath))
         .setY(8)
-        .setAngle(Math.sin(t * 0.5) * 0.9);
+        .setAngle(hasIdleStrip ? 0 : Math.sin(t * 0.5) * 0.9);
     }
   }
 
