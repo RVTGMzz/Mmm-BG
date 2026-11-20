@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
+import { playCharacterVoiceCh19 } from '../audio/characterVoiceCh19';
 import { browserSession } from '../core/browserSession';
 import { gameSession } from '../core/session';
 import { STARTER_CHARACTERS_V01 } from '../content/core/characters_starter_v01';
@@ -19,6 +20,15 @@ import {
  */
 
 const PLAYER_TAG = (id: number) => `${id + 1}P`;
+
+/** Age stays a guess for the players; each Character gets a star sign that fits its temper. */
+export const ZODIAC_CH19: Record<string, string> = {
+  'starter-crybaby': 'Cung Cự Giải ♋', // tender, emotional, theatrical tears
+  'starter-grumpy': 'Cung Ma Kết ♑', // stern, stubborn, all business
+  'starter-anxious': 'Cung Xử Nữ ♍', // overthinks and worries about every detail
+  'starter-hyper': 'Cung Song Tử ♊', // restless, chatty, never sits still
+  'secret-baby': 'Cung Sư Tử ♌', // wears the crown, rules the room
+};
 
 /** While a party screen is up, the old paper panel and loose header texts step aside. */
 function shadeOldChrome(scene: Phaser.Scene, hide: boolean): void {
@@ -73,9 +83,8 @@ export function installCharacterSelectPartyCh19(scene: Phaser.Scene, dom: Phaser
     if (selected) focus = options.indexOf(selected);
     const canConfirm = !(root.querySelector<HTMLButtonElement>('.character-confirm-ch02c')?.disabled ?? true);
 
-    layer.add(partyTextCh19(scene, 70, 70, 'Chọn nhân vật', { size: 58, gradient: ['#ffd36b', '#ff7a1a'], stroke: '#ffffff', strokeWidth: 11, align: 'left' })
-      .setShadow(0, 6, 'rgba(122,59,18,.5)', 0, true, true));
-    layer.add(partyTextCh19(scene, 76, 128, `${owner} đang chọn`, { size: 22, fill: '#ffffff', stroke: '#3a63c9', strokeWidth: 6, align: 'left', shadow: false }));
+    layer.add(partyBannerCh19(scene, 290, 70, 440, 'Chọn nhân vật', 0xf5a43a, 34));
+    layer.add(partyTextCh19(scene, 290, 126, `${owner} đang chọn`, { size: 22, fill: '#ffffff', strokeWidth: 6, shadow: false }));
 
     // seats (top right)
     seatCards(scene, layer, 650, 178, 118, 150, 26, ownerId);
@@ -92,7 +101,7 @@ export function installCharacterSelectPartyCh19(scene: Phaser.Scene, dom: Phaser
         label: isRandom ? 'NGẪU NHIÊN' : char?.archetypeLabel,
       });
       card.setInteractive({ useHandCursor: true });
-      card.on('pointerdown', () => { focus = i; press(id); });
+      card.on('pointerdown', () => { focus = i; press(id); if (!isRandom) playCharacterVoiceCh19(id, 'happy', i * 5 + 1); });
       card.on('pointerover', () => { if (!isSel) scene.tweens.add({ targets: card, y: y - 8, duration: 110 }); });
       card.on('pointerout', () => { if (!isSel) scene.tweens.add({ targets: card, y, duration: 110 }); });
       if (isSel || focus === i) {
@@ -127,7 +136,7 @@ export function installCharacterSelectPartyCh19(scene: Phaser.Scene, dom: Phaser
     const focusChar = STARTER_CHARACTERS_V01.find((c) => c.id === focusId);
     if (focusChar) {
       info.add(partyTextCh19(scene, 0, -86, focusChar.archetypeLabel, { size: 32, gradient: ['#ffffff', '#fff1c4'], stroke: '#8a3c08', strokeWidth: 7 }));
-      info.add(partyTextCh19(scene, 0, -50, `${focusChar.genderPresentation === 'female' ? 'NỮ' : 'NAM'} · ${focusChar.ageBand.min}–${focusChar.ageBand.max} tuổi`, { size: 17, fill: '#ffffff', stroke: '#8a3c08', strokeWidth: 4, shadow: false }));
+      info.add(partyTextCh19(scene, 0, -50, `${focusChar.genderPresentation === 'female' ? 'NỮ' : 'NAM'} · ${ZODIAC_CH19[focusChar.id] ?? ''}`, { size: 17, fill: '#ffffff', stroke: '#8a3c08', strokeWidth: 4, shadow: false }));
       info.add(partyTextCh19(scene, 0, -16, `Nội tại: ${focusChar.passiveConcept.label}`, { size: 21, fill: '#fff36b', stroke: '#8a3c08', strokeWidth: 5, shadow: false }));
       info.add(partyTextCh19(scene, 0, 48, focusChar.passiveConcept.designIntent.split('.')[0] + '.', { size: 16, fill: '#ffffff', stroke: '#8a3c08', strokeWidth: 4, wrap: 290, shadow: false }));
     } else {
@@ -139,11 +148,11 @@ export function installCharacterSelectPartyCh19(scene: Phaser.Scene, dom: Phaser
     // hint bar + confirm
     const hints = partyHintBarCh19(scene, 470, 655, [
       { key: 'A', label: 'Chọn', colour: '#ff5fa2' },
-      { key: 'B', label: 'Quay lại', colour: '#2f9be8' },
+      { key: 'B', label: 'Trở về', colour: '#2f9be8' },
     ]);
     layer.add(hints);
-    layer.add(partyPillButtonCh19(scene, 800, 655, 190, 60, 0x5b7fa8, '← Quay lại', () => pressDomCh19(root, '.character-back-ch02c'), 22));
-    const confirm = partyPillButtonCh19(scene, 1092, 655, 300, 70, canConfirm ? 0xf0524a : 0xa4abbd, 'XÁC NHẬN →', () => {
+    layer.add(partyPillButtonCh19(scene, 800, 655, 190, 60, 0x5b7fa8, '← Trở về', () => pressDomCh19(root, '.character-back-ch02c'), 22));
+    const confirm = partyPillButtonCh19(scene, 1092, 655, 300, 70, canConfirm ? 0xf0524a : 0xa4abbd, 'TIẾP TỤC →', () => {
       if (canConfirm) pressDomCh19(root, '.character-confirm-ch02c');
     }, 28);
     if (canConfirm) scene.tweens.add({ targets: confirm, scale: 1.05, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });

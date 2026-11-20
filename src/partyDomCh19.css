@@ -167,3 +167,18 @@ button.vf-button.character-card-ch02c {
   background: rgba(16, 20, 58, .32) !important;
   border-color: transparent !important;
 }
+
+/* mode menu: the transparent DOM cards are the hit areas of the painted cards
+ * laid over them, so give them the painted cards' proportions */
+.mememe-mode-menu {
+  width: 1060px !important;
+}
+.mememe-mode-menu .mode-menu-grid {
+  grid-template-columns: 500px 500px !important;
+  justify-content: center;
+  gap: 40px !important;
+}
+.mememe-mode-menu .mode-menu-card {
+  box-sizing: border-box;
+  height: 440px !important;
+}

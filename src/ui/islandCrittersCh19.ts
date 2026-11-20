@@ -238,15 +238,34 @@ function flock(scene: Phaser.Scene, kind: BirdKind, count: number, flight: numbe
         if (bird.active) bird.setTexture(critterKeyCh19(glide ? spec.frames[1] : spec.frames[f % spec.frames.length]));
       },
     });
+    // Fly at a steady speed and only vanish once out of the *current* view:
+    // the camera follows tokens and zooms, so a fixed end point computed at
+    // spawn time could be on screen by the time the bird got there.
     const by = bird.y;
-    scene.tweens.add({
-      targets: bird, x: ex + off.x, duration, ease: 'Linear',
-      onUpdate: (tw) => {
-        bird.setY(by + drift * tw.progress + Math.sin(tw.progress * Math.PI * 6 + i) * 6);
-        shadow.setPosition(bird.x + 20, bird.y + 120);
-      },
-      onComplete: () => { flap.remove(); bird.destroy(); shadow.destroy(); },
-    });
+    const dir = leftToRight ? 1 : -1;
+    const t0 = scene.time.now;
+    let seen = false;
+    const tick = () => {
+      if (!bird.active) { scene.events.off(Phaser.Scenes.Events.UPDATE, tick); return; }
+      const t = scene.time.now - t0; // ms (speed is px per ms)
+      const x = sx + off.x + dir * spec.speed * t;
+      const p = Math.min(1, t / Math.max(1, duration));
+      bird.setPosition(x, by + drift * p + Math.sin(p * Math.PI * 6 + i) * 6);
+      shadow.setPosition(bird.x + 20, bird.y + 120);
+      const v = scene.cameras.main.worldView;
+      const pad = spec.size * 1.5;
+      const inView = bird.x > v.x - pad && bird.x < v.right + pad && bird.y > v.y - pad - 130 && bird.y < v.bottom + pad;
+      if (inView) seen = true;
+      // gone only when off screen: after crossing it, or (never seen) once well past the far edge / after a long time
+      const past = dir > 0 ? bird.x > v.right + pad : bird.x < v.x - pad;
+      if (!inView && ((seen && past) || t > 90000)) {
+        scene.events.off(Phaser.Scenes.Events.UPDATE, tick);
+        flap.remove(); bird.destroy(); shadow.destroy();
+      }
+    };
+    scene.events.on(Phaser.Scenes.Events.UPDATE, tick);
+    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => scene.events.off(Phaser.Scenes.Events.UPDATE, tick));
+    void ex;
   }
   // the call comes once the flock is on screen
   scene.time.delayedCall(700, () => chirpCh19(kind, flight));

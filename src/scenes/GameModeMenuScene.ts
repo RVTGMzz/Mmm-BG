@@ -4,8 +4,8 @@ import { sfxController } from '../audio/sfxController';
 import { MEMEME_BUILD } from '../buildInfo';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 import {
-  paintPartyBackdropCh19, partyBoxCh19, partyCardCh19, partyBustKeyCh19, partyPillButtonCh19, partyTextCh19,
-  preloadPartyKitCh19, pressDomCh19, veilDomCh19, PARTY_CHARACTER_COLOUR_CH19,
+  domRectInGameCh19, paintPartyBackdropCh19, partyBannerCh19, partyBoxCh19, partyCardCh19, partyBustKeyCh19, partyPillButtonCh19, partyTextCh19,
+  preloadPartyKitCh19, veilDomCh19, PARTY_CHARACTER_COLOUR_CH19,
 } from '../ui/partyKitCh19';
 
 export class GameModeMenuScene extends Phaser.Scene {
@@ -94,10 +94,10 @@ export class GameModeMenuScene extends Phaser.Scene {
 
   /** CH-19 party skin: two big chunky choices drawn in Phaser over the (veiled) DOM menu. */
   private paintPartyMenuCh19(dom: Phaser.GameObjects.DOMElement): void {
-    const node = veilDomCh19(dom);
-    partyTextCh19(this, 92, 92, 'Chơi gì nè?', { size: 64, gradient: ['#ffffff', '#ffe3f0'], stroke: '#e0337a', strokeWidth: 13, align: 'left' })
-      .setShadow(0, 7, 'rgba(110,20,60,.55)', 0, true, true);
-    partyTextCh19(this, 96, 152, `MMM • ${MEMEME_BUILD.version}`, { size: 16, fill: '#ffffff', stroke: '#e0337a', strokeWidth: 4, align: 'left', shadow: false });
+    // the DOM cards stay clickable (transparent); the painted cards are laid exactly over them
+    const node = veilDomCh19(dom, true);
+    partyBannerCh19(this, 640, 70, 460, 'Chơi gì nè?', 0xf2549c, 36);
+    partyTextCh19(this, 640, 122, `MMM • ${MEMEME_BUILD.version}`, { size: 15, fill: '#ffffff', stroke: '#c0306a', strokeWidth: 4, shadow: false });
 
     const choice = (x: number, colour: number, title: string, desc: string, button: string, buttonColour: number, selector: string, art: (c: Phaser.GameObjects.Container) => void) => {
       const c = this.add.container(x, 405).setSize(500, 440).setName('party-mode-choice-ch19');
@@ -105,13 +105,24 @@ export class GameModeMenuScene extends Phaser.Scene {
       art(c);
       c.add(partyTextCh19(this, 0, 52, title, { size: 44, gradient: ['#ffffff', '#ffe9a8'], strokeWidth: 9 }));
       c.add(partyTextCh19(this, 0, 104, desc, { size: 18, fill: '#ffffff', strokeWidth: 4, wrap: 430, shadow: false }));
-      const press = () => { pressDomCh19(node, selector); };
-      c.add(partyPillButtonCh19(this, 0, 168, 300, 64, buttonColour, button, press, 26));
-      c.setInteractive({ useHandCursor: true }).on('pointerdown', press);
-      c.on('pointerover', () => this.tweens.add({ targets: c, scale: 1.03, duration: 120 }));
-      c.on('pointerout', () => this.tweens.add({ targets: c, scale: 1, duration: 120 }));
-      c.setScale(0.85).setAlpha(0);
-      this.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 420, ease: 'Back.easeOut', delay: x < 640 ? 60 : 180 });
+      c.add(partyPillButtonCh19(this, 0, 168, 300, 64, buttonColour, button, undefined, 26));
+      const card = node.querySelector(selector === '#mode-board' ? '.mode-menu-card.board' : '.mode-menu-card.mini');
+      let hover = 1;
+      card?.addEventListener('mouseenter', () => { hover = 1.03; });
+      card?.addEventListener('mouseleave', () => { hover = 1; });
+      let intro = 0.85;
+      c.setAlpha(0);
+      this.tweens.add({ targets: c, alpha: 1, duration: 420, delay: x < 640 ? 60 : 180 });
+      this.tweens.addCounter({ from: 0.85, to: 1, duration: 420, ease: 'Back.easeOut', delay: x < 640 ? 60 : 180, onUpdate: (tw) => { intro = tw.getValue() ?? 1; } });
+      const sync = () => {
+        const r = card ? domRectInGameCh19(this, card) : undefined;
+        if (!r) return;
+        const k = Math.min(r.w / 500, r.h / 440);
+        c.setPosition(r.x + r.w / 2, r.y + r.h / 2).setScale(k * hover * intro);
+      };
+      sync();
+      this.events.on(Phaser.Scenes.Events.UPDATE, sync);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.UPDATE, sync));
     };
     choice(375, 0x3f8cf0, 'BOARD GAME', 'Đổ xúc xắc quanh đảo, kiếm B$, nghề nghiệp, lá bài và đủ trò trời ơi đất hỡi.', 'VÀO CHƠI →', 0xf0524a, '#mode-board', (c) => {
       const ids = ['starter-crybaby', 'starter-grumpy', 'starter-anxious', 'starter-hyper'];

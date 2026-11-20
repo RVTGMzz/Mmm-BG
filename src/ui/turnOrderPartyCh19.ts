@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { gameSession } from '../core/session';
+import { playCharacterVoiceCh19 } from '../audio/characterVoiceCh19';
 import { DICE_TOP_KEYS_CH19, DICE_TUMBLE_KEYS_CH19 } from './diceRollCh19';
 import {
   fillStarCh19, partyBadgeCh19, partyBannerCh19, partyBoxCh19, partyBustKeyCh19, partyCardCh19, partyPillButtonCh19,
@@ -108,7 +109,7 @@ export function installTurnOrderPartyCh19(sceneIn: Phaser.Scene): void {
   // back button (the inherited "← QUAY LẠI" text keeps its handler)
   const oldBack = scene.children.list.find((o) => o instanceof Phaser.GameObjects.Text && o.text.trim() === '← QUAY LẠI') as Phaser.GameObjects.Text | undefined;
   if (oldBack?.input) {
-    const back = partyPillButtonCh19(scene, 0, 0, 170, 52, 0x5b7fa8, '← Quay lại', () => oldBack.emit('pointerdown'), 20);
+    const back = partyPillButtonCh19(scene, 0, 0, 170, 52, 0x5b7fa8, '← Trở về', () => oldBack.emit('pointerdown'), 20);
     const place = () => { const r = stageRectCh19(scene); back.setPosition(Math.max(r.x + 110, 110), Math.max(r.y + 50, 40)); };
     place();
     scene.scale.on(Phaser.Scale.Events.RESIZE, place);
@@ -146,6 +147,7 @@ export function installTurnOrderPartyCh19(sceneIn: Phaser.Scene): void {
               back.setVisible(false);
               front.setVisible(true);
               const secret = charId === 'secret-baby';
+              playCharacterVoiceCh19(charId, 'happy', i * 3 + 2);
               label.setText(secret ? '✨ SECRET! ✨' : 'RA RỒI!');
               scene.tweens.add({ targets: holder, scaleX: 1, duration: 180, ease: 'Back.easeOut' });
               const burst = scene.add.graphics().setPosition(x, 360);

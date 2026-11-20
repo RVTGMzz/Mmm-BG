@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfxController, type SfxCue } from '../audio/sfxController';
+import { playCharacterVoiceCh19 } from '../audio/characterVoiceCh19';
 import type { MatchEvent } from '../core/matchState';
 import { gameSession, type FaceExpression } from '../core/session';
 import type { PlayerState } from '../core/types';
@@ -815,7 +816,9 @@ export class MatchPresentationLayer {
       Number(this.scene.scale.gameSize.height) || 720,
     );
     if (!placement) return;
-    sfxController.play('reaction');
+    // CH-19: each Character reacts in its own voice; the generic blip stays the fallback
+    const speakerCharacter = line.speakerId === undefined ? undefined : gameSession.getCharacterId(line.speakerId);
+    if (!playCharacterVoiceCh19(speakerCharacter, line.expression, model.eventSeq * 7 + index)) sfxController.play('reaction');
 
     const { x, y, side } = placement;
     const left = side === 'left';

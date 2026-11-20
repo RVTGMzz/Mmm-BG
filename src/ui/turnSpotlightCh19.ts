@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { sfxController } from '../audio/sfxController';
+import { playCharacterVoiceCh19 } from '../audio/characterVoiceCh19';
 import {
   partyBannerCh19, partyBoxCh19, partyBustKeyCh19, partyCardCh19, partyPillButtonCh19, partyRoundButtonCh19,
   partyTextCh19, PARTY_CHARACTER_COLOUR_CH19, PARTY_INK_CH19, PARTY_PLAYER_COLOURS_CH19, fillStarCh19,
@@ -166,6 +167,7 @@ export class TurnSpotlightCh19 {
     }
 
     if (animate) {
+      playCharacterVoiceCh19(p.characterId, 'happy', p.id * 13 + p.money);
       face.setX(face.x - 300).setAngle(-8);
       s.tweens.add({ targets: face, x: L + 140, angle: 0, duration: 380, ease: 'Back.easeOut' });
       info.setAlpha(0).setY(info.y + 40);

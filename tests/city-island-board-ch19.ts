@@ -175,4 +175,19 @@ assert.match(critters, /RABBIT_DEPTH_CH19 = 4\.6/);
 assert.match(critters, /BIRD_DEPTH_CH19 = 590/);
 for (const src of [party, stage, setupParty, orderParty, spotlight]) assert.doesNotMatch(src, /Math\.random\s*\(|submitIntent\s*\(/);
 
+// CH-19 audio + select details: per-Character reaction voices, synthesised dice roll, zodiac instead of age,
+// birds only disappear outside the live camera view.
+const voice = readFileSync('src/audio/characterVoiceCh19.ts', 'utf8');
+const sfx = readFileSync('src/audio/sfxController.ts', 'utf8');
+const voiceLayerSrcCh19 = readFileSync('src/ui/MatchPresentationLayer.ts', 'utf8');
+assert.ok(existsSync('public/audio/sfx/dice-roll-ch19.wav'), 'synthesised dice roll missing');
+assert.ok(existsSync('public/audio/sfx/dice.ogg'), 'original dice cue must stay (package checksum)');
+assert.match(sfx, /dice_roll: 'dice-roll-ch19\.wav'/);
+for (const id of ['starter-crybaby', 'starter-grumpy', 'starter-anxious', 'starter-hyper', 'secret-baby']) assert.match(voice, new RegExp(`'${id}'`));
+assert.doesNotMatch(voice, /Math\.random\s*\(/);
+assert.match(voiceLayerSrcCh19, /playCharacterVoiceCh19\(speakerCharacter/);
+assert.match(setupParty, /ZODIAC_CH19/);
+assert.doesNotMatch(setupParty, /ageBand/);
+assert.match(critters, /\(seen && past\)/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');

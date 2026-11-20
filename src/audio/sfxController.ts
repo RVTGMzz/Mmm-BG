@@ -23,7 +23,8 @@ const STORAGE_KEY = 'mememe.sfx.preferences.v1';
 const SFX_BASE_PATH = 'audio/sfx';
 
 const SFX_ASSETS: Partial<Record<SfxCue, string>> = {
-  dice_roll: 'dice.ogg',
+  // CH-19: synthesised wooden-table roll timed to the painted dice (scripts/synth-dice-roll-ch19.py)
+  dice_roll: 'dice-roll-ch19.wav',
   coin_gain: 'money_gain.ogg',
   coin_loss: 'money_loss.ogg',
   card_draw: 'card.ogg',

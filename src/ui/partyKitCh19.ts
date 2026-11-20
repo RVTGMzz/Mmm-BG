@@ -82,6 +82,8 @@ export function partyTextCh19(scene: Phaser.Scene, x: number, y: number, text: s
     shadow: o.shadow === false ? undefined : { offsetX: 0, offsetY: Math.max(2, size * 0.09), color: 'rgba(20,24,60,.45)', blur: 0, fill: true, stroke: true },
     padding: { x: 4, y: 4 },
   }).setOrigin(o.align === 'left' ? 0 : o.align === 'right' ? 1 : 0.5, 0.5);
+  // the canvas is scaled up to the screen: render text at device resolution so it stays crisp
+  t.setResolution(Math.min(3, Math.max(2, typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1)));
   if (o.gradient) {
     const g = t.context.createLinearGradient(0, 0, 0, t.height);
     g.addColorStop(0.15, o.gradient[0]);
@@ -442,14 +444,24 @@ export function pinToStageCh19(scene: Phaser.Scene, obj: Phaser.GameObjects.Comp
  * draws the screen in Phaser and keeps the DOM alive but invisible, pressing
  * its buttons on the player's behalf.
  */
-export function veilDomCh19(dom: Phaser.GameObjects.DOMElement): HTMLElement {
+export function veilDomCh19(dom: Phaser.GameObjects.DOMElement, keepPointer = false): HTMLElement {
   const node = dom.node as HTMLElement;
-  // Phaser rewrites opacity / display every frame, but leaves visibility alone
-  dom.setAlpha(0);
-  node.style.visibility = 'hidden';
-  node.style.pointerEvents = 'none';
-  node.setAttribute('aria-hidden', 'true');
+  // transparent but still laid out (keyboard / gamepad / automation keep working);
+  // Phaser writes opacity and pointer-events from these every frame
+  // (alpha 0 would make Phaser set display:none, which collapses the layout)
+  dom.setAlpha(0.001);
+  if (!keepPointer) dom.pointerEvents = 'none';
   return node;
+}
+
+/** Game-space rectangle of a DOM element (for laying Phaser art exactly over it). */
+export function domRectInGameCh19(scene: Phaser.Scene, el: Element): { x: number; y: number; w: number; h: number } | undefined {
+  const r = el.getBoundingClientRect();
+  const c = scene.game.canvas.getBoundingClientRect();
+  if (!c.width || !r.width) return undefined;
+  const k = scene.scale.gameSize.width / c.width;
+  const cam = scene.cameras.main;
+  return { x: (r.left - c.left) * k + cam.scrollX, y: (r.top - c.top) * k + cam.scrollY, w: r.width * k, h: r.height * k };
 }
 
 export function pressDomCh19(root: ParentNode, selector: string): void {
