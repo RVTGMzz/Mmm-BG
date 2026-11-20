@@ -18,7 +18,7 @@ export interface IslandBoundsCh19 { x: number; y: number; w: number; h: number }
 export interface IslandLabelCh19 { x: number; y: number; title: string; subtitle: string }
 export interface IslandPropCh19 {
   key: string;
-  kind: 'tree' | 'bush' | 'building' | 'landmark' | 'wheel';
+  kind: 'tree' | 'bush' | 'building' | 'landmark' | 'wheel' | 'beach';
   /** base (bottom-centre) in world coordinates; for 'wheel' the hub centre */
   x: number;
   y: number;
@@ -47,6 +47,8 @@ export const PROP_CATALOG_CH19: Readonly<Record<string, { w: number; h: number }
   'bakery': { w: 338, h: 360 }, 'store': { w: 360, h: 341 },
   'ferris-wheel': { w: 428, h: 428 }, 'ferris-base': { w: 433, h: 356 }, 'hospital': { w: 440, h: 352 },
   'jail': { w: 440, h: 342 }, 'jobs': { w: 434, h: 407 }, 'fountain': { w: 440, h: 366 },
+  'umbrella-red': { w: 213, h: 220 }, 'umbrella-blue': { w: 212, h: 220 }, 'beach-towel': { w: 220, h: 154 },
+  'lounge-chair': { w: 211, h: 220 }, 'beach-ball': { w: 220, h: 218 }, 'sandcastle': { w: 220, h: 217 },
 };
 
 interface Pt { x: number; y: number }
@@ -291,6 +293,37 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
       used.set(key, (used.get(key) ?? 0) + 1);
       place(key, 'building', jx, jy, w, h, rand() < .5);
     }
+  // beach corners on the sandy rim: an umbrella with a towel / chair / ball / sandcastle beside it
+  const BEACH_W: Record<string, number> = {
+    'umbrella-red': 64, 'umbrella-blue': 64, 'beach-towel': 50, 'lounge-chair': 44, 'beach-ball': 24, 'sandcastle': 46,
+  };
+  const EXTRAS = ['beach-towel', 'lounge-chair', 'beach-ball', 'sandcastle'];
+  let spots = 0;
+  for (let i = 0; i < 400 && spots < 8; i++) {
+    const b = pick(landBlobs), a = rand() * Math.PI * 2, rr = b.r - 58 - rand() * 34, x = b.x + Math.cos(a) * rr, y = b.y + Math.sin(a) * rr;
+    if (!(onIsland(x, y, -12) && !onIsland(x, y, 36) && !inWater(x, y) && roadDist(x, y) > 46)) continue;
+    const key = spots % 2 ? 'umbrella-blue' : 'umbrella-red';
+    const { w, h } = sized(key, BEACH_W[key] * (0.9 + rand() * 0.2));
+    const rect = { x: x - w / 2, y: y - h, w, h };
+    if (overlaps(rect, 4) || [...board.nodes].some((n) => Math.hypot(n.x - x, n.y - (y - h / 2)) < TILE_CLEAR)) continue;
+    place(key, 'beach', x, y, w, h, rand() < .5);
+    spots++;
+    // one or two extras beside it
+    const extras = 1 + (rand() < .45 ? 1 : 0);
+    for (let e = 0; e < extras; e++) {
+      const ek = EXTRAS[Math.floor(rand() * EXTRAS.length) % EXTRAS.length];
+      for (let tries = 0; tries < 6; tries++) {
+        const ex = x + (rand() < .5 ? -1 : 1) * (40 + rand() * 30), ey = y + (rand() - .4) * 34;
+        const s2 = sized(ek, BEACH_W[ek] * (0.9 + rand() * 0.2));
+        const r2 = { x: ex - s2.w / 2, y: ey - s2.h, w: s2.w, h: s2.h };
+        if (!onIsland(ex, ey, -14) || inWater(ex, ey) || roadDist(ex, ey) < 40 || overlaps(r2, 2)) continue;
+        if ([...board.nodes].some((n) => Math.hypot(n.x - ex, n.y - (ey - s2.h / 2)) < TILE_CLEAR)) continue;
+        place(ek, 'beach', ex, ey, s2.w, s2.h, rand() < .5);
+        break;
+      }
+    }
+  }
+
   const TREES = [
     { key: 'tree-oak', w: 120, weight: 3 }, { key: 'tree-blossom', w: 118, weight: 2 }, { key: 'tree-autumn', w: 118, weight: 1.3 },
     { key: 'tree-pine', w: 92, weight: 1.6 }, { key: 'tree-palm', w: 110, weight: 1 },
@@ -324,16 +357,6 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
         break;
       }
     }
-  let umbrellas = 0;
-  for (let i = 0; i < 40 && umbrellas < 9; i++) {
-    const b = pick(landBlobs), a = rand() * Math.PI * 2, x = b.x + Math.cos(a) * (b.r - 30), y = b.y + Math.sin(a) * (b.r - 30);
-    if (onIsland(x, y, -10) && !onIsland(x, y, 50) && roadDist(x, y) > 40 && !overlaps({ x: x - 30, y: y - 50, w: 60, h: 55 }, 0)) {
-      reserved.push({ x: x - 30, y: y - 50, w: 60, h: 55 });
-      umbrellas++;
-      const c = pick(['#F2554A', '#2F7FE0', '#F0509A', '#FFC93C']);
-      items.push({ y, svg: () => umbrella(x, y, c) });
-    }
-  }
 
   /* ---------------- gate → hold escort links */
   const links: string[] = [];
@@ -466,12 +489,6 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
     s += `<circle cx="0" cy="-40" r="26" fill="${shadeCh19(base, -.25)}"/><circle cx="-12" cy="-46" r="18" fill="${base}"/>`;
     s += `<circle cx="10" cy="-50" r="19" fill="${base}"/><circle cx="0" cy="-38" r="21" fill="${base}"/>`;
     return s + `<circle cx="-8" cy="-55" r="9" fill="${shadeCh19(base, .3)}" opacity=".8"/></g>`;
-  }
-  function umbrella(x: number, y: number, c: string): string {
-    return `<g transform="translate(${x},${y})"><ellipse cx="6" cy="2" rx="24" ry="7" fill="#000" opacity=".18"/>`
-      + '<path d="M0 2V-34" stroke="#7A5230" stroke-width="3"/>'
-      + `<path d="M-28 -30q28 -24 56 0z" fill="${c}" stroke="${shadeCh19(c, -.4)}" stroke-width="2"/>`
-      + '<path d="M-10 -30q10 -24 20 0" fill="#fff" opacity=".85"/></g>';
   }
   function hospital(cx: number, base: number): string {
     const w = 220, x = cx - w / 2 - 15;

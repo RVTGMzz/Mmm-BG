@@ -111,4 +111,28 @@ assert.match(rescue, /startSirenCh19/);
 assert.match(rescue, /sfxController\.getState\(\)\.muted/);
 assert.doesNotMatch(rescue, /Math\.random\s*\(|submitIntent\s*\(|specialHold\s*=/);
 
+// CH-19 painted dice roll: tumbles through all six faces, lands on the event result.
+const diceSrc = readFileSync('src/ui/diceRollCh19.ts', 'utf8');
+for (const key of ['dice-1', 'dice-2', 'dice-3', 'dice-4', 'dice-5', 'dice-6', 'dice-tumble-1', 'dice-tumble-4', 'dice-dust', 'dice-burst']) {
+  assert.ok(existsSync(`public/assets/scenery/ch19/${key}.png`), `${key} sprite missing`);
+}
+assert.match(scene, /installDiceRollCh19/);
+assert.match(scene, /model\.roll/);
+assert.match(diceSrc, /DICE_FACE_KEYS_CH19\[face - 1\]/);
+assert.doesNotMatch(diceSrc, /Math\.random\s*\(|submitIntent\s*\(/);
+
+// CH-19 wildlife + beach: rabbits / butterflies at bushes, bird flocks with soft chirps, sprite beach props.
+const critters = readFileSync('src/ui/islandCrittersCh19.ts', 'utf8');
+for (const key of ['bird-blue-1', 'bird-yellow-4', 'seagull-3', 'butterfly-orange-2', 'butterfly-blue-3', 'rabbit-peek', 'rabbit-peek-blink', 'rabbit-sit', 'rabbit-hop',
+  'umbrella-red', 'umbrella-blue', 'beach-towel', 'lounge-chair', 'beach-ball', 'sandcastle']) {
+  assert.ok(existsSync(`public/assets/scenery/ch19/${key}.png`), `${key} sprite missing`);
+}
+assert.match(propsSrc, /installIslandCrittersCh19/);
+assert.match(propsSrc, /BUSH_TINTS_CH19/);
+assert.match(critters, /chirpCh19/);
+assert.match(critters, /sfxController\.getState\(\)\.muted/);
+assert.doesNotMatch(critters, /Math\.random\s*\(|submitIntent\s*\(/);
+assert.match(scenery, /place\(key, 'beach'/);
+assert.doesNotMatch(scenery, /function umbrella\(/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');

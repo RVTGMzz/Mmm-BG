@@ -31,6 +31,10 @@ import {
 import { MOBILE_UI_FONT_07044 } from '../ui/mobileReadability07044';
 import { installIslandPropsCh19, preloadIslandPropsCh19 } from '../ui/islandPropsCh19';
 import { RescueVehiclesCh19, preloadRescueVehiclesCh19 } from '../ui/rescueVehiclesCh19';
+import { diceSpritesReadyCh19, playDiceRollCh19 } from '../ui/diceRollCh19';
+import { diceSettleFeedbackCh09 } from '../ui/presentationFeedbackCh09';
+import { sfxController } from '../audio/sfxController';
+import type { PresentationEventModel } from '../ui/presentationModel';
 import { HUD_PLAYER_ACCENTS_VF04 } from '../ui/visualFoundationHudVf04';
 import { CareerMinigameBoardSceneCh173 } from './CareerMinigameBoardSceneCh173';
 
@@ -166,6 +170,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.hideLegacyBoardCh19();
     this.syncIslandTilesCh19(false);
     this.rescueCh19 = new RescueVehiclesCh19(this);
+    this.installDiceRollCh19();
     // a player who is already held when the board opens (resume) gets no cutscene
     for (const p of (this as unknown as { match?: MatchState }).match?.players ?? []) this.holdStateCh19.set(p.id, p.specialHold ?? '');
     // Let the first board frame render before the one-off scenery build.
@@ -570,6 +575,37 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   }
 
   /* ------------------------------------------------------------------ scenery */
+
+  /**
+   * Replaces the older vector die (installGraphicalDiceOverride) with the
+   * painted CH-19 die: it tumbles through all six faces, bounces and lands on
+   * the event's result. Falls back to the older die if the art is missing.
+   */
+  private installDiceRollCh19(): void {
+    type Runtime = {
+      active?: Phaser.GameObjects.Container;
+      currentModel?: PresentationEventModel;
+      showDiceRoll(model: PresentationEventModel): void;
+      finishCurrent(animate?: boolean): void;
+    };
+    const runtime = (this as unknown as { presentation?: Runtime }).presentation;
+    if (!runtime) return;
+    const previous = runtime.showDiceRoll.bind(runtime);
+    runtime.showDiceRoll = (model: PresentationEventModel) => {
+      if (!diceSpritesReadyCh19(this)) { previous(model); return; }
+      const result = Math.max(1, Math.min(6, model.roll ?? 1));
+      const container = this.add.container(640, 330).setDepth(920).setName('presentation-dice-card-ch19');
+      runtime.active = container;
+      sfxController.play('dice_roll');
+      playDiceRollCh19(this, container, result, `${model.actorName} đổ ra ${result}`, () => {
+        const settle = diceSettleFeedbackCh09(result);
+        this.cameras.main.shake(settle.cameraShake.durationMs, settle.cameraShake.intensity);
+      });
+      this.time.delayedCall(Math.max(1600, model.holdMs + 800), () => {
+        if (runtime.currentModel === model) runtime.finishCurrent(false);
+      });
+    };
+  }
 
   private async installIslandSceneryCh19(): Promise<void> {
     try {
