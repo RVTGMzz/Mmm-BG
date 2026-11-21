@@ -203,4 +203,16 @@ assert.match(scene, /no navy explainer plates/);
 assert.match(scene, /kind: 'shop'/);
 assert.match(readFileSync('src/ui/currencyLabelCh19.ts', 'utf8'), /M\$/);
 
+// CH-19 Mini Game screen: own themed full screen, painted icon per game, painted choices,
+// illustrated how-to-play for every mode.
+const mg = readFileSync('src/ui/miniGamePartyCh19.ts', 'utf8');
+for (const k of ['crowd', 'allin', 'buoy', 'top2', 'sprint', 'rps', 'doors']) assert.ok(existsSync(`public/assets/ui/ch19/minigame/icon-${k}.png`), `mini game icon ${k}`);
+for (const k of ['palm-up', 'palm-down', 'rock', 'paper', 'scissors', 'door', 'buoy', 'lock', 'fire', 'reroll']) assert.ok(existsSync(`public/assets/ui/ch19/minigame/pick-${k}.png`), `pick ${k}`);
+for (const k of ['majority', 'rps', 'doors', 'allin', 'buoy', 'cuttop', 'sprint']) assert.ok(existsSync(`public/assets/ui/ch19/minigame/tut-${k}.webp`), `tutorial ${k}`);
+assert.match(mg, /wipeIn/);
+assert.match(mg, /'NHIỀU RA ÍT BỊ'/);
+assert.match(scene, /installMiniGamePartyCh19\(this\)/);
+assert.match(readFileSync('src/scenes/MiniGameQuickScene.ts', 'utf8'), /installMiniGamePartyCh19\(this\)/);
+assert.doesNotMatch(mg, /Math\.random\s*\(|submitIntent\s*\(/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');

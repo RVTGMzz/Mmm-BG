@@ -6,6 +6,9 @@ import { createInitialMatchState } from '../core/matchState';
 import { gameSession } from '../core/session';
 import { MINI_GAME_SLOTS_059 } from '../core/miniGameSlots059';
 import { startMiniGameOverlay, type MiniGameOutcome } from '../ui/MiniGameOverlay';
+import { installMiniGamePartyCh19, preloadMiniGamePartyCh19 } from '../ui/miniGamePartyCh19';
+import { preloadPartyKitCh19 } from '../ui/partyKitCh19';
+import { trackGraphicsBoundsCh19 } from '../ui/uiKitCh19';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
 import type { PlayerState } from '../core/types';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
@@ -33,6 +36,10 @@ export class MiniGameQuickScene extends Phaser.Scene {
   constructor() { super('MiniGameQuickScene'); }
 
   preload(): void {
+    // CH-19 painted Mini Game screen
+    preloadPartyKitCh19(this);
+    preloadMiniGamePartyCh19(this);
+    trackGraphicsBoundsCh19();
     if (!this.textures.exists(CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182)) {
       this.load.spritesheet(
         CHARACTER_PRODUCTION_PORTRAIT_TEXTURE_CH182,
@@ -46,6 +53,7 @@ export class MiniGameQuickScene extends Phaser.Scene {
   }
 
   create(): void {
+    installMiniGamePartyCh19(this);
     bgmController.playMenu();
     this.paintBackground();
     this.showSelector();

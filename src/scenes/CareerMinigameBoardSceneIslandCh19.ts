@@ -44,6 +44,7 @@ import { partyBoxCh19, partyPillShapeCh19, preloadPartyKitCh19 } from '../ui/par
 import { stageRectCh19 } from '../ui/responsiveStageCh19';
 import { browserSession } from '../core/browserSession';
 import { shopForNodeCh19 } from '../core/shopTilesCh19';
+import { installMiniGamePartyCh19, preloadMiniGamePartyCh19 } from '../ui/miniGamePartyCh19';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
 /** Sole line of the CH-19 character strips (fraction of the 192px frame). */
@@ -182,6 +183,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     preloadIslandPropsCh19(this);
     preloadUiKitCh19(this);
     preloadPartyKitCh19(this);
+    preloadMiniGamePartyCh19(this);
     trackGraphicsBoundsCh19();
     preloadRescueVehiclesCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
@@ -215,6 +217,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.installDiceRollCh19();
     this.installRescueMoveCh19();
     this.installJobVisitCh19();
+    installMiniGamePartyCh19(this);
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
