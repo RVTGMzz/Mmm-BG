@@ -189,3 +189,25 @@ button.vf-button.character-card-ch02c {
   color: var(--party-ink) !important;
   text-shadow: none !important;
 }
+
+/* painted Mini Game icons on the quick menu cards */
+.quick-mini-icon:has(.quick-mini-icon-art-ch19),
+.quick-result-icon:has(.quick-mini-icon-art-ch19) {
+  width: 64px !important;
+  height: 64px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.quick-mini-icon-art-ch19 {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 0 rgba(16, 20, 58, .35));
+}
+
+/* the lobby floats on the starry stage; the version line is gone */
+.lobby-head-069 > span {
+  display: none !important;
+}

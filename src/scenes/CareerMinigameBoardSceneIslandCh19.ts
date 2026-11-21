@@ -369,7 +369,16 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
           token,
           rider: sprite ? { texture: sprite.texture.key, frame: sprite.frame.name, scale: sprite.scaleX } : undefined,
           followCamera: !runtime.overviewMode,
-          onArrive: () => { this.tweens.killTweensOf(token); token.setPosition(dest.x, dest.y); resolve(); },
+          onArrive: () => {
+            this.tweens.killTweensOf(token);
+            token.setPosition(dest.x, dest.y);
+            // dropped at the door: the Character goes inside and waits there
+            if (playerId !== undefined) {
+              this.insideCh19.set(playerId, { kind: 'hold', x: dest.x, y: dest.y });
+              this.tweens.add({ targets: token, alpha: 0, duration: 260, delay: 220 });
+            }
+            resolve();
+          },
         });
       });
     };
@@ -904,11 +913,11 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     const inside = this.insideCh19.get(playerId);
     if (!inside) return;
     this.insideCh19.delete(playerId);
-    const node = BOARD_CH19.nodes.find((n) => Math.hypot(n.x - inside.x, n.y - inside.y) < 80);
-    const door = node ? this.doorsCh19.get(node.id) : undefined;
-    if (this.tweens.isTweening(token)) { token.setScale(1).setAlpha(1); return; } // already moving on
-    token.setScale(1).setAlpha(0).setPosition(door?.x ?? inside.x, door?.y ?? inside.y);
-    this.tweens.add({ targets: token, x: inside.x, y: inside.y, alpha: 1, duration: 420, ease: 'Sine.easeOut' });
+    // step out where the token stands (movement owns its position): fade back in only
+    token.setScale(1);
+    if (this.tweens.isTweening(token)) { token.setAlpha(1); return; }
+    token.setAlpha(0);
+    this.tweens.add({ targets: token, alpha: 1, duration: 360, ease: 'Sine.easeOut' });
   }
 
   /**
@@ -925,11 +934,10 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       const inside = this.insideCh19.get(player.id);
       if (inside?.kind === 'hold') {
         if (!player.specialHold) this.leaveBuildingCh19(player.id, token);
-        else if (token.alpha > 0 && !this.tweens.isTweening(token)) token.setAlpha(0);
-      } else if (player.specialHold && !this.tweens.isTweening(token) && !this.rescueCh19?.busy) {
-        // e.g. arrived by police car / ambulance: go in through the door
-        void this.enterBuildingCh19(player.id, token, player.nodeId, 'hold');
+        else if (token.alpha > 0 && !this.tweens.isTweening(token) && !this.rescueCh19?.busy) token.setAlpha(0);
       }
+      // (a player only goes inside once the police car / ambulance has dropped
+      // them at the door: see installRescueMoveCh19, never from the state alone)
     }
   }
 

@@ -105,7 +105,9 @@ export function reskinGraphicsCh19(
   const sig = `${Math.round(box.x)},${Math.round(box.y)},${Math.round(box.w)},${Math.round(box.h)},${old.x},${old.y},${old.scaleX},${old.scaleY}`;
   const skinKey = `ch19-skin-${old.name || container.getIndex(old)}`;
   const current = container.getData(skinKey) as { sig: string; obj: Phaser.GameObjects.GameObject } | undefined;
-  if (old.alpha > 0) old.setAlpha(0);
+  // interactive shapes (choice cards) must stay hit-testable: Phaser ignores alpha-0 objects
+  const hidden = old.input?.enabled ? 0.001 : 0;
+  if (old.alpha !== hidden) old.setAlpha(hidden);
   if (current?.sig === sig && current.obj.active) return;
   current?.obj.destroy();
   // the old Graphics may itself be scaled by a later layout pass

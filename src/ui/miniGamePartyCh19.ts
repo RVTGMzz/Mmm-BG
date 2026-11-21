@@ -23,6 +23,13 @@ const SLOT_STYLE_CH19: Record<string, Style> = {
   MINIGAME_SLOT_05: { icon: 'sprint', colour: 0xf08a2c },
 };
 
+/** Painted icon for a Mini Game slot as HTML (DOM menus), emoji fallback. */
+export function miniGameIconHtmlCh19(contentId: string, fallback: string): string {
+  const style = SLOT_STYLE_CH19[contentId];
+  if (!style) return fallback;
+  return `<img class="quick-mini-icon-art-ch19" src="${publicAssetUrl(`assets/ui/ch19/minigame/icon-${style.icon}.png`)}" alt="${fallback}" />`;
+}
+
 export const MINIGAME_ICONS_CH19 = ['crowd', 'allin', 'buoy', 'top2', 'sprint', 'rps', 'doors'] as const;
 export const MINIGAME_PICKS_CH19 = ['palm-up', 'palm-down', 'rock', 'paper', 'scissors', 'door', 'buoy', 'lock', 'fire', 'reroll'] as const;
 export const MINIGAME_TUTORIALS_CH19 = ['majority', 'rps', 'doors', 'allin', 'buoy', 'cuttop', 'sprint'] as const;

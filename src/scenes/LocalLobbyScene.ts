@@ -26,7 +26,8 @@ export class LocalLobbyScene extends Phaser.Scene {
 
   create(): void {
     bgmController.playMenu();
-    paintToyTownBackdropCh17(this, 'mint', { x: 105, y: 55, width: 1070, height: 610, radius: 32 });
+    // CH-19: the lobby cards float on the starry stage (the paper panel was smaller than them)
+    paintToyTownBackdropCh17(this, 'mint', { x: 105, y: 55, width: 1070, height: 610, radius: 32 }).setVisible(false);
 
     const root = document.createElement('div');
     root.className = 'mememe-lobby mememe-lobby-069';
@@ -71,6 +72,8 @@ export class LocalLobbyScene extends Phaser.Scene {
       <p id="lobby-status" class="lobby-status">${broadcastReady ? '' : '⚠️ Local 2-tab không khả dụng trên trình duyệt này.'}</p>`;
 
     const dom = this.add.dom(640, 370, root).setOrigin(0.5);
+    // CH-19: re-measure once styles / fonts settle so the centred block stays on screen
+    for (const ms of [30, 250, 800]) this.time.delayedCall(ms, () => dom.updateSize());
     const node = dom.node as HTMLDivElement;
     decorateVisualFoundationButtonsV01(node, [
       { selector: '#lobby-back-main', variant: 'subtle', size: 'sm' },

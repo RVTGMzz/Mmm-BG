@@ -6,7 +6,7 @@ import { createInitialMatchState } from '../core/matchState';
 import { gameSession } from '../core/session';
 import { MINI_GAME_SLOTS_059 } from '../core/miniGameSlots059';
 import { startMiniGameOverlay, type MiniGameOutcome } from '../ui/MiniGameOverlay';
-import { installMiniGamePartyCh19, preloadMiniGamePartyCh19 } from '../ui/miniGamePartyCh19';
+import { installMiniGamePartyCh19, miniGameIconHtmlCh19, preloadMiniGamePartyCh19 } from '../ui/miniGamePartyCh19';
 import { preloadPartyKitCh19 } from '../ui/partyKitCh19';
 import { trackGraphicsBoundsCh19 } from '../ui/uiKitCh19';
 import { decorateVisualFoundationButtonsV01 } from '../ui/visualFoundationV01';
@@ -97,7 +97,7 @@ export class MiniGameQuickScene extends Phaser.Scene {
       <div class="quick-mini-grid">
         ${MINI_GAME_SLOTS_059.map((slot) => `
           <button class="quick-mini-card${slot.contentId === this.selectedContentId ? ' selected' : ''}" type="button" data-content-id="${slot.contentId}">
-            <span class="quick-mini-icon">${slot.icon}</span>
+            <span class="quick-mini-icon">${miniGameIconHtmlCh19(slot.contentId, slot.icon)}</span>
             <strong>${slot.boardLabel} • ${slot.title}</strong>
             <small>${slot.identity}</small>
             <p>${slot.description}</p>
@@ -196,7 +196,7 @@ export class MiniGameQuickScene extends Phaser.Scene {
     root.className = 'mememe-minigame-quick-result';
     root.innerHTML = `
       <section class="quick-result-card">
-        <div class="quick-result-icon">${slot.icon}</div>
+        <div class="quick-result-icon">${miniGameIconHtmlCh19(slot.contentId, slot.icon)}</div>
         <div class="quick-mini-kicker">KẾT QUẢ • ${slot.boardLabel}</div>
         <h1>${slot.title}</h1>
         <div class="quick-result-ranking">
