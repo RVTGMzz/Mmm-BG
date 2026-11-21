@@ -35,7 +35,8 @@ export function cardByTitleCh19(title: string): CardDefinition | undefined {
 
 /** A full card face, centre origin, w x (w * 1.4). */
 export function cardFaceCh19(scene: Phaser.Scene, card: CardDefinition, w: number, withText = true): Phaser.GameObjects.Container {
-  const h = Math.round(w * 1.4);
+  // without the effect box the card ends right under its name ribbon
+  const h = withText ? Math.round(w * 1.4) : w + 20;
   const r = RARITY[card.rarity] ?? RARITY.N;
   const c = scene.add.container(0, 0).setName(`card-face-ch19-${card.id}`).setSize(w, h);
   const g = scene.add.graphics();
@@ -76,10 +77,12 @@ export function cardFaceCh19(scene: Phaser.Scene, card: CardDefinition, w: numbe
   // name ribbon across the bottom of the art
   const ribY = ay + ah + 2;
   const rib = scene.add.graphics();
-  rib.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(x0 + 4, ribY - 17, w - 8, 34, 10);
-  rib.fillStyle(0xffffff, 1).fillRoundedRect(x0 + 7, ribY - 14, w - 14, 28, 8);
+  const titleSize = Math.max(12, Math.min(30, Math.round(w * 0.085)));
+  const ribH = Math.max(34, titleSize + 14);
+  rib.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(x0 + 4, ribY - ribH / 2, w - 8, ribH, 10);
+  rib.fillStyle(0xffffff, 1).fillRoundedRect(x0 + 7, ribY - ribH / 2 + 3, w - 14, ribH - 6, 8);
   c.add(rib);
-  c.add(partyTextCh19(scene, 0, ribY, card.title, { size: Math.max(12, Math.round(w * 0.085)), fill: hex(r.frame), stroke: '#ffffff', strokeWidth: 3, shadow: false }));
+  c.add(partyTextCh19(scene, 0, ribY, card.title, { size: titleSize, fill: hex(r.frame), stroke: '#ffffff', strokeWidth: 3, shadow: false }));
   if (withText) {
     const textTop = ribY + 22;
     const box = scene.add.graphics();
@@ -142,14 +145,95 @@ function skinHand(scene: Phaser.Scene, root: Phaser.GameObjects.Container): void
   for (const p of root.list) if (/card-hand-(skin|rarity)-/.test(p.name)) (p as unknown as Phaser.GameObjects.Components.Alpha).setAlpha(0);
 }
 
+const STAGE_CX_CH19 = 640;
+const STAGE_CY_CH19 = 360;
+const REVEAL_DEPTH_CH19 = 9000;
+
+/** The board behind a card reveal goes soft; removed when the reveal leaves. */
+function blurBoardCh19(scene: Phaser.Scene, root: Phaser.GameObjects.Container): void {
+  const cam = scene.cameras.main as Phaser.Cameras.Scene2D.Camera & { postFX?: Phaser.GameObjects.Components.FX };
+  const fx = cam.postFX?.addBlur?.(1, 2, 2, 1.4);
+  if (!fx) return;
+  const clear = () => { try { cam.postFX?.remove(fx); } catch { /* camera already gone */ } };
+  root.once(Phaser.GameObjects.Events.DESTROY, clear);
+  const watch = () => {
+    if (root.active && root.scene) return;
+    clear();
+    scene.events.off(Phaser.Scenes.Events.UPDATE, watch);
+  };
+  scene.events.on(Phaser.Scenes.Events.UPDATE, watch);
+  scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { clear(); scene.events.off(Phaser.Scenes.Events.UPDATE, watch); });
+}
+
 function skinPresentation(scene: Phaser.Scene, root: Phaser.GameObjects.Container): void {
-  if (root.getData('ch19-card-face')) return;
-  const titleText = root.list.find((o): o is Phaser.GameObjects.Text => o instanceof Phaser.GameObjects.Text && Boolean(cardByTitleCh19(o.text)));
+  const mine = (o: Phaser.GameObjects.GameObject) => Boolean(o.getData?.('ch19-card-ui'));
+  const stage = root.getData('ch19-card-stage') as Phaser.GameObjects.Container | undefined;
+  if (stage) {
+    // the older layers keep re-skinning their panel: keep everything but the reveal hidden,
+    // and undo the root's own placement so the reveal fills the screen
+    for (const o of root.list) if (!mine(o)) (o as unknown as Phaser.GameObjects.Components.Alpha).setAlpha?.(0);
+    const sx = root.scaleX || 1, sy = root.scaleY || 1;
+    stage.setScale(1 / sx, 1 / sy).setPosition((STAGE_CX_CH19 - root.x) / sx, (STAGE_CY_CH19 - root.y) / sy).setAngle(-root.angle);
+    if (root.depth < REVEAL_DEPTH_CH19) root.setDepth(REVEAL_DEPTH_CH19);
+    return;
+  }
+  const texts = root.list.filter((o): o is Phaser.GameObjects.Text => o instanceof Phaser.GameObjects.Text);
+  const titleText = texts.find((t) => Boolean(cardByTitleCh19(t.text)));
   if (!titleText) return;
   const card = cardByTitleCh19(titleText.text)!;
   root.setData('ch19-card-face', true);
-  const face = cardFaceCh19(scene, card, 190, false).setPosition(-470, 0).setAngle(-6).setData('ch19-skin', true);
-  root.add(face);
-  face.setScale(0.2).setAlpha(0);
-  scene.tweens.add({ targets: face, scale: 1, alpha: 1, angle: -4, duration: 360, ease: 'Back.easeOut' });
+  const kicker = texts.find((t) => t.name === 'cinematic-kicker-ch141')?.text ?? '';
+  // what actually happened (card play summary), when the older card shows one
+  const extra = texts
+    .filter((t) => t !== titleText && t.name !== 'cinematic-kicker-ch141' && t.text.trim() && t.text.trim() !== card.description.trim())
+    .map((t) => t.text.trim())
+    .filter((line) => line.length > 12)
+    .slice(0, 2)
+    .join(' ');
+  for (const o of root.list) (o as unknown as Phaser.GameObjects.Components.Alpha).setAlpha?.(0);
+
+  const tag = <T extends Phaser.GameObjects.GameObject>(o: T): T => { o.setData('ch19-card-ui', true); return o; };
+  const r = RARITY[card.rarity] ?? RARITY.N;
+  // top layer: a soft dark veil over the blurred board, one huge card, the caption right under it
+  root.setDepth(Math.max(root.depth, REVEAL_DEPTH_CH19));
+  const st = tag(scene.add.container(0, 0));
+  root.add(st);
+  root.setData('ch19-card-stage', st);
+  const veil = scene.add.graphics();
+  veil.fillStyle(0x10143a, 1).fillRect(-2000, -1500, 4000, 3000);
+  veil.setAlpha(0.58);
+  st.add(veil);
+  const glow = scene.add.graphics();
+  glow.fillStyle(r.glow, 0.16).fillCircle(0, -112, 340);
+  glow.fillStyle(r.glow, 0.14).fillCircle(0, -112, 280);
+  st.add(glow);
+  const W = 420; // 420 x 440: the art fills most of the screen height
+  const CY = -112;
+  const face = cardFaceCh19(scene, card, W, false).setPosition(0, CY);
+  st.add(face);
+  const cap = scene.add.container(0, 150);
+  if (kicker) cap.add(partyTextCh19(scene, 0, -2, kicker.toUpperCase(), { size: 16, fill: '#ffe066', strokeWidth: 4, shadow: false }));
+  cap.add(partyTextCh19(scene, 0, 34, card.description, { size: 24, fill: '#ffffff', strokeWidth: 6, wrap: 820, shadow: false }).setOrigin(0.5, 0));
+  if (extra) cap.add(partyTextCh19(scene, 0, 104, extra, { size: 18, fill: '#cfe4ff', strokeWidth: 4, wrap: 820, shadow: false }).setOrigin(0.5, 0));
+  st.add(cap);
+  // rarity chip pinned to the card's bottom edge
+  const chipW = 170;
+  const rc = scene.add.container(0, CY + (W + 20) / 2 + 4);
+  const cg = scene.add.graphics();
+  cg.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(-chipW / 2 - 3, -18, chipW + 6, 36, 18);
+  cg.fillStyle(r.frame, 1).fillRoundedRect(-chipW / 2, -15, chipW, 30, 15);
+  rc.add(cg);
+  rc.add(partyTextCh19(scene, 0, 0, `${'★'.repeat(r.stars)} ${r.name}`, { size: 15, fill: '#ffffff', strokeWidth: 3, shadow: false }));
+  st.add(rc);
+  skinPresentation(scene, root);
+  blurBoardCh19(scene, root);
+
+  face.setScale(0.35).setAlpha(0).setAngle(-14);
+  scene.tweens.add({ targets: face, scale: 1, alpha: 1, angle: 0, duration: 460, ease: 'Back.easeOut' });
+  rc.setAlpha(0).setScale(0.6);
+  scene.tweens.add({ targets: rc, alpha: 1, scale: 1, duration: 260, delay: 300, ease: 'Back.easeOut' });
+  cap.setAlpha(0).setY(180);
+  scene.tweens.add({ targets: cap, alpha: 1, y: 150, duration: 320, delay: 240, ease: 'Cubic.easeOut' });
+  glow.setAlpha(0);
+  scene.tweens.add({ targets: glow, alpha: 1, duration: 500 });
 }

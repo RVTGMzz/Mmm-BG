@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { MINI_GAME_SLOTS_059 } from '../core/miniGameSlots059';
 import { publicAssetUrl } from './publicAssetUrl';
 import {
-  fillStarCh19, partyBannerCh19, partyBoxCh19, partyPillShapeCh19, partyTextCh19, PARTY_FONT_CH19, PARTY_INK_CH19, tintCh19,
+  fillStarCh19, partyBannerCh19, partyBoxCh19, partyPillButtonCh19, partyPillShapeCh19, partyTextCh19, PARTY_FONT_CH19, PARTY_INK_CH19, tintCh19,
 } from './partyKitCh19';
 import { stageRectCh19 } from './responsiveStageCh19';
 import { reskinGraphicsCh19 } from './uiKitCh19';
@@ -148,6 +148,13 @@ function dress(scene: Phaser.Scene, root: Phaser.GameObjects.Container): number 
   const backdrop = root.list[0] as Phaser.GameObjects.Rectangle | undefined;
   if (backdrop instanceof Phaser.GameObjects.Rectangle) backdrop.setFillStyle(0x000000, 0.001).setSize(4000, 3000);
 
+  // quick Mini Game mode: a way back out to the game list
+  if (scene.scene.key === 'MiniGameQuickScene') {
+    const back = partyPillButtonCh19(scene, r.x - 640 + 110, r.y - 360 + 44, 170, 52, 0x5b7fa8, '← Thoát', () => scene.scene.restart(), 20);
+    back.setName('party-minigame-exit-ch19');
+    skin.add(back);
+  }
+
   wipeIn(scene, style, slot.title);
   return style.colour;
 }
@@ -233,7 +240,12 @@ function restyle(scene: Phaser.Scene, root: Phaser.GameObjects.Container): void 
           img.setScale(104 / Math.max(img.width, img.height));
           stage.addAt(img, stage.getIndex(o) + 1);
         }
-      } else if (!o.getData('ch19-font') && /heading|prompt|label/.test(o.name)) {
+      } else if (!o.getData('ch19-font') && /choice-prompt|choice-hint|network-wait-hint|ranking-hint/.test(o.name)) {
+        // lines that sit straight on the blue stage: white with a dark outline
+        o.setData('ch19-font', true).setFontFamily(PARTY_FONT_CH19).setColor('#ffffff').setStroke(hexInk(), 6)
+          .setShadow(0, 3, 'rgba(16,20,58,.45)', 0, true, true);
+      } else if (!o.getData('ch19-font') && /heading|label/.test(o.name)) {
+        // on light cards / papers: dark ink with a white outline
         o.setData('ch19-font', true).setFontFamily(PARTY_FONT_CH19).setColor(hexInk()).setStroke('#ffffff', 5);
       }
     }
