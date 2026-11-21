@@ -131,7 +131,7 @@ function dress(scene: Phaser.Scene, root: Phaser.GameObjects.Container): number 
     fillStarCh19(stars, x, y, 10 + Math.abs(s) * 18, -Math.PI / 2 + s);
   }
   skin.add(stars);
-  scene.tweens.add({ targets: stars, x: -160, y: -80, duration: 18000, repeat: -1 });
+  scene.tweens.add({ targets: stars, x: -160, y: -80, duration: 18500, repeat: -1 });
 
   // header: painted icon + title banner + identity chip
   const head = scene.add.container(0, -300);
