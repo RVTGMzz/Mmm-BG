@@ -23,17 +23,30 @@ const cardWeightByRarity = cards.reduce<Record<string, number>>((acc, card) => {
 assert.deepEqual(cardWeightByRarity, { N: 600, R: 300, SR: 90, SSR: 10 });
 assert.equal(cards.reduce((sum, card) => sum + card.dropWeight, 0), 1000);
 
-assert.equal(drawWeightedCard(cards, () => 0.10)?.effect.type, 'steal_money');
-assert.equal(drawWeightedCard(cards, () => 0.625)?.effect.type, 'block_cards');
-assert.equal(drawWeightedCard(cards, () => 0.725)?.effect.type, 'tactical_choice');
-assert.equal(drawWeightedCard(cards, () => 0.775)?.effect.type, 'rich_tax');
-assert.equal(drawWeightedCard(cards, () => 0.825)?.effect.type, 'send_to_special');
-assert.equal((drawWeightedCard(cards, () => 0.825)?.effect as { location?: string }).location, 'jail');
-assert.equal(drawWeightedCard(cards, () => 0.875)?.effect.type, 'send_to_special');
-assert.equal((drawWeightedCard(cards, () => 0.875)?.effect as { location?: string }).location, 'hospital');
-assert.equal(drawWeightedCard(cards, () => 0.93)?.effect.type, 'percent_loss_all_others');
-assert.equal(drawWeightedCard(cards, () => 0.97)?.effect.type, 'catch_up_bonus');
-assert.equal(drawWeightedCard(cards, () => 0.999)?.effect.type, 'swap_money');
+// CH-19 deck: 20 cards, one effect each, drawn N -> R -> SR -> SSR (probe = middle of each card's weight band)
+assert.equal(drawWeightedCard(cards, () => 0.06)?.effect.type, 'steal_money');
+assert.equal(drawWeightedCard(cards, () => 0.18)?.effect.type, 'fine_random');
+assert.equal(drawWeightedCard(cards, () => 0.3)?.effect.type, 'gift_poorest');
+assert.equal(drawWeightedCard(cards, () => 0.42)?.effect.type, 'collect_each');
+assert.equal(drawWeightedCard(cards, () => 0.54)?.effect.type, 'bonus_steps');
+assert.equal(drawWeightedCard(cards, () => 0.619)?.effect.type, 'block_cards');
+assert.equal(drawWeightedCard(cards, () => 0.657)?.effect.type, 'tactical_choice');
+assert.equal(drawWeightedCard(cards, () => 0.695)?.effect.type, 'rich_tax');
+assert.equal(drawWeightedCard(cards, () => 0.733)?.effect.type, 'send_to_special');
+assert.equal((drawWeightedCard(cards, () => 0.733)?.effect as { location?: string }).location, 'jail');
+assert.equal(drawWeightedCard(cards, () => 0.7705)?.effect.type, 'send_to_special');
+assert.equal((drawWeightedCard(cards, () => 0.7705)?.effect as { location?: string }).location, 'hospital');
+assert.equal(drawWeightedCard(cards, () => 0.8075)?.effect.type, 'shield');
+assert.equal(drawWeightedCard(cards, () => 0.8445)?.effect.type, 'robin_hood');
+assert.equal(drawWeightedCard(cards, () => 0.8815)?.effect.type, 'double_roll');
+assert.equal(drawWeightedCard(cards, () => 0.909)?.effect.type, 'percent_loss_all_others');
+assert.equal(drawWeightedCard(cards, () => 0.927)?.effect.type, 'catch_up_bonus');
+assert.equal(drawWeightedCard(cards, () => 0.945)?.effect.type, 'slow_roll');
+assert.equal(drawWeightedCard(cards, () => 0.963)?.effect.type, 'dice_bonus');
+assert.equal(drawWeightedCard(cards, () => 0.981)?.effect.type, 'gamble');
+assert.equal(drawWeightedCard(cards, () => 0.9925)?.effect.type, 'swap_money');
+assert.equal(drawWeightedCard(cards, () => 0.9975)?.effect.type, 'equalize');
+assert.equal(new Set(cards.map((card) => `${card.effect.type}:${(card.effect as { location?: string }).location ?? ''}`)).size, cards.length, 'CH-19: every Card has its own effect');
 
 const positiveNewsWeight = news
   .filter((entry) => entry.effect.type === 'money_delta_self' && entry.effect.amount > 0)

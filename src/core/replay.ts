@@ -700,12 +700,24 @@ function replayRoll(ctx: ReplayContext, commandIndex: number): number {
 
   applyTurnStartPassiveCh05(ctx.state, player, ctx.cards, ctx.random);
   transition(ctx, 'ROLLING');
-  const result = rollD6(ctx.random);
+  let result = rollD6(ctx.random);
+  // CH-19 card states that shape this movement roll
+  if (player.cardDoubleRoll) {
+    result = Math.max(result, rollD6(ctx.random));
+    delete player.cardDoubleRoll;
+  }
+  if (player.cardSlowRoll) {
+    result = Math.ceil(result / 2);
+    delete player.cardSlowRoll;
+  }
+  const bonusSteps = Math.max(0, Math.floor(player.cardBonusSteps ?? 0));
+  delete player.cardBonusSteps;
+  const steps = result + bonusSteps;
   ctx.state.turn.lastRoll = result;
   appendMatchEvent(ctx.state, 'dice_roll', { result, affectedPlayerIds: String(player.id) }, player.id);
   transition(ctx, 'MOVING');
 
-  const movement = replayMovementSegment(ctx, player, commandIndex, result, 1, result);
+  const movement = replayMovementSegment(ctx, player, commandIndex, steps, 1, steps);
   if (movement.pausedForJob) return movement.consumedExtra;
 
   if (!movement.finalTileResolved) {
@@ -895,7 +907,7 @@ function replayCard(ctx: ReplayContext, command: MatchCommand): void {
     ? String(command.data.choice ?? '') as TacticalCardChoice
     : undefined;
   const moneyBefore = new Map(ctx.state.players.map((entry) => [entry.id, entry.money]));
-  const resolution = applyCardEffect(card, caster, ctx.state.players, target, tacticalChoice);
+  const resolution = applyCardEffect(card, caster, ctx.state.players, target, tacticalChoice, ctx.random);
   caster.handCardIds.splice(handIndex, 1);
   caster.cardsPlayedThisTurn += 1;
 

@@ -1,17 +1,531 @@
 [
-{"id":"ACT_001","title":"Trượt Tay","rarity":"N","dropWeight":200,"impact":"⭐","description":"Chuyển 10B$ từ một người chơi ngẫu nhiên sang bạn.","targetMode":"random_other","effect":{"type":"steal_money","amount":10},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-4},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":4}]},
-{"id":"ACT_002","title":"Mượn Tạm Không Hẹn Trả","rarity":"N","dropWeight":200,"impact":"⭐","description":"Chuyển 10B$ từ một người chơi ngẫu nhiên sang bạn.","targetMode":"random_other","effect":{"type":"steal_money","amount":10},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-4},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":4}]},
-{"id":"ACT_003","title":"Ví Ai Nấy Lo","rarity":"N","dropWeight":200,"impact":"⭐","description":"Chuyển 10B$ từ một người chơi ngẫu nhiên sang bạn.","targetMode":"random_other","effect":{"type":"steal_money","amount":10},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-4},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":4}]},
-{"id":"ACT_006","title":"Khóa Mõm","rarity":"R","dropWeight":50,"impact":"⭐⭐","description":"Target không thể dùng Lá Bài trong 1 lượt.","targetMode":"single_other","effect":{"type":"block_cards","turns":1},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-5},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":5}]},
-{"id":"ACT_007","title":"Seen Không Rep","rarity":"R","dropWeight":50,"impact":"⭐⭐","description":"Target không thể dùng Lá Bài trong 1 lượt.","targetMode":"single_other","effect":{"type":"block_cards","turns":1},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-5},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":5}]},
-{"id":"ACT_008","title":"Kèo Hai Cửa","rarity":"R","dropWeight":50,"impact":"⭐⭐","description":"Chọn Ăn Chắc +20B$ hoặc Ép Top 1 lấy 15% B$ từ người giàu nhất khác.","targetMode":"self","effect":{"type":"tactical_choice","safeAmount":20,"taxPercent":0.15},"faceSlots":[{"role":"caster","expression":"happy","x":0,"y":20,"size":122,"rotation":0}]},
-{"id":"ACT_015","title":"Thuế Top 1","rarity":"R","dropWeight":50,"impact":"⭐⭐","description":"Người có nhiều B$ nhất chuyển 15% B$ cho bạn. Hòa B$ ưu tiên ghế thấp hơn.","targetMode":"richest_other","effect":{"type":"rich_tax","percent":0.15},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-5},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":5}]},
-{"id":"ACT_017","title":"Mời Lên Phường","rarity":"R","dropWeight":50,"impact":"⭐⭐","description":"Chọn 1 đối thủ đang tự do và chưa về đích, đưa thẳng tới Đồn Cảnh Sát. Họ phải vượt luật thoát Đồn theo nghề ở lượt kế.","targetMode":"single_other","timing":"before_roll","effect":{"type":"send_to_special","location":"jail"},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-5},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":5}]},
-{"id":"ACT_018","title":"Giường Bệnh Đã Đặt","rarity":"R","dropWeight":50,"impact":"⭐⭐","description":"Chọn 1 đối thủ đang tự do và chưa về đích, đưa thẳng tới Bệnh Viện. Họ phải vượt luật thoát Bệnh viện theo nghề ở lượt kế.","targetMode":"single_other","timing":"before_roll","effect":{"type":"send_to_special","location":"hospital"},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":116,"rotation":-5},{"role":"target","expression":"angry","x":175,"y":20,"size":116,"rotation":5}]},
-{"id":"ACT_010","title":"Triệu Hồi Hắc Ín","rarity":"SR","dropWeight":20,"impact":"⭐⭐⭐","description":"Mỗi đối thủ còn đang đua giảm 20% B$ hiện có.","targetMode":"all_others","effect":{"type":"percent_loss_all_others","percent":0.2},"faceSlots":[{"role":"caster","expression":"happy","x":-185,"y":20,"size":122,"rotation":-6}]},
-{"id":"ACT_011","title":"Thuế Drama","rarity":"SR","dropWeight":20,"impact":"⭐⭐⭐","description":"Mỗi đối thủ còn đang đua giảm 20% B$ hiện có.","targetMode":"all_others","effect":{"type":"percent_loss_all_others","percent":0.2},"faceSlots":[{"role":"caster","expression":"happy","x":-185,"y":20,"size":122,"rotation":-6}]},
-{"id":"ACT_014","title":"Đại Hội Mất Ví","rarity":"SR","dropWeight":20,"impact":"⭐⭐⭐","description":"Mỗi đối thủ còn đang đua giảm 20% B$ hiện có.","targetMode":"all_others","effect":{"type":"percent_loss_all_others","percent":0.2},"faceSlots":[{"role":"caster","expression":"happy","x":-185,"y":20,"size":122,"rotation":-6}]},
-{"id":"ACT_016","title":"Phao Cứu Sinh","rarity":"SR","dropWeight":30,"impact":"⭐⭐⭐","description":"Nếu đang có ít B$ nhất trong nhóm còn đua: +50B$. Nếu không: +15B$.","targetMode":"self","effect":{"type":"catch_up_bonus","poorAmount":50,"baseAmount":15},"faceSlots":[{"role":"caster","expression":"happy","x":0,"y":20,"size":122,"rotation":0}]},
-{"id":"ACT_012","title":"Chuyển Sinh Đổi Vận","rarity":"SSR","dropWeight":5,"impact":"⭐⭐⭐⭐⭐","description":"Hoán đổi toàn bộ B$ của bạn với một đối thủ chưa về đích.","targetMode":"single_other","effect":{"type":"swap_money"},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":120,"rotation":-7},{"role":"target","expression":"angry","x":175,"y":20,"size":120,"rotation":7}]},
-{"id":"ACT_013","title":"Đổi Ví Đổi Đời","rarity":"SSR","dropWeight":5,"impact":"⭐⭐⭐⭐⭐","description":"Hoán đổi toàn bộ B$ của bạn với một đối thủ chưa về đích.","targetMode":"single_other","effect":{"type":"swap_money"},"faceSlots":[{"role":"caster","expression":"happy","x":-175,"y":20,"size":120,"rotation":-7},{"role":"target","expression":"angry","x":175,"y":20,"size":120,"rotation":7}]}
+  {
+    "id": "ACT_001",
+    "title": "Trượt Tay",
+    "rarity": "N",
+    "dropWeight": 120,
+    "impact": "⭐",
+    "description": "Chuyển 10B$ từ một người chơi ngẫu nhiên sang bạn.",
+    "targetMode": "random_other",
+    "effect": {
+      "type": "steal_money",
+      "amount": 10
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -4
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 4
+      }
+    ]
+  },
+  {
+    "id": "ACT_003",
+    "title": "Phạt Nguội",
+    "rarity": "N",
+    "dropWeight": 120,
+    "impact": "📸",
+    "description": "Một đối thủ ngẫu nhiên dính phạt nguội 15B$.",
+    "targetMode": "random_other",
+    "effect": {
+      "type": "fine_random",
+      "amount": 15
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -4
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 4
+      }
+    ]
+  },
+  {
+    "id": "ACT_101",
+    "title": "Lì Xì",
+    "rarity": "N",
+    "dropWeight": 120,
+    "impact": "🧧",
+    "description": "Bạn nhận 15B$, người nghèo nhất trong các đối thủ nhận 10B$.",
+    "targetMode": "self",
+    "effect": {
+      "type": "gift_poorest",
+      "selfAmount": 15,
+      "giftAmount": 10
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_102",
+    "title": "Chia Bill",
+    "rarity": "N",
+    "dropWeight": 120,
+    "impact": "🧾",
+    "description": "Mỗi đối thủ còn đang đua góp cho bạn 5B$.",
+    "targetMode": "all_others",
+    "effect": {
+      "type": "collect_each",
+      "amount": 5
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -185,
+        "y": 20,
+        "size": 122,
+        "rotation": -6
+      }
+    ]
+  },
+  {
+    "id": "ACT_103",
+    "title": "Đi Tắt",
+    "rarity": "N",
+    "dropWeight": 120,
+    "impact": "🛤️",
+    "description": "Lần đổ xúc xắc tới, bạn đi thêm 2 ô.",
+    "targetMode": "self",
+    "effect": {
+      "type": "bonus_steps",
+      "steps": 2
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ],
+    "timing": "before_roll"
+  },
+  {
+    "id": "ACT_006",
+    "title": "Khóa Mõm",
+    "rarity": "R",
+    "dropWeight": 38,
+    "impact": "⭐⭐",
+    "description": "Target không thể dùng Lá Bài trong 1 lượt.",
+    "targetMode": "single_other",
+    "effect": {
+      "type": "block_cards",
+      "turns": 1
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -5
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 5
+      }
+    ]
+  },
+  {
+    "id": "ACT_008",
+    "title": "Kèo Hai Cửa",
+    "rarity": "R",
+    "dropWeight": 38,
+    "impact": "⭐⭐",
+    "description": "Chọn Ăn Chắc +20B$ hoặc Ép Top 1 lấy 15% B$ từ người giàu nhất khác.",
+    "targetMode": "self",
+    "effect": {
+      "type": "tactical_choice",
+      "safeAmount": 20,
+      "taxPercent": 0.15
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_015",
+    "title": "Thuế Top 1",
+    "rarity": "R",
+    "dropWeight": 38,
+    "impact": "⭐⭐",
+    "description": "Người có nhiều B$ nhất chuyển 15% B$ cho bạn. Hòa B$ ưu tiên ghế thấp hơn.",
+    "targetMode": "richest_other",
+    "effect": {
+      "type": "rich_tax",
+      "percent": 0.15
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -5
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 5
+      }
+    ]
+  },
+  {
+    "id": "ACT_017",
+    "title": "Mời Lên Phường",
+    "rarity": "R",
+    "dropWeight": 38,
+    "impact": "⭐⭐",
+    "description": "Chọn 1 đối thủ đang tự do và chưa về đích, đưa thẳng tới Đồn Cảnh Sát. Họ phải vượt luật thoát Đồn theo nghề ở lượt kế.",
+    "targetMode": "single_other",
+    "timing": "before_roll",
+    "effect": {
+      "type": "send_to_special",
+      "location": "jail"
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -5
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 5
+      }
+    ]
+  },
+  {
+    "id": "ACT_018",
+    "title": "Giường Bệnh Đã Đặt",
+    "rarity": "R",
+    "dropWeight": 37,
+    "impact": "⭐⭐",
+    "description": "Chọn 1 đối thủ đang tự do và chưa về đích, đưa thẳng tới Bệnh Viện. Họ phải vượt luật thoát Bệnh viện theo nghề ở lượt kế.",
+    "targetMode": "single_other",
+    "timing": "before_roll",
+    "effect": {
+      "type": "send_to_special",
+      "location": "hospital"
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -5
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 5
+      }
+    ]
+  },
+  {
+    "id": "ACT_104",
+    "title": "Bảo Kê",
+    "rarity": "R",
+    "dropWeight": 37,
+    "impact": "🛡️",
+    "description": "Chặn lá bài xấu tiếp theo nhắm vào bạn.",
+    "targetMode": "self",
+    "effect": {
+      "type": "shield",
+      "charges": 1
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_105",
+    "title": "Robin Hood",
+    "rarity": "R",
+    "dropWeight": 37,
+    "impact": "🏹",
+    "description": "Lấy 15B$ của người giàu nhất chia cho người nghèo nhất (trừ bạn).",
+    "targetMode": "self",
+    "effect": {
+      "type": "robin_hood",
+      "amount": 15
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_106",
+    "title": "Xúc Xắc Đôi",
+    "rarity": "R",
+    "dropWeight": 37,
+    "impact": "🎲",
+    "description": "Lần đổ tới, đổ 2 xúc xắc và lấy mặt cao hơn.",
+    "targetMode": "self",
+    "effect": {
+      "type": "double_roll"
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ],
+    "timing": "before_roll"
+  },
+  {
+    "id": "ACT_010",
+    "title": "Triệu Hồi Hắc Ín",
+    "rarity": "SR",
+    "dropWeight": 18,
+    "impact": "⭐⭐⭐",
+    "description": "Mỗi đối thủ còn đang đua giảm 20% B$ hiện có.",
+    "targetMode": "all_others",
+    "effect": {
+      "type": "percent_loss_all_others",
+      "percent": 0.2
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -185,
+        "y": 20,
+        "size": 122,
+        "rotation": -6
+      }
+    ]
+  },
+  {
+    "id": "ACT_016",
+    "title": "Phao Cứu Sinh",
+    "rarity": "SR",
+    "dropWeight": 18,
+    "impact": "⭐⭐⭐",
+    "description": "Nếu đang có ít B$ nhất trong nhóm còn đua: +50B$. Nếu không: +15B$.",
+    "targetMode": "self",
+    "effect": {
+      "type": "catch_up_bonus",
+      "poorAmount": 50,
+      "baseAmount": 15
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_107",
+    "title": "Kẹt Xe",
+    "rarity": "SR",
+    "dropWeight": 18,
+    "impact": "🚗",
+    "description": "Lần đổ tới của một đối thủ chỉ đi được nửa số ô (làm tròn lên).",
+    "targetMode": "single_other",
+    "effect": {
+      "type": "slow_roll"
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 116,
+        "rotation": -5
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 116,
+        "rotation": 5
+      }
+    ]
+  },
+  {
+    "id": "ACT_108",
+    "title": "Vé Cào",
+    "rarity": "SR",
+    "dropWeight": 18,
+    "impact": "🎟️",
+    "description": "Cào vé: đổ 1 xúc xắc, nhận số đó × 8B$.",
+    "targetMode": "self",
+    "effect": {
+      "type": "dice_bonus",
+      "multiplier": 8
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_109",
+    "title": "Phong Bì Hên Xui",
+    "rarity": "SR",
+    "dropWeight": 18,
+    "impact": "✉️",
+    "description": "50% trúng +40B$, 50% xui mất 15B$.",
+    "targetMode": "self",
+    "effect": {
+      "type": "gamble",
+      "win": 40,
+      "lose": 15
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  },
+  {
+    "id": "ACT_012",
+    "title": "Chuyển Sinh Đổi Vận",
+    "rarity": "SSR",
+    "dropWeight": 5,
+    "impact": "⭐⭐⭐⭐⭐",
+    "description": "Hoán đổi toàn bộ B$ của bạn với một đối thủ chưa về đích.",
+    "targetMode": "single_other",
+    "effect": {
+      "type": "swap_money"
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": -175,
+        "y": 20,
+        "size": 120,
+        "rotation": -7
+      },
+      {
+        "role": "target",
+        "expression": "angry",
+        "x": 175,
+        "y": 20,
+        "size": 120,
+        "rotation": 7
+      }
+    ]
+  },
+  {
+    "id": "ACT_110",
+    "title": "Cân Bằng Xã Hội",
+    "rarity": "SSR",
+    "dropWeight": 5,
+    "impact": "⚖️",
+    "description": "Nếu bạn dưới mức trung bình, B$ của bạn được kéo lên đúng mức trung bình. Nếu không: +20B$.",
+    "targetMode": "self",
+    "effect": {
+      "type": "equalize",
+      "aboveAmount": 20
+    },
+    "faceSlots": [
+      {
+        "role": "caster",
+        "expression": "happy",
+        "x": 0,
+        "y": 20,
+        "size": 122,
+        "rotation": 0
+      }
+    ]
+  }
 ]

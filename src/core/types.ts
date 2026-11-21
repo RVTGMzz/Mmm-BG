@@ -58,4 +58,13 @@ export interface PlayerState {
    * stricter release rule must remain active until that Jail stay ends.
    */
   specialHoldSourceJobId?: string;
+  /** CH-19 card states (all optional, so older snapshots deserialize unchanged). */
+  /** Bảo Kê: blocks the next harmful card aimed at this player. */
+  cardShield?: number;
+  /** Đi Tắt: extra steps added to this player's next movement roll. */
+  cardBonusSteps?: number;
+  /** Xúc Xắc Đôi: next movement roll uses the higher of two dice. */
+  cardDoubleRoll?: boolean;
+  /** Kẹt Xe: next movement roll is halved (rounded up). */
+  cardSlowRoll?: boolean;
 }
