@@ -198,7 +198,8 @@
     "test:character-animation-cleanup-ch1820": "tsx tests/character-animation-cleanup-ch1820.ts",
     "test:character-rig-ch1822": "tsx tests/character-rig-ch1822.ts",
     "test:character-rig-silhouette-ch1824": "tsx tests/character-rig-silhouette-ch1824.ts",
-    "test:city-island-board-ch19": "tsx tests/city-island-board-ch19.ts"
+    "test:city-island-board-ch19": "tsx tests/city-island-board-ch19.ts",
+    "test:shop-tiles-ch19": "tsx tests/shop-tiles-ch19.ts"
   },
   "dependencies": {
     "phaser": "^3.90.0"

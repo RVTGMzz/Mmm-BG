@@ -1,3 +1,4 @@
+import { SHOPS_CH19 } from '../core/shopTilesCh19';
 import { publicAssetUrl } from './publicAssetUrl';
 import type { BoardDefinition, BoardNode } from '../core/types';
 
@@ -16,7 +17,7 @@ import type { BoardDefinition, BoardNode } from '../core/types';
  */
 
 export interface IslandBoundsCh19 { x: number; y: number; w: number; h: number }
-export interface IslandLabelCh19 { x: number; y: number; title: string; subtitle: string }
+export interface IslandLabelCh19 { x: number; y: number; title: string; subtitle: string; /** second choice (e.g. above the roof) */ altY?: number }
 export interface IslandPropCh19 {
   key: string;
   kind: 'tree' | 'bush' | 'building' | 'landmark' | 'wheel' | 'beach';
@@ -35,6 +36,8 @@ export interface IslandSceneryCh19 {
   labels: IslandLabelCh19[];
   /** trees, buildings and landmarks placed as live (animated) sprites */
   props: IslandPropCh19[];
+  /** front doors (building base) of buildings Characters can walk into, by board node id */
+  doors: Map<number, { x: number; y: number }>;
 }
 
 /** Native pixel sizes of public/assets/scenery/ch19/<key>.png (from scripts/split-scenery-ch19.py). */
@@ -242,12 +245,20 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
     return best;
   };
   const byContent = (c: string) => board.nodes.find((n) => n.contentId === c);
+  const doors = new Map<number, { x: number; y: number }>();
+  /** a short footpath from a building's door straight onto its tile */
+  const spur = (from: { x: number; y: number }, to: BoardNode) => {
+    const len = Math.hypot(to.x - from.x, to.y - from.y);
+    if (len < 30) return;
+    roads.push({ d: `M${from.x},${from.y - 6} L${to.x},${to.y}`, kind: 'branch', w: 54 });
+    for (let t = 0; t <= 1; t += 40 / len) reserved.push({ x: from.x + (to.x - from.x) * t - 30, y: from.y + (to.y - from.y) * t - 30, w: 60, h: 60 });
+  };
   const landmark = (node: BoardNode | undefined, key: string, displayW: number, title: string, subtitle: string) => {
-    if (!node) return;
+    if (!node) return undefined;
     const { w, h } = sized(key, displayW);
     const extraH = key === 'ferris-base' ? w * 0.55 : 0; // the wheel rises above its support
     const s = findSpot(node.x, node.y, w, h + extraH);
-    if (!s) return;
+    if (!s) return undefined;
     place(key, 'landmark', s.x, s.y, w, h);
     if (key === 'ferris-base') {
       reserved[reserved.length - 1] = { x: s.x - w / 2, y: s.y - h - extraH, w, h: h + extraH };
@@ -256,12 +267,48 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
     }
     // plate sits just below the landmark's base so it never hides the building
     if (title) labels.push({ x: s.x, y: s.y + 38, title, subtitle });
+    return s;
+  };
+  const withDoor = (node: BoardNode | undefined, s: { x: number; y: number } | undefined) => {
+    if (!node || !s) return;
+    spur(s, node);
+    doors.set(node.id, { x: s.x, y: s.y - 4 });
   };
   // Jail and Hospital read clearly from their buildings: no district plate.
-  landmark(byContent('SPECIAL_HOSPITAL_HOLD'), 'hospital', 215, '', '');
-  landmark(byContent('SPECIAL_JAIL_HOLD'), 'jail', 215, '', '');
+  // the road leads straight to the Jail / Hospital / job centre door
+  withDoor(byContent('SPECIAL_HOSPITAL_HOLD'), landmark(byContent('SPECIAL_HOSPITAL_HOLD'), 'hospital', 215, '', ''));
+  withDoor(byContent('SPECIAL_JAIL_HOLD'), landmark(byContent('SPECIAL_JAIL_HOLD'), 'jail', 215, '', ''));
   landmark(byContent('SPECIAL_LOTTERY'), 'ferris-base', 175, 'KHU GIẢI TRÍ', 'Vui chơi · Xổ số · Drama');
-  landmark(board.nodes.find((n) => n.feature === 'job'), 'jobs', 200, 'KHU NGHỀ NGHIỆP', 'Làm việc · Kiếm tiền · Thăng tiến');
+  const jobNode = board.nodes.find((n) => n.feature === 'job');
+  if (jobNode) {
+    // right beside the road (it may touch the path edge), as close to its tile as possible
+    const { w, h } = sized('jobs', 200);
+    let best: { x: number; y: number; r: number } | undefined;
+    for (const r of [95, 110, 125, 140, 160, 180, 210, 240]) {
+      for (let a = 0; a < 48 && !best; a++) {
+        const x = jobNode.x + Math.cos(a / 48 * Math.PI * 2) * r, y = jobNode.y + Math.sin(a / 48 * Math.PI * 2) * r;
+        const rect = { x: x - w / 2, y: y - h, w, h };
+        if (!overlaps(rect, 6) && clearRect(rect, -6, -40)) best = { x, y, r };
+      }
+      if (best) break;
+    }
+    if (best) {
+      place('jobs', 'landmark', best.x, best.y, w, h);
+      withDoor(jobNode, best);
+    } else {
+      withDoor(jobNode, landmark(jobNode, 'jobs', 200, '', ''));
+    }
+  }
+  // CH-19 shops: each shop tile gets its own building right beside it, with a sign
+  for (const shop of SHOPS_CH19) {
+    const node = byContent(shop.contentId);
+    if (!node) continue;
+    const s = landmark(node, shop.building, shop.building === 'tower-glass' ? 130 : 165, '', '');
+    if (!s) continue;
+    withDoor(node, s);
+    const h = sized(shop.building, shop.building === 'tower-glass' ? 130 : 165).h;
+    labels.push({ x: s.x, y: s.y + 34, altY: s.y - h - 24, title: `${shop.icon} ${shop.name}`, subtitle: 'Dừng đúng ô để ghé' });
+  }
   {
     const { w, h } = sized('fountain', 190);
     let best: { x: number; y: number; d: number } | undefined;
@@ -279,7 +326,9 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
   }
 
   // Buildings first (they need the most room), then trees fill the gaps.
-  const BUILDINGS = ['house-red', 'house-blue', 'cafe', 'shop-pink', 'tower-glass', 'apartment', 'bakery', 'store'];
+  // shop buildings stand only at their shop tiles; homes fill the rest of the town
+  const shopKeys = new Set(SHOPS_CH19.map((shop) => shop.building));
+  const BUILDINGS = ['house-red', 'house-blue', 'cafe', 'shop-pink', 'tower-glass', 'apartment', 'bakery', 'store'].filter((k) => !shopKeys.has(k));
   const used = new Map<string, number>();
   for (let y = W.y + 40; y < W.y + W.h; y += 56)
     for (let x = W.x + 40; x < W.x + W.w; x += 56) {
@@ -401,6 +450,7 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
     </pattern>
     <pattern id="texGrass" width="430" height="430" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.grass}" width="430" height="430" preserveAspectRatio="none"/></pattern>
     <pattern id="texWater" width="560" height="560" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.water}" width="560" height="560" preserveAspectRatio="none"/></pattern>
+    <pattern id="texRoad" width="300" height="300" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.road}" width="300" height="300" preserveAspectRatio="none"/></pattern>
     <pattern id="texSand" width="380" height="380" patternUnits="userSpaceOnUse"><image href="${TEX_TOKEN_CH19.sand}" width="380" height="380" preserveAspectRatio="none"/></pattern>
     <radialGradient id="seaDepth" cx=".5" cy=".5" r=".72"><stop offset=".45" stop-color="#0B4F8A" stop-opacity="0"/><stop offset="1" stop-color="#0B4F8A" stop-opacity=".45"/></radialGradient>
     <pattern id="pave" width="36" height="36" patternUnits="userSpaceOnUse">
@@ -421,17 +471,20 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
   out.push(`<g>${lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r + 6}" fill="${C.seaLight}"/>`).join('')}`
     + lakes.map((l) => `<circle cx="${l.x}" cy="${l.y}" r="${l.r - 4}" fill="#3AA6DA"/><circle cx="${l.x}" cy="${l.y}" r="${l.r - 4}" fill="url(#texWater)"/>`).join('') + '</g>');
   const sorted = roads.slice().sort((a, b) => (a.kind === 'main' ? 1 : 0) - (b.kind === 'main' ? 1 : 0));
-  const edgeCol = (r: Road) => r.kind === 'jail' ? '#E3A05A' : r.kind === 'hospital' ? '#E58FB0' : C.pathEdge;
-  const fillCol = (r: Road) => r.kind === 'jail' ? '#FBE3C2' : r.kind === 'hospital' ? '#FCE1EA' : C.path;
+  // CH-19: every path shares one design: stone curb, light bevel, painted paving
+  const edgeCol = (_r: Road) => '#C9AE7E';
+  const fillCol = (_r: Road) => C.path;
   const RL = 'stroke-linejoin="round" stroke-linecap="round" fill="none"';
   out.push(sorted.map((r) => `<path d="${r.d}" ${RL} stroke="#2B5E2A" stroke-opacity=".28" stroke-width="${r.w + 16}" transform="translate(0,12)" filter="url(#soft)"/>`).join(''));
   out.push(sorted.map((r) => `<path d="${r.d}" ${RL} stroke="${edgeCol(r)}" stroke-width="${r.w + 12}"/>`).join(''));
+  out.push(sorted.map((r) => `<path d="${r.d}" ${RL} stroke="#F6EAD0" stroke-width="${r.w + 5}"/>`).join(''));
   out.push(sorted.map((r) => `<path d="${r.d}" ${RL} stroke="${fillCol(r)}" stroke-width="${r.w}"/>`).join(''));
+  out.push(sorted.map((r) => `<path d="${r.d}" ${RL} stroke="url(#texRoad)" stroke-width="${r.w}"/>`).join(''));
   out.push(links.join(''));
   out.push(items.sort((a, b) => a.y - b.y).map((i) => i.svg()).join(''));
   out.push('</svg>');
 
-  return { svg: out.join('\n'), bounds: W, labels, props };
+  return { svg: out.join('\n'), bounds: W, labels, props, doors };
 
   /* ================= drawing helpers (return SVG markup) ================= */
   function groundShadow(x: number, y: number, w: number): string {
@@ -561,7 +614,7 @@ export function buildCityIslandSceneryCh19(board: BoardDefinition, seed = 51): I
 }
 
 /** Rasterises the scenery SVG to a canvas (max side clamps to GPU-safe size). */
-const TEX_TOKEN_CH19 = { grass: '__TEX_GRASS_CH19__', water: '__TEX_WATER_CH19__', sand: '__TEX_SAND_CH19__' } as const;
+const TEX_TOKEN_CH19 = { grass: '__TEX_GRASS_CH19__', water: '__TEX_WATER_CH19__', sand: '__TEX_SAND_CH19__', road: '__TEX_ROAD_CH19__' } as const;
 
 async function textureDataUrlCh19(name: keyof typeof TEX_TOKEN_CH19): Promise<string> {
   try {

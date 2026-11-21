@@ -27,6 +27,8 @@ export type SpotlightPlayerCh19 = {
   characterId?: string;
   jobLine: string;
   isCpu: boolean;
+  /** waiting inside the Jail / Hospital */
+  hold?: 'jail' | 'hospital';
 };
 
 export type SpotlightHooksCh19 = {
@@ -68,7 +70,7 @@ export class TurnSpotlightCh19 {
       if (this.shown) this.hide();
       return;
     }
-    const sig = [player.id, player.money, player.handCount, player.lockTurns, player.laps, player.characterId, player.jobLine, state.canAct, state.canUseCard, r.w, r.h].join('|');
+    const sig = [player.id, player.money, player.handCount, player.lockTurns, player.laps, player.characterId, player.jobLine, player.hold, state.canAct, state.canUseCard, r.w, r.h].join('|');
     if (this.shown && sig === this.sig) return;
     const animate = !this.shown || this.root?.getData('pid') !== player.id;
     this.sig = sig;
@@ -102,7 +104,9 @@ export class TurnSpotlightCh19 {
 
     // headline
     const head = s.add.container(640, T + 58);
-    head.add(partyBannerCh19(s, 0, 0, 470, `Lượt của ${p.name}!`, colour, 30));
+    const place = p.hold === 'jail' ? 'Đồn cảnh sát' : p.hold === 'hospital' ? 'Bệnh viện' : '';
+    head.add(partyBannerCh19(s, 0, 0, place ? 560 : 470, place ? `${p.name} đang ở ${place}` : `Lượt của ${p.name}!`, p.hold === 'jail' ? 0xf08a3c : p.hold === 'hospital' ? 0xf2549c : colour, 30));
+    if (place) head.add(partyTextCh19(s, 0, 52, 'Đổ đúng mặt để được ra ngoài', { size: 18, fill: '#ffffff', strokeWidth: 5, shadow: false }));
     root.add(head);
 
     // big portrait
@@ -110,6 +114,13 @@ export class TurnSpotlightCh19 {
     const charColour = PARTY_CHARACTER_COLOUR_CH19[p.characterId ?? ''] ?? colour;
     face.add(partyCardCh19(s, 0, 0, { w: 236, h: 290, colour: charColour, bust: partyBustKeyCh19(p.characterId), mystery: !partyBustKeyCh19(p.characterId) }));
     face.add(partyTextCh19(s, 0, 128, `${p.id + 1}P`, { size: 30, fill: '#ffffff', stroke: `#${colour.toString(16).padStart(6, '0')}`, strokeWidth: 8 }));
+    // where they are waiting: the Jail / Hospital building beside the portrait
+    if (p.hold && s.textures.exists(`island-prop-ch19-${p.hold}`)) {
+      const b = s.add.image(112, 96, `island-prop-ch19-${p.hold}`).setOrigin(0.5, 1);
+      b.setScale(150 / b.width);
+      face.add(b);
+      s.tweens.add({ targets: b, scale: b.scale * 1.05, duration: 600, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
     root.add(face);
 
     // info box
@@ -148,7 +159,7 @@ export class TurnSpotlightCh19 {
       pill(B - 212, 0x7a5cf0, 'Thẻ bài', 'icon-card', () => this.hooks.useCard(), state.canUseCard);
       pill(B - 142, 0xf5a43a, 'Xếp hạng', 'icon-crown', () => this.openRanking());
       pill(B - 72, 0x5b7fa8, 'Thoát', undefined, () => this.openLeave());
-      const roll = partyRoundButtonCh19(s, R - 128, B - 132, 92, 0xf2549c, 'Đổ!', () => { sfxController.play('ui_confirm'); this.hooks.roll(); }, 44);
+      const roll = partyRoundButtonCh19(s, R - 128, B - 132, 92, 0xf2549c, p.hold ? 'Đổ ra!' : 'Đổ!', () => { sfxController.play('ui_confirm'); this.hooks.roll(); }, 44);
       const die = s.textures.exists('dice-ch19-dice-top-5') ? s.add.image(0, -36, 'dice-ch19-dice-top-5') : undefined;
       if (die) {
         die.setScale(64 / Math.max(die.width, die.height));

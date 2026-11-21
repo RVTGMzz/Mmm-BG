@@ -34,7 +34,16 @@ assert.deepEqual(
 
 const allMoneyTiles = board.nodes
   .filter((node) => node.type === 'money')
+  // CH-19: the Jail / Hospital exit corridors are graded on purpose (checked below)
+  .filter((node) => !/^(JAIL|HOSPITAL)_EXIT_/.test(node.contentId ?? ''))
   .map((node) => node.value ?? 0);
+const corridorValuesCh19 = Object.fromEntries((boardJson as { nodes: { contentId?: string; value?: number }[] }).nodes
+  .filter((node) => /^(JAIL|HOSPITAL)_EXIT_/.test(node.contentId ?? ''))
+  .map((node) => [node.contentId, node.value]));
+assert.deepEqual(corridorValuesCh19, {
+  JAIL_EXIT_1: -30, JAIL_EXIT_2: -20, JAIL_EXIT_3: -10,
+  HOSPITAL_EXIT_1: -10, HOSPITAL_EXIT_2: -20, HOSPITAL_EXIT_3: -30,
+}, 'CH-19 graded exit corridors');
 assert(
   allMoneyTiles.every((amount) => amount === -20 || amount === 25),
   'Draft D money tiles must stay on the approved -20/+25 scale.',

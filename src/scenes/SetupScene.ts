@@ -55,7 +55,7 @@ export class SetupScene extends Phaser.Scene {
     }
     paintToyTownBackdropCh17(this, 'mint', { x: 45, y: 30, width: 1190, height: 660, radius: 32 });
     // CH-19: a party banner replaces the versioned header (kept, hidden, for older checks)
-    partyBannerCh19(this, 300, 50, 420, 'Tạo người chơi', 0xf5a43a, 30).setDepth(5);
+    partyBannerCh19(this, 300, 50, 420, 'Tạo người chơi', 0xf5a43a, 30).setDepth(5).setName('setup-banner-ch19');
     this.add.text(72, 54, MEMEME_BUILD.setupHeader, {
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
       fontSize: '28px',

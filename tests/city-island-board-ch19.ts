@@ -190,4 +190,17 @@ assert.match(setupParty, /ZODIAC_CH19/);
 assert.doesNotMatch(setupParty, /ageBand/);
 assert.match(critters, /\(seen && past\)/);
 
+// CH-19 building-linked board: shop buildings stand at their tiles, uniform painted road,
+// Jail / Hospital doors on the road (no corridor), Characters walk into buildings.
+assert.ok(existsSync('public/assets/scenery/ch19/tex/road.jpg'), 'road texture missing');
+assert.match(scenery, /texRoad/);
+assert.match(scenery, /SHOPS_CH19/);
+assert.match(scenery, /doors\.set\(/);
+assert.match(scene, /enterBuildingCh19/);
+assert.match(scene, /leaveBuildingCh19/);
+assert.match(scene, /SPECIAL_JAIL_HOLD' \|\| c === 'SPECIAL_HOSPITAL_HOLD'\) return \{ kind: 'none' \}/);
+assert.match(scene, /no navy explainer plates/);
+assert.match(scene, /kind: 'shop'/);
+assert.match(readFileSync('src/ui/currencyLabelCh19.ts', 'utf8'), /M\$/);
+
 console.log('PASS CH-19 city island board + player cards: presentation-only layer over CH-17.3');

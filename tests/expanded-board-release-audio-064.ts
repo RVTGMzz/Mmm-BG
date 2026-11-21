@@ -28,7 +28,9 @@ function radius064(node:BoardNode):number { const contentId=node.contentId??''; 
 let minimumGap=Number.POSITIVE_INFINITY, minimumPair='';
 for(let i=0;i<BOARD.nodes.length;i+=1){const a=BOARD.nodes[i]!;for(let j=i+1;j<BOARD.nodes.length;j+=1){const b=BOARD.nodes[j]!;const gap=Math.hypot(a.x-b.x,a.y-b.y)-radius064(a)-radius064(b);if(gap<minimumGap){minimumGap=gap;minimumPair=`${a.id}/${b.id}`;}}}
 assert(minimumGap>=12,`closest ${minimumPair} gap=${minimumGap.toFixed(1)}px`);
-for(const id of [101,102,103,111,112,113]){const node=BOARD.nodes.find((entry)=>entry.id===id);assert(node);assert.equal(node.type,'money');assert.equal(node.value,-20);}
+// CH-19: graded corridors (jail -30/-20/-10, hospital -10/-20/-30)
+const corridorValuesCh19:Record<number,number>={101:-30,102:-20,103:-10,111:-10,112:-20,113:-30};
+for(const id of [101,102,103,111,112,113]){const node=BOARD.nodes.find((entry)=>entry.id===id);assert(node);assert.equal(node.type,'money');assert.equal(node.value,corridorValuesCh19[id]);}
 assert.deepEqual(specialReleasePath057('jail'),[]); assert.deepEqual(specialReleasePath057('hospital'),[]); assert.deepEqual(specialCorridorPath064('jail'),[101,102,103,12]); assert.deepEqual(specialCorridorPath064('hospital'),[111,112,113,34]);
 
 const releaseFixture:BoardDefinition={id:'release-064-fixture',name:'0.1.64 release-in-place fixture',startNodeId:0,nodes:[{id:0,x:0,y:0,type:'normal'},{id:1,x:10,y:0,type:'normal',contentId:'SPECIAL_JAIL_GATE'},{id:100,x:20,y:0,type:'normal',contentId:'SPECIAL_JAIL_HOLD'},{id:101,x:30,y:0,type:'money',contentId:'JAIL_EXIT_1',value:-20},{id:102,x:40,y:0,type:'money',contentId:'JAIL_EXIT_2',value:-20},{id:103,x:50,y:0,type:'money',contentId:'JAIL_EXIT_3',value:-20},{id:12,x:60,y:0,type:'normal'}],edges:[{from:0,to:1,route:'main'},{from:100,to:101,route:'branch'},{from:101,to:102,route:'branch'},{from:102,to:103,route:'branch'},{from:103,to:12,route:'branch'}]};

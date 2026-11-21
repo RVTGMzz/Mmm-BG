@@ -35,7 +35,8 @@ function shadeOldChrome(scene: Phaser.Scene, hide: boolean): void {
   for (const o of scene.children.list) {
     const isPanel = o.name === 'toy-town-backdrop-ch17';
     const isHeader = o instanceof Phaser.GameObjects.Text && (o.depth ?? 0) < 50;
-    if (isPanel || isHeader) (o as Phaser.GameObjects.Text).setVisible(!hide);
+    const isSetupBanner = o.name === 'setup-banner-ch19';
+    if (isPanel || isHeader || isSetupBanner) (o as Phaser.GameObjects.Text).setVisible(!hide);
   }
 }
 

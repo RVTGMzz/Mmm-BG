@@ -340,6 +340,8 @@ jobs:
         run: npm run test:character-rig-silhouette-ch1824
       - name: CH-19 City Island board presentation
         run: npm run test:city-island-board-ch19
+      - name: CH-19 shop tiles
+        run: npm run test:shop-tiles-ch19
       - name: CH-04A Character-selected contextual reaction profiles
         run: npm run test:character-reactions-ch04
       - name: CH-04B Character moments for Job Mini Game salary and shuffle

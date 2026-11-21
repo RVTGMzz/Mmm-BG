@@ -1,3 +1,4 @@
+import { pickShopEventCh19, shopForNodeCh19 } from './shopTilesCh19';
 import jobsJson from '../content/core/jobs_mvp.json';
 import { getBoardNode, getOutgoingEdges } from './board';
 import {
@@ -295,6 +296,30 @@ function resolveReplayTile(ctx: ReplayContext, player: PlayerState): TileResolut
   );
 
   if (resolveSpecialLanding057(ctx, player)) return 'done';
+
+  // CH-19: shop tiles draw one event from the building beside them
+  const shop = shopForNodeCh19(node);
+  if (shop) {
+    const event = pickShopEventCh19(shop, ctx.random());
+    const beforeMoney = player.money;
+    player.money += event.amount;
+    appendMatchEvent(ctx.state, 'shop_event', {
+      nodeId: node.id,
+      contentId: shop.contentId,
+      shopEventId: event.id,
+      shopName: shop.name,
+      title: event.title,
+      impact: shop.icon,
+      description: event.description,
+      amount: event.amount,
+      resultMoney: player.money,
+      affectedPlayerIds: String(player.id),
+    }, player.id);
+    if (player.money < beforeMoney) {
+      applyMoneyLossPassivesCh05(ctx.state, [{ player, loss: beforeMoney - player.money }], 'money_tile', ctx.random);
+    }
+    return 'done';
+  }
 
   if (node.feature === 'job') {
     return resolveJobTile(ctx, player, node.id);

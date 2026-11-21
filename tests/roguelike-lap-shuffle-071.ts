@@ -24,7 +24,8 @@ const board = boardJson as BoardDefinition;
 const mutable = mutableBoardNodeIds071(board);
 const mutableSet = new Set(mutable);
 
-for (const lockedId of [0, 7, 11, 33, 100, 101, 102, 103, 110, 111, 112, 113]) {
+// CH-19: shop tiles stay beside their buildings too
+for (const lockedId of [0, 7, 11, 33, 100, 101, 102, 103, 110, 111, 112, 113, 1, 4, 14, 23, 28, 37]) {
   assert.equal(mutableSet.has(lockedId), false, `locked node ${lockedId} must never shuffle`);
   const node = board.nodes.find((entry) => entry.id === lockedId);
   assert.ok(node);

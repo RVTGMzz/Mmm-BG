@@ -37,6 +37,8 @@ export function isBoardNodeLockedForShuffle071(
   if (LOCKED_CONTENT_IDS_071.has(contentId)) return true;
   if (contentId.startsWith('JAIL_EXIT_')) return true;
   if (contentId.startsWith('HOSPITAL_EXIT_')) return true;
+  // CH-19 shop tiles belong to the building drawn beside them
+  if (contentId.startsWith('SHOP_')) return true;
   return false;
 }
 

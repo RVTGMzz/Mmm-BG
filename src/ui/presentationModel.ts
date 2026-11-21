@@ -436,8 +436,29 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     return functionTileModel(event, players);
   }
 
+  if (event.type === 'shop_event') {
+    // CH-19 shop tile: the shop's story of the day
+    const amount = dataNumber(event, 'amount', true) ?? 0;
+    return {
+      ...base,
+      kind: 'tile_land',
+      eyebrow: `${base.actorName} • ${dataString(event, 'shopName') || 'CỬA HIỆU'}`,
+      title,
+      rarity: '',
+      impact: impact || '🏪',
+      description: `${amount >= 0 ? '+' : '−'}${Math.abs(amount)} B$ · ${description}`,
+      summary: '',
+      reactions: [],
+      holdMs: 3000,
+      tileType: 'money',
+      amount,
+    };
+  }
+
   if (event.type === 'tile_land') {
     if (dataString(event, 'featureType')) return undefined;
+    // shop tiles present their event instead of a plain landing card
+    if (dataString(event, 'contentId').startsWith('SHOP_')) return undefined;
     return tileLandingModel(event, players);
   }
 

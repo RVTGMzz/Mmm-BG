@@ -43,6 +43,7 @@ import { TurnSpotlightCh19, type SpotlightPlayerCh19 } from '../ui/turnSpotlight
 import { partyBoxCh19, partyPillShapeCh19, preloadPartyKitCh19 } from '../ui/partyKitCh19';
 import { stageRectCh19 } from '../ui/responsiveStageCh19';
 import { browserSession } from '../core/browserSession';
+import { shopForNodeCh19 } from '../core/shopTilesCh19';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
 /** Sole line of the CH-19 character strips (fraction of the 192px frame). */
@@ -125,7 +126,8 @@ const IDLE_SETTLE_MS_CH19 = 140;
 const BREATH_PERIOD_MS_CH19 = 2600;
 
 type TileLook = {
-  kind: 'start' | 'plain' | 'disc';
+  kind: 'start' | 'plain' | 'disc' | 'shop' | 'none';
+  building?: string;
   color?: number;
   symbol?: string;
   big?: boolean;
@@ -169,6 +171,9 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private spotlightCh19?: TurnSpotlightCh19;
   /** Whose turn is being shown (presentation lags the state, which may already be on the next player). */
   private actorCh19?: number;
+  /** building doors from the scenery (board node id -> door), and who is inside one */
+  private doorsCh19 = new Map<number, { x: number; y: number }>();
+  private readonly insideCh19 = new Map<number, { kind: 'hold' | 'job'; x: number; y: number }>();
 
   preload(): void {
     super.preload();
@@ -207,6 +212,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.rescueCh19 = new RescueVehiclesCh19(this);
     this.installDiceRollCh19();
     this.installRescueMoveCh19();
+    this.installJobVisitCh19();
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
@@ -223,6 +229,8 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       this.spotlightCh19?.destroy();
       this.spotlightCh19 = undefined;
       this.actorCh19 = undefined;
+      this.insideCh19.clear();
+      this.doorsCh19 = new Map();
       this.playerCardsCh19.clear();
       this.rescueCh19 = undefined;
       this.islandTilesCh19.clear();
@@ -243,6 +251,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     for (const text of this.hiddenTileTextsCh19) if (text.alpha > 0) text.setAlpha(0);
     this.syncIslandTilesCh19(true);
     this.syncTurnSpotlightCh19();
+    this.syncBuildingVisitsCh19();
     this.syncPlayerCardsCh19();
     this.syncCharacterTokensCh19();
     this.syncActionButtonsCh19();
@@ -333,6 +342,10 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       const fromNode = BOARD_CH19.nodes.find((n) => n.id === from);
       const toNode = BOARD_CH19.nodes.find((n) => n.id === to);
       if (!fromNode || !toNode) return inherited(internals, model);
+      if (playerId !== undefined && Math.hypot(token.x - toNode.x, token.y - toNode.y) < 90) {
+        // landed on the door mat: walk straight in
+        return this.enterBuildingCh19(playerId, token, toNode.id, 'hold');
+      }
       // keep the token's little per-player offset on the destination tile
       const off = Math.hypot(token.x - fromNode.x, token.y - fromNode.y) < 70 ? { x: token.x - fromNode.x, y: token.y - fromNode.y } : { x: 0, y: 0 };
       const dest = { x: toNode.x + off.x, y: toNode.y + off.y };
@@ -696,6 +709,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         characterId: player.characterId,
         jobLine: career.employed ? `${career.icon} ${career.title} Lv.${career.level} · ${career.salary}/vòng` : '💼 Chưa có nghề',
         isCpu: browserSession.isCpuSeat(player.id),
+        hold: player.specialHold,
       };
     });
   }
@@ -809,6 +823,77 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
    * painted CH-19 die: it tumbles through all six faces, bounces and lands on
    * the event's result. Falls back to the older die if the art is missing.
    */
+  private installJobVisitCh19(): void {
+    const runtime = (this as unknown as { presentation?: { showLanding(model: PresentationEventModel): void } }).presentation;
+    if (!runtime) return;
+    const previous = runtime.showLanding.bind(runtime);
+    runtime.showLanding = (model: PresentationEventModel) => {
+      previous(model);
+      const pid = model.actorId;
+      const jobNode = BOARD_CH19.nodes.find((n) => n.feature === 'job');
+      const player = this.matchCh19()?.players.find((p) => p.id === pid);
+      const token = pid === undefined ? undefined : (this as unknown as { visuals?: Map<number, { token: Phaser.GameObjects.Container }> }).visuals?.get(pid)?.token;
+      if (model.tileType !== 'job' || pid === undefined || !jobNode || player?.nodeId !== jobNode.id || !token?.active || this.insideCh19.has(pid)) return;
+      void this.enterBuildingCh19(pid, token, jobNode.id, 'job');
+    };
+  }
+
+  /** Walk a token through a building's door and keep it inside (hidden). */
+  private enterBuildingCh19(playerId: number, token: Phaser.GameObjects.Container, nodeId: number, kind: 'hold' | 'job'): Promise<void> {
+    const node = BOARD_CH19.nodes.find((n) => n.id === nodeId);
+    const door = this.doorsCh19.get(nodeId);
+    const back = { x: node?.x ?? token.x, y: node?.y ?? token.y };
+    if (kind === 'job') { back.x = token.x; back.y = token.y; }
+    this.insideCh19.set(playerId, { kind, ...back });
+    this.tweens.killTweensOf(token);
+    return new Promise<void>((resolve) => {
+      if (!door) { token.setAlpha(0); resolve(); return; }
+      this.tweens.add({
+        targets: token, x: door.x, y: door.y, duration: 520, ease: 'Sine.easeInOut',
+        onComplete: () => {
+          this.tweens.add({ targets: token, alpha: 0, scale: 0.85, duration: 220, onComplete: () => { token.setPosition(back.x, back.y); resolve(); } });
+        },
+      });
+    });
+  }
+
+  /** Step back out of the door onto the tile (Jail / Hospital release, job done). */
+  private leaveBuildingCh19(playerId: number, token: Phaser.GameObjects.Container): void {
+    const inside = this.insideCh19.get(playerId);
+    if (!inside) return;
+    this.insideCh19.delete(playerId);
+    const node = BOARD_CH19.nodes.find((n) => Math.hypot(n.x - inside.x, n.y - inside.y) < 80);
+    const door = node ? this.doorsCh19.get(node.id) : undefined;
+    this.tweens.killTweensOf(token);
+    token.setScale(1).setAlpha(0).setPosition(door?.x ?? inside.x, door?.y ?? inside.y);
+    this.tweens.add({ targets: token, x: inside.x, y: inside.y, alpha: 1, duration: 420, ease: 'Sine.easeOut' });
+  }
+
+  /**
+   * Held players wait inside the Jail / Hospital and step out in front of its
+   * door when released; a job visit ends once someone else's turn is shown.
+   */
+  private syncBuildingVisitsCh19(): void {
+    const match = this.matchCh19();
+    const visuals = (this as unknown as { visuals?: Map<number, { token: Phaser.GameObjects.Container }> }).visuals;
+    if (!match || !visuals) return;
+    for (const player of match.players) {
+      const token = visuals.get(player.id)?.token;
+      if (!token?.active) continue;
+      const inside = this.insideCh19.get(player.id);
+      if (inside?.kind === 'hold') {
+        if (!player.specialHold) this.leaveBuildingCh19(player.id, token);
+        else if (token.alpha > 0 && !this.tweens.isTweening(token)) token.setAlpha(0);
+      } else if (inside?.kind === 'job') {
+        if (this.actorCh19 !== undefined && this.actorCh19 !== player.id) this.leaveBuildingCh19(player.id, token);
+        else if (token.alpha > 0 && !this.tweens.isTweening(token)) token.setAlpha(0);
+      } else if (player.specialHold && !this.tweens.isTweening(token) && !this.rescueCh19?.busy) {
+        // e.g. arrived by police car / ambulance: go in through the door
+        void this.enterBuildingCh19(player.id, token, player.nodeId, 'hold');
+      }
+    }
+  }
+
   private installDiceRollCh19(): void {
     type Runtime = {
       active?: Phaser.GameObjects.Container;
@@ -854,6 +939,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         .setAlpha(0);
       this.tweens.add({ targets: this.islandSceneryCh19, alpha: 1, duration: 280, ease: 'Sine.easeOut' });
       installIslandPropsCh19(this, scenery.props, scenery.bounds);
+      this.doorsCh19 = scenery.doors;
       this.installDistrictLabelsCh19(scenery.labels);
     } catch (error) {
       // Scenery is decorative: the board stays fully playable on the sea colour.
@@ -862,13 +948,20 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   }
 
   private installDistrictLabelsCh19(labels: IslandLabelCh19[]): void {
+    // CH-19: no navy explainer plates; the buildings themselves tell the places apart
+    if (labels.length >= 0) return;
     const placed: { x: number; y: number; w: number }[] = [];
     for (const label of labels) {
       const w = Math.max(label.title.length * 15 + 40, label.subtitle.length * 8.6 + 30);
       const clear = (y: number) =>
         BOARD_CH19.nodes.every((n) => Math.abs(n.x - label.x) > w / 2 + 50 || Math.abs(n.y - y) > 85)
         && placed.every((o) => Math.abs(o.x - label.x) > (o.w + w) / 2 + 20 || Math.abs(o.y - y) > 80);
-      let y = label.y;
+      // stay close to the building: just below it, else just above its roof, else search
+      const near = [0, 24, -24, 48].flatMap((d) => [label.y + d, ...(label.altY === undefined ? [] : [label.altY - d])]);
+      const nearY = near.find(clear);
+      // a shop sign far from its shop reads as belonging to something else: drop it
+      if (nearY === undefined && label.altY !== undefined) continue;
+      let y = nearY ?? label.y;
       for (let k = 0; k < 30 && !clear(y); k++) y = label.y + (k % 2 ? 1 : -1) * 24 * Math.ceil((k + 1) / 2);
       placed.push({ x: label.x, y, w });
 
@@ -924,10 +1017,13 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     const c = node.contentId ?? '';
     const C = TILE_COLORS_CH19;
     if (node.type === 'ready') return { kind: 'start' };
-    if (c === 'SPECIAL_JAIL_HOLD') return { kind: 'disc', color: C.orange, symbol: 'TÙ', big: true };
-    if (c === 'SPECIAL_HOSPITAL_HOLD') return { kind: 'disc', color: C.pink, symbol: '✚', big: true };
+    // CH-19: the hold is the building itself (its corridor leads straight to the
+    // door), so it is not drawn as a tile; the J / H gates stay on the main road
+    if (c === 'SPECIAL_JAIL_HOLD' || c === 'SPECIAL_HOSPITAL_HOLD') return { kind: 'none' };
     if (c === 'SPECIAL_JAIL_GATE') return { kind: 'disc', color: C.orange, symbol: 'J' };
     if (c === 'SPECIAL_HOSPITAL_GATE') return { kind: 'disc', color: C.pink, symbol: 'H' };
+    const shop = shopForNodeCh19(node);
+    if (shop) return { kind: 'shop', color: num(shop.colour), symbol: shop.name, building: shop.building };
     if (c === 'SPECIAL_LOTTERY') return { kind: 'disc', color: C.pink, symbol: '♥' };
     if (c.startsWith('JAIL_EXIT_') || c.startsWith('HOSPITAL_EXIT_')) {
       const v = node.value ?? 0;
@@ -963,6 +1059,25 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         fontFamily: MOBILE_UI_FONT_07044, fontSize: '16px', fontStyle: 'bold', color: '#ffffff',
         stroke: '#1f6b33', strokeThickness: 5,
       }).setOrigin(0.5));
+      return root;
+    }
+
+    if (look.kind === 'none') return root;
+
+    if (look.kind === 'shop') {
+      // the shop's colour with a little picture of its building
+      const color = look.color ?? TILE_COLORS_CH19.blue;
+      const r = 48;
+      g.fillStyle(0x14243f, 0.32).fillCircle(0, 7, r + 5);
+      g.fillStyle(0xffffff, 1).fillCircle(0, 0, r + 5);
+      g.fillStyle(color, 1).fillCircle(0, 0, r);
+      g.fillStyle(0xffffff, 0.9).fillCircle(0, -2, r - 9);
+      const key = `island-prop-ch19-${look.building ?? ''}`;
+      if (this.textures.exists(key)) {
+        const img = this.add.image(0, 2, key).setOrigin(0.5, 0.62);
+        img.setScale(64 / Math.max(img.width, img.height));
+        root.add(img);
+      }
       return root;
     }
 
