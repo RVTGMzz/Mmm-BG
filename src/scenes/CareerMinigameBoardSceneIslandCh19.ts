@@ -173,7 +173,9 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private actorCh19?: number;
   /** building doors from the scenery (board node id -> door), and who is inside one */
   private doorsCh19 = new Map<number, { x: number; y: number }>();
-  private readonly insideCh19 = new Map<number, { kind: 'hold' | 'job'; x: number; y: number }>();
+  private readonly insideCh19 = new Map<number, { kind: 'hold'; x: number; y: number }>();
+  /** a short, self-contained job-centre visit (walk in, wait, walk back out) */
+  private readonly visitCh19 = new Map<number, { token: Phaser.GameObjects.Container; x: number; y: number; tweens: Phaser.Tweens.Tween[]; timer?: Phaser.Time.TimerEvent }>();
 
   preload(): void {
     super.preload();
@@ -230,6 +232,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       this.spotlightCh19 = undefined;
       this.actorCh19 = undefined;
       this.insideCh19.clear();
+      this.visitCh19.clear();
       this.doorsCh19 = new Map();
       this.playerCardsCh19.clear();
       this.rescueCh19 = undefined;
@@ -335,6 +338,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     runtime.animateMoveStep = (internals, model) => {
       const from = model.fromNodeId, to = model.toNodeId, playerId = model.actorId;
       if (playerId !== undefined) this.actorCh19 = playerId;
+      if (playerId !== undefined) this.cancelJobVisitCh19(playerId);
       const kind = to === HOLD_NODE_CH19.jail ? 'jail' : to === HOLD_NODE_CH19.hospital ? 'hospital' : undefined;
       const fromHold = from === HOLD_NODE_CH19.jail || from === HOLD_NODE_CH19.hospital;
       const token = playerId === undefined ? undefined : internals.visuals.get(playerId)?.token;
@@ -833,19 +837,51 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       const jobNode = BOARD_CH19.nodes.find((n) => n.feature === 'job');
       const player = this.matchCh19()?.players.find((p) => p.id === pid);
       const token = pid === undefined ? undefined : (this as unknown as { visuals?: Map<number, { token: Phaser.GameObjects.Container }> }).visuals?.get(pid)?.token;
-      if (model.tileType !== 'job' || pid === undefined || !jobNode || player?.nodeId !== jobNode.id || !token?.active || this.insideCh19.has(pid)) return;
-      void this.enterBuildingCh19(pid, token, jobNode.id, 'job');
+      if (model.tileType !== 'job' || pid === undefined || !jobNode || player?.nodeId !== jobNode.id || !token?.active) return;
+      if (this.insideCh19.has(pid) || this.visitCh19.has(pid) || this.tweens.isTweening(token)) return;
+      this.playJobVisitCh19(pid, token, jobNode.id);
     };
   }
 
+  /** Walk into the job centre, wait a moment inside, walk back out to the same spot. */
+  private playJobVisitCh19(playerId: number, token: Phaser.GameObjects.Container, nodeId: number): void {
+    const door = this.doorsCh19.get(nodeId);
+    if (!door) return;
+    const visit = { token, x: token.x, y: token.y, tweens: [] as Phaser.Tweens.Tween[], timer: undefined as Phaser.Time.TimerEvent | undefined };
+    this.visitCh19.set(playerId, visit);
+    const step = (config: Phaser.Types.Tweens.TweenBuilderConfig) => { const t = this.tweens.add(config); visit.tweens.push(t); return t; };
+    step({
+      targets: token, x: door.x, y: door.y, duration: 480, ease: 'Sine.easeInOut',
+      onComplete: () => step({
+        targets: token, alpha: 0, duration: 200,
+        onComplete: () => {
+          visit.timer = this.time.delayedCall(900, () => {
+            step({
+              targets: token, alpha: 1, x: visit.x, y: visit.y, duration: 480, ease: 'Sine.easeOut',
+              onComplete: () => this.cancelJobVisitCh19(playerId),
+            });
+          });
+        },
+      }),
+    });
+  }
+
+  /** Stop a job visit and put the token back exactly where it was standing. */
+  private cancelJobVisitCh19(playerId: number): void {
+    const visit = this.visitCh19.get(playerId);
+    if (!visit) return;
+    this.visitCh19.delete(playerId);
+    visit.timer?.remove();
+    for (const t of visit.tweens) t.stop();
+    if (visit.token.active) visit.token.setPosition(visit.x, visit.y).setAlpha(1);
+  }
+
   /** Walk a token through a building's door and keep it inside (hidden). */
-  private enterBuildingCh19(playerId: number, token: Phaser.GameObjects.Container, nodeId: number, kind: 'hold' | 'job'): Promise<void> {
+  private enterBuildingCh19(playerId: number, token: Phaser.GameObjects.Container, nodeId: number, kind: 'hold'): Promise<void> {
     const node = BOARD_CH19.nodes.find((n) => n.id === nodeId);
     const door = this.doorsCh19.get(nodeId);
     const back = { x: node?.x ?? token.x, y: node?.y ?? token.y };
-    if (kind === 'job') { back.x = token.x; back.y = token.y; }
     this.insideCh19.set(playerId, { kind, ...back });
-    this.tweens.killTweensOf(token);
     return new Promise<void>((resolve) => {
       if (!door) { token.setAlpha(0); resolve(); return; }
       this.tweens.add({
@@ -864,14 +900,14 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.insideCh19.delete(playerId);
     const node = BOARD_CH19.nodes.find((n) => Math.hypot(n.x - inside.x, n.y - inside.y) < 80);
     const door = node ? this.doorsCh19.get(node.id) : undefined;
-    this.tweens.killTweensOf(token);
+    if (this.tweens.isTweening(token)) { token.setScale(1).setAlpha(1); return; } // already moving on
     token.setScale(1).setAlpha(0).setPosition(door?.x ?? inside.x, door?.y ?? inside.y);
     this.tweens.add({ targets: token, x: inside.x, y: inside.y, alpha: 1, duration: 420, ease: 'Sine.easeOut' });
   }
 
   /**
    * Held players wait inside the Jail / Hospital and step out in front of its
-   * door when released; a job visit ends once someone else's turn is shown.
+   * door when released (job-centre visits are short self-contained walks).
    */
   private syncBuildingVisitsCh19(): void {
     const match = this.matchCh19();
@@ -883,9 +919,6 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       const inside = this.insideCh19.get(player.id);
       if (inside?.kind === 'hold') {
         if (!player.specialHold) this.leaveBuildingCh19(player.id, token);
-        else if (token.alpha > 0 && !this.tweens.isTweening(token)) token.setAlpha(0);
-      } else if (inside?.kind === 'job') {
-        if (this.actorCh19 !== undefined && this.actorCh19 !== player.id) this.leaveBuildingCh19(player.id, token);
         else if (token.alpha > 0 && !this.tweens.isTweening(token)) token.setAlpha(0);
       } else if (player.specialHold && !this.tweens.isTweening(token) && !this.rescueCh19?.busy) {
         // e.g. arrived by police car / ambulance: go in through the door
