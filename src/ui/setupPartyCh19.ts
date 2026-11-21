@@ -216,11 +216,11 @@ export function installMatchInfoPartyCh19(scene: Phaser.Scene, dom: Phaser.GameO
     label(300, 'Bàn cờ');
     label(640, 'Số vòng');
     label(980, 'Chế độ');
-    layer.add(partyCloudCh19(scene, 300, 458, 230, 80, 0xf59a3a, 'Đảo Thành Phố', undefined, 24));
-    const lapCloud = partyCloudCh19(scene, 640, 458, 170, 80, 0xf58ac0, String(laps), () => {
+    layer.add(partyPillButtonCh19(scene, 300, 458, 250, 72, 0xf59a3a, 'Đảo Thành Phố', undefined, 24));
+    const lapCloud = partyPillButtonCh19(scene, 640, 458, 170, 72, 0xf58ac0, String(laps), () => {
       const next = (laps % 3) + 1;
       pressDomCh19(root, `[data-laps="${next}"]`);
-    }, 50);
+    }, 40);
     layer.add(lapCloud);
     for (const dir of [-1, 1]) {
       const a = scene.add.container(640 + dir * 128, 458).setSize(44, 52);
@@ -235,7 +235,7 @@ export function installMatchInfoPartyCh19(scene: Phaser.Scene, dom: Phaser.GameO
       scene.tweens.add({ targets: a, x: a.x + dir * 6, duration: 420, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
       layer.add(a);
     }
-    layer.add(partyCloudCh19(scene, 980, 458, 240, 80, 0x6cb7f5, modeLabel, undefined, modeLabel.length > 14 ? 20 : 24));
+    layer.add(partyPillButtonCh19(scene, 980, 458, 260, 72, 0x3f8cf0, modeLabel, undefined, modeLabel.length > 14 ? 20 : 24));
     layer.add(partyTextCh19(scene, 640, 512, laps === 1 ? 'Nhanh gọn' : laps === 2 ? 'Cân bằng' : 'Dài hơi', { size: 18, fill: '#ffffff', strokeWidth: 5, shadow: false }));
 
     // dialog

@@ -34,6 +34,7 @@ import { FinalMapPreviewScene052 } from './scenes/FinalMapPreviewScene052';
 import { FullMapReviewScene053 } from './scenes/FullMapReviewScene053';
 import { installPreviewBranchMode054 } from './scenes/installPreviewBranchMode054';
 import { installResponsiveStageCh19 } from './ui/responsiveStageCh19';
+import { installCurrencyLabelCh19 } from './ui/currencyLabelCh19';
 
 // Current presentation chain: 07044 -> 0701 -> 069 -> 0682 -> validated authority chain.
 // 0.1.70.4.4 is presentation-only: mobile readability without changing HOST RNG/authority.
@@ -81,6 +82,8 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 async function bootMeMeMe07035(): Promise<void> {
+  // CH-19: players read the currency as M$
+  installCurrencyLabelCh19();
   bgmController.start();
   sfxController.start();
   installMobileLandscapeGuard07031();

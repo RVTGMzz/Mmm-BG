@@ -45,6 +45,8 @@ import { stageRectCh19 } from '../ui/responsiveStageCh19';
 import { browserSession } from '../core/browserSession';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
+/** Sole line of the CH-19 character strips (fraction of the 192px frame). */
+const FEET_LINE_CH19 = 0.93;
 
 /** Soft dark contact shadow (radial falloff), drawn once into a texture. */
 function contactShadowKeyCh19(scene: Phaser.Scene): string {
@@ -521,7 +523,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       }
       // a soft contact shadow reads as standing on the tile; outlined rings looked like stickers
       if (!token.getByName('player-ground-ch19')) {
-        token.addAt(this.add.image(0, 31, contactShadowKeyCh19(this)).setName('player-ground-ch19'), 0);
+        token.addAt(this.add.image(0, 17, contactShadowKeyCh19(this)).setName('player-ground-ch19'), 0);
       }
       for (const child of token.list) {
         if (/^character-foot-ring-ch189/.test(child.name)) {
@@ -531,6 +533,12 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       }
 
       const sprite = runtime.characterWalkSpritesCh181?.get(player.id);
+      // the shadow sits right under the feet (strips have their soles at 93% of the frame)
+      const ground = token.getByName('player-ground-ch19') as Phaser.GameObjects.Image | null;
+      if (ground && sprite?.active && sprite.visible) {
+        const feetY = sprite.y + (FEET_LINE_CH19 - sprite.originY) * sprite.displayHeight - 2;
+        ground.setPosition(sprite.x, feetY).setScale(Math.max(0.45, sprite.displayWidth * 0.62 / 84), Math.max(0.45, sprite.displayWidth * 0.62 / 84) * 0.9);
+      }
       if (!sprite?.active || runtime.cauCoRigPilotCh1822?.has(player.id)) continue;
       if (runtime.characterFaceCompositeImagesCh187?.get(player.id)?.visible) continue;
 

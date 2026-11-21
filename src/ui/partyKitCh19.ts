@@ -181,9 +181,19 @@ export function drawPartyBoxCh19(g: Phaser.GameObjects.Graphics, x: number, y: n
   g.fillStyle(0xffffff, 1).fillRoundedRect(x, y, w, h, r);
   const ir = Math.max(4, r - ring);
   const bottom = o.fillBottom ?? tintCh19(colour, -0.18);
-  g.fillStyle(bottom, 1).fillRoundedRect(x + ring, y + ring, w - ring * 2, h - ring * 2, ir);
-  g.fillStyle(tintCh19(colour, 0.06), 1).fillRoundedRect(x + ring, y + ring, w - ring * 2, (h - ring * 2) * 0.62, { tl: ir, tr: ir, bl: 0, br: 0 });
-  g.fillStyle(colour, 1).fillRect(x + ring, y + ring + (h - ring * 2) * 0.62 - 1, w - ring * 2, Math.min(ir, (h - ring * 2) * 0.2));
+  // smooth top-light / bottom-dark shading: many thin bands, no visible seam
+  const ix = x + ring, iy = y + ring, iw = w - ring * 2, ih = h - ring * 2;
+  const top = tintCh19(colour, 0.08);
+  g.fillStyle(top, 1).fillRoundedRect(ix, iy, iw, ih, ir);
+  const bands = 24;
+  const c0 = Phaser.Display.Color.IntegerToColor(top), c1 = Phaser.Display.Color.IntegerToColor(bottom);
+  for (let i = 1; i <= bands; i++) {
+    const t = i / bands;
+    const col = Phaser.Display.Color.GetColor(
+      Math.round(c0.red + (c1.red - c0.red) * t), Math.round(c0.green + (c1.green - c0.green) * t), Math.round(c0.blue + (c1.blue - c0.blue) * t));
+    const by = iy + ih * (0.25 + 0.75 * (i - 1) / bands);
+    g.fillStyle(col, 1).fillRoundedRect(ix, by, iw, iy + ih - by, { tl: 0, tr: 0, bl: ir, br: ir });
+  }
   if (o.gloss !== false) {
     g.fillStyle(0xffffff, 0.22).fillRoundedRect(x + ring + 6, y + ring + 4, w - ring * 2 - 12, Math.min(18, (h - ring * 2) * 0.32), { tl: ir, tr: ir, bl: 6, br: 6 });
   }
@@ -280,17 +290,10 @@ export function partyCardCh19(scene: Phaser.Scene, x: number, y: number, o: Part
 export function partyBadgeCh19(scene: Phaser.Scene, x: number, y: number, text: string, colour: number, r = 30): Phaser.GameObjects.Container {
   const c = scene.add.container(x, y).setName('party-badge-ch19');
   const g = scene.add.graphics();
-  const bumps = 9;
-  const blob = (rr: number, col: number) => {
-    g.fillStyle(col, 1).fillCircle(0, 0, rr * 0.86);
-    for (let i = 0; i < bumps; i++) {
-      const a = (i / bumps) * Math.PI * 2;
-      g.fillCircle(Math.cos(a) * rr * 0.72, Math.sin(a) * rr * 0.72, rr * 0.34);
-    }
-  };
-  blob(r + 4, PARTY_INK_CH19);
-  blob(r, 0xffffff);
-  blob(r - 6, colour);
+  g.fillStyle(0x10143a, 0.25).fillCircle(2, 4, r + 4);
+  g.fillStyle(PARTY_INK_CH19, 1).fillCircle(0, 0, r + 4);
+  g.fillStyle(0xffffff, 1).fillCircle(0, 0, r);
+  g.fillStyle(colour, 1).fillCircle(0, 0, r - 5);
   g.fillStyle(0xffffff, 0.3).fillEllipse(0, -r * 0.35, r * 1.1, r * 0.5);
   c.add(g);
   c.add(partyTextCh19(scene, 0, 1, text, { size: Math.round(r * 0.78), fill: '#ffffff', stroke: hexCh19(tintCh19(colour, -0.55)) }));

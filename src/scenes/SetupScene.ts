@@ -21,7 +21,7 @@ import {
 } from '../ui/visualFoundationV01';
 import { paintToyTownBackdropCh17 } from '../ui/paintToyTownBackdropCh17';
 import { characterProductionPortraitCh181 } from '../ui/characterProductionArtCh181';
-import { preloadPartyKitCh19 } from '../ui/partyKitCh19';
+import { partyBannerCh19, preloadPartyKitCh19 } from '../ui/partyKitCh19';
 import { installCharacterSelectPartyCh19, installMatchInfoPartyCh19 } from '../ui/setupPartyCh19';
 
 const EXPRESSIONS: Array<{ id: FaceExpression; emoji: string; label: string }> = [
@@ -54,6 +54,8 @@ export class SetupScene extends Phaser.Scene {
       configureInitialTargetLaps(1);
     }
     paintToyTownBackdropCh17(this, 'mint', { x: 45, y: 30, width: 1190, height: 660, radius: 32 });
+    // CH-19: a party banner replaces the versioned header (kept, hidden, for older checks)
+    partyBannerCh19(this, 300, 50, 420, 'Tạo người chơi', 0xf5a43a, 30).setDepth(5);
     this.add.text(72, 54, MEMEME_BUILD.setupHeader, {
       fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif',
       fontSize: '28px',
@@ -62,7 +64,7 @@ export class SetupScene extends Phaser.Scene {
       stroke: '#fff7e8',
       strokeThickness: 5,
       shadow: { offsetX: 0, offsetY: 3, color: '#4b302a', blur: 0, fill: true },
-    });
+    }).setVisible(false);
 
     const config = browserSession.current;
     const cpuCount = config.cpuSeatIds.length;

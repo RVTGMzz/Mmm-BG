@@ -97,7 +97,6 @@ export class GameModeMenuScene extends Phaser.Scene {
     // the DOM cards stay clickable (transparent); the painted cards are laid exactly over them
     const node = veilDomCh19(dom, true);
     partyBannerCh19(this, 640, 70, 460, 'Chơi gì nè?', 0xf2549c, 36);
-    partyTextCh19(this, 640, 122, `MMM • ${MEMEME_BUILD.version}`, { size: 15, fill: '#ffffff', stroke: '#c0306a', strokeWidth: 4, shadow: false });
 
     const choice = (x: number, colour: number, title: string, desc: string, button: string, buttonColour: number, selector: string, art: (c: Phaser.GameObjects.Container) => void) => {
       const c = this.add.container(x, 405).setSize(500, 440).setName('party-mode-choice-ch19');
