@@ -81,6 +81,10 @@ function storyFor(model: Model, match: MatchState | undefined): Story | undefine
       colour: shop ? Number.parseInt(shop.colour.slice(1), 16) : 0xf2549c,
     };
   }
+  if (event?.type === 'lottery') {
+    const roll = Number(event.data.roll ?? 0);
+    return { picture: storyKey('lottery'), place: '🎟️ QUẦY XỔ SỐ', title: `XỔ SỐ • ĐỔ RA ${roll}`, line: `Mỗi điểm xúc xắc đổi ra tiền thưởng: ${roll} điểm = +${amount} M$!`, amount, colour: 0x9a52e6 };
+  }
   if (model.kind !== 'tile_land' || model.tileType !== 'money' || !amount) return undefined;
   const contentId = String(event?.data.contentId ?? '');
   const pick = (id: StoryIdCh19, place: string, colour: number): Story => ({ picture: storyKey(id), place, title: STORIES_CH19[id].title, line: STORIES_CH19[id].line, amount, colour });

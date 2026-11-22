@@ -437,6 +437,25 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
     return functionTileModel(event, players);
   }
 
+  if (event.type === 'lottery') {
+    // CH-19: the lottery tile tells its story (it used to pass silently)
+    const amount = dataNumber(event, 'amount', true) ?? 0;
+    return {
+      ...base,
+      kind: 'tile_land',
+      eyebrow: `${base.actorName} • XỔ SỐ`,
+      title: 'XỔ SỐ',
+      rarity: '',
+      impact: impact || '🎟️',
+      description,
+      summary: '',
+      reactions: [],
+      holdMs: 3600,
+      tileType: 'money',
+      amount,
+    };
+  }
+
   if (event.type === 'shop_event') {
     // CH-19 shop tile: the shop's story of the day
     const amount = dataNumber(event, 'amount', true) ?? 0;

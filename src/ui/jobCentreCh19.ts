@@ -388,6 +388,7 @@ function releaseEvent(scene: Phaser.Scene, root: Phaser.GameObjects.Container, e
       : `Đổ ra ${roll}... chưa trúng số xuất viện (${faces.join(', ')}). ${name} nằm nghỉ thêm một lượt nha.`;
   const s = npcScene(scene, root, jail ? 'police' : 'doctor', bust, success ? 'happy' : 'angry', line);
   const c = s.content;
+  c.setY(-80); // clear of the hold banner at the top
   c.add(partyTextCh19(scene, 0, -112, jail ? '🚓 XIN RA ĐỒN' : '🏥 XIN XUẤT VIỆN', { size: 28, fill: '#ffffff', strokeWidth: 6 }));
   c.add(partyTextCh19(scene, 0, -72, `Số được ra: ${faces.join(' • ')}${trait ? `  (${trait})` : ''}`, { size: 19, fill: '#cfe4ff', strokeWidth: 4, shadow: false }));
   for (let f = 1; f <= 6; f++) {
