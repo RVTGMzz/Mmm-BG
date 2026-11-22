@@ -174,6 +174,38 @@ function blurBoardCh19(scene: Phaser.Scene, root: Phaser.GameObjects.Container):
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { clear(); scene.events.off(Phaser.Scenes.Events.UPDATE, watch); });
 }
 
+/** Keeps a built reveal full-screen on the top layer; false when none is built yet. */
+export function followRevealCh19(root: Phaser.GameObjects.Container): boolean {
+  const stage = root.getData('ch19-card-stage') as Phaser.GameObjects.Container | undefined;
+  if (!stage) return false;
+  for (const o of root.list) {
+    if (o.getData?.('ch19-card-ui')) continue;
+    // hit areas stay hit-testable (Phaser skips alpha-0 objects for input)
+    (o as unknown as Phaser.GameObjects.Components.Alpha).setAlpha?.(o.input?.enabled ? 0.001 : 0);
+  }
+  const sx = root.scaleX || 1, sy = root.scaleY || 1;
+  stage.setScale(1 / sx, 1 / sy).setPosition((STAGE_CX_CH19 - root.x) / sx, (STAGE_CY_CH19 - root.y) / sy).setAngle(-root.angle);
+  if (root.depth < REVEAL_DEPTH_CH19) root.setDepth(REVEAL_DEPTH_CH19);
+  return true;
+}
+
+/** Hides the older popup and opens a full-screen reveal stage over a blurred, dimmed board. */
+export function openRevealCh19(scene: Phaser.Scene, root: Phaser.GameObjects.Container, veilAlpha = 0.58): Phaser.GameObjects.Container {
+  root.setData('ch19-card-face', true);
+  root.setDepth(Math.max(root.depth, REVEAL_DEPTH_CH19));
+  const st = scene.add.container(0, 0);
+  st.setData('ch19-card-ui', true);
+  root.add(st);
+  root.setData('ch19-card-stage', st);
+  const veil = scene.add.graphics();
+  veil.fillStyle(0x10143a, 1).fillRect(-2000, -1500, 4000, 3000);
+  veil.setAlpha(veilAlpha);
+  st.add(veil);
+  blurBoardCh19(scene, root);
+  followRevealCh19(root);
+  return st;
+}
+
 function skinPresentation(scene: Phaser.Scene, root: Phaser.GameObjects.Container): void {
   const mine = (o: Phaser.GameObjects.GameObject) => Boolean(o.getData?.('ch19-card-ui'));
   const stage = root.getData('ch19-card-stage') as Phaser.GameObjects.Container | undefined;

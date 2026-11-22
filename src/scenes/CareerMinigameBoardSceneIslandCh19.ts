@@ -47,6 +47,9 @@ import { shopForNodeCh19 } from '../core/shopTilesCh19';
 import { installMiniGamePartyCh19, preloadMiniGamePartyCh19 } from '../ui/miniGamePartyCh19';
 import { installCardArtCh19, preloadCardArtCh19 } from '../ui/cardArtCh19';
 import { flyMoneyChangesCh19, preloadMoneyFlightCh19 } from '../ui/moneyFlightCh19';
+import { installStoryPanelCh19, preloadStoryPanelCh19 } from '../ui/storyPanelCh19';
+import { installJobCentreCh19, playJobSlotCh19, preloadJobCentreCh19 } from '../ui/jobCentreCh19';
+import { PARTY_BUST_IDS_CH19 } from '../ui/partyKitCh19';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
 /** Sole line of the CH-19 character strips (fraction of the 192px frame). */
@@ -168,6 +171,8 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
   private islandSceneryCh19?: Phaser.GameObjects.Image;
   private islandLabelsCh19: Phaser.GameObjects.Container[] = [];
   private readonly tileNumbersCh19 = tileNumbersCh19(BOARD_CH19);
+  /** M$ the HUD shows: held while dice roll / walk play, so the tile reveals its own result. */
+  private readonly moneyShownCh19 = new Map<number, number>();
   private readonly playerCardsCh19 = new Map<number, { card: Phaser.GameObjects.Container; signature: string; money: number; active: boolean }>();
   private readonly tokenStillCh19 = new Map<number, { x: number; y: number; stillMs: number }>();
   private rescueCh19?: RescueVehiclesCh19;
@@ -188,6 +193,8 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     preloadMiniGamePartyCh19(this);
     preloadCardArtCh19(this);
     preloadMoneyFlightCh19(this);
+    preloadStoryPanelCh19(this);
+    preloadJobCentreCh19(this);
     trackGraphicsBoundsCh19();
     preloadRescueVehiclesCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
@@ -223,6 +230,8 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     this.installJobVisitCh19();
     installMiniGamePartyCh19(this);
     installCardArtCh19(this);
+    installStoryPanelCh19(this, (id) => this.characterIdCh19(id));
+    installJobCentreCh19(this, (id) => this.characterIdCh19(id));
     // Let the first board frame render before the one-off scenery build.
     this.time.delayedCall(0, () => { void this.installIslandSceneryCh19(); });
 
@@ -667,8 +676,19 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
         this.tweens.add({ targets: entry.card, alpha: want, duration: want ? 260 : 160 });
       }
     }
-    const top = Math.max(...match.players.map((p) => p.money));
-    const leaders = match.players.filter((p) => p.money === top);
+    const presentation = (this as unknown as { presentation?: { isBlocking(): boolean; currentModel?: { kind: string } } }).presentation;
+    const beat = presentation?.currentModel?.kind;
+    // a card / news / tile story on screen tells the result first; the bills fly once it closes
+    const revealOpen = this.children.list.some((o) => o.active && Boolean(o.getData?.('ch19-card-stage')));
+    const holdMoney = revealOpen || (Boolean(presentation?.isBlocking()) && (!beat || beat === 'dice_roll' || beat === 'move_step'));
+    const moneyOf = (p: PlayerState) => {
+      const shown = holdMoney && this.moneyShownCh19.has(p.id) ? this.moneyShownCh19.get(p.id)! : p.money;
+      this.moneyShownCh19.set(p.id, shown);
+      return shown;
+    };
+    const shownMoney = new Map(match.players.map((p) => [p.id, moneyOf(p)]));
+    const top = Math.max(...shownMoney.values());
+    const leaders = match.players.filter((p) => shownMoney.get(p.id) === top);
     const moneyChanges: Array<{ id: number; delta: number }> = [];
 
     for (const player of match.players) {
@@ -677,7 +697,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       const model: PlayerCardModelCh19 = {
         playerId: player.id,
         name: player.name,
-        money: player.money,
+        money: shownMoney.get(player.id) ?? player.money,
         handCount: player.handCardIds.length,
         handLimit: MVP_CARD_HAND_LIMIT,
         lockTurns: player.cardBlockTurns,
@@ -702,12 +722,12 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       if (runtime.uiRoot?.active) runtime.uiRoot.add(card);
       else card.setDepth(1000);
       existing?.card.destroy(true);
-      this.playerCardsCh19.set(player.id, { card, signature, money: player.money, active });
+      this.playerCardsCh19.set(player.id, { card, signature, money: model.money, active });
 
       if (!existing) continue;
-      if (existing.money !== player.money) {
-        this.popMoneyCh19(card, player.money - existing.money);
-        moneyChanges.push({ id: player.id, delta: player.money - existing.money });
+      if (existing.money !== model.money) {
+        this.popMoneyCh19(card, model.money - existing.money);
+        moneyChanges.push({ id: player.id, delta: model.money - existing.money });
       }
       if (active && !existing.active) {
         card.setScale(PLAYER_CARD_CH19.idleScale);
@@ -715,6 +735,10 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       }
     }
     if (moneyChanges.length) flyMoneyChangesCh19(this, moneyChanges, (id) => this.playerScreenPointCh19(id));
+  }
+
+  private characterIdCh19(id: number): string | undefined {
+    return this.matchCh19()?.players.find((p) => p.id === id)?.characterId ?? gameSession.getCharacterId(id);
   }
 
   /** A player's Character on screen, in UI-camera coordinates (falls back to their HUD card). */
@@ -977,6 +1001,17 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       if (!diceSpritesReadyCh19(this)) { previous(model); return; }
       const result = Math.max(1, Math.min(6, model.roll ?? 1));
       if (model.actorId !== undefined) this.actorCh19 = model.actorId;
+      if (model.eyebrow.includes('XÚC XẮC JOB')) {
+        // the job draw is a slot machine at the Job Centre, not a die
+        const slot = this.add.container(640, 360).setDepth(920).setName('presentation-job-slot-ch19');
+        runtime.active = slot;
+        const cid = model.actorId === undefined ? undefined : this.characterIdCh19(model.actorId);
+        const played = playJobSlotCh19(this, slot, model, cid ? PARTY_BUST_IDS_CH19[cid] : undefined, () => {
+          if (runtime.currentModel === model) runtime.finishCurrent(false);
+        });
+        if (played) return;
+        slot.destroy(true);
+      }
       const container = this.add.container(640, 320).setDepth(920).setName('presentation-dice-card-ch19');
       runtime.active = container;
       sfxController.play('dice_roll');

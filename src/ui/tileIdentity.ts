@@ -37,7 +37,7 @@ export function tileIdentityCopy(tileType: string, nodeId: number, amount: numbe
     return {
       ...nodeCopy,
       title: `${nodeCopy.title}${amountSuffix}`,
-      holdMs: tileType === 'normal' ? 1100 : 1550,
+      holdMs: tileType === 'normal' ? 1100 : tileType === 'money' ? 3200 : 1550,
     };
   }
 
@@ -46,7 +46,7 @@ export function tileIdentityCopy(tileType: string, nodeId: number, amount: numbe
       title: `${amount >= 0 ? '+' : ''}${amount} B$`,
       impact: amount >= 0 ? '💰' : '💸',
       description: amount >= 0 ? 'Ví dày thêm một chút.' : 'Ví vừa nhẹ đi một chút.',
-      holdMs: 1550,
+      holdMs: 3200, // CH-19: a tile story panel
     };
   }
   if (tileType === 'card') return { title: 'Ô LÁ BÀI', impact: '🃏', description: 'Chuẩn bị rút một Lá Bài.', holdMs: 1550 };

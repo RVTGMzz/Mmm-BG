@@ -344,7 +344,8 @@ function functionTileModel(event: MatchEvent, players: PlayerState[]): Presentat
       players,
       isMiniGame ? 'minigame' : 'job',
     ),
-    holdMs: event.type === 'job_offer' ? 1800 : 2600,
+    // CH-19: the Job Centre NPC needs time to say it
+    holdMs: event.type === 'job_offer' ? 3600 : isJob ? 4200 : 2600,
     tileType: isMiniGame ? 'minigame' : 'job',
     contextEmotion: isMiniGame ? 'shocked' : undefined,
   };
@@ -400,7 +401,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
         : (description || 'Chưa đạt điều kiện. Ở lại và kết thúc lượt.'),
       summary: '',
       reactions: characterMomentReactionCh04(event, players, specialContextCh04c),
-      holdMs: success ? 1500 : 1700,
+      holdMs: 3800, // CH-19: the police / doctor explains the release roll
       tileType: 'special_release',
       contextEmotion: success ? 'happy' : (location === 'hospital' ? 'panic' : 'angry'),
       roll,
@@ -449,7 +450,7 @@ export function buildPresentationModel(event: MatchEvent, players: PlayerState[]
       description: `${amount >= 0 ? '+' : '−'}${Math.abs(amount)} B$ · ${description}`,
       summary: '',
       reactions: [],
-      holdMs: 3000,
+      holdMs: 3600,
       tileType: 'money',
       amount,
     };
