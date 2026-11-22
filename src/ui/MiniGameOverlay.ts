@@ -1253,7 +1253,7 @@ export function startMiniGameOverlay(
     }
     for (const o of extras) o.setVisible(o === winnerVoiceText ? voiceShown : true);
     scene.tweens.add({ targets: extras, alpha: { from: 0, to: 1 }, duration: 260 });
-    await wait(rowsViewport.isScrollable ? 10000 : 6200);
+    await wait(rowsViewport.isScrollable ? 10000 : 5200);
   };
 
   const runRpsFinal = async (
