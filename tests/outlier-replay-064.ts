@@ -17,7 +17,7 @@ const runtime = {
 // This test file keeps its historical 0.1.64 filename because CI/package paths already
 // consume it, but the canonical outlier fingerprints below are intentionally rebased
 // for 0.1.71 Roguelike Lap Shuffle (rebased again for CH-19: six shop tiles draw HOST RNG
-// on landing, and the exit corridors are graded -30/-20/-10 and -10/-20/-30; the 20-card deck gives every Card its own effect). The gameplay update consumes HOST RNG when the
+// on landing, and the exit corridors are graded -30/-20/-10 and -10/-20/-30; the 20-card deck gives every Card its own effect; the 30-story News pool adds jail / hospital variants aimed at other seats). The gameplay update consumes HOST RNG when the
 // first player reaches each lap and then resolves later landings against the shuffled layout.
 const OUTLIERS = [
   {
@@ -45,24 +45,24 @@ const OUTLIERS = [
   {
     seed: 611112,
     reason: '0.1.71-roguelike-lap-shuffle-largest-money-spread-ch19-shops',
-    checksum: 'f389f916',
-    turns: 65,
-    commands: 96,
-    submitted: 83,
-    moneyTotal: 1505,
-    spread: 280,
-    movement: 60,
-    release: 10,
-    cards: 7,
-    news: 11,
-    mini: 2,
-    miniPayout: 95,
-    jobs: 4,
-    lotteryCount: 1,
-    lotteryPayout: 120,
-    finishOrderPlayerIds: [1, 2, 3, 0],
-    finalMoney: [550, 355, 330, 270],
-    finishOrderBySeat: [4, 1, 2, 3],
+    checksum: 'c6549457',
+    turns: 58,
+    commands: 90,
+    submitted: 79,
+    moneyTotal: 1325,
+    spread: 126,
+    movement: 50,
+    release: 12,
+    cards: 9,
+    news: 9,
+    mini: 5,
+    miniPayout: 240,
+    jobs: 3,
+    lotteryCount: 0,
+    lotteryPayout: 0,
+    finishOrderPlayerIds: [0, 2, 1, 3],
+    finalMoney: [325, 356, 259, 385],
+    finishOrderBySeat: [1, 3, 2, 4],
   },
 ] as const;
 

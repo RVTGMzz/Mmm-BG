@@ -52,14 +52,15 @@ assert(
 const selfNewsAmounts = news
   .filter((entry) => entry.effect.type === 'money_delta_self')
   .map((entry) => entry.effect.amount);
-assert(selfNewsAmounts.filter((amount) => amount === 25).length === 3, '0.1.60 positive self News should be +25B$.');
-assert(selfNewsAmounts.filter((amount) => amount === -30).length === 3, '0.1.60 negative self News should be -30B$.');
+// CH-19: 30 News stories share the same few amounts (more stories, same economy)
+assert(selfNewsAmounts.every((amount) => amount === 25 || amount === -30), '0.1.60 self News stay on the +25 / -30 B$ scale.');
+assert(selfNewsAmounts.includes(25) && selfNewsAmounts.includes(-30), '0.1.60 self News keep both +25 and -30 B$.');
 
 const groupNewsAmounts = news
   .filter((entry) => entry.effect.type === 'money_delta_all')
   .map((entry) => entry.effect.type === 'money_delta_all' ? entry.effect.amount : 0)
   .sort((a, b) => a - b);
-assert.deepEqual(groupNewsAmounts, [-15, -15, -10, 10]);
+assert.deepEqual([...new Set(groupNewsAmounts)], [-15, -10, 10]);
 assert(groupNewsAmounts.every((amount) => Math.abs(amount) <= 15), '0.1.60 immediate group News must stay compact.');
 
 const catchUp = cards.find((card) => card.id === 'ACT_016');

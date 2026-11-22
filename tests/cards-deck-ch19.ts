@@ -16,6 +16,12 @@ assert.equal(CARDS.length, 20);
 assert.equal(new Set(CARDS.map((c) => `${c.effect.type}:${(c.effect as { location?: string }).location ?? ''}`)).size, 20);
 for (const c of CARDS) assert.ok(existsSync(`public/assets/ui/ch19/cards/${c.id}.webp`), `${c.id} illustration missing`);
 
+// 30 News stories, each painted for the TV reveal
+const NEWS = newsJson as NewsDefinition[];
+assert.equal(NEWS.length, 30);
+assert.equal(new Set(NEWS.map((n) => n.title)).size, 29, 'every story has its own headline (012A/012B are one story aimed at two seats)');
+for (const n of NEWS) assert.ok(existsSync(`public/assets/ui/ch19/news/${n.id}.webp`), `${n.id} news picture missing`);
+
 const players = (): PlayerState[] => [0, 1, 2, 3].map((id) => ({
   id, name: `P${id + 1}`, nodeId: 0, money: [100, 200, 300, 50][id], cardBlockTurns: 0, handCardIds: [], cardsPlayedThisTurn: 0,
 }));

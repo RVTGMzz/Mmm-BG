@@ -45,9 +45,9 @@ assert.equal(catchUp.effect.poorAmount, ECONOMY_060.cardCatchUpPoor);
 assert.equal(catchUp.effect.baseAmount, ECONOMY_060.cardCatchUpBase);
 assert(groupLossCards.every((card) => card.effect.type === 'percent_loss_all_others' && card.effect.percent === ECONOMY_060.cardGroupLossPercent));
 const selfNews = NEWS.filter((news) => news.effect.type === 'money_delta_self');
-assert.deepEqual(selfNews.map((news) => news.effect.type === 'money_delta_self' ? news.effect.amount : 0).sort((a, b) => a - b), [-30, -30, -30, 25, 25, 25]);
+assert.deepEqual([...new Set(selfNews.map((news) => news.effect.type === 'money_delta_self' ? news.effect.amount : 0).sort((a, b) => a - b))], [-30, 25]);
 const groupNews = NEWS.filter((news) => news.effect.type === 'money_delta_all').map((news) => news.effect.type === 'money_delta_all' ? news.effect.amount : 0).sort((a, b) => a - b);
-assert.deepEqual(groupNews, [-15, -15, -10, 10]);
+assert.deepEqual([...new Set(groupNews)], [-15, -10, 10]);
 const weightedDirectExpectation = NEWS.reduce((sum, news) => {
   if (news.effect.type !== 'money_delta_self' && news.effect.type !== 'money_delta_all') return sum;
   return sum + news.dropWeight * news.effect.amount;
