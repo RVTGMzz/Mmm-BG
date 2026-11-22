@@ -175,7 +175,7 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
           const currentStage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
           if (currentStage?.getByName('vf07-minigame-result-body')) sawRules = true;
           const flow = currentStage?.getByName('vf07-round-flow-result-copy-ch142') as Phaser.GameObjects.Text | null;
-          if (!flow || flow.alpha < 0.95) return;
+          if (!flow || flow.alpha < 0.95 || !flow.visible || flow.text.includes('🥁')) return;
           (window as any).cpuRulesState = { sawRules, result: flow.text };
           this.time.timeScale = 0;
           this.tweens.timeScale = 0;
@@ -189,7 +189,9 @@ class FullSceneUiFixture extends CareerMinigameBoardScene07044 {
         const run = startMiniGameOverlay(this, runtime.match.players.slice(0, 4), 8709, 'MINIGAME_SLOT_01');
         this.events.on('postupdate', () => {
           const stage = run.root.getByName('vf07-minigame-stage') as Phaser.GameObjects.Container | null;
-          if (!stage?.getByName('vf07-majority-result-copy')) return;
+          const copy = stage?.getByName('vf07-majority-result-copy') as Phaser.GameObjects.Text | null;
+          // CH-19: the verdict is revealed on a beat; freeze once it has landed
+          if (!copy || !copy.visible || copy.text.includes('🥁')) return;
           this.time.timeScale = 0;
           (window as any).surfaceReady = true;
         });

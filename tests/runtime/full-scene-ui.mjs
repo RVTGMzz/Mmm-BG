@@ -56,6 +56,12 @@ try {
     if (rejectOnPageError) page.off('pageerror', rejectOnPageError);
     page.on('pageerror', (error) => errors.push(String(error)));
     await page.waitForTimeout(900);
+    // CH-19: Mini Game verdicts are revealed on a beat (countdown, picks one by one,
+    // drum roll), so wait for the verdict to land before reading it
+    await page.waitForFunction((name) => {
+      const body = window.fullSceneUi?.inspect(name);
+      return Boolean(body && body.visible && body.alpha > 0.9 && !String(body.text).includes('🥁'));
+    }, names[surface], { timeout: 15000 }).catch(() => undefined);
     const result = await page.evaluate((name) => {
       const api = window.fullSceneUi;
       return { canonical: api.canonical, body: api.inspect(name) };
