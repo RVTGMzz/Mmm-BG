@@ -46,6 +46,7 @@ import { browserSession } from '../core/browserSession';
 import { shopForNodeCh19 } from '../core/shopTilesCh19';
 import { installMiniGamePartyCh19, preloadMiniGamePartyCh19 } from '../ui/miniGamePartyCh19';
 import { installCardArtCh19, preloadCardArtCh19 } from '../ui/cardArtCh19';
+import { flyMoneyChangesCh19, preloadMoneyFlightCh19 } from '../ui/moneyFlightCh19';
 
 const BOARD_CH19 = boardJson as BoardDefinition;
 /** Sole line of the CH-19 character strips (fraction of the 192px frame). */
@@ -186,6 +187,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     preloadPartyKitCh19(this);
     preloadMiniGamePartyCh19(this);
     preloadCardArtCh19(this);
+    preloadMoneyFlightCh19(this);
     trackGraphicsBoundsCh19();
     preloadRescueVehiclesCh19(this);
     if (!this.textures.exists(PORTRAIT_STARTERS_KEY_CH19)) {
@@ -667,6 +669,7 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
     }
     const top = Math.max(...match.players.map((p) => p.money));
     const leaders = match.players.filter((p) => p.money === top);
+    const moneyChanges: Array<{ id: number; delta: number }> = [];
 
     for (const player of match.players) {
       const career = playerHudCareer065(player, JOBS_CH19);
@@ -702,12 +705,31 @@ export class CareerMinigameBoardSceneIslandCh19 extends CareerMinigameBoardScene
       this.playerCardsCh19.set(player.id, { card, signature, money: player.money, active });
 
       if (!existing) continue;
-      if (existing.money !== player.money) this.popMoneyCh19(card, player.money - existing.money);
+      if (existing.money !== player.money) {
+        this.popMoneyCh19(card, player.money - existing.money);
+        moneyChanges.push({ id: player.id, delta: player.money - existing.money });
+      }
       if (active && !existing.active) {
         card.setScale(PLAYER_CARD_CH19.idleScale);
         this.tweens.add({ targets: card, scale, duration: 220, ease: 'Back.easeOut' });
       }
     }
+    if (moneyChanges.length) flyMoneyChangesCh19(this, moneyChanges, (id) => this.playerScreenPointCh19(id));
+  }
+
+  /** A player's Character on screen, in UI-camera coordinates (falls back to their HUD card). */
+  private playerScreenPointCh19(id: number): { x: number; y: number } | undefined {
+    const runtime = this as unknown as { visuals?: Map<number, { token: Phaser.GameObjects.Container }> };
+    const token = runtime.visuals?.get(id)?.token;
+    const cam = this.cameras.main;
+    const r = stageRectCh19(this);
+    if (token?.active) {
+      const sx = (token.x - cam.worldView.x) * cam.zoom + r.x;
+      const sy = (token.y - 30 - cam.worldView.y) * cam.zoom + r.y;
+      if (sx > r.x - 40 && sx < r.x + r.w + 40 && sy > r.y - 40 && sy < r.y + r.h + 40) return { x: sx, y: sy };
+    }
+    const card = this.playerCardsCh19.get(id)?.card;
+    return card ? { x: card.x + 100 * card.scaleX, y: card.y + 60 * card.scaleY } : undefined;
   }
 
   /* ------------------------------------------------------------------ turn spotlight */

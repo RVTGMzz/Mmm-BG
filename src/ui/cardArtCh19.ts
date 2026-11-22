@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import cardsJson from '../content/core/cards_mvp.json';
+import newsJson from '../content/core/news_mvp_demo.json';
 import type { CardDefinition, CardRarity } from '../core/cards';
 import { publicAssetUrl } from './publicAssetUrl';
 import { fillStarCh19, partyTextCh19, PARTY_INK_CH19, tintCh19 } from './partyKitCh19';
@@ -20,7 +21,14 @@ export function preloadCardArtCh19(scene: Phaser.Scene): void {
   for (const card of CARDS) {
     if (!scene.textures.exists(cardArtKeyCh19(card.id))) scene.load.image(cardArtKeyCh19(card.id), publicAssetUrl(`assets/ui/ch19/cards/${card.id}.webp`));
   }
+  for (const news of NEWS) {
+    if (!scene.textures.exists(newsArtKeyCh19(news.id))) scene.load.image(newsArtKeyCh19(news.id), publicAssetUrl(`assets/ui/ch19/news/${news.id}.webp`));
+  }
 }
+
+type NewsItemCh19 = { id: string; title: string; description: string };
+const NEWS = newsJson as NewsItemCh19[];
+export const newsArtKeyCh19 = (id: string) => `news-art-ch19-${id}`;
 
 const RARITY: Record<CardRarity, { frame: number; glow: number; stars: number; name: string }> = {
   N: { frame: 0x6f8fb0, glow: 0xdfe8f2, stars: 1, name: 'THƯỜNG' },
@@ -109,6 +117,7 @@ export function installCardArtCh19(scene: Phaser.Scene): void {
       if (!(o instanceof Phaser.GameObjects.Container) || !o.active) continue;
       if (o.name === 'card-hand-picker-modal') skinHand(scene, o);
       else if (o.name === 'card-presentation-card') skinPresentation(scene, o);
+      else if (o.name === 'news-presentation-card') skinNewsCh19(scene, o);
     }
   };
   scene.events.on(Phaser.Scenes.Events.UPDATE, tick);
@@ -236,4 +245,97 @@ function skinPresentation(scene: Phaser.Scene, root: Phaser.GameObjects.Containe
   scene.tweens.add({ targets: cap, alpha: 1, y: 150, duration: 320, delay: 240, ease: 'Cubic.easeOut' });
   glow.setAlpha(0);
   scene.tweens.add({ targets: glow, alpha: 1, duration: 500 });
+}
+
+/* ------------------------------------------------------------------ news on TV */
+
+/** Breaking news: a big cartoon TV with the news painting on screen, caption under it. */
+function skinNewsCh19(scene: Phaser.Scene, root: Phaser.GameObjects.Container): void {
+  const mine = (o: Phaser.GameObjects.GameObject) => Boolean(o.getData?.('ch19-card-ui'));
+  const stage = root.getData('ch19-card-stage') as Phaser.GameObjects.Container | undefined;
+  if (stage) {
+    for (const o of root.list) if (!mine(o)) (o as unknown as Phaser.GameObjects.Components.Alpha).setAlpha?.(0);
+    const sx = root.scaleX || 1, sy = root.scaleY || 1;
+    stage.setScale(1 / sx, 1 / sy).setPosition((STAGE_CX_CH19 - root.x) / sx, (STAGE_CY_CH19 - root.y) / sy).setAngle(-root.angle);
+    if (root.depth < REVEAL_DEPTH_CH19) root.setDepth(REVEAL_DEPTH_CH19);
+    return;
+  }
+  const texts = root.list.filter((o): o is Phaser.GameObjects.Text => o instanceof Phaser.GameObjects.Text);
+  const titleText = texts.find((t) => NEWS.some((n) => n.title === t.text.trim()));
+  if (!titleText) return;
+  const news = NEWS.find((n) => n.title === titleText.text.trim())!;
+  const kicker = texts.find((t) => t.name === 'cinematic-kicker-ch141')?.text ?? '';
+  // the older card's body line(s): what actually happened this time
+  const body = texts
+    .filter((t) => t !== titleText && t.name !== 'cinematic-kicker-ch141' && t.text.trim().length > 6 && !/^[•⭐⚠️📰🗞️\s]+$/u.test(t.text.trim()))
+    .map((t) => t.text.trim())
+    .sort((a, b) => b.length - a.length)[0] ?? news.description;
+  root.setData('ch19-card-face', true);
+  for (const o of root.list) (o as unknown as Phaser.GameObjects.Components.Alpha).setAlpha?.(0);
+
+  const tag = <T extends Phaser.GameObjects.GameObject>(o: T): T => { o.setData('ch19-card-ui', true); return o; };
+  root.setDepth(Math.max(root.depth, REVEAL_DEPTH_CH19));
+  const st = tag(scene.add.container(0, 0));
+  root.add(st);
+  root.setData('ch19-card-stage', st);
+  const veil = scene.add.graphics();
+  veil.fillStyle(0x10143a, 1).fillRect(-2000, -1500, 4000, 3000);
+  veil.setAlpha(0.58);
+  st.add(veil);
+
+  // the TV: 560 x 315 screen in a chunky coral cabinet with antennae and feet
+  const SW = 560, SH = 315, CY = -84;
+  const tv = scene.add.container(0, CY);
+  const g = scene.add.graphics();
+  const bw = SW + 64, bh = SH + 64;
+  g.lineStyle(9, PARTY_INK_CH19, 1).lineBetween(-40, -bh / 2 + 4, -120, -bh / 2 - 40).lineBetween(40, -bh / 2 + 4, 120, -bh / 2 - 40);
+  g.fillStyle(0xffe066, 1).fillCircle(-120, -bh / 2 - 40, 13).fillCircle(120, -bh / 2 - 40, 13);
+  g.lineStyle(4, PARTY_INK_CH19, 1).strokeCircle(-120, -bh / 2 - 40, 13).strokeCircle(120, -bh / 2 - 40, 13);
+  g.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(-bw / 2 + 60, bh / 2 - 6, 52, 30, 8).fillRoundedRect(bw / 2 - 112, bh / 2 - 6, 52, 30, 8);
+  g.fillStyle(0x10143a, 0.3).fillRoundedRect(-bw / 2 + 6, -bh / 2 + 12, bw, bh, 40);
+  g.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(-bw / 2 - 5, -bh / 2 - 5, bw + 10, bh + 10, 44);
+  g.fillStyle(0xf2549c, 1).fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 40);
+  g.fillStyle(0xff8fbf, 1).fillRoundedRect(-bw / 2 + 8, -bh / 2 + 8, bw - 16, bh * 0.42, { tl: 34, tr: 34, bl: 0, br: 0 });
+  g.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(-SW / 2 - 6, -SH / 2 - 6, SW + 12, SH + 12, 22);
+  g.fillStyle(0x222645, 1).fillRoundedRect(-SW / 2, -SH / 2, SW, SH, 18);
+  tv.add(g);
+  const key = newsArtKeyCh19(news.id);
+  if (scene.textures.exists(key)) {
+    const img = scene.add.image(0, 0, key).setDisplaySize(SW, SH);
+    tv.add(img);
+    scene.tweens.add({ targets: img, alpha: { from: 0, to: 1 }, duration: 520, delay: 260 });
+  }
+  const bezel = scene.add.graphics();
+  bezel.lineStyle(12, PARTY_INK_CH19, 1).strokeRoundedRect(-SW / 2 - 3, -SH / 2 - 3, SW + 6, SH + 6, 20);
+  tv.add(bezel);
+  const glare = scene.add.graphics();
+  glare.fillStyle(0xffffff, 0.16).fillTriangle(-SW / 2, -SH / 2, -SW / 2 + 220, -SH / 2, -SW / 2, -SH / 2 + 170);
+  tv.add(glare);
+  // "TIN NÓNG" badge on the cabinet's top-left corner, the headline ribbon along the bottom
+  const badge = scene.add.container(-bw / 2 + 92, -bh / 2 + 2);
+  const bg = scene.add.graphics();
+  bg.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(-82, -21, 164, 42, 21);
+  bg.fillStyle(0xf0524a, 1).fillRoundedRect(-78, -17, 156, 34, 17);
+  badge.add(bg);
+  badge.add(partyTextCh19(scene, 0, 0, '● TIN NÓNG', { size: 18, fill: '#ffffff', strokeWidth: 3, shadow: false }));
+  tv.add(badge);
+  scene.tweens.add({ targets: badge, scale: { from: 1, to: 1.08 }, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+  const rib = scene.add.graphics();
+  rib.fillStyle(PARTY_INK_CH19, 1).fillRoundedRect(-SW / 2 + 20, SH / 2 - 26, SW - 40, 56, 14);
+  rib.fillStyle(0xffffff, 1).fillRoundedRect(-SW / 2 + 24, SH / 2 - 22, SW - 48, 48, 11);
+  tv.add(rib);
+  tv.add(partyTextCh19(scene, 0, SH / 2 + 2, news.title, { size: 28, fill: '#f2549c', stroke: '#ffffff', strokeWidth: 3, shadow: false }));
+  st.add(tv);
+
+  const cap = scene.add.container(0, 158);
+  if (kicker) cap.add(partyTextCh19(scene, 0, -2, kicker.toUpperCase(), { size: 16, fill: '#ffe066', strokeWidth: 4, shadow: false }));
+  cap.add(partyTextCh19(scene, 0, 30, body, { size: 24, fill: '#ffffff', strokeWidth: 6, wrap: 820, shadow: false }).setOrigin(0.5, 0));
+  st.add(cap);
+  skinNewsCh19(scene, root);
+  blurBoardCh19(scene, root);
+
+  tv.setScale(0.3).setAlpha(0);
+  scene.tweens.add({ targets: tv, scale: 1, alpha: 1, duration: 480, ease: 'Back.easeOut' });
+  cap.setAlpha(0).setY(186);
+  scene.tweens.add({ targets: cap, alpha: 1, y: 158, duration: 320, delay: 300, ease: 'Cubic.easeOut' });
 }

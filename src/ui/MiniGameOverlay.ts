@@ -150,6 +150,17 @@ function rewardTitle(gameType: MiniGameBaseRewardType): string {
   return 'NHIỀU RA ÍT BỊ';
 }
 
+/** One line under the podium: why the winner won this kind of Mini Game. */
+function winReasonCh19(gameType: MiniGameBaseRewardType): string {
+  if (gameType === 'rps') return 'Thắng kèo Oẳn Tù Xì 1 VS 1.';
+  if (gameType === 'three_doors') return 'Trụ lại ở đúng cửa xúc xắc chọn lâu nhất, rồi thắng kèo cuối.';
+  if (gameType === 'all_in') return 'Điểm cao nhất mà không vượt quá 9.';
+  if (gameType === 'solo_buoy') return 'Đứng một mình trên phao lâu nhất, rồi đổ xúc xắc cao hơn ở kèo cuối.';
+  if (gameType === 'cut_top_dice') return 'Lọt Top 2, rồi đổ xúc xắc cao hơn ở trận chốt.';
+  if (gameType === 'final_sprint') return 'Tổng điểm 3 chặng cao nhất.';
+  return 'Luôn đứng về phe đông người tới cuối, rồi thắng Oẳn Tù Xì 1 VS 1.';
+}
+
 function paintRoundedSurfaceCh141(
   surface: Phaser.GameObjects.Graphics,
   width: number,
@@ -280,6 +291,57 @@ export function startMiniGameOverlay(
     stake.setVisible(false);
   };
   const wait = (ms: number) => new Promise<void>((resolve) => scene.time.delayedCall(ms, resolve));
+
+  /**
+   * CH-19 pacing: a short drum-roll countdown, then each player's pick flips
+   * in one by one, a beat of silence, and only then the verdict stamps down.
+   */
+  const dramaticRevealCh19 = async (
+    rows: Phaser.GameObjects.GameObject[][],
+    arrow: Phaser.GameObjects.Text,
+    resultBox: Phaser.GameObjects.Graphics,
+    resultText: Phaser.GameObjects.Text,
+    countdown: boolean,
+  ): Promise<void> => {
+    type Shown = Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Visible & Phaser.GameObjects.Components.Transform;
+    const all = [...rows.flat(), arrow, resultBox, resultText] as Shown[];
+    for (const o of all) o.setVisible(false);
+    if (countdown) {
+      for (const beat of ['3', '2', '1']) {
+        const big = scene.add.text(0, 30, beat, {
+          fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif', fontSize: '120px', fontStyle: 'bold', color: '#ffffff',
+          stroke: '#1f2340', strokeThickness: 14,
+        }).setOrigin(0.5).setName('vf07-minigame-countdown-ch19');
+        stage.add(big);
+        sfxController.play('ui_confirm');
+        scene.tweens.add({ targets: big, scale: { from: 1.8, to: 1 }, alpha: { from: 0, to: 1 }, duration: 220, ease: 'Back.easeOut' });
+        await wait(420);
+        big.destroy();
+      }
+    }
+    for (const row of rows) {
+      for (const o of row as Shown[]) {
+        o.setVisible(true);
+        scene.tweens.add({ targets: o, scaleX: { from: 0, to: 1 }, duration: 200, ease: 'Back.easeOut' });
+      }
+      sfxController.play('step');
+      await wait(rows.length > 3 ? 380 : 460);
+    }
+    await wait(350);
+    arrow.setVisible(true);
+    scene.tweens.add({ targets: arrow, x: { from: arrow.x - 30, to: arrow.x }, duration: 260, ease: 'Back.easeOut' });
+    // the drum roll before the verdict
+    const finalCopy = resultText.text;
+    resultBox.setVisible(true);
+    resultText.setVisible(true).setText('🥁 . . .');
+    sfxController.play('dice_roll');
+    scene.tweens.add({ targets: resultText, scale: { from: 0.9, to: 1.1 }, duration: 160, yoyo: true, repeat: 2 });
+    await wait(900);
+    resultText.setText(finalCopy);
+    scene.tweens.add({ targets: [resultBox, resultText], scale: { from: 1.35, to: 1 }, duration: 300, ease: 'Back.easeOut' });
+    scene.cameras.main.shake(140, 0.003);
+    sfxController.play(/🏆|✅/.test(finalCopy) ? 'coin_gain' : 'land');
+  };
 
   const choiceButtons = <T extends string>(
     player: PlayerState,
@@ -836,11 +898,11 @@ export function startMiniGameOverlay(
     }).setOrigin(0.5).setName('vf07-round-flow-result-copy-ch142');
 
     stage.add([paper, head, stateTitle, resultTitle, ...rowObjects, arrow, resultBox, resultText]);
-    scene.tweens.add({
-      targets: [...rowObjects, arrow, resultBox, resultText],
-      alpha: { from: 0.25, to: 1 }, duration: 190, ease: 'Back.easeOut',
-    });
-    await wait(ms);
+    const rowPairs: Phaser.GameObjects.GameObject[][] = [];
+    for (let index = 0; index < rowObjects.length; index += 2) rowPairs.push(rowObjects.slice(index, index + 2));
+    // short tie-break duels skip the countdown; the reading time after the verdict grows
+    await dramaticRevealCh19(rowPairs, arrow, resultBox, resultText, ms >= 1400);
+    await wait(ms + 900);
   };
 
   const showMajorityFlow = async (
@@ -897,9 +959,12 @@ export function startMiniGameOverlay(
     ).setName('vf07-majority-result-box-ch141');
     const losers = eliminatedPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
     const survivors = survivingPlayerIds.map((id) => playerById(id)?.name ?? `P${id + 1}`).join(', ');
+    const upCount = ids.filter((id) => choices[id] === 'up').length;
+    const downCount = ids.length - upCount;
+    const tally = `🤲 NGỬA ${upCount}  •  🖐️ SẤP ${downCount}`;
     const resultCopy = tied
-      ? 'KHÔNG CÓ PHE THIỂU SỐ\n\nRA LẠI!'
-      : `❌ BỊ LOẠI\n${losers || '—'}\n\n✅ CÒN LẠI\n${survivors || '—'}`;
+      ? `${tally}\nKHÔNG CÓ PHE THIỂU SỐ\n\nRA LẠI!`
+      : `${tally}\nPhe ít người bị loại\n\n❌ ${losers || '—'}\n✅ ${survivors || '—'}`;
     const resultText = scene.add.text(225, 38, resultCopy, {
       fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
       fontSize: tied ? '20px' : '18px', fontStyle: 'bold',
@@ -907,11 +972,10 @@ export function startMiniGameOverlay(
       lineSpacing: 5, wordWrap: { width: 274, useAdvancedWrap: true },
     }).setOrigin(0.5).setName('vf07-majority-result-copy');
     stage.add([paper, head, stateTitle, resultTitle, ...rows, arrow, resultBox, resultText]);
-    scene.tweens.add({
-      targets: [...rows, arrow, resultBox, resultText],
-      alpha: { from: 0.25, to: 1 }, duration: 190, ease: 'Back.easeOut',
-    });
-    await wait(ms);
+    const rowPairs: Phaser.GameObjects.GameObject[][] = [];
+    for (let index = 0; index < rows.length; index += 2) rowPairs.push(rows.slice(index, index + 2));
+    await dramaticRevealCh19(rowPairs, arrow, resultBox, resultText, true);
+    await wait(ms + 900);
   };
 
   const showRpsDuel = async (
@@ -981,7 +1045,7 @@ export function startMiniGameOverlay(
         scaleX: 1.12, scaleY: 1.12, duration: 120,
         yoyo: true, ease: 'Back.easeOut',
       });
-      await wait(index === beats.length - 1 ? 420 : 330);
+      await wait(index === beats.length - 1 ? 620 : 520);
     }
 
     chant.setText('LẬT KÈO!');
@@ -1010,7 +1074,7 @@ export function startMiniGameOverlay(
       scaleX: { from: 1.35, to: 1 }, scaleY: { from: 1.35, to: 1 }, duration: 180, ease: 'Back.easeOut',
     });
     scene.cameras.main.shake(95, 0.0011);
-    await wait(520);
+    await wait(900);
 
     if (tied) {
       chant.setText('🤝 HÒA KÈO');
@@ -1028,7 +1092,9 @@ export function startMiniGameOverlay(
         MINI_GAME_VISUAL_VF07.surfaceRadius, 5, 0xe7ae35, 1,
       );
     }
-    await wait(tied ? 900 : 1150);
+    scene.tweens.add({ targets: verdict, scale: { from: 1.6, to: 1 }, duration: 320, ease: 'Back.easeOut' });
+    if (!tied) sfxController.play('coin_gain');
+    await wait(tied ? 1300 : 2000);
   };
 
   const showRanking = async (rankingPlayerIds: readonly number[], baseType: MiniGameBaseRewardType) => {
@@ -1059,12 +1125,13 @@ export function startMiniGameOverlay(
     }).setOrigin(0.5).setName('vf07-minigame-ranking-heading');
 
     const medals = ['🥇', '🥈', '🥉', '4️⃣'];
-    const rows = rankingPlayerIds.map((id, index) => {
+    const rowLines = rankingPlayerIds.map((id, index) => {
       const player = playerById(id);
       const reward = miniGameRewardForRank(payoutType, index + 1);
       const rewardCopy = reward > 0 ? `+${reward}` : '0';
       return `${medals[index] ?? `${index + 1}.`} Hạng ${index + 1} • ${player?.name ?? `P${id + 1}`} • ${rewardCopy} B$`;
-    }).join('\n');
+    });
+    const rows = rowLines.join('\n');
 
     stage.add([podiumPaper, podiumRibbon, heading]);
     const rowsViewport = createScrollableTextViewport070429(scene, stage, {
@@ -1145,7 +1212,7 @@ export function startMiniGameOverlay(
       },
     ).setOrigin(0.5).setName('vf07-minigame-ranking-hint');
 
-    const rankingBottom = rewardHint.y + 30;
+    const rankingBottom = rewardHint.y + 70; // the hint moves down 40 under the "why" line
     paintRoundedSurfaceCh141(
       podiumPaper, 780, rankingBottom + 168, MINI_GAME_VISUAL_VF07.resultFill, 1,
       MINI_GAME_VISUAL_VF07.surfaceRadius, 4, MINI_GAME_VISUAL_VF07.shellStroke, 0.35,
@@ -1155,14 +1222,38 @@ export function startMiniGameOverlay(
       MINI_GAME_VISUAL_VF07.shellRadius, MINI_GAME_VISUAL_VF07.shellStrokeWidth,
       MINI_GAME_VISUAL_VF07.shellStroke, 1,
     ).setY(22 + (rankingBottom - 190) / 2);
-    stage.add([winnerVoiceText, rewardHint]);
-    scene.tweens.add({
-      targets: [podiumPaper, podiumRibbon, heading, rowsViewport.root, ...(winnerPortraitCh184 ? [winnerPortraitCh184] : []), winnerVoiceText, rewardHint],
-      alpha: { from: 0.25, to: 1 },
-      duration: 210,
-      ease: 'Sine.easeOut',
-    });
-    await wait(rowsViewport.isScrollable ? 10000 : 5200);
+    const whyText = scene.add.text(0, rewardHint.y, `💡 ${winReasonCh19(baseType)}`, {
+      fontFamily: 'system-ui, "Segoe UI", Arial, sans-serif',
+      fontSize: '19px',
+      fontStyle: 'bold',
+      color: '#30251f',
+      align: 'center',
+      fixedWidth: 680,
+      wordWrap: { width: 670, useAdvancedWrap: true },
+    }).setOrigin(0.5).setName('vf07-minigame-ranking-why-ch19');
+    rewardHint.setY(rewardHint.y + 40);
+    stage.add([winnerVoiceText, whyText, rewardHint]);
+    // bottom of the table first, the winner last
+    const hiddenLine = (index: number) => `${medals[index] ?? `${index + 1}.`} Hạng ${index + 1} • ❓ ❓ ❓`;
+    const extras = [...(winnerPortraitCh184 ? [winnerPortraitCh184] : []), winnerVoiceText, whyText] as Array<Phaser.GameObjects.GameObject & Phaser.GameObjects.Components.Visible>;
+    const voiceShown = winnerVoiceText.visible;
+    for (const o of extras) o.setVisible(false);
+    rowsViewport.text.setText(rowLines.map((_, index) => hiddenLine(index)).join('\n'));
+    await wait(600);
+    for (let index = rowLines.length - 1; index >= 0; index -= 1) {
+      rowsViewport.text.setText(rowLines.map((line, i) => (i >= index ? line : hiddenLine(i))).join('\n'));
+      if (index === 0) {
+        sfxController.play('victory');
+        scene.cameras.main.flash(260, 255, 236, 140);
+        scene.tweens.add({ targets: rowsViewport.root, scale: { from: 1.06, to: 1 }, duration: 360, ease: 'Back.easeOut' });
+      } else {
+        sfxController.play('step');
+        await wait(index === 1 ? 1100 : 650);
+      }
+    }
+    for (const o of extras) o.setVisible(o === winnerVoiceText ? voiceShown : true);
+    scene.tweens.add({ targets: extras, alpha: { from: 0, to: 1 }, duration: 260 });
+    await wait(rowsViewport.isScrollable ? 10000 : 6200);
   };
 
   const runRpsFinal = async (

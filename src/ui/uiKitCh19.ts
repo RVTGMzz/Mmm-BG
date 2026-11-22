@@ -108,7 +108,12 @@ export function reskinGraphicsCh19(
   // interactive shapes (choice cards) must stay hit-testable: Phaser ignores alpha-0 objects
   const hidden = old.input?.enabled ? 0.001 : 0;
   if (old.alpha !== hidden) old.setAlpha(hidden);
-  if (current?.sig === sig && current.obj.active) return;
+  // the painted copy shows and hides with the box it stands in for
+  const follow = (o: Phaser.GameObjects.GameObject) => {
+    const v = o as Phaser.GameObjects.GameObject & Partial<Phaser.GameObjects.Components.Visible>;
+    if (v.visible !== old.visible) v.setVisible?.(old.visible);
+  };
+  if (current?.sig === sig && current.obj.active) { follow(current.obj); return; }
   current?.obj.destroy();
   // the old Graphics may itself be scaled by a later layout pass
   const sx = old.scaleX || 1, sy = old.scaleY || 1;
@@ -118,5 +123,6 @@ export function reskinGraphicsCh19(
   obj.setData('ch19-skin', true);
   obj.setPosition(old.x + (box.x + box.w / 2) * sx, old.y + (box.y + box.h / 2) * sy);
   container.addAt(obj, container.getIndex(old) + 1);
+  follow(obj);
   container.setData(skinKey, { sig, obj });
 }

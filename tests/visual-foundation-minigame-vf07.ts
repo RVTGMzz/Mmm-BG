@@ -37,7 +37,8 @@ expect(!overlay.includes('denseResult ?'), 'VF-07 must not shrink result typogra
 expect(overlay.includes("'vf07-minigame-result-body'") && overlay.includes("'vf07-minigame-ranking-rows'"), 'VF-07 canonical Mini Game text must be named so legacy reflow cannot rewrite it');
 expect(overlay.includes('privacyRail') && overlay.includes('LỰA CHỌN ĐƯỢC GIỮ KÍN • CÙNG LẬT SAU KHI CHỐT'), 'VF-07 choice screen must visibly preserve concealed-choice ownership before reveal');
 expect(overlay.includes("color: MINI_GAME_VISUAL_VF07.cocoaText") && overlay.includes("color: MINI_GAME_VISUAL_VF07.mutedText"), 'VF-07 choice and helper copy must stay on the shared cocoa/muted token palette');
-expect(overlay.includes('duration: 190') && overlay.includes('duration: 210'), 'VF-07 motion must remain short and non-blocking');
+// CH-19: reveals are staged on purpose (countdown, one pick at a time, drum roll, verdict; podium bottom-up)
+expect(overlay.includes('dramaticRevealCh19(') && overlay.includes('hiddenLine(') && overlay.includes('winReasonCh19('), 'CH-19 Mini Game results must build suspense and explain the win');
 expect(!vf.includes('Math.random'), 'VF-07 visual helper must not introduce RNG');
 
 console.log('VF-07 Mini Game foundation review gate: PASS');
